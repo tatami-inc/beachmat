@@ -1,3 +1,5 @@
 useDynLib(beachtest, .registration=TRUE, .fixes="cxx_")
 
 importFrom(Rcpp, sourceCpp)
+
+import(beachmat)

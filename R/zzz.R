@@ -1,3 +1,13 @@
+.onLoad <- function(libname, pkgname)
+{
+  ## make DLL available for Windows; others use static library
+  if ("windows" == .Platform$OS.type) {
+    dll <- file.path(libname, pkgname, "lib", .Platform$r_arch,
+                     "libbeachmat.dll")
+    dyn.load(dll)
+  }
+}
+
 pkgconfig <- function(opt = c("PKG_LIBS", "PKG_CPPFLAGS"))
 {
     path <- Sys.getenv(
