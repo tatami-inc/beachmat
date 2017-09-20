@@ -152,10 +152,10 @@ No value is returned by this method.
 - `dptr->get_col(c, in, first, last)` takes a `Rcpp::Vector::iterator` object `in` and fills it with values at column `c` from row `first` to `last-1`.
 There should be at least `last-first` accessible elements, i.e., `*in` and `*(in+last-first-1)` should be valid entries.
 No value is returned by this method.
-- `dptr->get_row(r, in)` takes an `Rcpp::Vetor::iterator` object `in` and fills it with values at row `r`.
+- `dptr->get_row(r, in)` takes an `Rcpp::Vector::iterator` object `in` and fills it with values at row `r`.
 There should be at least `ncol` accessible elements, i.e., `*in` and `*(in+ncol-1)` should be valid entries.
 No value is returned by this method.
-- `dptr->get_row(r, in, first, last)` takes an `Rcpp::Vetor::iterator` object `in` and fills it with values at row `r` from column `first` to `last-1`.
+- `dptr->get_row(r, in, first, last)` takes an `Rcpp::Vector::iterator` object `in` and fills it with values at row `r` from column `first` to `last-1`.
 There should be at least `last-first` accessible elements, i.e., `*in` and `*(in+last-first-1)` should be valid entries.
 No value is returned by this method.
 - `dptr->get(r, c)` returns a double at matrix entry `(r, c)`.
