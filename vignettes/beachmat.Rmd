@@ -96,27 +96,28 @@ You need to tell the build system to use C++11, by modifying the `SystemRequirem
 SystemRequirements: C++11
 ```
 
-You also need to ensure that `r CRANpkg("Rcpp")` is initialized when your package is loaded.
-This requires addition of `Rcpp` to the `Imports` field of the `DESCRIPTION` file:
+You also need to ensure that both _beachmat_ and `r CRANpkg("Rcpp")` are initialized when your package is loaded.
+This requires addition of both packages to the `Imports` field of the `DESCRIPTION` file:
 
 ```
-Imports: Rcpp
+Imports: Rcpp, beachmat
 ```
 
-... and a corresponding  `importFrom` specification in the `NAMESPACE` file:
+... and a corresponding `import` or `importFrom` specification in the `NAMESPACE` file:
 
 ```
 importFrom(Rcpp, sourceCpp)
+import(beachmat)
 ```
  
-(The exact function to be imported doesn't matter, as long as the namespace is loaded.
+(For `r CRANpkg("Rcpp")` the exact function to be imported doesn't matter, as long as the namespace is loaded.
 Check out the `r CRANpkg("Rcpp")` documentation for more details.)
 
-`r Biocpkg("HDF5Array")`, `r Biocpkg("DelayedArray")` and  _beachmat_ itself should be added to the `Suggests` field, as the API will perform some calls to R functions in those packages to query certain parameters. 
+`r Biocpkg("HDF5Array")` and `r Biocpkg("DelayedArray")` should be added to the `Suggests` field, as the API will perform some calls to R functions in those packages to query certain parameters. 
 If you intend to accept instances of `r CRANpkg("Matrix")` classes, the package should also be listed in the `Suggests` field, if not already in `Imports` or `Depends`:
 
 ```
-Suggests: beachmat, HDF5Array, DelayedArray, Matrix
+Suggests: HDF5Array, DelayedArray, Matrix
 ```
 
 
