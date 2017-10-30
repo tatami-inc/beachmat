@@ -136,27 +136,6 @@ check_character_output_slice <- function(FUN, ..., by.row, by.col) {
 
 ###############################
 
-check_sparse_numeric_output <- function(FUN, ...) {
-    .check_output_mat(FUN, ..., class.out="dgCMatrix", cxxfun=cxx_test_sparse_numeric_output)
-}
-
-check_sparse_numeric_output_slice <- function(FUN, ..., by.row, by.col) {
-   .check_output_slice(FUN, ..., by.row=by.row, by.col=by.col, class.out="dgCMatrix",
-                       cxxfun=cxx_test_sparse_numeric_output_slice, fill=0) 
-}
-
-check_sparse_logical_output <- function(FUN, ...) {
-    .check_output_mat(FUN, ..., class.out="dgCMatrix", cxxfun=cxx_test_sparse_logical_output)
-}
-
-check_sparse_logical_output_slice <- function(FUN, ..., by.row, by.col) {
-   .check_output_slice(FUN, ..., by.row=by.row, by.col=by.col, class.out="lgCMatrix",
-                       cxxfun=cxx_test_sparse_logical_output_slice, fill=FALSE) 
-}
-
-
-###############################
-
 .check_execution_order <- function(FUN, cxxfun, type) {
     # Checking that the output function in '.Call' does not overwrite the 
     # underlying HDF5 file and change the values of other HDF5Matrix objects. 
