@@ -263,29 +263,33 @@ test_that("Numeric matrix input error generation is okay", {
 set.seed(12345)
 
 test_that("Simple numeric matrix output is okay", {
-    beachtest:::check_numeric_output_mat(sFUN, hdf5.out=FALSE)
+    beachtest:::check_numeric_output_mat(sFUN)
+    beachtest:::check_numeric_output_mat(sFUN, nr=5, nc=30)
     
-    beachtest:::check_numeric_output_slice(sFUN, by.row=1:12, by.col=3:7, hdf5.out=FALSE)  
+    beachtest:::check_numeric_output_slice(sFUN, by.row=1:12, by.col=3:7)
+    beachtest:::check_numeric_output_slice(sFUN, nr=5, nc=30, by.row=2:4, by.col=12:25)
 })
 
 # Testing HDF5 sparse output:
 
 test_that("Sparse numeric matrix output is okay", {
-    beachtest:::check_sparse_numeric_output(csFUN)
-    beachtest:::check_sparse_numeric_output(csFUN, d=0.2)
-    beachtest:::check_sparse_numeric_output(csFUN, d=0.5)
+    beachtest:::check_numeric_output_mat(csFUN)
+    beachtest:::check_numeric_output_mat(csFUN, d=0.2)
+    beachtest:::check_numeric_output_mat(csFUN, d=0.5)
 
-    beachtest:::check_sparse_numeric_output_slice(csFUN, by.row=1:5, by.col=7:9)
-    beachtest:::check_sparse_numeric_output_slice(csFUN, by.row=1, by.col=2:8, d=0.2)
-    beachtest:::check_sparse_numeric_output_slice(csFUN, by.row=3:9, by.col=5, d=0.5)
+    beachtest:::check_numeric_output_slice(csFUN, by.row=1:5, by.col=7:9)
+    beachtest:::check_numeric_output_slice(csFUN, by.row=1, by.col=2:8, d=0.2)
+    beachtest:::check_numeric_output_slice(csFUN, by.row=3:9, by.col=5, d=0.5)
 })
 
 # Testing HDF5 numeric output:
 
 test_that("HDF5 numeric matrix output is okay", {
-    beachtest:::check_numeric_output_mat(hFUN, hdf5.out=TRUE)
+    beachtest:::check_numeric_output_mat(hFUN)
+    beachtest:::check_numeric_output_mat(hFUN, nr=5, nc=30)
     
-    beachtest:::check_numeric_output_slice(hFUN, by.row=1:2, by.col=2:10, hdf5.out=TRUE)
+    beachtest:::check_numeric_output_slice(hFUN, by.row=1:2, by.col=2:10)
+    beachtest:::check_numeric_output_slice(hFUN, nr=5, nc=30, by.row=1:2, by.col=2:10)
 
     beachtest:::check_numeric_order(hFUN)
 })
@@ -293,9 +297,9 @@ test_that("HDF5 numeric matrix output is okay", {
 # Testing conversions:
 
 test_that("Numeric matrix output conversions are okay", {
-    beachtest:::check_numeric_converted_output(sFUN, hdf5.out=FALSE)
+    beachtest:::check_numeric_converted_output(sFUN)
     
-    beachtest:::check_numeric_converted_output(hFUN, hdf5.out=TRUE)
+    beachtest:::check_numeric_converted_output(hFUN)
 })
 
 # Testing mode choices:

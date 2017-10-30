@@ -107,14 +107,6 @@ SEXP test_character_output(SEXP, SEXP, SEXP);
 
 SEXP test_character_output_slice(SEXP, SEXP, SEXP, SEXP);
 
-SEXP test_sparse_numeric_output (SEXP, SEXP, SEXP);
-
-SEXP test_sparse_numeric_output_slice (SEXP, SEXP, SEXP, SEXP);
-
-SEXP test_sparse_logical_output (SEXP, SEXP, SEXP);
-
-SEXP test_sparse_logical_output_slice (SEXP, SEXP, SEXP, SEXP);
-
 // Output type checks.
 
 SEXP test_numeric_to_logical_output (SEXP, SEXP);

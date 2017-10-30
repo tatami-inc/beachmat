@@ -162,17 +162,21 @@ test_that("Integer matrix input error generation is okay", {
 set.seed(12345)
 
 test_that("Simple integer matrix output is okay", {
-    beachtest:::check_integer_output_mat(sFUN, hdf5.out=FALSE)
+    beachtest:::check_integer_output_mat(sFUN)
+    beachtest:::check_integer_output_mat(sFUN, nr=5, nc=30)
 
-    beachtest:::check_integer_output_slice(sFUN, by.row=2:11, by.col=4:8, hdf5.out=FALSE)
+    beachtest:::check_integer_output_slice(sFUN, by.row=2:11, by.col=4:8)
+    beachtest:::check_integer_output_slice(sFUN, nr=5, nc=30, by.row=3:5, by.col=4:8)
 })
 
 # Testing HDF5 integer output:
 
 test_that("HDF5 integer matrix output is okay", {
-    beachtest:::check_integer_output_mat(hFUN, hdf5.out=TRUE)
+    beachtest:::check_integer_output_mat(hFUN)
+    beachtest:::check_integer_output_mat(hFUN, nr=5, nc=30)
 
-    beachtest:::check_integer_output_slice(hFUN, by.row=5:15, by.col=8:10, hdf5.out=TRUE)
+    beachtest:::check_integer_output_slice(hFUN, by.row=5:15, by.col=8:10)
+    beachtest:::check_integer_output_slice(hFUN, nr=5, nc=30, by.row=2:5, by.col=8:20)
 
     beachtest:::check_integer_order(hFUN)
 })
@@ -180,9 +184,9 @@ test_that("HDF5 integer matrix output is okay", {
 # Testing conversions:
 
 test_that("Integer matrix output conversions are okay", {
-    beachtest:::check_integer_converted_output(sFUN, hdf5.out=FALSE)
+    beachtest:::check_integer_converted_output(sFUN)
 
-    beachtest:::check_integer_converted_output(hFUN, hdf5.out=TRUE)
+    beachtest:::check_integer_converted_output(hFUN)
 })
 
 test_that("Integer matrix mode choices are okay", {

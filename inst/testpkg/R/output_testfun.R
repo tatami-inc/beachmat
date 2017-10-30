@@ -23,9 +23,10 @@
         for (ordering in ranges) { 
             out <- .Call(cxxfun, test.mat, i, ordering)
     
-            if (class.out=="matrix") {
-                testthat::expect_identical(class(out[[1]]), class.out)
-            } else {    
+            if (is.matrix(test.mat)) { 
+                testthat::expect_true(is.matrix(out[[1]]))
+            } else {
+                class.out <- class(test.mat)
                 testthat::expect_s4_class(out[[1]], class.out)
                 if (class.out=="HDF5Matrix") { 
                     testthat::expect_equal(out[[1]]@seed@first_val, as.vector(out[[1]][1,1]))
@@ -56,37 +57,36 @@
     return(invisible(NULL))
 }
    
-check_integer_output_mat <- function(FUN, ..., hdf5.out) {
-    .check_output_mat(FUN=FUN, ..., class.out=ifelse(hdf5.out, "HDF5Matrix", "matrix"), 
-                      cxxfun=cxx_test_integer_output)
+check_integer_output_mat <- function(FUN, ...) {
+    .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_integer_output)
 } 
 
-check_numeric_output_mat <- function(FUN, ..., hdf5.out) {
-    .check_output_mat(FUN=FUN, ..., class.out=ifelse(hdf5.out, "HDF5Matrix", "matrix"), 
-                      cxxfun=cxx_test_numeric_output)
+check_numeric_output_mat <- function(FUN, ...) {
+    .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_numeric_output)
 } 
 
-check_logical_output_mat <- function(FUN, ..., hdf5.out) {
-    .check_output_mat(FUN=FUN, ..., class.out=ifelse(hdf5.out, "HDF5Matrix", "matrix"), 
-                      cxxfun=cxx_test_logical_output)
+check_logical_output_mat <- function(FUN, ...) {
+    .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_logical_output)
 } 
 
-check_character_output_mat <- function(FUN, ..., hdf5.out) {
-    .check_output_mat(FUN=FUN, ..., class.out=ifelse(hdf5.out, "HDF5Matrix", "matrix"), 
-                      cxxfun=cxx_test_character_output)
+check_character_output_mat <- function(FUN, ...) {
+    .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_character_output)
 } 
 
 ###############################
 
-.check_output_slice <- function(FUN, ..., by.row, by.col, class.out, cxxfun, fill) { 
+.check_output_slice <- function(FUN, ..., by.row, by.col, cxxfun, fill) { 
     rx <- range(by.row)
     ry <- range(by.col)
 
     for (it in 1:2) {
         test.mat <- FUN(...)      
         out <- .Call(cxxfun, test.mat, it, rx, ry)
-        if (!is.na(class.out)) {
-            testthat::expect_s4_class(out[[1]], class.out) 
+
+        if (is.matrix(test.mat)) { 
+            testthat::expect_true(is.matrix(out[[1]]))
+        } else {
+            testthat::expect_s4_class(out[[1]], class(test.mat))
             out[[1]] <- as.matrix(out[[1]])
         }
 
@@ -114,27 +114,23 @@ check_character_output_mat <- function(FUN, ..., hdf5.out) {
 }
 
 
-check_integer_output_slice <- function(FUN, ..., by.row, by.col, hdf5.out) {
+check_integer_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
-                        class.out=ifelse(hdf5.out, "HDF5Matrix", NA_character_),
                         cxxfun=cxx_test_integer_output_slice, fill=0L)
 } 
 
-check_numeric_output_slice <- function(FUN, ..., by.row, by.col, hdf5.out) {
+check_numeric_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
-                        class.out=ifelse(hdf5.out, "HDF5Matrix", NA_character_),
                         cxxfun=cxx_test_numeric_output_slice, fill=0)
 } 
 
-check_logical_output_slice <- function(FUN, ..., by.row, by.col, hdf5.out) {
+check_logical_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
-                        class.out=ifelse(hdf5.out, "HDF5Matrix", NA_character_),
                         cxxfun=cxx_test_logical_output_slice, fill=FALSE)
 } 
 
-check_character_output_slice <- function(FUN, ..., by.row, by.col, hdf5.out) {
+check_character_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
-                        class.out=ifelse(hdf5.out, "HDF5Matrix", NA_character_),
                         cxxfun=cxx_test_character_output_slice, fill="")
 } 
 
@@ -215,13 +211,15 @@ check_character_order <- function(FUN, cxxfun) {
 
 ###############################
 
-.check_converted_output <- function(FUN, ..., hdf5.out, cxxfun, rfun) { 
+.check_converted_output <- function(FUN, ..., cxxfun, rfun) { 
     for (i in 1:3) { 
         test.mat <- FUN(...)
         
         out <- .Call(cxxfun, test.mat, i)
-        if (hdf5.out) { 
-            testthat::expect_s4_class(out[[1]], "HDF5Matrix")
+        if (is.matrix(test.mat)) { 
+            testthat::expect_true(is.matrix(out[[1]]))
+        } else {
+            testthat::expect_s4_class(out[[1]], class(out[[1]]))
             out[[1]] <- as.matrix(out[[1]])
         }
         ref <- as.matrix(test.mat)
@@ -240,29 +238,29 @@ check_character_order <- function(FUN, cxxfun) {
     return(invisible(NULL))
 }
 
-check_numeric_converted_output  <- function(FUN, ..., hdf5.out) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_numeric_to_integer_output, hdf5.out=hdf5.out, 
+check_numeric_converted_output  <- function(FUN, ...) {
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_numeric_to_integer_output, 
                             rfun=function(x) {
                                 storage.mode(x) <- "integer" 
                                 return(x)
                             })
 }
 
-check_integer_converted_output <- function(FUN, ..., hdf5.out) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_integer_to_numeric_output, hdf5.out=hdf5.out, 
+check_integer_converted_output <- function(FUN, ...) {
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_integer_to_numeric_output, 
                             rfun=function(x) { 
                                 storage.mode(x) <- "double"
                                 return(x)
                             })
 }
 
-check_logical_converted_output <- function(FUN, ..., hdf5.out) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_numeric_output, hdf5.out=hdf5.out, 
+check_logical_converted_output <- function(FUN, ...) {
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_numeric_output, 
                             rfun=function(x) { 
                                 storage.mode(x) <- "double"
                                 return(x)
                             })
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_integer_output, hdf5.out=hdf5.out, 
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_integer_output, 
                             rfun=function(x) { 
                                 storage.mode(x) <- "integer"
                                 return(x)
