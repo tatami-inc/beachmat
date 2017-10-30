@@ -13,6 +13,44 @@ test_that("Output mode choices are okay", {
     expect_identical(beachtest:::check_output_mode("HDF5", simplify=FALSE, preserve.zero=FALSE), "HDF5")
 })
 
+# Checking that construction of empty matrices are okay.
+
+library(Matrix)
+library(HDF5Array)
+test_that("empty matrices are okay", {
+    for (mode in c("matrix", "dgCMatrix", "HDF5Array")) {
+        # No columns
+        ref <- as(matrix(0, 10, 0), mode)
+        out <- .Call(beachtest:::cxx_test_numeric_output, ref, 3L, integer(0))
+  
+        if (isS4(ref)) { 
+            expect_s4_class(out[[1]], mode)
+        } else {
+            expect_true(is(out[[1]], "matrix"))
+        }
+
+        expect_identical(ncol(out[[1]]), 0L)
+        expect_identical(ncol(out[[2]]), 0L)
+        expect_identical(nrow(out[[1]]), 10L)
+        expect_identical(nrow(out[[2]]), 10L)
+
+        # No rows
+        ref <- as(matrix(0, 0, 10), mode)
+        out <- .Call(beachtest:::cxx_test_numeric_output, ref, 3L, integer(0))
+
+        if (isS4(ref)) { 
+            expect_s4_class(out[[1]], mode)
+        } else {
+            expect_true(is(out[[1]], "matrix"))
+        }
+
+        expect_identical(nrow(out[[1]]), 0L)
+        expect_identical(nrow(out[[2]]), 0L)
+        expect_identical(ncol(out[[1]]), 10L)
+        expect_identical(ncol(out[[2]]), 10L)
+    }
+})
+
 # Checking random column slices behave correctly.
 
 set.seed(23456)

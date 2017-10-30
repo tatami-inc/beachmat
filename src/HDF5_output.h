@@ -101,8 +101,8 @@ HDF5_output<T, RTYPE>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_
     const T empty=get_empty();
     plist.setFillValue(default_type, &empty);
         
-    // Setting the chunk dimensions if not contiguous.
-    if (compress>0) {
+    // Setting the chunk dimensions if not contiguous and has non-zero dimensions.
+    if (compress>0 && nr && nc) {
         std::vector<hsize_t> chunk_dims(2);
         chunk_dims[0]=chunk_nc; // flipping them, as rhdf5 internally transposes it.
         chunk_dims[1]=chunk_nr;
