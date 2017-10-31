@@ -1,7 +1,7 @@
 pkgconfig <- function(opt = c("PKG_LIBS", "PKG_CPPFLAGS"))
 {
     path <- Sys.getenv(
-        "RBEACHMAT_RPATH",
+        "BEACHMAT_RPATH",
         system.file("lib", package="beachmat", mustWork=TRUE)
     )
     if (nzchar(.Platform$r_arch)) {
