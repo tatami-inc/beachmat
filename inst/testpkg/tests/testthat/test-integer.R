@@ -125,6 +125,17 @@ add_hFUN <- function() {
     hFUN(15, 10) + 1L
 }
 
+trans_hFUN <- function() { 
+    t(hFUN(15, 10))
+}
+
+named_hFUN <- function() {
+    out <- hFUN(15, 10)
+    rownames(out) <- paste0("Gene", seq_len(nrow(out)))
+    colnames(out) <- paste0("Cell", seq_len(ncol(out)))
+    return(out)
+}
+
 test_that("Delayed integer matrix input is okay", {
     expect_s4_class(sub_hFUN(), "DelayedMatrix")
     beachtest:::check_integer_mat(sub_hFUN) 
@@ -133,6 +144,14 @@ test_that("Delayed integer matrix input is okay", {
     expect_s4_class(add_hFUN(), "DelayedMatrix")
     beachtest:::check_integer_mat(add_hFUN)
     beachtest:::check_type(add_hFUN, expected="integer")
+
+    expect_s4_class(trans_hFUN(), "DelayedMatrix")
+    beachtest:::check_integer_mat(trans_hFUN)
+    beachtest:::check_type(trans_hFUN, expected="integer")
+
+    expect_s4_class(named_hFUN(), "DelayedMatrix")
+    beachtest:::check_integer_mat(named_hFUN)
+    beachtest:::check_type(named_hFUN, expected="integer")
     
     expect_identical("double", .Call(beachtest:::cxx_test_type_check, hFUN()+1)) # Proper type check!
 })
