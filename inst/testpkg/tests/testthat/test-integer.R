@@ -116,44 +116,41 @@ test_that("HDF5 integer matrix input is okay", {
 
 # Testing delayed operations:
 
-sub_hFUN <- function() {
-    A <- hFUN(15, 10)    
-    A[1:10,]
-}
-
-add_hFUN <- function() {
-    hFUN(15, 10) + 1L
-}
-
-trans_hFUN <- function() { 
-    t(hFUN(15, 10))
-}
-
-named_hFUN <- function() {
-    out <- hFUN(15, 10)
-    rownames(out) <- paste0("Gene", seq_len(nrow(out)))
-    colnames(out) <- paste0("Cell", seq_len(ncol(out)))
-    return(out)
-}
-
+library(DelayedArray)
 test_that("Delayed integer matrix input is okay", {
-    expect_s4_class(sub_hFUN(), "DelayedMatrix")
-    beachtest:::check_integer_mat(sub_hFUN) 
-    beachtest:::check_type(sub_hFUN, expected="integer")
+    # HDF5-based seed.
+    hdf5.funs <- beachtest:::delayed_funs(hFUN)
+    for (FUN in hdf5.funs) {
+        expect_s4_class(FUN(), "DelayedMatrix")
+        beachtest:::check_integer_mat(FUN)
+        beachtest:::check_type(FUN, expected="integer")
+    }
 
+    # Simple seed.
+    simple.funs <- beachtest:::delayed_funs(sFUN)
+    for (FUN in simple.funs) {
+        expect_s4_class(FUN(), "DelayedMatrix")
+        beachtest:::check_integer_mat(FUN)
+        beachtest:::check_type(FUN, expected="integer")
+    }
+
+    # Trigger realization.
+    add_hFUN <- function(...) {
+        hFUN(...) + 1L
+    }
     expect_s4_class(add_hFUN(), "DelayedMatrix")
     beachtest:::check_integer_mat(add_hFUN)
     beachtest:::check_type(add_hFUN, expected="integer")
 
-    expect_s4_class(trans_hFUN(), "DelayedMatrix")
-    beachtest:::check_integer_mat(trans_hFUN)
-    beachtest:::check_type(trans_hFUN, expected="integer")
-
-    expect_s4_class(named_hFUN(), "DelayedMatrix")
-    beachtest:::check_integer_mat(named_hFUN)
-    beachtest:::check_type(named_hFUN, expected="integer")
-    
-    expect_identical("double", .Call(beachtest:::cxx_test_type_check, hFUN()+1)) # Proper type check!
+    comb_hFUN <- function(...) {
+        cbind(hFUN(...), hFUN(...))
+    }
+    expect_s4_class(comb_hFUN(), "DelayedMatrix")
+    beachtest:::check_integer_mat(comb_hFUN)
+    beachtest:::check_type(comb_hFUN, expected="integer")
+     
+    # Proper type check!
+    expect_identical("double", .Call(beachtest:::cxx_test_type_check, hFUN()+1)) 
 })
 
 #######################################################
