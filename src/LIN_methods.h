@@ -303,6 +303,94 @@ matrix_type HDF5_lin_matrix<T, V, RTYPE>::get_matrix_type() const {
     return mat.get_matrix_type();
 }
 
+/* Defining the DelayedMatrix interface. */
+
+template<typename T, class V>
+delayed_lin_matrix<T, V>::delayed_lin_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr), transformer(incoming) {
+    // Trying to generate the seed, if it's a valid object in itself.
+    if (transformer.has_unmodified_values()) {
+        seed_ptr=generate_seed(incoming);
+    }
+        
+    // If the seed is still NULL, we realize the matrix and use the result as the seed.
+    if (seed_ptr.get()==NULL) { 
+        seed_ptr=generate_seed(realize_delayed_array(incoming));
+    }
+
+    // Setting dimensions.
+    transformer.set_dim(seed_ptr.get());
+    return;
+}
+
+template<typename T, class V> 
+delayed_lin_matrix<T, V>::~delayed_lin_matrix() {}
+
+template<typename T, class V> 
+delayed_lin_matrix<T, V>::delayed_lin_matrix(const delayed_lin_matrix<T, V>& other) : original(other.original), 
+        seed_ptr(other.seed_ptr->clone()), transformer(other.transformer) {}
+
+template<typename T, class V> 
+delayed_lin_matrix<T, V>& delayed_lin_matrix<T, V>::operator=(const delayed_lin_matrix<T, V>& other) {
+    original=other.original;
+    seed_ptr=other.seed_ptr->clone();
+    transformer=other.transformer;
+    return;
+}
+
+template<typename T, class V>
+size_t delayed_lin_matrix<T, V>::get_nrow() const {
+    return transformer.get_nrow();
+}
+
+template<typename T, class V>
+size_t delayed_lin_matrix<T, V>::get_ncol() const {
+    return transformer.get_ncol();
+}
+
+template<typename T, class V>
+void delayed_lin_matrix<T, V>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+    transformer.get_col(seed_ptr.get(), c, out, first, last);
+    return;
+}
+
+template<typename T, class V>
+void delayed_lin_matrix<T, V>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+    transformer.get_col(seed_ptr.get(), c, out, first, last);
+    return;
+}
+
+template<typename T, class V>
+void delayed_lin_matrix<T, V>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+    transformer.get_row(seed_ptr.get(), r, out, first, last);
+    return;
+}
+
+template<typename T, class V>
+void delayed_lin_matrix<T, V>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+    transformer.get_row(seed_ptr.get(), r, out, first, last);
+    return;
+}
+
+template<typename T, class V>
+T delayed_lin_matrix<T, V>::get(size_t r, size_t c) {
+    return transformer.get(seed_ptr.get(), r, c);
+}
+
+template<typename T, class V>
+std::unique_ptr<lin_matrix<T, V> > delayed_lin_matrix<T, V>::clone() const {
+    return std::unique_ptr<lin_matrix<T, V> >(new delayed_lin_matrix<T, V>(*this));
+}
+
+template<typename T, class V> 
+Rcpp::RObject delayed_lin_matrix<T, V>::yield() const {
+    return original;
+}
+
+template<typename T, class V>
+matrix_type delayed_lin_matrix<T, V>::get_matrix_type() const { // returns the type of the SEED!
+    return seed_ptr->get_matrix_type();
+}
+
 }
 
 #endif

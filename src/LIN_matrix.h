@@ -113,11 +113,11 @@ public:
     Csparse_lin_matrix(const Rcpp::RObject&);
     ~Csparse_lin_matrix();
 
-    virtual size_t get_nonzero_col(size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator, size_t, size_t);
-    virtual size_t get_nonzero_col(size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator, size_t, size_t);
+    size_t get_nonzero_col(size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator, size_t, size_t);
+    size_t get_nonzero_col(size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator, size_t, size_t);
 
-    virtual size_t get_nonzero_row(size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator, size_t, size_t);
-    virtual size_t get_nonzero_row(size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator, size_t, size_t);
+    size_t get_nonzero_row(size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator, size_t, size_t);
+    size_t get_nonzero_row(size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator, size_t, size_t);
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
@@ -153,6 +153,41 @@ public:
     matrix_type get_matrix_type() const;
 protected:
     HDF5_matrix<T, RTYPE> mat;
+};
+
+/* DelayedMatrix of LINs */
+
+template<typename T, class V>
+class delayed_lin_matrix : public lin_matrix<T, V> {
+public:
+    delayed_lin_matrix(const Rcpp::RObject&);
+    ~delayed_lin_matrix();
+    delayed_lin_matrix(const delayed_lin_matrix&);
+    delayed_lin_matrix& operator=(const delayed_lin_matrix&);
+    delayed_lin_matrix(delayed_lin_matrix&&) = default;             // Move constructor
+    delayed_lin_matrix& operator=(delayed_lin_matrix&&) = default;  // Move assignment constructor
+    
+    size_t get_nrow() const;
+    size_t get_ncol() const;
+    
+    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+
+    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+
+    T get(size_t, size_t);
+
+    std::unique_ptr<lin_matrix<T, V> > clone() const;
+
+    Rcpp::RObject yield() const;
+    matrix_type get_matrix_type() const;
+   
+private:
+    Rcpp::RObject original;
+    std::unique_ptr<lin_matrix<T, V> > seed_ptr;
+    delayed_coord_transformer<T, V> transformer;
+    static std::unique_ptr<lin_matrix<T, V> > generate_seed(Rcpp::RObject);
 };
 
 }

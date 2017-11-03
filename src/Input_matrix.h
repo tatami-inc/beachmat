@@ -11,6 +11,7 @@
 #include "Psymm_matrix.h"
 #include "Rle_matrix.h"
 #include "HDF5_matrix.h"
+#include "delayed_matrix.h"
 
 #endif
 

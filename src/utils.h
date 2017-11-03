@@ -25,9 +25,11 @@ int find_sexp_type (const Rcpp::RObject&);
 
 // Delayed Array conversion utilities.
 
-bool is_pristine_delayed_array(const Rcpp::RObject&);
-
 Rcpp::RObject realize_delayed_array(const Rcpp::RObject&);
+
+Rcpp::RObject delayed_seed_to_HDF5Matrix(const Rcpp::RObject&);
+
+bool is_pristine_delayed_array(const Rcpp::RObject&);
 
 // Matrix type enumeration.
 

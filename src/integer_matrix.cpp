@@ -2,6 +2,35 @@
 
 namespace beachmat {
 
+/* DelayedMatrix input methods. */
+
+template<>
+std::unique_ptr<integer_matrix> delayed_lin_matrix<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
+    // incoming should be a "DelayedMatrix" object, not the seed within it!
+    bool isokay=false;
+    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
+
+    if (seed.isS4()) { 
+        std::string ctype=get_class(seed);
+        if (ctype=="RleMatrix") {
+            isokay=true;
+            incoming=seed;
+        } else if (ctype=="HDF5ArraySeed") {
+            isokay=true;
+            incoming=delayed_seed_to_HDF5Matrix(seed);
+        }
+    } else {
+        isokay=true;
+        incoming=seed;
+    }
+
+    if (isokay) {
+        return create_integer_matrix(incoming);
+    } else {
+        return nullptr;
+    }
+} 
+    
 /* HDF5 integer output methods. */
 
 template<>
@@ -23,12 +52,8 @@ std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject& incom
             return std::unique_ptr<integer_matrix>(new HDF5_integer_matrix(incoming));
         } else if (ctype=="RleMatrix") {
             return std::unique_ptr<integer_matrix>(new Rle_integer_matrix(incoming));
-        } else if (ctype=="DelayedMatrix") { 
-            if (is_pristine_delayed_array(incoming)) { 
-                return create_integer_matrix(get_safe_slot(incoming, "seed"));
-            } else {
-                return create_integer_matrix(realize_delayed_array(incoming));
-            }
+        } else if (ctype=="DelayedMatrix") {
+            return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));  
         }
         std::stringstream err;
         err << "unsupported class '" << ctype << "' for integer_matrix";

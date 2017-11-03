@@ -122,6 +122,22 @@ int find_sexp_type (const Rcpp::RObject& incoming) {
 
 /* DelayedArray utilities. */
 
+Rcpp::RObject realize_delayed_array (const Rcpp::RObject& incoming) { 
+    Rcpp::Environment delayenv("package:DelayedArray");
+    Rcpp::Function realfun=delayenv["realize"];
+    return realfun(incoming);
+}
+
+Rcpp::RObject delayed_seed_to_HDF5Matrix(const Rcpp::RObject& seed) {
+    std::string matclass="HDF5Matrix";
+    Rcpp::S4 h5mat(matclass);
+    if (!h5mat.hasSlot("seed")) {
+        throw_custom_error("missing 'seed' slot in ", matclass, " object");
+    }
+    h5mat.slot("seed") = seed;
+    return Rcpp::RObject(h5mat);
+}
+
 bool is_pristine_delayed_array(const Rcpp::RObject& in) {
     const Rcpp::Environment env=Rcpp::Environment::namespace_env("DelayedArray");
     Rcpp::Function fun=env["is_pristine"];
@@ -130,82 +146,6 @@ bool is_pristine_delayed_array(const Rcpp::RObject& in) {
         throw std::runtime_error("pristine check should return a logical scalar");
     }
     return out[0];
-}
-
-Rcpp::RObject realize_delayed_array(const Rcpp::RObject& in) {
-    if (!in.isS4() || get_class(in)!="DelayedMatrix") { 
-        throw std::runtime_error("object should be a DelayedMatrix");
-    }
-
-    // Checking if it is only Delayed because of dimnames on a HDF5Matrix, for which we just construct the seed directly.
-    Rcpp::RObject seed(get_safe_slot(in, "seed"));
-    if (get_class(seed)=="HDF5ArraySeed") { 
-        bool unchanged=true;
-        Rcpp::IntegerVector rawdim(get_safe_slot(seed, "dim"));
-        if (rawdim.size()!=2) { 
-            throw std::runtime_error("seed dimensions should be a vector of length 2");
-        }
-
-        // Indices are consecutive and purely increasing, or NULL. 
-        Rcpp::List indices(get_safe_slot(in, "index"));
-        if (indices.size()!=2) { 
-            throw std::runtime_error("indices should be a list of two integer vectors");
-        }
-
-        for (size_t d=0; d<2; ++d) { 
-            Rcpp::RObject curobj(indices[d]);
-            if (curobj.isNULL()) {
-                continue;
-            }
-            
-            Rcpp::IntegerVector curvec(curobj);
-            if (curvec.size()!=rawdim[d]) { 
-                unchanged=false;
-                break;
-            }
-
-            int count=1;
-            for (auto idex : curvec) { 
-                if (idex!=count) {
-                    unchanged=false;
-                    break;
-                }
-                ++count;
-            }
-            if (!unchanged) {
-                break;
-            }
-        }
-       
-        // Delayed operations are empty. 
-        Rcpp::List delops=in.slot("delayed_ops");
-        if (delops.size()) { 
-            unchanged=false;
-        }
-
-        // No transposition is performed.
-        Rcpp::LogicalVector trans=in.slot("is_transposed");
-        if (trans.size()!=1) { 
-            throw std::runtime_error("transposition specification should be a logical scalar");
-        }
-        if (trans[0]) { 
-            unchanged=false;
-        }
-        
-        if (unchanged) {
-            std::string matclass="HDF5Matrix";
-            Rcpp::S4 h5mat(matclass);
-            if (!h5mat.hasSlot("seed")) {
-                throw_custom_error("missing 'seed' slot in ", matclass, " object");
-            }
-            h5mat.slot("seed") = in.slot("seed");
-            return Rcpp::RObject(h5mat);
-        }
-    }
-
-    Rcpp::Environment delayenv("package:DelayedArray");
-    Rcpp::Function realfun=delayenv["realize"];
-    return realfun(in);
 }
 
 }
