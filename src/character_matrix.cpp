@@ -165,6 +165,97 @@ matrix_type HDF5_character_matrix::get_matrix_type() const {
     return mat.get_matrix_type();
 }
 
+/* Methods for the delayed character matrix. */
+
+delayed_character_matrix::delayed_character_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr), transformer(incoming) {
+    // Trying to generate the seed, if it's a valid object in itself.
+    if (transformer.has_unmodified_values()) {
+        seed_ptr=generate_seed(incoming);
+    }
+        
+    // If the seed is still NULL, we realize the matrix and use the result as the seed.
+    if (seed_ptr.get()==NULL) { 
+        Rcpp::RObject realized=realize_delayed_array(incoming);
+        seed_ptr=generate_seed(realized);
+        transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(realized);
+    }
+
+    // Setting dimensions.
+    transformer.set_dim(seed_ptr.get());
+    return;
+}
+
+delayed_character_matrix::~delayed_character_matrix() {}
+
+delayed_character_matrix::delayed_character_matrix(const delayed_character_matrix& other) : original(other.original),
+    seed_ptr(other.seed_ptr->clone()), transformer(other.transformer) {}
+
+delayed_character_matrix& delayed_character_matrix::operator=(const delayed_character_matrix& other) {
+    original=other.original;
+    seed_ptr=other.seed_ptr->clone();
+    transformer=other.transformer;
+}
+
+size_t delayed_character_matrix::get_nrow() const {
+    return transformer.get_nrow(); 
+}
+
+size_t delayed_character_matrix::get_ncol() const {
+    return transformer.get_ncol();
+}
+
+void delayed_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+    transformer.get_col(seed_ptr.get(), c, out, first, last);
+    return;
+}
+
+void delayed_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+    transformer.get_row(seed_ptr.get(), r, out, first, last);
+    return;
+}
+
+Rcpp::String delayed_character_matrix::get(size_t r, size_t c) {
+    return transformer.get(seed_ptr.get(), r, c);
+}
+
+std::unique_ptr<character_matrix> delayed_character_matrix::clone() const {
+    return std::unique_ptr<character_matrix>(new delayed_character_matrix(*this));
+}
+
+Rcpp::RObject delayed_character_matrix::yield() const {
+    return original;
+}
+
+matrix_type delayed_character_matrix::get_matrix_type() const { // returns the type of the SEED!
+    return seed_ptr->get_matrix_type();
+}
+
+std::unique_ptr<character_matrix> delayed_character_matrix::generate_seed(Rcpp::RObject incoming) {
+    // incoming should be a "DelayedMatrix" object, not the seed within it!
+    bool isokay=false;
+    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
+
+    if (seed.isS4()) { 
+        std::string ctype=get_class(seed);
+        if (ctype=="RleMatrix") {
+            isokay=true;
+            incoming=seed;
+        } else if (ctype=="HDF5ArraySeed") {
+            isokay=true;
+            incoming=delayed_seed_to_HDF5Matrix(seed);
+        }
+    } else {
+        isokay=true;
+        incoming=seed;
+    }
+
+    if (isokay) {
+        return create_character_matrix(incoming);
+    } else {
+        return nullptr;
+    }
+}
+
 /* Dispatch definition */
 
 std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject& incoming) { 
@@ -175,11 +266,7 @@ std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject& i
         } else if (ctype=="RleMatrix") { 
             return std::unique_ptr<character_matrix>(new Rle_character_matrix(incoming));
         } else if (ctype=="DelayedMatrix") { 
-            if (is_pristine_delayed_array(incoming)) { 
-                return create_character_matrix(get_safe_slot(incoming, "seed"));
-            } else {
-                return create_character_matrix(realize_delayed_array(incoming));
-            }
+            return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
         }
         std::stringstream err;
         err << "unsupported class '" << ctype << "' for character_matrix";

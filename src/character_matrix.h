@@ -105,6 +105,36 @@ protected:
     std::vector<char> row_buf, col_buf, one_buf;
 };
 
+/* DelayedMatrix */
+
+class delayed_character_matrix : public character_matrix {
+public:
+    delayed_character_matrix(const Rcpp::RObject&);
+    ~delayed_character_matrix();
+    delayed_character_matrix(const delayed_character_matrix&);
+    delayed_character_matrix& operator=(const delayed_character_matrix&);
+    delayed_character_matrix(delayed_character_matrix&&)=default;
+    delayed_character_matrix& operator=(delayed_character_matrix&&)=default;
+
+    size_t get_nrow() const;
+    size_t get_ncol() const;
+ 
+    void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
+    void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
+
+    Rcpp::String get(size_t, size_t);
+
+    std::unique_ptr<character_matrix> clone() const;
+
+    Rcpp::RObject yield () const;
+    matrix_type get_matrix_type() const;
+private:
+    Rcpp::RObject original;
+    std::unique_ptr<character_matrix> seed_ptr;
+    delayed_coord_transformer<Rcpp::String, Rcpp::StringVector> transformer;
+    static std::unique_ptr<character_matrix> generate_seed(Rcpp::RObject);
+};
+
 /* Dispatcher */
 
 std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject&);
