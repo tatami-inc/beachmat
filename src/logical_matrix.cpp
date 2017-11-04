@@ -7,7 +7,40 @@ namespace beachmat {
 template<>
 int Csparse_matrix<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
 
-/* Sparse numeric output methods. */
+/* DelayedMatrix input methods. */
+
+template<>
+std::unique_ptr<logical_matrix> delayed_lin_matrix<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
+    // incoming should be a "DelayedMatrix" object, not the seed within it!
+    bool isokay=false;
+    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
+
+    if (seed.isS4()) { 
+        std::string ctype=get_class(seed);
+        if (ctype=="lgeMatrix"
+                || ctype=="lgCMatrix" 
+                || ctype=="lgTMatrix" 
+                || ctype=="lspMatrix" 
+                || ctype=="RleMatrix") {
+            isokay=true;
+            incoming=seed;
+        } else if (ctype=="HDF5ArraySeed") {
+            isokay=true;
+            incoming=delayed_seed_to_HDF5Matrix(seed);
+        }
+    } else {
+        isokay=true;
+        incoming=seed;
+    }
+
+    if (isokay) {
+        return create_logical_matrix(incoming);
+    } else {
+        return nullptr;
+    }
+} 
+
+/* Sparse logical output methods. */
 
 template<>
 int Csparse_output<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
@@ -42,11 +75,7 @@ std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject& incom
         } else if (ctype=="RleMatrix") {
             return std::unique_ptr<logical_matrix>(new Rle_logical_matrix(incoming));
         } else if (ctype=="DelayedMatrix") { 
-            if (is_pristine_delayed_array(incoming)) { 
-                return create_logical_matrix(get_safe_slot(incoming, "seed"));
-            } else {
-                return create_logical_matrix(realize_delayed_array(incoming));
-            }
+            return std::unique_ptr<logical_matrix>(new delayed_logical_matrix(incoming));
         }
         throw_custom_error("unsupported class '", ctype, "' for logical_matrix");
     } 

@@ -7,6 +7,39 @@ namespace beachmat {
 template<>
 double Csparse_matrix<double, Rcpp::NumericVector>::get_empty() const { return 0; }
 
+/* DelayedMatrix input methods. */
+
+template<>
+std::unique_ptr<numeric_matrix> delayed_lin_matrix<double, Rcpp::NumericVector>::generate_seed(Rcpp::RObject incoming) {
+    // incoming should be a "DelayedMatrix" object, not the seed within it!
+    bool isokay=false;
+    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
+
+    if (seed.isS4()) { 
+        std::string ctype=get_class(seed);
+        if (ctype=="dgeMatrix"
+                || ctype=="dgCMatrix" 
+                || ctype=="dgTMatrix" 
+                || ctype=="dspMatrix" 
+                || ctype=="RleMatrix") {
+            isokay=true;
+            incoming=seed;
+        } else if (ctype=="HDF5ArraySeed") {
+            isokay=true;
+            incoming=delayed_seed_to_HDF5Matrix(seed);
+        }
+    } else {
+        isokay=true;
+        incoming=seed;
+    }
+
+    if (isokay) {
+        return create_numeric_matrix(incoming);
+    } else {
+        return nullptr;
+    }
+} 
+
 /* Sparse numeric output methods. */
 
 template<>
@@ -42,11 +75,7 @@ std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject& incom
         } else if (ctype=="RleMatrix") {
             return std::unique_ptr<numeric_matrix>(new Rle_numeric_matrix(incoming));
         } else if (ctype=="DelayedMatrix") { 
-            if (is_pristine_delayed_array(incoming)) { 
-                return create_numeric_matrix(get_safe_slot(incoming, "seed"));
-            } else {
-                return create_numeric_matrix(realize_delayed_array(incoming));
-            }
+            return std::unique_ptr<numeric_matrix>(new delayed_numeric_matrix(incoming));
         }
         throw_custom_error("unsupported class '", ctype, "' for numeric_matrix");
     } 

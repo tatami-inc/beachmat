@@ -36,6 +36,10 @@ typedef Rle_lin_matrix<int, Rcpp::LogicalVector> Rle_logical_matrix;
 
 typedef HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP> HDF5_logical_matrix;
 
+/* DelayedMatrix */
+
+typedef delayed_lin_matrix<int, Rcpp::LogicalVector> delayed_logical_matrix;
+
 /* Dispatcher */
 
 std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject&);
