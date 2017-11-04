@@ -314,7 +314,9 @@ delayed_lin_matrix<T, V>::delayed_lin_matrix(const Rcpp::RObject& incoming) : or
         
     // If the seed is still NULL, we realize the matrix and use the result as the seed.
     if (seed_ptr.get()==NULL) { 
-        seed_ptr=generate_seed(realize_delayed_array(incoming));
+        Rcpp::RObject realized=realize_delayed_array(incoming);
+        seed_ptr=generate_seed(realized);
+        transformer=delayed_coord_transformer<T, V>(realized);
     }
 
     // Setting dimensions.
