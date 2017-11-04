@@ -116,7 +116,7 @@ test_that("Delayed character matrix input is okay", {
 
     # Trigger realization.
     alt_hFUN <- function(..., transpose=FALSE) {
-        out <- tolower(hFUN(...))
+        out <- DelayedArray::tolower(hFUN(...))
         if (transpose) { 
             out <- DelayedArray::t(out)
         }

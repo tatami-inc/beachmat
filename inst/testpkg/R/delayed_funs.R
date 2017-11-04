@@ -9,17 +9,17 @@ delayed_funs <- function(basefun)
     }
 
     subset_row_fun <- function(...) {
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         out[.choose_half(nrow(out)),]
     }
 
     subset_col_fun <- function(...) {
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         out[,.choose_half(ncol(out))]
     }
 
     subset_both_fun <- function(...) {
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         out[.choose_half(nrow(out)),.choose_half(ncol(out))]
     }
 
@@ -29,19 +29,19 @@ delayed_funs <- function(basefun)
     }
 
     name_row_fun <- function(...) { 
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         rownames(out) <- .namers(nrow(out), "Gene")
         return(out)
     }
 
     name_col_fun <- function(...) { 
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         colnames(out) <- .namers(ncol(out), "Cell")
         return(out)
     }
 
     name_both_fun <- function(...) {
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         rownames(out) <- .namers(nrow(out), "Gene")
         colnames(out) <- .namers(ncol(out), "Cell")
         return(out)
@@ -49,7 +49,7 @@ delayed_funs <- function(basefun)
 
     # Transposition
     trans_fun <- function(...) { 
-        out <- DelayedArray(basefun(...))
+        out <- DelayedArray::DelayedArray(basefun(...))
         DelayedArray::t(out)
     }
 
