@@ -116,6 +116,7 @@ test_that("HDF5 integer matrix input is okay", {
 
 # Testing delayed operations:
 
+set.seed(981347)
 library(DelayedArray)
 test_that("Delayed integer matrix input is okay", {
     # HDF5-based seed.
@@ -135,18 +136,26 @@ test_that("Delayed integer matrix input is okay", {
     }
 
     # Trigger realization.
-    add_hFUN <- function(...) {
-        hFUN(...) + 1L
+    add_hFUN <- function(..., transpose=FALSE) {
+        out <- hFUN(...) + 1L
+        if (transpose) { 
+            out <- DelayedArray::t(out)
+        }
+        return(out)
     }
     expect_s4_class(add_hFUN(), "DelayedMatrix")
     beachtest:::check_integer_mat(add_hFUN)
     beachtest:::check_type(add_hFUN, expected="integer")
+ 
+    expect_s4_class(add_hFUN(transpose=TRUE), "DelayedMatrix")
+    beachtest:::check_integer_mat(add_hFUN, transpose=TRUE) # checking that transposition WITH delayed ops wipes the transformer.
+    beachtest:::check_type(add_hFUN, transpose=TRUE, expected="integer")
 
     comb_hFUN <- function(...) {
-        cbind(hFUN(...), hFUN(...))
+        DelayedArray::cbind(hFUN(...), hFUN(...))
     }
     expect_s4_class(comb_hFUN(), "DelayedMatrix")
-    beachtest:::check_integer_mat(comb_hFUN)
+    beachtest:::check_integer_mat(comb_hFUN) # checking that odd seed types are properly realized.
     beachtest:::check_type(comb_hFUN, expected="integer")
      
     # Proper type check!
