@@ -244,9 +244,10 @@ This is fairly cheap as the underlying matrix data are not copied.
 - When accessing `character_matrix` data, we do not return raw `const char*` pointers to the C-style string. 
 Rather, the `Rcpp::String` class is used as it provides a convenient wrapper around the underlying `CHARSXP`. 
 This ensures that the string is stored in R's global cache and is suitably protected against garbage collection. 
-- `DelayedMatrix` objects are automatically realized via the `realize` method in the `r Biocpkg("DelayedArray")` package.
-This uses the same realization backend that was specified in R -- call `getRealizationBackend()` to determine the current backend. 
-If the realized matrix is to be reused, it may be more efficient to perform the realization in R and pass the result to `.Call`.
+- `DelayedMatrix` objects can be directly parsed by the API if the only delayed operations involve transposition or subsetting.
+Otherwise, they are automatically realized via the `realize` method in the `r Biocpkg("DelayedArray")` package.
+The same realization backend is the same as that specified in R, and can be determined by calling `getRealizationBackend()`.
+If the realized matrix is to be reused later, it may be more efficient to perform the realization once in R and pass the result to `.Call`.
 - The API will happily throw exceptions of the `std::exception` class, containing an informative error message.
 These should be caught and handled gracefully by the end-user code, otherwise a segmentation fault will probably occur.
 See the error-handling mechanism in `r CRANpkg("Rcpp")` for how to deal with these exceptions.
