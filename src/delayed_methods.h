@@ -57,12 +57,40 @@ void delayed_coord_transformer<T, V>::set_dim(M mat) {
     delayed_ncol=original_ncol=mat->get_ncol();
     tmp.vec=V(std::max(original_ncol, original_nrow));
 
-    if (byrow) { 
+    if (byrow) {
         delayed_nrow=row_index.size();
+
+        // If the indices are all consecutive from 0 to N, we turn byrow=false.
+        if (delayed_nrow && row_index.front()==0 && delayed_nrow==original_nrow) {
+            int count=0;
+            byrow=false;
+            for (auto r : row_index) {
+                if (r!=count) {
+                    byrow=true;
+                    break;
+                }
+                ++count;
+            }
+        } 
     }
+
     if (bycol) { 
         delayed_ncol=col_index.size();
+
+        // Same for bycol.
+        if (delayed_ncol && col_index.front()==0 && delayed_ncol==original_ncol) {
+            int count=0;
+            bycol=false;
+            for (auto c : col_index) {
+                if (c!=count) {
+                    bycol=true;
+                    break;
+                }
+                ++count;
+            }
+        } 
     }
+
     if (transposed) {
         std::swap(delayed_nrow, delayed_ncol);
     }
