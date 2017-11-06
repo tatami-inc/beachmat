@@ -194,6 +194,7 @@ delayed_character_matrix& delayed_character_matrix::operator=(const delayed_char
     original=other.original;
     seed_ptr=other.seed_ptr->clone();
     transformer=other.transformer;
+    return *this;
 }
 
 size_t delayed_character_matrix::get_nrow() const {

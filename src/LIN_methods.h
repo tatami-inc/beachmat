@@ -336,7 +336,7 @@ delayed_lin_matrix<T, V>& delayed_lin_matrix<T, V>::operator=(const delayed_lin_
     original=other.original;
     seed_ptr=other.seed_ptr->clone();
     transformer=other.transformer;
-    return;
+    return *this;
 }
 
 template<typename T, class V>
