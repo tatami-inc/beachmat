@@ -42,7 +42,7 @@ void calc_HDF5_chunk_cache_settings (const size_t total_nrows, const size_t tota
     const size_t num_chunks_per_col=std::ceil(double(total_nrows)/chunk_nrows); 
 
     /* Everything is transposed, so hash indices are filled column-major. 
-     * Here, we computing the lowest multiple of # row-chunks that is greater than # col-chunks, plus 1.
+     * Here, we computing the lowest multiple of # chunks-per-col that is greater than # chunks-per-row, plus 1.
      * This ensures that two chunks in the same row/column do not have the same hash index.
      */
     const size_t nslots = std::ceil(double(num_chunks_per_row)/num_chunks_per_col) * num_chunks_per_col + 1; 
