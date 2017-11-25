@@ -6,7 +6,7 @@ Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
         "alun@wehi.edu.au"), person("Herve", "Pages", role="aut"),
         person("Mike", "Smith", role="aut"))
 Maintainer: Aaron Lun <alun@wehi.edu.au>
-Depends: R (>= 3.4)
+Depends: R (>= 3.5)
 Imports: utils, Rhdf5lib, HDF5Array, DelayedArray, Rcpp (>= 0.12.14), 
        rhdf5, methods
 Suggests: testthat, BiocStyle, knitr, Matrix
