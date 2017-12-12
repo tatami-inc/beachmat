@@ -95,7 +95,7 @@ HDF5_output<T, RTYPE>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_
     compress=r_compress[0];
 
     // Opening the file, setting the type and creating the data set.
-    hfile.openFile(fname, H5F_ACC_RDWR);
+    hfile.openFile(fname.c_str(), H5F_ACC_RDWR);
     default_type=set_HDF5_data_type(RTYPE, len);
     H5::DSetCreatPropList plist;
     const T empty=get_empty();
@@ -118,7 +118,7 @@ HDF5_output<T, RTYPE>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_
     dims[1]=this->nrow; 
 
     hspace.setExtentSimple(2, dims.data());
-    hdata=hfile.createDataSet(dname, default_type, hspace, plist); 
+    hdata=hfile.createDataSet(dname.c_str(), default_type, hspace, plist); 
 
     // Initializing the hsize_t[2] arrays.
     initialize_HDF5_size_arrays (this->nrow, this->ncol, 
