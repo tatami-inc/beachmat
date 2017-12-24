@@ -9,8 +9,8 @@ public:
     rechunker(const std::string& input_file, const std::string& input_data, 
               const std::string& output_file, const std::string& output_data,
               int compress, size_t cs, bool br) : 
-        ihfile(H5std_string(input_file), H5F_ACC_RDONLY),
-        ihdata(ihfile.openDataSet(H5std_string(input_data))),
+        ihfile(input_file.c_str(), H5F_ACC_RDONLY),
+        ihdata(ihfile.openDataSet(input_data.c_str())),
         HDT(ihdata.getDataType()),
         ohfile(H5std_string(output_file), H5F_ACC_RDWR),
         chunksize(cs), byrow(br)
