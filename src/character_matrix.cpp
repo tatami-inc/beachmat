@@ -231,27 +231,12 @@ matrix_type delayed_character_matrix::get_matrix_type() const { // returns the t
     return seed_ptr->get_matrix_type();
 }
 
+const std::vector<std::string> allowed_seeds={"RleMatrix"};
+
 std::unique_ptr<character_matrix> delayed_character_matrix::generate_seed(Rcpp::RObject incoming) {
-    // incoming should be a "DelayedMatrix" object, not the seed within it!
-    bool isokay=false;
-    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
-
-    if (seed.isS4()) { 
-        std::string ctype=get_class(seed);
-        if (ctype=="RleMatrix") {
-            isokay=true;
-            incoming=seed;
-        } else if (ctype=="HDF5ArraySeed") {
-            isokay=true;
-            incoming=delayed_seed_to_HDF5Matrix(seed);
-        }
-    } else {
-        isokay=true;
-        incoming=seed;
-    }
-
-    if (isokay) {
-        return create_character_matrix(incoming);
+    Rcpp::RObject seed=extract_seed(incoming, allowed_seeds);
+    if (seed!=R_NilValue) {
+        return create_character_matrix(seed);
     } else {
         return nullptr;
     }

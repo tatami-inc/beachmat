@@ -4,28 +4,13 @@ namespace beachmat {
 
 /* DelayedMatrix input methods. */
 
+const std::vector<std::string> allowed_seeds={"RleMatrix"};
+
 template<>
 std::unique_ptr<integer_matrix> delayed_lin_matrix<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
-    // incoming should be a "DelayedMatrix" object, not the seed within it!
-    bool isokay=false;
-    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
-
-    if (seed.isS4()) { 
-        std::string ctype=get_class(seed);
-        if (ctype=="RleMatrix") {
-            isokay=true;
-            incoming=seed;
-        } else if (ctype=="HDF5ArraySeed") {
-            isokay=true;
-            incoming=delayed_seed_to_HDF5Matrix(seed);
-        }
-    } else {
-        isokay=true;
-        incoming=seed;
-    }
-
-    if (isokay) {
-        return create_integer_matrix(incoming);
+    Rcpp::RObject seed=extract_seed(incoming, allowed_seeds);
+    if (seed!=R_NilValue) {
+        return create_integer_matrix(seed);
     } else {
         return nullptr;
     }

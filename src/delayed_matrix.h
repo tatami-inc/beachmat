@@ -32,7 +32,10 @@ private:
 
     size_t original_nrow, original_ncol, delayed_nrow, delayed_ncol;
 
-    // Making a copyable vector to save myself having to write copy constructors for the transformer.
+    /* Making a copyable vector to save myself having to write copy constructors for the entire transformer.
+     * This is necessary as we need an internal Rcpp::Vector to extract from the underlying seed
+     * prior to subsetting, but such vectors are not actually default-copied between instances.
+     */
     struct copyable_holder {
         copyable_holder(size_t n=0) : vec(n) {}
         ~copyable_holder() {};

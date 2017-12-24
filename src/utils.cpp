@@ -128,16 +128,45 @@ Rcpp::RObject realize_delayed_array (const Rcpp::RObject& incoming) {
     return realfun(incoming);
 }
 
-Rcpp::RObject delayed_seed_to_HDF5Matrix(const Rcpp::RObject& seed) {
-    std::string matclass="HDF5Matrix";
-    Rcpp::S4 h5mat(matclass);
-    if (!h5mat.hasSlot("seed")) {
-        throw_custom_error("missing 'seed' slot in ", matclass, " object");
-    }
-    h5mat.slot("seed") = seed;
-    return Rcpp::RObject(h5mat);
-}
+Rcpp::RObject extract_seed (const Rcpp::RObject& incoming, const std::vector<std::string>& allowed) { 
+    // incoming should be a "DelayedMatrix" object, not the seed within it!
+    Rcpp::RObject seed(get_safe_slot(incoming, "seed"));
 
+    // Extracting the actual seed, if it's been transposed.
+    if (seed.isS4() && get_class(seed)=="SeedDimPicker") {
+        seed=get_safe_slot(seed, "seed");
+    }
+
+    if (seed.isS4()) { 
+        std::string ctype=get_class(seed);
+
+        if (ctype=="HDF5ArraySeed") {
+            std::string matclass="HDF5Matrix";
+            Rcpp::S4 h5mat(matclass);
+            if (!h5mat.hasSlot("seed")) {
+                throw_custom_error("missing 'seed' slot in ", matclass, " object");
+            }
+            h5mat.slot("seed") = seed;
+            seed=Rcpp::RObject(h5mat);
+
+        } else {
+            bool isokay=false;
+            for (const auto& classtype : allowed) {
+                if (ctype==classtype) { 
+                    isokay=true;
+                    break;
+                }
+            }
+
+            if (!isokay) {
+                return R_NilValue;
+            }
+        }
+    }
+
+    return seed;
+}
+        
 bool is_pristine_delayed_array(const Rcpp::RObject& in) {
     const Rcpp::Environment env=Rcpp::Environment::namespace_env("DelayedArray");
     Rcpp::Function fun=env["is_pristine"];

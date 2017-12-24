@@ -3,7 +3,7 @@
 namespace beachmat {
 
 template<typename T, class V>
-delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in) : original_nrow(0), original_ncol(0), delayed_nrow(0), delayed_ncol(0) {
+delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in) : original_nrow(0), original_ncol(0), delayed_nrow(0), delayed_ncol(0), transposed(false) {
     if (get_class(in)!="DelayedMatrix") { 
         throw std::runtime_error("input matrix should be a DelayedMatrix");
     }
@@ -41,12 +41,15 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& 
         }
     }
     
-    // CHecking transposition.
-    Rcpp::LogicalVector is_trans(get_safe_slot(in, "is_transposed"));
-    if (is_trans.size()!=1) { 
-        throw std::runtime_error("transposition specifier should be a logical scalar");
+    // Checking transposition by peering into the "SeedDimChecker" class.
+    Rcpp::RObject seed=get_safe_slot(in, "seed");
+    if (seed.isS4() && get_class(seed)=="SeedDimPicker") { 
+        Rcpp::IntegerVector dimorder(get_safe_slot(seed, "dim_combination"));
+        if (dimorder.size()!=2) {
+            throw std::runtime_error("'dim_combination' should be an integer vector of length 2");
+        }
+        transposed=(dimorder[0]==2);
     }
-    transposed=is_trans[0];
     return;
 }
 
