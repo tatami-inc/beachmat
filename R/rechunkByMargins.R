@@ -28,7 +28,7 @@ rechunkByMargins <- function(x, size=5000, outfile=NULL, outname=NULL, outlevel=
     
     # Repacking the file.
     data.type <- type(x)
-    chunk.dims <- .Call(cxx_rechunk_matrix, x@seed@file, x@seed@name, data.type, 
+    chunk.dims <- .Call(cxx_rechunk_matrix, x@seed@filepath, x@seed@name, data.type, 
                         outfile, outname, outlevel, size, byrow)
 
     # Generating output. 

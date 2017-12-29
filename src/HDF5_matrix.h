@@ -83,9 +83,9 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
 
     // Checking names.
     try {
-        filename=make_to_string(get_safe_slot(h5_seed, "file"));
+        filename=make_to_string(get_safe_slot(h5_seed, "filepath"));
     } catch (...) { 
-        throw_custom_error("'file' slot in a ", stype, " object should be a string");
+        throw_custom_error("'filepath' slot in a ", stype, " object should be a string");
     }
     try {
         dataname=make_to_string(get_safe_slot(h5_seed, "name"));

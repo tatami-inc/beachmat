@@ -133,10 +133,10 @@ test_that("HDF5 matrix errors thrown", {
                        "dimensions in HDF5 file do not equal dimensions in the HDF5Matrix object")
     
     wrong <- A
-    expect_fixed_error(wrong@seed@file <- 1)
-    wrong@seed@file <- c("YAY", "YAY")
+    expect_fixed_error(wrong@seed@filepath <- 1)
+    wrong@seed@filepath <- c("YAY", "YAY")
     expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, wrong, 1L, NULL), 
-                       "'file' slot in a HDF5ArraySeed object should be a string")
+                       "'filepath' slot in a HDF5ArraySeed object should be a string")
 
     wrong <- A
     expect_fixed_error(wrong@seed@name <- 1)

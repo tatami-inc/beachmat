@@ -150,7 +150,7 @@ check_character_output_slice <- function(FUN, ..., by.row, by.col) {
         testthat::expect_identical(ref, as.matrix(out))
         original <- mats[[i]]
         testthat::expect_identical(ref, as.matrix(original))
-        testthat::expect_true(original@seed@file!=out@seed@file)
+        testthat::expect_true(original@seed@filepath!=out@seed@filepath)
     }
 
     # Checking that the old and realized files are in the log.
@@ -163,7 +163,7 @@ check_character_output_slice <- function(FUN, ..., by.row, by.col) {
                 current <- mats[[i]]
             }   
 
-            j <- which(log$name==current@seed@name & log$file==current@seed@file)
+            j <- which(log$name==current@seed@name & log$file==current@seed@filepath)
             testthat::expect_true(length(j)==1L)
             testthat::expect_identical(type, log$type[j])
             testthat::expect_identical(sprintf("%ix%i", nrow(current), ncol(current)), log$dims[j])

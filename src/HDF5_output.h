@@ -255,10 +255,10 @@ Rcpp::RObject HDF5_output<T, RTYPE>::yield() {
     Rcpp::S4 h5seed(seedclass);
 
     // Assigning to slots.
-    if (!h5seed.hasSlot("file")) {
-        throw_custom_error("missing 'file' slot in ", seedclass, " object");
+    if (!h5seed.hasSlot("filepath")) {
+        throw_custom_error("missing 'filepath' slot in ", seedclass, " object");
     }
-    h5seed.slot("file") = fname;
+    h5seed.slot("filepath") = fname;
 
     if (!h5seed.hasSlot("name")) {
         throw_custom_error("missing 'name' slot in ", seedclass, " object");

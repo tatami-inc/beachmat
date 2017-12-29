@@ -1,14 +1,14 @@
 Package: beachmat
-Version: 1.1.5
-Date: 2017-12-24
+Version: 1.1.6
+Date: 2017-12-29
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
         "alun@wehi.edu.au"), person("Herve", "Pages", role="aut"),
         person("Mike", "Smith", role="aut"))
 Maintainer: Aaron Lun <alun@wehi.edu.au>
 Depends: R (>= 3.5)
-Imports: utils, Rhdf5lib, HDF5Array, DelayedArray (>= 0.5.11), 
-       Rcpp (>= 0.12.14), rhdf5, methods
+Imports: utils, methods, Rhdf5lib, rhdf5, HDF5Array (>= 1.7.3), 
+       DelayedArray (>= 0.5.11), Rcpp (>= 0.12.14) 
 Suggests: testthat, BiocStyle, knitr, Matrix
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for a variety of
