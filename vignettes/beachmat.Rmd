@@ -1,22 +1,19 @@
-<!--
-%\VignetteIndexEntry{A C++ API for R matrix objects}
-%\VignettePackage{BiocStyle}
-%\VignetteEngine{knitr::knitr}
--->
+---
+title: "beachmat: a C++ API for R matrix objects"
+author: "Aaron Lun"
+package: beachmat
+output: 
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{beachmat: a C++ API for R matrix objects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
 
 ```{r, echo=FALSE, results="hide", message=FALSE}
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 ```
-
-```{r style, echo=FALSE, results='asis'}
-BiocStyle::markdown()
-```
-
-# A common C++ API for all types of R matrices
-Package: `r Rpackage("beachmat")` <br />
-Author: Aaron Lun (alun@wehi.edu.au) <br />
-Compilation date: `r Sys.Date()`
 
 # Introduction
 
