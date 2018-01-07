@@ -46,13 +46,9 @@ public:
         oparms.setChunk(2, out_chunk_dims);
         oparms.setDeflate(compress);
 
-        /* Holding one chunk in memory (the incompletely read and written one between iterations).
-         * No need for fancy nslots calculations, and we evict fully read chunks first (not that
-         * it really matters, because there's only one chunk being held in memory).
-         */
+        // Setting the chunk cache (do after dims, chunk_dims and out_chunk_dims are set).
         H5::FileAccPropList inputlist(ihfile.getAccessPlist().getId());
-        const size_t cache_size=chunk_ncols()*chunk_nrows()*HDT.getSize();
-        inputlist.setCache(0, 1, cache_size, 1); 
+        set_chunk_cache(inputlist);
 
         ihdata.close();
         ihfile.close();
@@ -140,6 +136,30 @@ private:
     hsize_t& store_rowpos () { return store_offset[1]; }
     hsize_t& store_ncols () { return store_count[0]; }
     hsize_t& store_nrows () { return store_count[1]; }
+
+    void set_chunk_cache (H5::FileAccPropList& inputlist) {
+        /* Technically, we should only need to hold one chunk in memory (the incompletely read one between iterations).
+         * However, this assumes that chunks are read in order, i.e., the incomplete chunk is read last at each iteration.
+         * This is not guaranteed as chunks may be placed in any order in the file. Thus, we have to set the chunk cache 
+         * to hold all chunks read in during one iteration, +1 for the incompletely read chunk from the last iteration.
+         */
+        size_t nchunks_per_iteration=0;
+        if (byrow) {
+            nchunks_per_iteration=std::ceil(out_chunk_ncols()/chunk_ncols());
+        } else {
+            nchunks_per_iteration=std::ceil(out_chunk_nrows()/chunk_nrows());
+        } 
+        ++nchunks_per_iteration; 
+        const size_t cache_size=chunk_ncols()*chunk_nrows()*HDT.getSize()*nchunks_per_iteration;
+
+        // Computing the nslots, using the same logic as in calc_HDF5_chunk_cache_settings().
+        const size_t num_chunks_per_row=std::ceil(double(ncols())/chunk_ncols()); 
+        const size_t num_chunks_per_col=std::ceil(double(nrows())/chunk_nrows()); 
+        const size_t nslots = std::ceil(double(num_chunks_per_row)/num_chunks_per_col) * num_chunks_per_col + 1; 
+
+        // Evicting chunks that are fully read, favouring retention of the incompletely read/written chunk.
+        inputlist.setCache(0, nslots, cache_size, 1); 
+    }
 
     /* Filling for row-based chunks. The idea is to read/write blocks of X*Y, where
      * X is the number of rows in the input chunks and Y is the size of the output
