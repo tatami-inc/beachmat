@@ -3,10 +3,11 @@
 namespace beachmat {
 
 std::string make_to_string(const Rcpp::RObject& str) {
-    if (str.sexp_type()!=STRSXP || Rf_length(str.get__())!=1) {
+    Rcpp::StringVector as_str(str);
+    if (as_str.size()!=1) { 
         throw std::runtime_error("input RObject should contain a single string");
     }
-    return Rcpp::as<std::vector<std::string> >(str).front();
+    return Rcpp::as<std::string>(as_str[0]);
 }
 
 void throw_custom_error(const std::string& left, const std::string& classname, const std::string& right) {

@@ -11,9 +11,6 @@
 #include <cmath>
 
 #include "Rcpp.h"
-#include "R.h"
-#include "Rinternals.h"
-
-#include "c++/H5Cpp.h"
+#include "H5Cpp.h"
 
 #endif
