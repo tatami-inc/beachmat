@@ -28,8 +28,6 @@ void HDF5_select_one(const size_t&, const size_t&,
         hsize_t*, hsize_t*, 
         H5::DataSpace& hspace);
 
-H5::DataType set_HDF5_data_type (int, const H5::DataSet&);
-
 H5::DataType set_HDF5_data_type (int, size_t);
 
 void initialize_HDF5_size_arrays (const size_t&, const size_t&,

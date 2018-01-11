@@ -7,6 +7,15 @@ namespace beachmat {
 template<>
 double Csparse_matrix<double, Rcpp::NumericVector>::get_empty() const { return 0; }
 
+/* HDF5Matrix input methods. */
+
+template<>
+double HDF5_lin_matrix<double, Rcpp::NumericVector, REALSXP>::get(size_t r, size_t c) {
+    double out;
+    mat.extract_one(r, c, &out, H5::PredType::NATIVE_DOUBLE);
+    return out; 
+}
+
 /* DelayedMatrix input methods. */
 
 const std::vector<std::string> allowed_seeds={"dgeMatrix", "dgCMatrix", "dgTMatrix", "dspMatrix", "RleMatrix"};

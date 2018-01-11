@@ -15,22 +15,19 @@ public:
     HDF5_matrix(const Rcpp::RObject&);
     ~HDF5_matrix();
 
-    void extract_row(size_t, T*, size_t, size_t);
     template<typename X>
     void extract_row(size_t, X*, const H5::DataType&, size_t, size_t);
 
-    void extract_col(size_t, T*, size_t, size_t);
     template<typename X>
     void extract_col(size_t, X*, const H5::DataType&, size_t, size_t);
     
-    void extract_one(size_t, size_t, T*); // Use of pointer is a bit circuitous, but necessary for character access.
     template<typename X>
     void extract_one(size_t, size_t, X*, const H5::DataType&);  
 
-    const H5::DataType& get_datatype() const;
-
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type() const;
+
+    H5::DataType get_datatype() const;
 protected:
     Rcpp::RObject original;
     std::string filename, dataname;
@@ -39,8 +36,6 @@ protected:
     H5::DataSet hdata;
     H5::DataSpace hspace, rowspace, colspace, onespace;
     hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];
-
-    H5::DataType default_type;
 
     bool onrow, oncol;
     bool rowokay, colokay;
@@ -96,7 +91,6 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
     // Setting up the HDF5 accessors.
     hfile.openFile(filename.c_str(), H5F_ACC_RDONLY);
     hdata = hfile.openDataSet(dataname.c_str());
-    default_type=set_HDF5_data_type(RTYPE, hdata);
 
     hspace = hdata.getSpace();
     if (hspace.getSimpleExtentNdims()!=2) {
@@ -109,13 +103,38 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
         throw_custom_error("dimensions in HDF5 file do not equal dimensions in the ", ctype, " object");
     }
 
+    // Checking the type.
+    auto curtype=hdata.getTypeClass();
+    switch (RTYPE) {
+        case REALSXP:
+            if (curtype!=H5T_FLOAT) { 
+                throw std::runtime_error("data type in HDF5 file is not double");
+            }
+            break;
+        case INTSXP: 
+            if (curtype!=H5T_INTEGER) { 
+                throw std::runtime_error("data type in HDF5 file is not integer");
+            }
+            break;
+        case LGLSXP:
+            if (curtype!=H5T_INTEGER) { 
+                throw std::runtime_error("data type in HDF5 file is not logical");
+            }
+            break;
+        case STRSXP:
+            if (curtype!=H5T_STRING) { 
+                throw std::runtime_error("data type in HDF5 file is not character");
+            }
+            break;
+    }
+
     // Setting up the hsize_t[2] arrays.
     initialize_HDF5_size_arrays(NR, NC, 
             h5_start, col_count, row_count, 
             one_count, onespace);
 
     // Setting the chunk cache parameters.
-    calc_HDF5_chunk_cache_settings(this->nrow, this->ncol, hdata.getCreatePlist(), default_type, 
+    calc_HDF5_chunk_cache_settings(this->nrow, this->ncol, hdata.getCreatePlist(), this->get_datatype(),
             onrow, oncol, rowokay, colokay, largerrow, largercol, rowlist, collist);
     return;
 }
@@ -138,12 +157,6 @@ void HDF5_matrix<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HD
 }
 
 template<typename T, int RTYPE>
-void HDF5_matrix<T, RTYPE>::extract_row(size_t r, T* out, size_t first, size_t last) { 
-    extract_row(r, out, default_type, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
 template<typename X>
 void HDF5_matrix<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     check_colargs(c, first, last);
@@ -156,12 +169,6 @@ void HDF5_matrix<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HD
 }
     
 template<typename T, int RTYPE>
-void HDF5_matrix<T, RTYPE>::extract_col(size_t c, T* out, size_t first, size_t last) { 
-    extract_col(c, out, default_type, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
 template<typename X>
 void HDF5_matrix<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::DataType& HDT) { 
     check_oneargs(r, c);
@@ -171,14 +178,8 @@ void HDF5_matrix<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::Da
 }
 
 template<typename T, int RTYPE>
-void HDF5_matrix<T, RTYPE>::extract_one(size_t r, size_t c, T* out) { 
-    extract_one(r, c, out, default_type);
-    return;
-}
-
-template<typename T, int RTYPE>
-const H5::DataType& HDF5_matrix<T, RTYPE>::get_datatype() const { 
-    return default_type;
+H5::DataType HDF5_matrix<T, RTYPE>::get_datatype() const {
+    return hdata.getDataType();
 }
 
 template<typename T, int RTYPE>

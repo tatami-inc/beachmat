@@ -282,13 +282,6 @@ void HDF5_lin_matrix<T, V, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterat
 }
 
 template<typename T, class V, int RTYPE>
-T HDF5_lin_matrix<T, V, RTYPE>::get(size_t r, size_t c) {
-    T out;
-    mat.extract_one(r, c, &out);
-    return out; 
-}
-
-template<typename T, class V, int RTYPE>
 std::unique_ptr<lin_matrix<T, V> > HDF5_lin_matrix<T, V, RTYPE>::clone() const {
     return std::unique_ptr<lin_matrix<T, V> >(new HDF5_lin_matrix<T, V, RTYPE>(*this));
 }

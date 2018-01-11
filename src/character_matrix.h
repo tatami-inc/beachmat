@@ -101,6 +101,8 @@ public:
     matrix_type get_matrix_type() const;
 protected:
     HDF5_matrix<char, STRSXP> mat; 
+    H5::DataType str_type;
+
     size_t bufsize;
     std::vector<char> row_buf, col_buf, one_buf;
 };

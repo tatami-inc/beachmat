@@ -164,44 +164,17 @@ void initialize_HDF5_size_arrays (const size_t& NR, const size_t& NC,
 H5::DataType set_HDF5_data_type (int RTYPE, size_t strlen) { 
     switch (RTYPE) {
         case REALSXP:
-            return H5::DataType(H5::PredType::NATIVE_DOUBLE);
+            return H5::PredType::NATIVE_DOUBLE;
         case INTSXP: 
-            return H5::DataType(H5::PredType::NATIVE_INT32);
+            return H5::PredType::NATIVE_INT32;
         case LGLSXP:
-            return H5::DataType(H5::PredType::NATIVE_INT32);
+            return H5::PredType::NATIVE_INT32;
         case STRSXP:
             return H5::StrType(0, strlen);
     }
     std::stringstream err;
     err << "unsupported sexptype '" << RTYPE << "'";
     throw std::runtime_error(err.str().c_str());
-}
-
-H5::DataType set_HDF5_data_type (int RTYPE, const H5::DataSet& hdata) {
-    auto curtype=hdata.getTypeClass();
-    switch (RTYPE) {
-        case REALSXP:
-            if (curtype!=H5T_FLOAT) { 
-                throw std::runtime_error("data type in HDF5 file is not double");
-            }
-            break;
-        case INTSXP: 
-            if (curtype!=H5T_INTEGER) { 
-                throw std::runtime_error("data type in HDF5 file is not integer");
-            }
-            break;
-        case LGLSXP:
-            if (curtype!=H5T_INTEGER) { 
-                throw std::runtime_error("data type in HDF5 file is not logical");
-            }
-            break;
-        case STRSXP:
-            if (curtype!=H5T_STRING) { 
-                throw std::runtime_error("data type in HDF5 file is not character");
-            }
-            return H5::StrType(hdata);
-    }
-    return set_HDF5_data_type(RTYPE, 0);
 }
 
 }

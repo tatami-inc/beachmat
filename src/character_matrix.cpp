@@ -107,16 +107,15 @@ matrix_type Rle_character_matrix::get_matrix_type() const {
 
 /* Methods for the HDF5 character matrix. */
 
-HDF5_character_matrix::HDF5_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {
-    const H5::DataType& str_type=mat.get_datatype();
-    if (!str_type.isVariableStr()) { 
-        bufsize=str_type.getSize(); 
-        row_buf.resize(bufsize*(mat.get_ncol()));
-        col_buf.resize(bufsize*(mat.get_nrow()));
-        one_buf.resize(bufsize);
-    } else {
+HDF5_character_matrix::HDF5_character_matrix(const Rcpp::RObject& incoming) : mat(incoming), str_type(mat.get_datatype()) {
+    if (str_type.isVariableStr()) { 
         throw std::runtime_error("variable-length strings not supported for HDF5_character_matrix");
     }
+    bufsize=str_type.getSize(); 
+    row_buf.resize(bufsize*(mat.get_ncol()));
+    col_buf.resize(bufsize*(mat.get_nrow()));
+    one_buf.resize(bufsize);
+    return;
 }
 
 HDF5_character_matrix::~HDF5_character_matrix() {}
@@ -131,7 +130,7 @@ size_t HDF5_character_matrix::get_ncol() const {
 
 void HDF5_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
     char* ref=row_buf.data();
-    mat.extract_row(r, ref, first, last);
+    mat.extract_row(r, ref, str_type, first, last);
     for (size_t c=first; c<last; ++c, ref+=bufsize, ++out) {
         (*out)=ref; 
     }
@@ -140,7 +139,7 @@ void HDF5_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, 
 
 void HDF5_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
     char* ref=col_buf.data();
-    mat.extract_col(c, ref, first, last);
+    mat.extract_col(c, ref, str_type, first, last);
     for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
         (*out)=ref; 
     }
@@ -149,7 +148,7 @@ void HDF5_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, 
  
 Rcpp::String HDF5_character_matrix::get(size_t r, size_t c) { 
     char* ref=one_buf.data();
-    mat.extract_one(r, c, ref);
+    mat.extract_one(r, c, ref, str_type);
     return ref;
 }
 

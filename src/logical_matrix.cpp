@@ -1,11 +1,20 @@
 #include "logical_matrix.h"
 
 namespace beachmat {
-
+    
 /* Csparse logical input methods. */
 
 template<>
 int Csparse_matrix<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
+
+/* HDF5Matrix input methods. */
+
+template<>
+int HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
+    int out;
+    mat.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
+    return out; 
+}
 
 /* DelayedMatrix input methods. */
 
