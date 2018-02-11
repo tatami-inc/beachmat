@@ -25,6 +25,21 @@ Rcpp::StringVector::iterator character_matrix::get_const_col(size_t c, Rcpp::Str
     return work;
 }
 
+character_matrix::const_col_indexed_info 
+character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work) {
+    return get_const_col_indexed(c, work, 0, get_nrow());
+}
+
+character_matrix::const_col_indexed_info 
+character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
+    if (indices.size()!=this->get_nrow()) {
+        indices=Rcpp::IntegerVector(this->get_nrow());
+        std::iota(indices.begin(), indices.end(), 0); // populating with indices.
+    }
+    get_col(c, work, first, last);
+    return const_col_indexed_info(last - first, indices.begin() + first, work);
+}
+
 /* Methods for the simple character matrix. */
 
 simple_character_matrix::simple_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}

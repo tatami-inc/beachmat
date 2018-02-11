@@ -48,6 +48,7 @@ public:
 
     virtual Rcpp::RObject yield() const=0;
     virtual matrix_type get_matrix_type() const=0;
+
 private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };

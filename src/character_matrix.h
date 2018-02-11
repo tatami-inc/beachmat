@@ -26,10 +26,17 @@ public:
     Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator);
     virtual Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
+    typedef std::tuple<size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator> const_col_indexed_info;
+    const_col_indexed_info get_const_col_indexed(size_t, Rcpp::StringVector::iterator);
+    virtual const_col_indexed_info get_const_col_indexed(size_t, Rcpp::StringVector::iterator, size_t, size_t);
+
     virtual std::unique_ptr<character_matrix> clone() const=0;
 
     virtual Rcpp::RObject yield () const=0;
     virtual matrix_type get_matrix_type() const=0;
+
+private:
+    Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
 
 /* Simple character matrix */
