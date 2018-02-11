@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cmath>
+#include <tuple>
 
 #include "Rcpp.h"
 #include "H5Cpp.h"

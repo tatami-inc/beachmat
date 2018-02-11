@@ -23,11 +23,7 @@ public:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
-    template<class Iter>
-    size_t get_nonzero_row(size_t, Rcpp::IntegerVector::iterator, Iter, size_t, size_t);
-
-    template<class Iter>
-    size_t get_nonzero_col(size_t, Rcpp::IntegerVector::iterator, Iter, size_t, size_t);
+    size_t get_const_col_nonzero(size_t, Rcpp::IntegerVector::iterator&, typename V::iterator&, size_t, size_t);
 
     Rcpp::RObject yield () const;
     matrix_type get_matrix_type () const;
@@ -226,51 +222,24 @@ void Csparse_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
     return;
 }
 
-template<typename T, class V>
-template<class Iter>
-size_t Csparse_matrix<T, V>::get_nonzero_row(size_t r, Rcpp::IntegerVector::iterator index, Iter val, size_t first, size_t last) {
-    check_rowargs(r, first, last);
-    update_indices(r, first, last);
-
-    auto pIt=p.begin()+first+1; // Points to first-past-the-end for each 'c'.
-    size_t nzero=0;
-    for (size_t c=first; c<last; ++c, ++pIt) { 
-        const int& idex=indices[c];
-        if (idex!=*pIt && i[idex]==r) { 
-            ++nzero;
-            (*index)=c;
-            (*val)=x[idex];
-            ++index;
-            ++val;
-        }
-    } 
-
-    return nzero;
-}
-
-template<typename T, class V>
-template<class Iter>
-size_t Csparse_matrix<T, V>::get_nonzero_col(size_t c, Rcpp::IntegerVector::iterator index, Iter val, size_t first, size_t last) {
+template <typename T, class V>
+size_t Csparse_matrix<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector::iterator& index, typename V::iterator& val, size_t first, size_t last) {
     check_colargs(c, first, last);
     const int& pstart=p[c]; 
-    auto iIt=i.begin()+pstart, 
-         eIt=i.begin()+p[c+1]; 
-    auto xIt=x.begin()+pstart;
+    index=i.begin()+pstart;
+    auto endex=i.begin()+p[c+1]; 
+    val=x.begin()+pstart;
 
     if (first) { // Jumping ahead if non-zero.
-        auto new_iIt=std::lower_bound(iIt, eIt, first);
-        xIt+=(new_iIt-iIt);
-        iIt=new_iIt;
+        auto new_index=std::lower_bound(index, endex, first);
+        val+=(new_index-index);
+        index=new_index;
     } 
     if (last!=(this->nrow)) { // Jumping to last element.
-        eIt=std::lower_bound(iIt, eIt, last);
+        endex=std::lower_bound(index, endex, last);
     }
 
-    size_t nzero=eIt-iIt;
-
-    std::copy(iIt, iIt+nzero, index);
-    std::copy(xIt, xIt+nzero, val);
-    return nzero;
+    return endex - index;
 }
 
 template<typename T, class V>
