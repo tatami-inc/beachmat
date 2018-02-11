@@ -70,11 +70,10 @@ Csparse_matrix<T, V>::Csparse_matrix(const Rcpp::RObject& incoming) : original(i
     if (p[NC]!=x.size()) { throw_custom_error("last element of 'p' in a ", ctype, " object should be 'length(x)'"); }
 
     // Checking all the indices.
-    indices.resize(NC);
     auto pIt=p.begin();
     for (size_t px=0; px<NC; ++px) {
-        if (*pIt < 0) { throw_custom_error("'p' slot in a ", ctype, " object should contain non-negative values"); }
-        const int& current=(indices[px]=*pIt); 
+        const int& current=*pIt;
+        if (current < 0) { throw_custom_error("'p' slot in a ", ctype, " object should contain non-negative values"); }
         if (current > *(++pIt)) { throw_custom_error("'p' slot in a ", ctype, " object should be sorted"); }
     }
 
@@ -121,6 +120,13 @@ T Csparse_matrix<T, V>::get(size_t r, size_t c) {
 
 template <typename T, class V>
 void Csparse_matrix<T, V>::update_indices(size_t r, size_t first, size_t last) {
+    /* Initializing the indices upon the first request, assuming currow=0 based on initialization above.
+     * This avoids using up space for the indices if we never do row access.
+     */
+    if (indices.size()!=this->ncol) {
+        indices=std::vector<int>(p.begin(), p.begin()+this->ncol);
+    }
+
     /* If left/right slice are not equal to what is stored, we reset the indices,
      * so that the code below will know to recompute them. It's too much effort
      * to try to figure out exactly which columns need recomputing; just do them all.
