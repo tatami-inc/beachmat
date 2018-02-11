@@ -61,7 +61,7 @@ lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator work, siz
         indices=Rcpp::IntegerVector(this->get_nrow());
         std::iota(indices.begin(), indices.end(), 0); // populating with indices.
     }
-    get_col(c, work, first, last);
+    get_const_col(c, work, first, last);
     return const_col_indexed_info(last - first, indices.begin() + first, work);
 }
 
