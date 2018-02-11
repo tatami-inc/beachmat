@@ -123,47 +123,47 @@ SEXP test_character_const_slice (SEXP in, SEXP rx) {
 
 /* Realized non-zero access functions. */
 
-SEXP test_numeric_nonzero_access (SEXP in, SEXP mode) {
+SEXP test_numeric_nonzero_access (SEXP in) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
-    return fill_up_nonzero<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get(), mode);
+    return fill_up_nonzero<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get());
     END_RCPP
 }
 
-SEXP test_integer_nonzero_access (SEXP in, SEXP mode) {
+SEXP test_integer_nonzero_access (SEXP in) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
-    return fill_up_nonzero<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get(), mode);
+    return fill_up_nonzero<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get());
     END_RCPP
 }
 
-SEXP test_logical_nonzero_access (SEXP in, SEXP mode) {
+SEXP test_logical_nonzero_access (SEXP in) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
-    return fill_up_nonzero<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get(), mode);
+    return fill_up_nonzero<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get());
     END_RCPP
 }
 
 /* Realized non-zero slice functions. */
 
-SEXP test_numeric_nonzero_slice (SEXP in, SEXP mode, SEXP rx, SEXP cx) {
+SEXP test_numeric_nonzero_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
-    return fill_up_nonzero_slice<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get(), mode, rx, cx);
+    return fill_up_nonzero_slice<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get(), rx);
     END_RCPP
 }
 
-SEXP test_integer_nonzero_slice (SEXP in, SEXP mode, SEXP rx, SEXP cx) {
+SEXP test_integer_nonzero_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
-    return fill_up_nonzero_slice<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get(), mode, rx, cx);
+    return fill_up_nonzero_slice<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get(), rx);
     END_RCPP
 }
 
-SEXP test_logical_nonzero_slice (SEXP in, SEXP mode, SEXP rx, SEXP cx) {
+SEXP test_logical_nonzero_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
-    return fill_up_nonzero_slice<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get(), mode, rx, cx);
+    return fill_up_nonzero_slice<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get(), rx);
     END_RCPP
 }
 

@@ -30,13 +30,13 @@ static const R_CallMethodDef all_call_entries[] = {
     REGISTER(test_character_const_slice, 2),
 
     // Non-zero access.
-    REGISTER(test_numeric_nonzero_access, 2),
-    REGISTER(test_integer_nonzero_access, 2),
-    REGISTER(test_logical_nonzero_access, 2),
+    REGISTER(test_numeric_nonzero_access, 1),
+    REGISTER(test_integer_nonzero_access, 1),
+    REGISTER(test_logical_nonzero_access, 1),
 
-    REGISTER(test_numeric_nonzero_slice, 4),
-    REGISTER(test_integer_nonzero_slice, 4),
-    REGISTER(test_logical_nonzero_slice, 4),
+    REGISTER(test_numeric_nonzero_slice, 2),
+    REGISTER(test_integer_nonzero_slice, 2),
+    REGISTER(test_logical_nonzero_slice, 2),
 
     // Sparse access.
     REGISTER(test_sparse_numeric_slice, 2),

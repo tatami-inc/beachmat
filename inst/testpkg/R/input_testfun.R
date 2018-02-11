@@ -144,12 +144,10 @@ check_logical_const_slice <- function(FUN, ..., by.row) {
 ###############################
 
 .check_nonzero_mat <- function(FUN, ..., cxxfun) {
-    for (it in seq_len(2)) {
-        test.mat <- FUN(...)
-        ref <- as.matrix(test.mat)
-        dimnames(ref) <- NULL
-        testthat::expect_identical(ref, .Call(cxxfun, test.mat, it))
-    }
+    test.mat <- FUN(...)
+    ref <- as.matrix(test.mat)
+    dimnames(ref) <- NULL
+    testthat::expect_identical(ref, .Call(cxxfun, test.mat))
     return(invisible(NULL))
 }
 
@@ -165,16 +163,28 @@ check_logical_nonzero_mat <- function(FUN, ...) {
     .check_nonzero_mat(FUN=FUN, ..., cxxfun=cxx_test_logical_nonzero_access)
 }
 
-check_integer_nonzero_slice <- function(FUN, ..., by.row, by.col) {
-    .check_slices(FUN=FUN, ..., by.row=by.row, by.col=by.col, cxxfun=cxx_test_integer_nonzero_slice)
+.check_nonzero_slices <- function(FUN, ..., by.row, cxxfun) {
+    for (x in by.row) {
+        rx <- range(x)
+
+        test.mat <- FUN(...) 
+        ref <- as.matrix(test.mat[x,, drop=FALSE])
+        dimnames(ref) <- NULL
+        testthat::expect_identical(ref, .Call(cxxfun, test.mat, rx))
+    }
+    return(invisible(NULL))
 }
 
-check_numeric_nonzero_slice <- function(FUN, ..., by.row, by.col) {
-    .check_slices(FUN=FUN, ..., by.row=by.row, by.col=by.col, cxxfun=cxx_test_numeric_nonzero_slice)
+check_integer_nonzero_slice <- function(FUN, ..., by.row) {
+    .check_nonzero_slices(FUN=FUN, ..., by.row=by.row, cxxfun=cxx_test_integer_nonzero_slice)
 }
 
-check_logical_nonzero_slice <- function(FUN, ..., by.row, by.col) {
-    .check_slices(FUN=FUN, ..., by.row=by.row, by.col=by.col, cxxfun=cxx_test_logical_nonzero_slice)
+check_numeric_nonzero_slice <- function(FUN, ..., by.row) {
+    .check_nonzero_slices(FUN=FUN, ..., by.row=by.row, cxxfun=cxx_test_numeric_nonzero_slice)
+}
+
+check_logical_nonzero_slice <- function(FUN, ..., by.row) {
+    .check_nonzero_slices(FUN=FUN, ..., by.row=by.row, cxxfun=cxx_test_logical_nonzero_slice)
 }
 
 ###############################
