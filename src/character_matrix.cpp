@@ -52,7 +52,7 @@ Rcpp::String simple_character_matrix::get(size_t r, size_t c) {
 }
 
 Rcpp::StringVector::iterator simple_character_matrix::get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
-    return mat.get_const_col(c, work, first, last);
+    return mat.get_const_col(c, first, last);
 }
 
 std::unique_ptr<character_matrix> simple_character_matrix::clone() const {

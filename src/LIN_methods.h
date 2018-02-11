@@ -137,7 +137,7 @@ simple_lin_matrix<T, V>::~simple_lin_matrix() {}
 
 template <typename T, class V>
 typename V::const_iterator simple_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
-    return this->mat.get_const_col(c, work, first, last);
+    return this->mat.get_const_col(c, first, last);
 }
 
 template <typename T, class V>
@@ -153,7 +153,7 @@ dense_lin_matrix<T, V>::~dense_lin_matrix() {}
 
 template <typename T, class V>
 typename V::const_iterator dense_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
-    return this->mat.get_const_col(c, work, first, last);
+    return this->mat.get_const_col(c, first, last);
 }
 
 template <typename T, class V>

@@ -23,7 +23,7 @@ public:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
-    typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+    typename V::iterator get_const_col(size_t, size_t, size_t);
 
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type () const;
@@ -84,7 +84,7 @@ void dense_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) 
 }
 
 template<typename T, class V>
-typename V::iterator dense_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
+typename V::iterator dense_matrix<T, V>::get_const_col(size_t c, size_t first, size_t last) {
     return x.begin() + first + c*(this->nrow);
 }
 
