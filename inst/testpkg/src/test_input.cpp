@@ -144,6 +144,13 @@ SEXP test_logical_indexed_access (SEXP in) {
     END_RCPP
 }
 
+SEXP test_character_indexed_access (SEXP in) {
+    BEGIN_RCPP
+    auto ptr=beachmat::create_character_matrix(in);
+    return fill_up_indexed<Rcpp::StringVector, Rcpp::StringMatrix>(ptr.get());
+    END_RCPP
+}
+
 /* Realized non-zero slice functions. */
 
 SEXP test_numeric_indexed_slice (SEXP in, SEXP rx) {
@@ -164,6 +171,13 @@ SEXP test_logical_indexed_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
     return fill_up_indexed_slice<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get(), rx);
+    END_RCPP
+}
+
+SEXP test_character_indexed_slice (SEXP in, SEXP rx) {
+    BEGIN_RCPP
+    auto ptr=beachmat::create_character_matrix(in);
+    return fill_up_indexed_slice<Rcpp::StringVector, Rcpp::StringMatrix>(ptr.get(), rx);
     END_RCPP
 }
 

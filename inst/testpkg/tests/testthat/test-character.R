@@ -27,6 +27,9 @@ test_that("Simple character matrix input is okay", {
     beachtest:::check_character_const_mat(sFUN)
     beachtest:::check_character_const_slice(sFUN, by.row=list(1:5, 6:8))
 
+    beachtest:::check_character_indexed_mat(sFUN)
+    beachtest:::check_character_indexed_slice(sFUN, by.row=list(1:5, 6:8))
+
     beachtest:::check_type(sFUN, expected="character")
 })
 
@@ -55,6 +58,9 @@ test_that("RLE character matrix input is okay", {
     beachtest:::check_character_const_mat(rFUN)
     beachtest:::check_character_const_slice(rFUN, by.row=list(1:5, 6:8))
 
+    beachtest:::check_character_indexed_mat(rFUN)
+    beachtest:::check_character_indexed_slice(rFUN, by.row=list(1:5, 6:8))
+
     # Testing chunk settings.
     beachtest:::check_character_mat(rFUN, chunk.ncol=3)
     beachtest:::check_character_mat(rFUN, nr=5, nc=30, chunk.ncol=5)
@@ -64,6 +70,9 @@ test_that("RLE character matrix input is okay", {
 
     beachtest:::check_character_const_mat(rFUN, chunk.ncols=2)
     beachtest:::check_character_const_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
+
+    beachtest:::check_character_indexed_mat(rFUN, chunk.ncols=2)
+    beachtest:::check_character_indexed_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
 
     # Checking type. 
     beachtest:::check_type(rFUN, expected="character")
@@ -89,6 +98,9 @@ test_that("HDF5 character matrix input is okay", {
     # Testing const options.
     beachtest:::check_character_const_mat(hFUN)
     beachtest:::check_character_const_slice(hFUN, by.row=list(1:5, 6:8))
+
+    beachtest:::check_character_indexed_mat(hFUN)
+    beachtest:::check_character_indexed_slice(hFUN, by.row=list(1:5, 6:8))
 
     beachtest:::check_type(hFUN, expected="character")
 })

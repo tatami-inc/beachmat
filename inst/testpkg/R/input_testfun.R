@@ -163,6 +163,10 @@ check_logical_indexed_mat <- function(FUN, ...) {
     .check_indexed_mat(FUN=FUN, ..., cxxfun=cxx_test_logical_indexed_access)
 }
 
+check_character_indexed_mat <- function(FUN, ...) {
+    .check_indexed_mat(FUN=FUN, ..., cxxfun=cxx_test_character_indexed_access)
+}
+
 .check_indexed_slices <- function(FUN, ..., by.row, cxxfun) {
     for (x in by.row) {
         rx <- range(x)
@@ -185,6 +189,10 @@ check_numeric_indexed_slice <- function(FUN, ..., by.row) {
 
 check_logical_indexed_slice <- function(FUN, ..., by.row) {
     .check_indexed_slices(FUN=FUN, ..., by.row=by.row, cxxfun=cxx_test_logical_indexed_slice)
+}
+
+check_character_indexed_slice <- function(FUN, ..., by.row) {
+    .check_indexed_slices(FUN=FUN, ..., by.row=by.row, cxxfun=cxx_test_character_indexed_slice)
 }
 
 ###############################

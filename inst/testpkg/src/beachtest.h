@@ -53,11 +53,15 @@ SEXP test_integer_indexed_access (SEXP);
 
 SEXP test_logical_indexed_access (SEXP);
 
+SEXP test_character_indexed_access (SEXP);
+
 SEXP test_numeric_indexed_slice (SEXP, SEXP);
                                                  
 SEXP test_integer_indexed_slice (SEXP, SEXP);
                                                  
 SEXP test_logical_indexed_slice (SEXP, SEXP);
+
+SEXP test_character_indexed_slice (SEXP, SEXP);
 
 // Sparse access.
 

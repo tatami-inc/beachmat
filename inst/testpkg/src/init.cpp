@@ -33,10 +33,12 @@ static const R_CallMethodDef all_call_entries[] = {
     REGISTER(test_numeric_indexed_access, 1),
     REGISTER(test_integer_indexed_access, 1),
     REGISTER(test_logical_indexed_access, 1),
+    REGISTER(test_character_indexed_access, 1),
 
     REGISTER(test_numeric_indexed_slice, 2),
     REGISTER(test_integer_indexed_slice, 2),
     REGISTER(test_logical_indexed_slice, 2),
+    REGISTER(test_character_indexed_slice, 2),
 
     // Sparse access.
     REGISTER(test_sparse_numeric_slice, 2),
