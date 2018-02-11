@@ -47,17 +47,17 @@ SEXP test_character_const_slice (SEXP, SEXP);
 
 // Non-zero access.
 
-SEXP test_numeric_nonzero_access (SEXP);
+SEXP test_numeric_indexed_access (SEXP);
 
-SEXP test_integer_nonzero_access (SEXP);
+SEXP test_integer_indexed_access (SEXP);
 
-SEXP test_logical_nonzero_access (SEXP);
+SEXP test_logical_indexed_access (SEXP);
 
-SEXP test_numeric_nonzero_slice (SEXP, SEXP);
+SEXP test_numeric_indexed_slice (SEXP, SEXP);
                                                  
-SEXP test_integer_nonzero_slice (SEXP, SEXP);
+SEXP test_integer_indexed_slice (SEXP, SEXP);
                                                  
-SEXP test_logical_nonzero_slice (SEXP, SEXP);
+SEXP test_logical_indexed_slice (SEXP, SEXP);
 
 // Sparse access.
 

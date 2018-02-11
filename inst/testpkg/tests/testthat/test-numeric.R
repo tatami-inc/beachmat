@@ -21,8 +21,8 @@ test_that("Simple numeric matrix input is okay", {
     beachtest:::check_numeric_const_mat(sFUN)
     beachtest:::check_numeric_const_slice(sFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(sFUN)
-    beachtest:::check_numeric_nonzero_slice(sFUN, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(sFUN)
+    beachtest:::check_numeric_indexed_slice(sFUN, by.row=list(1:5, 6:8))
 
     beachtest:::check_type(sFUN, expected="double")
 })
@@ -48,8 +48,8 @@ test_that("Dense numeric matrix input is okay", {
     beachtest:::check_numeric_const_mat(dFUN)
     beachtest:::check_numeric_const_slice(dFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(dFUN)
-    beachtest:::check_numeric_nonzero_slice(dFUN, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(dFUN)
+    beachtest:::check_numeric_indexed_slice(dFUN, by.row=list(1:5, 6:8))
 
     beachtest:::check_type(dFUN, expected="double")
 })
@@ -78,8 +78,8 @@ test_that("Sparse numeric matrix input is okay", {
     beachtest:::check_numeric_const_mat(csFUN)
     beachtest:::check_numeric_const_slice(csFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(csFUN)
-    beachtest:::check_numeric_nonzero_slice(csFUN, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(csFUN)
+    beachtest:::check_numeric_indexed_slice(csFUN, by.row=list(1:5, 6:8))
    
     beachtest:::check_type(csFUN, expected="double")
 })
@@ -111,10 +111,10 @@ test_that("Symmetric numeric matrix input is okay", {
     beachtest:::check_numeric_const_slice(spFUN, by.row=list(1:5, 6:8))
     beachtest:::check_numeric_const_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(spFUN)
-    beachtest:::check_numeric_nonzero_mat(spFUN, mode="L")
-    beachtest:::check_numeric_nonzero_slice(spFUN, by.row=list(1:5, 6:8))
-    beachtest:::check_numeric_nonzero_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(spFUN)
+    beachtest:::check_numeric_indexed_mat(spFUN, mode="L")
+    beachtest:::check_numeric_indexed_slice(spFUN, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
  
     beachtest:::check_type(spFUN, expected="double")
     beachtest:::check_type(spFUN, mode="L", expected="double")
@@ -150,8 +150,8 @@ test_that("RLE numeric matrix input is okay", {
     beachtest:::check_numeric_const_mat(rFUN)
     beachtest:::check_numeric_const_slice(rFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(rFUN)
-    beachtest:::check_numeric_nonzero_slice(rFUN, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(rFUN)
+    beachtest:::check_numeric_indexed_slice(rFUN, by.row=list(1:5, 6:8))
 
     # Testing chunk settings.
     beachtest:::check_numeric_mat(rFUN, chunk.ncols=3)
@@ -168,8 +168,8 @@ test_that("RLE numeric matrix input is okay", {
     beachtest:::check_numeric_const_mat(rFUN, chunk.ncols=2)
     beachtest:::check_numeric_const_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(rFUN, chunk.ncols=2)
-    beachtest:::check_numeric_nonzero_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(rFUN, chunk.ncols=2)
+    beachtest:::check_numeric_indexed_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
   
     # Checking type.
     beachtest:::check_type(rFUN, expected="double")
@@ -197,8 +197,8 @@ test_that("HDF5 numeric matrix input is okay", {
     beachtest:::check_numeric_const_mat(hFUN)
     beachtest:::check_numeric_const_slice(hFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_numeric_nonzero_mat(hFUN)
-    beachtest:::check_numeric_nonzero_slice(hFUN, by.row=list(1:5, 6:8))
+    beachtest:::check_numeric_indexed_mat(hFUN)
+    beachtest:::check_numeric_indexed_slice(hFUN, by.row=list(1:5, 6:8))
 
     beachtest:::check_type(hFUN, expected="double")
 })

@@ -123,47 +123,47 @@ SEXP test_character_const_slice (SEXP in, SEXP rx) {
 
 /* Realized non-zero access functions. */
 
-SEXP test_numeric_nonzero_access (SEXP in) {
+SEXP test_numeric_indexed_access (SEXP in) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
-    return fill_up_nonzero<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get());
+    return fill_up_indexed<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get());
     END_RCPP
 }
 
-SEXP test_integer_nonzero_access (SEXP in) {
+SEXP test_integer_indexed_access (SEXP in) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
-    return fill_up_nonzero<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get());
+    return fill_up_indexed<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get());
     END_RCPP
 }
 
-SEXP test_logical_nonzero_access (SEXP in) {
+SEXP test_logical_indexed_access (SEXP in) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
-    return fill_up_nonzero<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get());
+    return fill_up_indexed<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get());
     END_RCPP
 }
 
 /* Realized non-zero slice functions. */
 
-SEXP test_numeric_nonzero_slice (SEXP in, SEXP rx) {
+SEXP test_numeric_indexed_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
-    return fill_up_nonzero_slice<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get(), rx);
+    return fill_up_indexed_slice<Rcpp::NumericVector, Rcpp::NumericMatrix>(ptr.get(), rx);
     END_RCPP
 }
 
-SEXP test_integer_nonzero_slice (SEXP in, SEXP rx) {
+SEXP test_integer_indexed_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
-    return fill_up_nonzero_slice<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get(), rx);
+    return fill_up_indexed_slice<Rcpp::IntegerVector, Rcpp::IntegerMatrix>(ptr.get(), rx);
     END_RCPP
 }
 
-SEXP test_logical_nonzero_slice (SEXP in, SEXP rx) {
+SEXP test_logical_indexed_slice (SEXP in, SEXP rx) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
-    return fill_up_nonzero_slice<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get(), rx);
+    return fill_up_indexed_slice<Rcpp::LogicalVector, Rcpp::LogicalMatrix>(ptr.get(), rx);
     END_RCPP
 }
 

@@ -49,20 +49,20 @@ typename V::const_iterator lin_matrix<T, V>::get_const_col(size_t c, typename V:
 }
 
 template<typename T, class V>
-typename lin_matrix<T, V>::const_col_nonzero_info 
-lin_matrix<T, V>::get_const_col_nonzero(size_t c, typename V::iterator work) {
-    return get_const_col_nonzero(c, work, 0, get_nrow());
+typename lin_matrix<T, V>::const_col_indexed_info 
+lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator work) {
+    return get_const_col_indexed(c, work, 0, get_nrow());
 }
 
 template<typename T, class V>
-typename lin_matrix<T, V>::const_col_nonzero_info 
-lin_matrix<T, V>::get_const_col_nonzero(size_t c, typename V::iterator work, size_t first, size_t last) {
+typename lin_matrix<T, V>::const_col_indexed_info 
+lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator work, size_t first, size_t last) {
     if (indices.size()!=this->get_nrow()) {
         indices=Rcpp::IntegerVector(this->get_nrow());
         std::iota(indices.begin(), indices.end(), 0); // populating with indices.
     }
     get_col(c, work, first, last);
-    return const_col_nonzero_info(last - first, indices.begin() + first, work);
+    return const_col_indexed_info(last - first, indices.begin() + first, work);
 }
 
 /* Defining the advanced interface. */
@@ -170,11 +170,11 @@ template <typename T, class V>
 Csparse_lin_matrix<T, V>::~Csparse_lin_matrix() {} 
 
 template <typename T, class V>
-typename lin_matrix<T, V>::const_col_nonzero_info
-Csparse_lin_matrix<T, V>::get_const_col_nonzero(size_t c, typename V::iterator out, size_t first, size_t last) {
+typename lin_matrix<T, V>::const_col_indexed_info
+Csparse_lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator out, size_t first, size_t last) {
     Rcpp::IntegerVector::iterator iIt;
     size_t nzero=this->mat.get_const_col_nonzero(c, iIt, out, first, last);
-    return typename lin_matrix<T, V>::const_col_nonzero_info(nzero, iIt, out); 
+    return typename lin_matrix<T, V>::const_col_indexed_info(nzero, iIt, out); 
 }
 
 template <typename T, class V>

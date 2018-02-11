@@ -167,14 +167,14 @@ O fill_up_const_slice (M ptr, const Rcpp::IntegerVector& rows) {
 /* This tests the behaviour of the non-zero filling-up without slices. */
 
 template <class T, class O, class M>  
-O fill_up_nonzero (M ptr) {
+O fill_up_indexed (M ptr) {
     const size_t& nrows=ptr->get_nrow();
     const size_t& ncols=ptr->get_ncol();
     O output(nrows, ncols);
 
     T target(nrows);
     for (int c=0; c<ncols; ++c) {
-        auto stuff=ptr->get_const_col_nonzero(c, target.begin());
+        auto stuff=ptr->get_const_col_indexed(c, target.begin());
         auto num=std::get<0>(stuff);
         auto iIt=std::get<1>(stuff);
         auto tIt=std::get<2>(stuff);
@@ -190,7 +190,7 @@ O fill_up_nonzero (M ptr) {
 /* This tests the behaviour of the non-zero filling-up with slices. */
 
 template <class T, class O, class M>  
-O fill_up_nonzero_slice (M ptr, const Rcpp::IntegerVector& rows) {
+O fill_up_indexed_slice (M ptr, const Rcpp::IntegerVector& rows) {
     if (rows.size()!=2) { 
         throw std::runtime_error("'rows' should be an integer vector of length 2"); 
     }
@@ -202,7 +202,7 @@ O fill_up_nonzero_slice (M ptr, const Rcpp::IntegerVector& rows) {
 
     T target(nrows);
     for (int c=0; c<ncols; ++c) {
-        auto stuff=ptr->get_const_col_nonzero(c, target.begin(), rstart, rend);
+        auto stuff=ptr->get_const_col_indexed(c, target.begin(), rstart, rend);
         auto num=std::get<0>(stuff);
         auto iIt=std::get<1>(stuff);
         auto tIt=std::get<2>(stuff);

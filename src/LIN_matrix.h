@@ -40,16 +40,16 @@ public:
     typename V::const_iterator get_const_col(size_t, typename V::iterator);
     virtual typename V::const_iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
 
-    typedef std::tuple<size_t, Rcpp::IntegerVector::iterator, typename V::iterator> const_col_nonzero_info;
-    const_col_nonzero_info get_const_col_nonzero(size_t, typename V::iterator);
-    virtual const_col_nonzero_info get_const_col_nonzero(size_t, typename V::iterator, size_t, size_t);
+    typedef std::tuple<size_t, Rcpp::IntegerVector::iterator, typename V::iterator> const_col_indexed_info;
+    const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator);
+    virtual const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
 
     virtual std::unique_ptr<lin_matrix<T, V> > clone() const=0;
 
     virtual Rcpp::RObject yield() const=0;
     virtual matrix_type get_matrix_type() const=0;
 private:
-    Rcpp::IntegerVector indices; // needed for get_const_col_nonzero for non-sparse matrices.
+    Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
 
 /* Various flavours of a LIN matrix */
@@ -107,7 +107,7 @@ public:
     Csparse_lin_matrix(const Rcpp::RObject&);
     ~Csparse_lin_matrix();
 
-    typename lin_matrix<T, V>::const_col_nonzero_info get_const_col_nonzero(size_t, typename V::iterator, size_t, size_t);
+    typename lin_matrix<T, V>::const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };

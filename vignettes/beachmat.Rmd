@@ -123,13 +123,13 @@ Suggests: beachmat, HDF5Array, DelayedArray, Matrix
 We demonstrate the use of the API for numeric matrices.
 First, we include the relevant header file:
 
-```
+```cpp
 #include "beachmat/numeric_matrix.h"
 ```
 
 A double-precision matrix object `dmat` is handled in C++ by passing the `SEXP` struct from `.Call` to `create_numeric_matrix`:
 
-```
+```cpp
 std::unique_ptr<beachmat::numeric_matrix> dptr = beachmat::create_numeric_matrix(dmat);
 ```
 
@@ -237,22 +237,22 @@ For other matrices, this function simply calls `get_col` to copy the data into `
 Thus, for general use, `work` must point to a writeable block of memory, even if it does not get used when `dptr` points to a simple/dense matrix.
 
 ```cpp
-dptr->get_const_col_nonzero(/* size_t */ c, 
+dptr->get_const_col_indexed(/* size_t */ c, 
                             /* Rcpp::NumericVector::iterator */ work, 
                             /* size_t */ first, 
                             /* size_t */ last);
 ```
 
-Returns a `const_col_nonzero_info` object, which is a tuple consisting of:
+Returns a `const_col_indexed_info` object, which is a tuple consisting of:
 
-1. A `size_t`, specifying the number of non-zero entries in column `c` from rows `[first, last)`.
-2. A `Rcpp::IntegerVector::iterator`, pointing to a vector containing the row index for each non-zero entry in column `c` from rows `[first, last)`.
-3. A `Rcpp::NumericVector::iterator`, pointing to a vector containing the values of each non-zero entry in column `c` from rows `[first, last)`.
+1. A `size_t`, specifying the number of entries in column `c` from rows `[first, last)`.
+2. A `Rcpp::IntegerVector::iterator`, pointing to a vector containing the row index for each entry in column `c` from rows `[first, last)`.
+3. A `Rcpp::NumericVector::iterator`, pointing to a vector containing the value of each entry in column `c` from rows `[first, last)`.
 
 The data type of `work` and the output iterator in (3) must correspond to that of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
 Again, `first` and `last` do not have to be specified and will default to the entire column.
 
-This method is quite efficient for `dgCMatrix` objects, as it can directly return iterators to the indices and values of the non-zero entries.
+This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the **non-zero entries only**.
 No copying is performed, and the zero values do not have to be explicitly generated as they would be in `get_col`.
 For all other matrices, `get_const_col` is called and iterator (2) is pointed at an internal array of consecutive integers (which should be treated as read-only).
 
