@@ -37,8 +37,8 @@ public:
 
     virtual T get(size_t, size_t)=0;
 
-    typename V::const_iterator get_const_col(size_t, typename V::iterator);
-    virtual typename V::const_iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+    typename V::iterator get_const_col(size_t, typename V::iterator);
+    virtual typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
 
     typedef std::tuple<size_t, Rcpp::IntegerVector::iterator, typename V::iterator> const_col_indexed_info;
     const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator);
@@ -86,7 +86,7 @@ public:
     simple_lin_matrix(const Rcpp::RObject&);
     ~simple_lin_matrix();
     
-    typename V::const_iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+    typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
@@ -97,7 +97,7 @@ public:
     dense_lin_matrix(const Rcpp::RObject&);
     ~dense_lin_matrix();
     
-    typename V::const_iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+    typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };

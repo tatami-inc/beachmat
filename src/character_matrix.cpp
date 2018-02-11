@@ -36,8 +36,7 @@ character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator w
         indices=Rcpp::IntegerVector(this->get_nrow());
         std::iota(indices.begin(), indices.end(), 0); // populating with indices.
     }
-    get_col(c, work, first, last);
-    return const_col_indexed_info(last - first, indices.begin() + first, work);
+    return const_col_indexed_info(last - first, indices.begin() + first, get_const_col(c, work, first, last));
 }
 
 /* Methods for the simple character matrix. */

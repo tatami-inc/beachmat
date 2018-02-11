@@ -38,12 +38,12 @@ void lin_matrix<T, V>::get_row(size_t r, Rcpp::NumericVector::iterator out) {
 }
 
 template<typename T, class V>
-typename V::const_iterator lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work) {
+typename V::iterator lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work) {
     return get_const_col(c, work, 0, get_nrow());
 }
 
 template<typename T, class V>
-typename V::const_iterator lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
+typename V::iterator lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
     get_col(c, work, first, last);
     return work;
 }
@@ -61,8 +61,7 @@ lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator work, siz
         indices=Rcpp::IntegerVector(this->get_nrow());
         std::iota(indices.begin(), indices.end(), 0); // populating with indices.
     }
-    get_const_col(c, work, first, last);
-    return const_col_indexed_info(last - first, indices.begin() + first, work);
+    return const_col_indexed_info(last - first, indices.begin() + first, get_const_col(c, work, first, last));
 }
 
 /* Defining the advanced interface. */
@@ -136,7 +135,7 @@ template <typename T, class V>
 simple_lin_matrix<T, V>::~simple_lin_matrix() {} 
 
 template <typename T, class V>
-typename V::const_iterator simple_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
+typename V::iterator simple_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
     return this->mat.get_const_col(c, first, last);
 }
 
@@ -152,7 +151,7 @@ template <typename T, class V>
 dense_lin_matrix<T, V>::~dense_lin_matrix() {} 
 
 template <typename T, class V>
-typename V::const_iterator dense_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
+typename V::iterator dense_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
     return this->mat.get_const_col(c, first, last);
 }
 
