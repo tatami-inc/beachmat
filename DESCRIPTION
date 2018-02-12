@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 1.1.9
-Date: 2018-01-11
+Version: 1.1.10
+Date: 2018-02-12
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
         "alun@wehi.edu.au"), person("Herve", "Pages", role="aut"),
@@ -10,7 +10,7 @@ Depends: R (>= 3.5)
 Imports: utils, methods, Rhdf5lib (>= 1.1.4), rhdf5, 
         HDF5Array (>= 1.7.3), DelayedArray (>= 0.5.11), 
         Rcpp (>= 0.12.14) 
-Suggests: testthat, BiocStyle, knitr, rmarkdown, Matrix
+Suggests: testthat, BiocStyle, knitr, rmarkdown, Matrix, devtools
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for a variety of
         commonly used matrix types, including sparse and HDF5-backed
