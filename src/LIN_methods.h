@@ -253,7 +253,7 @@ delayed_lin_matrix<T, V>::delayed_lin_matrix(const Rcpp::RObject& incoming) : or
     if (seed_ptr.get()==NULL) { 
         seed_ptr=std::unique_ptr<lin_matrix<T, V> >(new delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix(incoming));
     } else {
-        transformer=delayed_coord_transformer(incoming, seed_ptr.get());
+        transformer=delayed_coord_transformer<T, V>(incoming, seed_ptr.get());
     }
 
     return;
