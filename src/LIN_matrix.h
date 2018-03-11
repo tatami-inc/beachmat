@@ -179,6 +179,17 @@ private:
     std::unique_ptr<lin_matrix<T, V> > seed_ptr;
     delayed_coord_transformer<T, V> transformer;
     static std::unique_ptr<lin_matrix<T, V> > generate_seed(Rcpp::RObject);
+
+    /* This class allows chunked extraction from a 'delayed_matrix' instance,
+     * mimicking a unique pointer to other top-level classes.
+     */
+    class enslaved_delayed_lin_matrix : public advanced_lin_matrix<T, V, delayed_matrix<T, V> > {
+    public:
+        enslaved_delayed_lin_matrix(const Rcpp::RObject&);
+        ~enslaved_delayed_lin_matrix();
+//        typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+        std::unique_ptr<lin_matrix<T, V> > clone() const;
+    };
 };
 
 }

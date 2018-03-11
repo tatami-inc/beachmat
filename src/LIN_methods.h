@@ -249,9 +249,8 @@ delayed_lin_matrix<T, V>::delayed_lin_matrix(const Rcpp::RObject& incoming) : or
         
     // If the seed is still NULL, we realize the matrix and use the result as the seed.
     if (seed_ptr.get()==NULL) { 
-        Rcpp::RObject realized=realize_delayed_array(incoming);
-        seed_ptr=generate_seed(realized);
-        transformer=delayed_coord_transformer<T, V>(realized);
+        seed_ptr=std::unique_ptr<lin_matrix<T, V> >(new delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix(incoming));
+//        transformer=delayed_coord_transformer<T, V>(realized);
     }
 
     // Setting dimensions.
@@ -324,8 +323,25 @@ Rcpp::RObject delayed_lin_matrix<T, V>::yield() const {
 }
 
 template<typename T, class V>
-matrix_type delayed_lin_matrix<T, V>::get_matrix_type() const { // returns the type of the SEED!
-    return seed_ptr->get_matrix_type();
+matrix_type delayed_lin_matrix<T, V>::get_matrix_type() const { 
+    return DELAYED;
+}
+
+template<typename T, class V>
+delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix::enslaved_delayed_lin_matrix(const Rcpp::RObject& in) :
+    advanced_lin_matrix<T, V, delayed_matrix<T, V> >(in) {}
+
+template<typename T, class V>
+delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix::~enslaved_delayed_lin_matrix() {}
+
+//template<typename T, class V>
+//typename V::iterator delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix::get_const_col(size_t c, typename V::iterator out, size_t first, size_t last) {
+//    return (this->mat).get_const_col(c, out, first, last);
+//}
+
+template<typename T, class V>
+std::unique_ptr<lin_matrix<T, V> > delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix::clone() const {
+    return std::unique_ptr<lin_matrix<T, V> >(new delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix(*this));
 }
 
 }
