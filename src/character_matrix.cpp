@@ -41,29 +41,10 @@ character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator w
 
 /* Methods for the simple character matrix. */
 
-simple_character_matrix::simple_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+simple_character_matrix::simple_character_matrix(const Rcpp::RObject& incoming) : 
+    advanced_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> >(incoming) {}
 
 simple_character_matrix::~simple_character_matrix() {}
-
-size_t simple_character_matrix::get_nrow() const {
-    return mat.get_nrow();
-}
-
-size_t simple_character_matrix::get_ncol() const {
-    return mat.get_ncol();
-}
-
-void simple_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    mat.get_row(r, out, first, last);
-}
-
-void simple_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    mat.get_col(c, out, first, last);
-}
-
-Rcpp::String simple_character_matrix::get(size_t r, size_t c) {
-    return mat.get(r, c);
-}
 
 Rcpp::StringVector::iterator simple_character_matrix::get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
     return mat.get_const_col(c, first, last);
@@ -71,52 +52,6 @@ Rcpp::StringVector::iterator simple_character_matrix::get_const_col(size_t c, Rc
 
 std::unique_ptr<character_matrix> simple_character_matrix::clone() const {
     return std::unique_ptr<character_matrix>(new simple_character_matrix(*this));
-}
-
-Rcpp::RObject simple_character_matrix::yield() const {
-    return mat.yield();
-}
-
-matrix_type simple_character_matrix::get_matrix_type() const {
-    return mat.get_matrix_type();
-}
-
-/* Methods for the Rle character matrix. */
-
-Rle_character_matrix::Rle_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
-
-Rle_character_matrix::~Rle_character_matrix() {}
-
-size_t Rle_character_matrix::get_nrow() const {
-    return mat.get_nrow();
-}
-
-size_t Rle_character_matrix::get_ncol() const {
-    return mat.get_ncol();
-}
-
-void Rle_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    mat.get_row(r, out, first, last);
-}
-
-void Rle_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    mat.get_col(c, out, first, last);
-}
-
-Rcpp::String Rle_character_matrix::get(size_t r, size_t c) {
-    return mat.get(r, c);
-}
-
-std::unique_ptr<character_matrix> Rle_character_matrix::clone() const {
-    return std::unique_ptr<character_matrix>(new Rle_character_matrix(*this));
-}
-
-Rcpp::RObject Rle_character_matrix::yield() const {
-    return mat.yield();
-}
-
-matrix_type Rle_character_matrix::get_matrix_type() const {
-    return mat.get_matrix_type();
 }
 
 /* Methods for the HDF5 character matrix. */
@@ -180,21 +115,21 @@ matrix_type HDF5_character_matrix::get_matrix_type() const {
 
 /* Methods for the delayed character matrix. */
 
-delayed_character_matrix::delayed_character_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr), transformer(incoming) {
+delayed_character_matrix::delayed_character_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
+    check_DelayedMatrix(incoming);
+    
     // Trying to generate the seed, if it's a valid object in itself.
-    if (transformer.has_unmodified_values()) {
+    if (only_delayed_coord_changes(incoming)) {
         seed_ptr=generate_seed(incoming);
     }
         
-    // If the seed is still NULL, we realize the matrix and use the result as the seed.
+    // If the seed is still NULL, we switch to a chunked matrix format.
     if (seed_ptr.get()==NULL) { 
-        Rcpp::RObject realized=realize_delayed_array(incoming);
-        seed_ptr=generate_seed(realized);
-        transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(realized);
+        seed_ptr=std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved_delayed_character_matrix(incoming));
+    } else {
+        transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(incoming, seed_ptr.get());
     }
 
-    // Setting dimensions.
-    transformer.set_dim(seed_ptr.get());
     return;
 }
 
@@ -241,7 +176,7 @@ Rcpp::RObject delayed_character_matrix::yield() const {
 }
 
 matrix_type delayed_character_matrix::get_matrix_type() const { // returns the type of the SEED!
-    return seed_ptr->get_matrix_type();
+    return DELAYED;
 }
 
 const std::vector<std::string> allowed_seeds={"RleMatrix"};
@@ -253,6 +188,20 @@ std::unique_ptr<character_matrix> delayed_character_matrix::generate_seed(Rcpp::
     } else {
         return nullptr;
     }
+}
+
+delayed_character_matrix::enslaved_delayed_character_matrix::enslaved_delayed_character_matrix(const Rcpp::RObject& in) :
+    advanced_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> >(in) {}
+
+delayed_character_matrix::enslaved_delayed_character_matrix::~enslaved_delayed_character_matrix() {}
+
+//template<typename T, class V>
+//typename V::iterator delayed_character_matrix::enslaved_delayed_character_matrix::get_const_col(size_t c, typename V::iterator out, size_t first, size_t last) {
+//    return (this->mat).get_const_col(c, out, first, last);
+//}
+
+std::unique_ptr<character_matrix > delayed_character_matrix::enslaved_delayed_character_matrix::clone() const {
+    return std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved_delayed_character_matrix(*this));
 }
 
 /* Dispatch definition */

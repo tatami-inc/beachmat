@@ -39,53 +39,43 @@ private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
 
+/* Advanced character matrix template */
+
+template<class M>
+class advanced_character_matrix : public character_matrix {
+public:    
+    advanced_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+    ~advanced_character_matrix() {}
+  
+    size_t get_nrow() const { return mat.get_nrow(); }
+    size_t get_ncol() const { return mat.get_ncol(); }
+ 
+    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { return mat.get_row(r, out, first, last); }
+    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { return mat.get_col(c, out, first, last); }
+
+    Rcpp::String get(size_t r, size_t c) { return mat.get(r, c); }
+
+    std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new advanced_character_matrix(*this)); }
+
+    Rcpp::RObject yield () const { return mat.yield(); }
+    matrix_type get_matrix_type() const { return mat.get_matrix_type(); }
+protected:
+    M mat;
+};
+
 /* Simple character matrix */
 
-class simple_character_matrix : public character_matrix {
+class simple_character_matrix : public advanced_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> > {
 public:
     simple_character_matrix(const Rcpp::RObject& incoming);
     ~simple_character_matrix();
-  
-    size_t get_nrow() const;
-    size_t get_ncol() const;
- 
-    void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-    void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-
-    Rcpp::String get(size_t, size_t);
-
     Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-
     std::unique_ptr<character_matrix> clone() const;
-   
-    Rcpp::RObject yield () const;
-    matrix_type get_matrix_type() const;
-private:
-    simple_matrix<Rcpp::String, Rcpp::StringVector> mat;
 };
 
 /* RLE character matrix */
 
-class Rle_character_matrix : public character_matrix {
-public:
-    Rle_character_matrix(const Rcpp::RObject& incoming);
-    ~Rle_character_matrix();
-  
-    size_t get_nrow() const;
-    size_t get_ncol() const;
- 
-    void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-    void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-
-    Rcpp::String get(size_t, size_t);
-
-    std::unique_ptr<character_matrix> clone() const;
-
-    Rcpp::RObject yield () const;
-    matrix_type get_matrix_type() const;
-private:
-    Rle_matrix<Rcpp::String, Rcpp::StringVector> mat;
-};
+using Rle_character_matrix=advanced_character_matrix<Rle_matrix<Rcpp::String, Rcpp::StringVector> >;
 
 /* HDF5Matrix */
 
@@ -142,6 +132,14 @@ private:
     std::unique_ptr<character_matrix> seed_ptr;
     delayed_coord_transformer<Rcpp::String, Rcpp::StringVector> transformer;
     static std::unique_ptr<character_matrix> generate_seed(Rcpp::RObject);
+
+    class enslaved_delayed_character_matrix : public advanced_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> > {
+    public:
+        enslaved_delayed_character_matrix(const Rcpp::RObject&);
+        ~enslaved_delayed_character_matrix();
+//        typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+        std::unique_ptr<character_matrix> clone() const;
+    };
 };
 
 /* Dispatcher */
