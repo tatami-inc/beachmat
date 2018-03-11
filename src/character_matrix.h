@@ -42,10 +42,10 @@ private:
 /* Advanced character matrix template */
 
 template<class M>
-class advanced_character_matrix : public character_matrix {
+class general_character_matrix : public character_matrix {
 public:    
-    advanced_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
-    ~advanced_character_matrix() {}
+    general_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+    ~general_character_matrix() {}
   
     size_t get_nrow() const { return mat.get_nrow(); }
     size_t get_ncol() const { return mat.get_ncol(); }
@@ -55,7 +55,7 @@ public:
 
     Rcpp::String get(size_t r, size_t c) { return mat.get(r, c); }
 
-    std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new advanced_character_matrix(*this)); }
+    std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new general_character_matrix(*this)); }
 
     Rcpp::RObject yield () const { return mat.yield(); }
     matrix_type get_matrix_type() const { return mat.get_matrix_type(); }
@@ -65,7 +65,8 @@ protected:
 
 /* Simple character matrix */
 
-class simple_character_matrix : public advanced_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> > {
+using simple_character_precursor=general_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> >;
+class simple_character_matrix : public simple_character_precursor {
 public:
     simple_character_matrix(const Rcpp::RObject& incoming);
     ~simple_character_matrix();
@@ -75,7 +76,7 @@ public:
 
 /* RLE character matrix */
 
-using Rle_character_matrix=advanced_character_matrix<Rle_matrix<Rcpp::String, Rcpp::StringVector> >;
+using Rle_character_matrix=general_character_matrix<Rle_matrix<Rcpp::String, Rcpp::StringVector> >;
 
 /* HDF5Matrix */
 
@@ -133,10 +134,11 @@ private:
     delayed_coord_transformer<Rcpp::String, Rcpp::StringVector> transformer;
     static std::unique_ptr<character_matrix> generate_seed(Rcpp::RObject);
 
-    class enslaved_delayed_character_matrix : public advanced_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> > {
+    using enslaved_precursor=general_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> >;
+    class enslaved : public enslaved_precursor {
     public:
-        enslaved_delayed_character_matrix(const Rcpp::RObject&);
-        ~enslaved_delayed_character_matrix();
+        enslaved(const Rcpp::RObject&);
+        ~enslaved();
 //        typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
         std::unique_ptr<character_matrix> clone() const;
     };

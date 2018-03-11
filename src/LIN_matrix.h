@@ -53,13 +53,13 @@ private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
 
-/* Various flavours of a LIN matrix */
+/* A general flavour for a LIN matrix */
 
 template <typename T, class V, class M>
-class advanced_lin_matrix : public lin_matrix<T, V> {
+class general_lin_matrix : public lin_matrix<T, V> {
 public:    
-    advanced_lin_matrix(const Rcpp::RObject&);
-    ~advanced_lin_matrix();
+    general_lin_matrix(const Rcpp::RObject&);
+    ~general_lin_matrix();
     
     size_t get_nrow() const;
     size_t get_ncol() const;
@@ -80,8 +80,13 @@ protected:
     M mat;
 };
 
+/* Realization of the general flavour for a simple matrix */
+
 template <typename T, class V>
-class simple_lin_matrix : public advanced_lin_matrix<T, V, simple_matrix<T, V> > {
+using simple_lin_precursor=general_lin_matrix<T, V, simple_matrix<T, V> >;
+
+template <typename T, class V>
+class simple_lin_matrix : public simple_lin_precursor<T, V> {
 public:
     simple_lin_matrix(const Rcpp::RObject&);
     ~simple_lin_matrix();
@@ -91,8 +96,13 @@ public:
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
 
+/* Realization of the general flavour for a dense matrix */
+
 template <typename T, class V>
-class dense_lin_matrix : public advanced_lin_matrix<T, V, dense_matrix<T, V> > {
+using dense_lin_precursor=general_lin_matrix<T, V, dense_matrix<T, V> >;
+
+template <typename T, class V>
+class dense_lin_matrix : public dense_lin_precursor<T, V> {
 public:
     dense_lin_matrix(const Rcpp::RObject&);
     ~dense_lin_matrix();
@@ -102,8 +112,13 @@ public:
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
 
+/* Realization of the general flavour for a C-sparse matrix */
+
 template <typename T, class V>
-class Csparse_lin_matrix : public advanced_lin_matrix<T, V, Csparse_matrix<T, V> > {
+using Csparse_lin_precursor=general_lin_matrix<T, V, Csparse_matrix<T, V> >;
+
+template <typename T, class V>
+class Csparse_lin_matrix : public Csparse_lin_precursor<T, V> {
 public:
     Csparse_lin_matrix(const Rcpp::RObject&);
     ~Csparse_lin_matrix();
@@ -113,11 +128,13 @@ public:
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
 
-template <typename T, class V>
-using Psymm_lin_matrix=advanced_lin_matrix<T, V, Psymm_matrix<T, V> >;
+/* Realization of the general flavour for other matrices */
 
 template <typename T, class V>
-using Rle_lin_matrix=advanced_lin_matrix<T, V, Rle_matrix<T, V> >;
+using Psymm_lin_matrix=general_lin_matrix<T, V, Psymm_matrix<T, V> >;
+
+template <typename T, class V>
+using Rle_lin_matrix=general_lin_matrix<T, V, Rle_matrix<T, V> >;
 
 /* HDF5Matrix of LINs */
 
@@ -183,10 +200,11 @@ private:
     /* This class allows chunked extraction from a 'delayed_matrix' instance,
      * mimicking a unique pointer to other top-level classes.
      */
-    class enslaved_delayed_lin_matrix : public advanced_lin_matrix<T, V, delayed_matrix<T, V> > {
+    using enslaved_precursor=general_lin_matrix<T, V, delayed_matrix<T, V> >;
+    class enslaved : public enslaved_precursor {
     public:
-        enslaved_delayed_lin_matrix(const Rcpp::RObject&);
-        ~enslaved_delayed_lin_matrix();
+        enslaved(const Rcpp::RObject&);
+        ~enslaved();
 //        typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
         std::unique_ptr<lin_matrix<T, V> > clone() const;
     };

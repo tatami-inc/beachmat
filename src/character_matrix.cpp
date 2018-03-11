@@ -41,8 +41,7 @@ character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator w
 
 /* Methods for the simple character matrix. */
 
-simple_character_matrix::simple_character_matrix(const Rcpp::RObject& incoming) : 
-    advanced_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> >(incoming) {}
+simple_character_matrix::simple_character_matrix(const Rcpp::RObject& incoming) : simple_character_precursor (incoming) {}
 
 simple_character_matrix::~simple_character_matrix() {}
 
@@ -125,7 +124,7 @@ delayed_character_matrix::delayed_character_matrix(const Rcpp::RObject& incoming
         
     // If the seed is still NULL, we switch to a chunked matrix format.
     if (seed_ptr.get()==NULL) { 
-        seed_ptr=std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved_delayed_character_matrix(incoming));
+        seed_ptr=std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved(incoming));
     } else {
         transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(incoming, seed_ptr.get());
     }
@@ -190,18 +189,17 @@ std::unique_ptr<character_matrix> delayed_character_matrix::generate_seed(Rcpp::
     }
 }
 
-delayed_character_matrix::enslaved_delayed_character_matrix::enslaved_delayed_character_matrix(const Rcpp::RObject& in) :
-    advanced_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> >(in) {}
+delayed_character_matrix::enslaved::enslaved(const Rcpp::RObject& in) : delayed_character_matrix::enslaved_precursor(in) {}
 
-delayed_character_matrix::enslaved_delayed_character_matrix::~enslaved_delayed_character_matrix() {}
+delayed_character_matrix::enslaved::~enslaved() {}
 
 //template<typename T, class V>
-//typename V::iterator delayed_character_matrix::enslaved_delayed_character_matrix::get_const_col(size_t c, typename V::iterator out, size_t first, size_t last) {
+//typename V::iterator delayed_character_matrix::enslaved::get_const_col(size_t c, typename V::iterator out, size_t first, size_t last) {
 //    return (this->mat).get_const_col(c, out, first, last);
 //}
 
-std::unique_ptr<character_matrix > delayed_character_matrix::enslaved_delayed_character_matrix::clone() const {
-    return std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved_delayed_character_matrix(*this));
+std::unique_ptr<character_matrix > delayed_character_matrix::enslaved::clone() const {
+    return std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved(*this));
 }
 
 /* Dispatch definition */
