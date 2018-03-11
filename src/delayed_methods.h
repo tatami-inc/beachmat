@@ -2,6 +2,8 @@
 
 namespace beachmat {
 
+/* Implementing methods for the 'delayed_coord_transformer' class */
+
 template<typename T, class V>
 delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in) : original_nrow(0), original_ncol(0), delayed_nrow(0), delayed_ncol(0), transposed(false) {
     if (get_class(in)!="DelayedMatrix") { 
@@ -234,6 +236,90 @@ void delayed_coord_transformer<T, V>::reallocate_col(size_t first, size_t last, 
 template<typename T, class V>
 bool delayed_coord_transformer<T, V>::has_unmodified_values() const {
     return coord_changes_only;
+}
+
+/* Implementing methods for the 'delayed_matrix' class */
+
+template<typename T, class V>
+delayed_matrix<T, V>::delayed_matrix(const Rcpp::RObject& in) : original(in), beachenv("package:beachmat"),
+    realizer_row(beachenv["realizeDelayedMatrixByRow"]), realizer_col(beachenv["realizeDelayedMatrixByCol"]),
+    row_indices(2), col_indices(2), chunk_nrow(0), chunk_ncol(0) {
+
+    Rcpp::Function getdims(beachenv["setupDelayedMatrix"]);
+    Rcpp::List dimdata=getdims(in);
+
+    Rcpp::IntegerVector matdims(dimdata[0]);
+    this->fill_dims(matdims);
+
+    Rcpp::IntegerVector chunkdims(dimdata[1]);
+    chunk_nrow=chunkdims[0];
+    chunk_ncol=chunkdims[1];
+    return;
+}
+
+template<typename T, class V>
+delayed_matrix<T, V>::~delayed_matrix() {}
+
+template<typename T, class V>
+void delayed_matrix<T, V>::update_storage_by_row(size_t r) {
+    if (r < row_indices[0] && r >= row_indices[1]) {
+        row_indices[0] = std::floor(r/chunk_nrow) * chunk_nrow;
+        row_indices[1] = std::min(row_indices[0] + chunk_nrow, int(this->nrow));
+        storage=realizer_row(original, row_indices); 
+    }
+}
+
+template<typename T, class V>
+void delayed_matrix<T, V>::update_storage_by_col(size_t c) {
+    if (c < col_indices[0] && c >= col_indices[1]) {
+        col_indices[0] = std::floor(c/chunk_ncol) * chunk_ncol;
+        col_indices[1] = std::min(col_indices[0] + chunk_ncol, int(this->ncol));
+        storage=realizer_col(original, col_indices); 
+    }
+}
+
+template<typename T, class V>
+T delayed_matrix<T, V>::get(size_t r, size_t c) {
+    check_oneargs(r, c);
+    update_storage_by_col(c);
+    return storage[r + this->nrow * (c - size_t(col_indices[0]))]; 
+}
+
+template<typename T, class V>
+template <class Iter>
+void delayed_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
+    check_rowargs(r, first, last);
+    update_storage_by_row(r);
+    auto src=storage.begin() + r - size_t(row_indices[0]);
+    for (size_t col=first; col<last; ++col, src+=chunk_nrow, ++out) { (*out)=(*src); }
+    return;
+}
+ 
+template<typename T, class V>
+template <class Iter>
+void delayed_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
+    check_colargs(c, first, last);
+    update_storage_by_col(c);
+    auto src=storage.begin() + c - size_t(col_indices[0]);
+    std::copy(src + first, src + last, out);
+    return;
+}
+    
+template<typename T, class V>
+typename V::iterator delayed_matrix<T, V>::get_const_col(size_t c, size_t first, size_t last) {
+    check_colargs(c, first, last);
+    update_storage_by_col(c);
+    return storage.begin() + c - size_t(col_indices[0]);
+}
+
+template<typename T, class V>
+Rcpp::RObject delayed_matrix<T, V>::yield() const {
+    return original;
+}
+
+template<typename T, class V>
+matrix_type delayed_matrix<T, V>::get_matrix_type () const {
+    return DELAYED;
 }
 
 }

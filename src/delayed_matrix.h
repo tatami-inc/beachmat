@@ -5,6 +5,13 @@
 
 namespace beachmat {
 
+/* The 'delayed_coord_transformer' class is intended to allow direct data access
+ * from the underlying seed matrix in a DelayedMatrix class, while transforming
+ * the extracted values to account for row/column subsetting or transposition.
+ * This avoids the need to realize any subset of the matrix, as would be necessary
+ * for more general delayed operations (see the 'delayed_matrix' class below).
+ */
+
 template<typename T, class V>
 class delayed_coord_transformer {
 public:    
@@ -57,6 +64,43 @@ private:
     void reallocate_row(size_t, size_t, Iter out);
     template<class Iter>
     void reallocate_col(size_t, size_t, Iter out);
+};
+
+/* The 'delayed_matrix' class will realize chunks of the input DelayedMatrix
+ * upon request from any calling function. This is necessary to avoid 
+ * reimplementing arbitrary delayed R operations in C++.
+ */
+
+template<typename T, class V>
+class delayed_matrix : public any_matrix {
+public:    
+    delayed_matrix(const Rcpp::RObject&);
+    ~delayed_matrix();
+
+    T get(size_t, size_t);
+
+    template <class Iter> 
+    void get_row(size_t, Iter, size_t, size_t);
+
+    template <class Iter>
+    void get_col(size_t, Iter, size_t, size_t);
+
+    typename V::iterator get_const_col(size_t, size_t, size_t);
+    
+    Rcpp::RObject yield() const;
+    matrix_type get_matrix_type () const;
+private:
+    Rcpp::RObject original;
+
+    Rcpp::Environment beachenv;
+    Rcpp::Function realizer_row, realizer_col;
+    
+    V storage;
+    void update_storage_by_row(size_t);
+    void update_storage_by_col(size_t);
+
+    Rcpp::IntegerVector row_indices, col_indices;
+    int chunk_nrow, chunk_ncol;
 };
 
 }
