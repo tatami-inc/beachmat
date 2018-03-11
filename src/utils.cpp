@@ -129,6 +129,18 @@ Rcpp::RObject realize_delayed_array (const Rcpp::RObject& incoming) {
     return realfun(incoming);
 }
 
+void check_DelayedMatrix (const Rcpp::RObject& incoming) {
+    if (get_class(incoming)!="DelayedMatrix" || !incoming.isS4()) {
+        throw std::runtime_error("input matrix should be a DelayedMatrix");
+    }
+    return;
+}
+
+bool only_delayed_coord_changes (const Rcpp::RObject& incoming) {
+    Rcpp::List delayed_ops(get_safe_slot(incoming, "delayed_ops"));
+    return (delayed_ops.size()==0);
+}
+
 Rcpp::RObject extract_seed (const Rcpp::RObject& incoming, const std::vector<std::string>& allowed) { 
     // incoming should be a "DelayedMatrix" object, not the seed within it!
     Rcpp::RObject seed(get_safe_slot(incoming, "seed"));

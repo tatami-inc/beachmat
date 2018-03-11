@@ -241,20 +241,21 @@ matrix_type HDF5_lin_matrix<T, V, RTYPE>::get_matrix_type() const {
 /* Defining the DelayedMatrix interface. */
 
 template<typename T, class V>
-delayed_lin_matrix<T, V>::delayed_lin_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr), transformer(incoming) {
+delayed_lin_matrix<T, V>::delayed_lin_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
+    check_DelayedMatrix(incoming);
+
     // Trying to generate the seed, if it's a valid object in itself.
-    if (transformer.has_unmodified_values()) {
+    if (only_delayed_coord_changes(incoming)) {
         seed_ptr=generate_seed(incoming);
     }
         
-    // If the seed is still NULL, we realize the matrix and use the result as the seed.
+    // If the seed is still NULL, we switch to a chunked matrix format.
     if (seed_ptr.get()==NULL) { 
         seed_ptr=std::unique_ptr<lin_matrix<T, V> >(new delayed_lin_matrix<T, V>::enslaved_delayed_lin_matrix(incoming));
-//        transformer=delayed_coord_transformer<T, V>(realized);
+    } else {
+        transformer=delayed_coord_transformer(incoming, seed_ptr.get());
     }
 
-    // Setting dimensions.
-    transformer.set_dim(seed_ptr.get());
     return;
 }
 

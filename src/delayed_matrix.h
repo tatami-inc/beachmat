@@ -15,10 +15,10 @@ namespace beachmat {
 template<typename T, class V>
 class delayed_coord_transformer {
 public:    
-    delayed_coord_transformer(const Rcpp::RObject&);
+    delayed_coord_transformer();
 
     template<class M>
-    void set_dim(M mat);
+    delayed_coord_transformer(const Rcpp::RObject&, M);
 
     template<class M, class Iter>
     void get_row(M, size_t, Iter, size_t, size_t);
@@ -31,12 +31,9 @@ public:
 
     size_t get_nrow() const;
     size_t get_ncol() const;
-    bool has_unmodified_values() const;
 private:
     std::vector<int> row_index, col_index;
     bool transposed, byrow, bycol;
-    bool coord_changes_only;
-
     size_t original_nrow, original_ncol, delayed_nrow, delayed_ncol;
 
     /* Making a copyable vector to save myself having to write copy constructors for the entire transformer.
@@ -64,6 +61,8 @@ private:
     void reallocate_row(size_t, size_t, Iter out);
     template<class Iter>
     void reallocate_col(size_t, size_t, Iter out);
+
+    static bool has_unmodified_values(Rcpp::RObject);
 };
 
 /* The 'delayed_matrix' class will realize chunks of the input DelayedMatrix

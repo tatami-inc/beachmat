@@ -27,13 +27,17 @@ int find_sexp_type (const Rcpp::RObject&);
 
 Rcpp::RObject realize_delayed_array(const Rcpp::RObject&);
 
+void check_DelayedMatrix(const Rcpp::RObject&);
+
+bool only_delayed_coord_changes (const Rcpp::RObject&);
+
 Rcpp::RObject extract_seed(const Rcpp::RObject&, const std::vector<std::string>&);
 
 bool is_pristine_delayed_array(const Rcpp::RObject&);
 
 // Matrix type enumeration.
 
-enum matrix_type { SIMPLE, HDF5, SPARSE, RLE, PSYMM, DENSE };
+enum matrix_type { SIMPLE, HDF5, SPARSE, RLE, PSYMM, DENSE, DELAYED };
 
 }
 

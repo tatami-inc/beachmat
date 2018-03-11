@@ -5,64 +5,34 @@ namespace beachmat {
 /* Implementing methods for the 'delayed_coord_transformer' class */
 
 template<typename T, class V>
-delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in) : original_nrow(0), original_ncol(0), delayed_nrow(0), delayed_ncol(0), transposed(false) {
-    if (get_class(in)!="DelayedMatrix") { 
-        throw std::runtime_error("input matrix should be a DelayedMatrix");
+delayed_coord_transformer<T, V>::delayed_coord_transformer() : transposed(false), byrow(false), bycol(false) {}
+
+template<typename T, class V>
+template<class M>
+delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in, M mat) : transposed(false), byrow(false), bycol(false),
+        original_nrow(mat->get_nrow()), original_ncol(mat->get_ncol()), delayed_nrow(original_nrow), delayed_ncol(original_ncol),
+        tmp(std::max(original_ncol, original_nrow)) {
+   
+    check_DelayedMatrix(in);
+    if (!only_delayed_coord_changes(in)) { 
+        throw std::runtime_error("'delayed_coord_transformer' called with non-empty delayed operations");
     }
 
-    // Checking if there's only coordinate changes.
-    Rcpp::List delayed_ops(get_safe_slot(in, "delayed_ops"));
-    coord_changes_only=(delayed_ops.size()==0);
-
-    // Checking indices.
+    // Checking indices for rows.
     Rcpp::List indices(get_safe_slot(in, "index"));
-
     Rcpp::RObject rowdex(indices[0]);
     byrow=!rowdex.isNULL();
+
     if (byrow){ 
         if (rowdex.sexp_type()!=INTSXP) {
             throw std::runtime_error("index vector should be integer");
         }
+
         Rcpp::IntegerVector rx(rowdex);
         row_index.insert(row_index.end(), rx.begin(), rx.end());
         for (auto& r : row_index) { 
             --r; // 0-based indices.
         }
-    }
-
-    Rcpp::RObject coldex(indices[1]);
-    bycol=!coldex.isNULL();
-    if (bycol){ 
-        if (coldex.sexp_type()!=INTSXP) {
-            throw std::runtime_error("index vector should be integer");
-        }
-        Rcpp::IntegerVector cx(coldex);
-        col_index.insert(col_index.end(), cx.begin(), cx.end());
-        for (auto& c : col_index) { 
-            --c; // 0-based indices.
-        }
-    }
-    
-    // Checking transposition by peering into the "SeedDimChecker" class.
-    Rcpp::RObject seed=get_safe_slot(in, "seed");
-    if (seed.isS4() && get_class(seed)=="SeedDimPicker") { 
-        Rcpp::IntegerVector dimorder(get_safe_slot(seed, "dim_combination"));
-        if (dimorder.size()!=2) {
-            throw std::runtime_error("'dim_combination' should be an integer vector of length 2");
-        }
-        transposed=(dimorder[0]==2);
-    }
-    return;
-}
-
-template<typename T, class V>
-template<class M>
-void delayed_coord_transformer<T, V>::set_dim(M mat) {
-    delayed_nrow=original_nrow=mat->get_nrow();
-    delayed_ncol=original_ncol=mat->get_ncol();
-    tmp.vec=V(std::max(original_ncol, original_nrow));
-
-    if (byrow) {
         delayed_nrow=row_index.size();
 
         // If the indices are all consecutive from 0 to N, we turn byrow=false.
@@ -79,10 +49,22 @@ void delayed_coord_transformer<T, V>::set_dim(M mat) {
         } 
     }
 
-    if (bycol) { 
+    // Checking indices for columns.
+    Rcpp::RObject coldex(indices[1]);
+    bycol=!coldex.isNULL();
+    if (bycol){ 
+        if (coldex.sexp_type()!=INTSXP) {
+            throw std::runtime_error("index vector should be integer");
+        }
+
+        Rcpp::IntegerVector cx(coldex);
+        col_index.insert(col_index.end(), cx.begin(), cx.end());
+        for (auto& c : col_index) { 
+            --c; // 0-based indices.
+        }
         delayed_ncol=col_index.size();
 
-        // Same for bycol.
+        // If the indices are all consecutive from 0 to N, we turn bycol=false.
         if (delayed_ncol && col_index.front()==0 && delayed_ncol==original_ncol) {
             int count=0;
             bycol=false;
@@ -95,12 +77,19 @@ void delayed_coord_transformer<T, V>::set_dim(M mat) {
             }
         } 
     }
-
-    if (transposed) {
-        std::swap(delayed_nrow, delayed_ncol);
+    
+    // Checking transposition by peering into the "SeedDimChecker" class.
+    Rcpp::RObject seed=get_safe_slot(in, "seed");
+    if (seed.isS4() && get_class(seed)=="SeedDimPicker") { 
+        Rcpp::IntegerVector dimorder(get_safe_slot(seed, "dim_combination"));
+        if (dimorder.size()!=2) {
+            throw std::runtime_error("'dim_combination' should be an integer vector of length 2");
+        }
+        transposed=(dimorder[0]==2);
     }
+
     return;
-};
+}
 
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::get_nrow() const{ 
@@ -233,11 +222,6 @@ void delayed_coord_transformer<T, V>::reallocate_col(size_t first, size_t last, 
     return;
 }
 
-template<typename T, class V>
-bool delayed_coord_transformer<T, V>::has_unmodified_values() const {
-    return coord_changes_only;
-}
-
 /* Implementing methods for the 'delayed_matrix' class */
 
 template<typename T, class V>
@@ -317,9 +301,11 @@ Rcpp::RObject delayed_matrix<T, V>::yield() const {
     return original;
 }
 
-template<typename T, class V>
-matrix_type delayed_matrix<T, V>::get_matrix_type () const {
+template<typename t, class v>
+matrix_type delayed_matrix<t, v>::get_matrix_type () const {
     return DELAYED;
 }
+
+
 
 }
