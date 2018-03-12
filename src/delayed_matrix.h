@@ -34,7 +34,7 @@ public:
 private:
     std::vector<int> row_index, col_index;
     bool transposed, byrow, bycol;
-    size_t original_nrow, original_ncol, delayed_nrow, delayed_ncol;
+    size_t delayed_nrow, delayed_ncol;
 
     /* Making a copyable vector to save myself having to write copy constructors for the entire transformer.
      * This is necessary as we need an internal Rcpp::Vector to extract from the underlying seed

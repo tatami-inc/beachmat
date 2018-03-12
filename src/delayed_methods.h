@@ -10,16 +10,17 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer() : transposed(false)
 template<typename T, class V>
 template<class M>
 delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in, M mat) : transposed(false), byrow(false), bycol(false),
-        original_nrow(mat->get_nrow()), original_ncol(mat->get_ncol()), delayed_nrow(original_nrow), delayed_ncol(original_ncol),
-        tmp(std::max(original_ncol, original_nrow)) {
+        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), tmp(std::max(delayed_nrow, delayed_ncol)) {
    
     check_DelayedMatrix(in);
     if (!only_delayed_coord_changes(in)) { 
         throw std::runtime_error("'delayed_coord_transformer' called with non-empty delayed operations");
     }
+    
+    Rcpp::List indices(get_safe_slot(in, "index"));
+    const size_t original_nrow(mat->get_nrow()), original_ncol(mat->get_ncol()); 
 
     // Checking indices for rows.
-    Rcpp::List indices(get_safe_slot(in, "index"));
     Rcpp::RObject rowdex(indices[0]);
     byrow=!rowdex.isNULL();
 
@@ -86,6 +87,11 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& 
             throw std::runtime_error("'dim_combination' should be an integer vector of length 2");
         }
         transposed=(dimorder[0]==2);
+
+        // As the row/column indices refer to the matrix BEFORE transposition.
+        if (transposed) {
+            std::swap(delayed_nrow, delayed_ncol);
+        }
     }
 
     return;
