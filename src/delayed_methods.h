@@ -225,7 +225,8 @@ void delayed_coord_transformer<T, V>::reallocate_col(size_t first, size_t last, 
 /* Implementing methods for the 'delayed_matrix' class */
 
 template<typename T, class V>
-delayed_matrix<T, V>::delayed_matrix(const Rcpp::RObject& in) : original(in), beachenv("package:beachmat"),
+delayed_matrix<T, V>::delayed_matrix(const Rcpp::RObject& in) : original(in), 
+    beachenv(Rcpp::Environment::namespace_env("beachmat")),
     realizer_row(beachenv["realizeDelayedMatrixByRow"]), realizer_col(beachenv["realizeDelayedMatrixByCol"]),
     row_indices(2), col_indices(2), chunk_nrow(0), chunk_ncol(0) {
 
