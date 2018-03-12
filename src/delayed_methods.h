@@ -5,7 +5,13 @@ namespace beachmat {
 /* Implementing methods for the 'delayed_coord_transformer' class */
 
 template<typename T, class V>
-delayed_coord_transformer<T, V>::delayed_coord_transformer() : transposed(false), byrow(false), bycol(false) {}
+delayed_coord_transformer<T, V>::delayed_coord_transformer() : transposed(false), byrow(false), bycol(false), 
+        delayed_nrow(0), delayed_ncol(0) {}
+
+template<typename T, class V>
+template<class M>
+delayed_coord_transformer<T, V>::delayed_coord_transformer(M mat) : transposed(false), byrow(false), bycol(false), 
+        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()) {}
 
 template<typename T, class V>
 template<class M>
@@ -23,7 +29,6 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& 
     // Checking indices for rows.
     Rcpp::RObject rowdex(indices[0]);
     byrow=!rowdex.isNULL();
-
     if (byrow){ 
         if (rowdex.sexp_type()!=INTSXP) {
             throw std::runtime_error("index vector should be integer");
@@ -297,13 +302,6 @@ void delayed_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
 }
     
 template<typename T, class V>
-typename V::iterator delayed_matrix<T, V>::get_const_col(size_t c, size_t first, size_t last) {
-    check_colargs(c, first, last);
-    update_storage_by_col(c);
-    return storage.begin() + c - size_t(col_indices[0]);
-}
-
-template<typename T, class V>
 Rcpp::RObject delayed_matrix<T, V>::yield() const {
     return original;
 }
@@ -312,7 +310,5 @@ template<typename t, class v>
 matrix_type delayed_matrix<t, v>::get_matrix_type () const {
     return DELAYED;
 }
-
-
 
 }

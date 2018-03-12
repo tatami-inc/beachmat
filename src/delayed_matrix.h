@@ -18,6 +18,9 @@ public:
     delayed_coord_transformer();
 
     template<class M>
+    delayed_coord_transformer(M);
+
+    template<class M>
     delayed_coord_transformer(const Rcpp::RObject&, M);
 
     template<class M, class Iter>
@@ -84,8 +87,6 @@ public:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
-    typename V::iterator get_const_col(size_t, size_t, size_t);
-    
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type () const;
 private:
