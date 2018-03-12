@@ -258,7 +258,7 @@ delayed_matrix<T, V>::~delayed_matrix() {}
 
 template<typename T, class V>
 void delayed_matrix<T, V>::update_storage_by_row(size_t r) {
-    if (r < row_indices[0] && r >= row_indices[1]) {
+    if (r < row_indices[0] || r >= row_indices[1]) {
         row_indices[0] = std::floor(r/chunk_nrow) * chunk_nrow;
         row_indices[1] = std::min(row_indices[0] + chunk_nrow, int(this->nrow));
         storage=realizer_row(original, row_indices); 
@@ -267,7 +267,7 @@ void delayed_matrix<T, V>::update_storage_by_row(size_t r) {
 
 template<typename T, class V>
 void delayed_matrix<T, V>::update_storage_by_col(size_t c) {
-    if (c < col_indices[0] && c >= col_indices[1]) {
+    if (c < col_indices[0] || c >= col_indices[1]) {
         col_indices[0] = std::floor(c/chunk_ncol) * chunk_ncol;
         col_indices[1] = std::min(col_indices[0] + chunk_ncol, int(this->ncol));
         storage=realizer_col(original, col_indices); 
@@ -296,7 +296,7 @@ template <class Iter>
 void delayed_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
     update_storage_by_col(c);
-    auto src=storage.begin() + c - size_t(col_indices[0]);
+    auto src=storage.begin() + (c - size_t(col_indices[0])) * (this->nrow);
     std::copy(src + first, src + last, out);
     return;
 }
