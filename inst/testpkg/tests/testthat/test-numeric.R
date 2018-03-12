@@ -231,31 +231,8 @@ test_that("Delayed numeric matrix input is okay", {
         beachtest:::check_numeric_mat(FUN)
         beachtest:::check_type(FUN, expected="double")
     }
-
-    # Trigger realization.
-    add_hFUN <- function(..., transpose=FALSE) {
-        out <- hFUN(...) + 1
-        if (transpose) {
-            out <- DelayedArray::t(out)
-        }
-        return(out)
-    }
-    expect_s4_class(add_hFUN(), "DelayedMatrix")
-    beachtest:::check_numeric_mat(add_hFUN)
-    beachtest:::check_type(add_hFUN, expected="double")
- 
-    expect_s4_class(add_hFUN(transpose=TRUE), "DelayedMatrix")
-    beachtest:::check_numeric_mat(add_hFUN, transpose=TRUE) # checking that transposition WITH delayed ops wipes the transformer.
-    beachtest:::check_type(add_hFUN, transpose=TRUE, expected="double")
-
-    comb_hFUN <- function(...) {
-        DelayedArray::cbind(hFUN(...), hFUN(...))
-    }
-    expect_s4_class(comb_hFUN(), "DelayedMatrix")
-    beachtest:::check_numeric_mat(comb_hFUN) # checking that odd seed types are properly realized.
-    beachtest:::check_type(comb_hFUN, expected="double")
-     
-    # Proper type check!
+    
+    # Proper type check upon coercion!
     expect_identical("logical", .Call(beachtest:::cxx_test_type_check, hFUN() > 0)) 
 })
 

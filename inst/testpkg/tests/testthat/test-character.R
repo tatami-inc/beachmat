@@ -111,7 +111,7 @@ set.seed(981347)
 library(DelayedArray)
 test_that("Delayed character matrix input is okay", {
     # HDF5-based seed.
-    hdf5.funs <- beachtest:::delayed_funs(hFUN)
+    hdf5.funs <- beachtest:::delayed_funs(hFUN, DELAYED_FUN=DelayedArray::tolower)
     for (FUN in hdf5.funs) {
         expect_s4_class(FUN(), "DelayedMatrix")
         beachtest:::check_character_mat(FUN)
@@ -119,37 +119,14 @@ test_that("Delayed character matrix input is okay", {
     }
 
     # Simple seed.
-    simple.funs <- beachtest:::delayed_funs(sFUN)
+    simple.funs <- beachtest:::delayed_funs(sFUN, DELAYED_FUN=DelayedArray::tolower)
     for (FUN in simple.funs) {
         expect_s4_class(FUN(), "DelayedMatrix")
         beachtest:::check_character_mat(FUN)
         beachtest:::check_type(FUN, expected="character")
     }
 
-    # Trigger realization.
-    alt_hFUN <- function(..., transpose=FALSE) {
-        out <- DelayedArray::tolower(hFUN(...))
-        if (transpose) { 
-            out <- DelayedArray::t(out)
-        }
-        return(out)
-    }
-    expect_s4_class(alt_hFUN(), "DelayedMatrix")
-    beachtest:::check_character_mat(alt_hFUN)
-    beachtest:::check_type(alt_hFUN, expected="character")
- 
-    expect_s4_class(alt_hFUN(transpose=TRUE), "DelayedMatrix")
-    beachtest:::check_character_mat(alt_hFUN, transpose=TRUE) # checking that transposition WITH delayed ops wipes the transformer.
-    beachtest:::check_type(alt_hFUN, transpose=TRUE, expected="character")
-
-    comb_hFUN <- function(...) {
-        DelayedArray::cbind(hFUN(...), hFUN(...))
-    }
-    expect_s4_class(comb_hFUN(), "DelayedMatrix")
-    beachtest:::check_character_mat(comb_hFUN) # checking that odd seed types are properly realized.
-    beachtest:::check_type(comb_hFUN, expected="character")
-     
-    # Proper type check!
+    # Proper type check upon coercion!
     expect_identical("logical", .Call(beachtest:::cxx_test_type_check, hFUN()=="A")) 
 })
 
