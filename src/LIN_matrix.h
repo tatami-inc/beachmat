@@ -200,14 +200,7 @@ private:
     /* This class allows chunked extraction from a 'delayed_matrix' instance,
      * mimicking a unique pointer to other top-level classes.
      */
-    using enslaved_precursor=general_lin_matrix<T, V, delayed_matrix<T, V> >;
-    class enslaved : public enslaved_precursor {
-    public:
-        enslaved(const Rcpp::RObject&);
-        ~enslaved();
-//        typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
-        std::unique_ptr<lin_matrix<T, V> > clone() const;
-    };
+    using enslaved=general_lin_matrix<T, V, delayed_matrix<T, V> >;
 };
 
 }

@@ -134,14 +134,7 @@ private:
     delayed_coord_transformer<Rcpp::String, Rcpp::StringVector> transformer;
     static std::unique_ptr<character_matrix> generate_seed(Rcpp::RObject);
 
-    using enslaved_precursor=general_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> >;
-    class enslaved : public enslaved_precursor {
-    public:
-        enslaved(const Rcpp::RObject&);
-        ~enslaved();
-//        typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
-        std::unique_ptr<character_matrix> clone() const;
-    };
+    using enslaved=general_character_matrix<delayed_matrix<Rcpp::String, Rcpp::StringVector> >;
 };
 
 /* Dispatcher */

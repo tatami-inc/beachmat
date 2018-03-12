@@ -125,6 +125,7 @@ delayed_character_matrix::delayed_character_matrix(const Rcpp::RObject& incoming
     // If the seed is still NULL, we switch to a chunked matrix format.
     if (seed_ptr.get()==NULL) { 
         seed_ptr=std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved(incoming));
+        transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(seed_ptr.get());
     } else {
         transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(incoming, seed_ptr.get());
     }
@@ -187,19 +188,6 @@ std::unique_ptr<character_matrix> delayed_character_matrix::generate_seed(Rcpp::
     } else {
         return nullptr;
     }
-}
-
-delayed_character_matrix::enslaved::enslaved(const Rcpp::RObject& in) : delayed_character_matrix::enslaved_precursor(in) {}
-
-delayed_character_matrix::enslaved::~enslaved() {}
-
-//template<typename T, class V>
-//typename V::iterator delayed_character_matrix::enslaved::get_const_col(size_t c, typename V::iterator out, size_t first, size_t last) {
-//    return (this->mat).get_const_col(c, out, first, last);
-//}
-
-std::unique_ptr<character_matrix > delayed_character_matrix::enslaved::clone() const {
-    return std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved(*this));
 }
 
 /* Dispatch definition */
