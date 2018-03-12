@@ -123,12 +123,6 @@ int find_sexp_type (const Rcpp::RObject& incoming) {
 
 /* DelayedArray utilities. */
 
-Rcpp::RObject realize_delayed_array (const Rcpp::RObject& incoming) { 
-    Rcpp::Environment delayenv("package:DelayedArray");
-    Rcpp::Function realfun=delayenv["realize"];
-    return realfun(incoming);
-}
-
 void check_DelayedMatrix (const Rcpp::RObject& incoming) {
     if (get_class(incoming)!="DelayedMatrix" || !incoming.isS4()) {
         throw std::runtime_error("input matrix should be a DelayedMatrix");
@@ -178,16 +172,6 @@ Rcpp::RObject extract_seed (const Rcpp::RObject& incoming, const std::vector<std
     }
 
     return seed;
-}
-        
-bool is_pristine_delayed_array(const Rcpp::RObject& in) {
-    const Rcpp::Environment env=Rcpp::Environment::namespace_env("DelayedArray");
-    Rcpp::Function fun=env["is_pristine"];
-    Rcpp::LogicalVector out=fun(in);
-    if (out.size()!=1) {
-        throw std::runtime_error("pristine check should return a logical scalar");
-    }
-    return out[0];
 }
 
 }
