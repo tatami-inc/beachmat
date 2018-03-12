@@ -73,12 +73,12 @@ HDF5_output<T, RTYPE>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_
 
     // Pulling out settings.
     const Rcpp::Environment env=Rcpp::Environment::namespace_env("beachmat");
-    Rcpp::Function fun=env["setupHDF5Array"];
+    Rcpp::Function fun=env["setupHDF5Matrix"];
     Rcpp::List collected=fun(Rcpp::IntegerVector::create(this->nrow, this->ncol), Rcpp::StringVector(translate_type(RTYPE)),
                              Rcpp::IntegerVector::create(chunk_nr, chunk_nc), compress);
 
     if (collected.size()!=4) { 
-        throw std::runtime_error("output of setupHDF5Array should be a list of four elements");
+        throw std::runtime_error("output of setupHDF5Matrix should be a list of four elements");
     }
     fname=make_to_string(collected[0]);
     dname=make_to_string(collected[1]);

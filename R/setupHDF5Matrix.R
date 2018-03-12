@@ -1,4 +1,4 @@
-setupHDF5Array <- function(dims, storage.mode, chunk, compress)
+setupHDF5Matrix <- function(dims, storage.mode, chunk, compress)
 # This is a convenience wrapper that, if given the matrix dimensions,
 # runs a series of R functions and returns the result to C++.
 # The idea is to avoid multiple environment calls from C++.
