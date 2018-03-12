@@ -1,5 +1,7 @@
-pkgconfig <- function(opt = c("PKG_LIBS", "PKG_CPPFLAGS"))
-{
+#' @export
+#' @importFrom Rhdf5lib pkgconfig
+#' @importFrom utils capture.output
+pkgconfig <- function(opt = c("PKG_LIBS", "PKG_CPPFLAGS")) {
     path <- Sys.getenv(
         "BEACHMAT_RPATH",
         system.file("lib", package="beachmat", mustWork=TRUE)

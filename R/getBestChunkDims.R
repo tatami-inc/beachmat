@@ -1,3 +1,4 @@
+#' @export
 getBestChunkDims <- function(dims) 
 # Computes the optimal chunk dimensions for a given
 # set of input dimensions for a particular matrix.

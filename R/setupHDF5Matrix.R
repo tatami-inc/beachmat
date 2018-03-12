@@ -1,3 +1,4 @@
+#' @importFrom HDF5Array getHDF5DumpFile getHDF5DumpChunkDim getHDF5DumpCompressionLevel appendDatasetCreationToHDF5DumpLog
 setupHDF5Matrix <- function(dims, storage.mode, chunk, compress)
 # This is a convenience wrapper that, if given the matrix dimensions,
 # runs a series of R functions and returns the result to C++.

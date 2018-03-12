@@ -1,3 +1,8 @@
+#' @export
+#' @importFrom methods is
+#' @importFrom rhdf5 h5createFile
+#' @importFrom HDF5Array getHDF5DumpFile getHDF5DumpName getHDF5DumpCompressionLevel appendDatasetCreationToHDF5DumpLog HDF5Array
+#' @importFrom DelayedArray type
 rechunkByMargins <- function(x, size=5000, outfile=NULL, outname=NULL, outlevel=NULL, byrow=TRUE) 
 # Creates a new HDF5Matrix with a pure-row or pure-column chunking scheme.
 # 
