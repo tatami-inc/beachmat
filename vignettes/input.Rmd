@@ -28,6 +28,7 @@ First, we include the relevant header file:
 A double-precision matrix object `dmat` is handled in C++ by passing the `SEXP` struct from `.Call` to `create_numeric_matrix`:
 
 ```cpp
+// returns a std::unique_ptr<beachmat::numeric_matrix> object
 auto dptr = beachmat::create_numeric_matrix(dmat);
 ```
 
@@ -37,6 +38,7 @@ The exact derived class that is actually instantiated depends on the type of mat
 __Additional notes: __
 
 - The `auto` keyword just avoids the need to write the full type of the returned pointer, which is `std::unique_ptr<beachmat::numeric_matrix>`. 
+We use unique pointers to control ownership and smoothly handle destruction and memory deallocation at the end of the function.
 - The API will happily throw exceptions of the `std::exception` class, containing an informative error message.
 These should be caught and handled gracefully by the end-user code, otherwise a segmentation fault will probably occur.
 See the error-handling mechanism in `r CRANpkg("Rcpp")` for how to deal with these exceptions.
@@ -142,7 +144,7 @@ This would be interpreted as a logical `FALSE`, which is incorrect for non-zero 
 The `get_const_col()` method returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
 The arguments are the same as `dptr->get_col` with `work` being equivalent to `in`.
 (Note that `first` and `last` do not have to be specified and will default to the entire column.)
-The data type of `work` and the output iterator must correspond to that of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
+The type of `work` and the output iterator must correspond to the data type of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
 
 ```cpp
 dptr->get_const_col(/* size_t */ c, 
@@ -190,18 +192,28 @@ To create logical, integer and character matrices, include the following header 
 ```
 
 The dispatch function changes correspondingly for logical matrix `lmat`, integer matrix `imat`  or character matrix `cmat`.
-Each function returns a unique pointer of the relevant type (e.g., `std::unique_ptr<beachmat::logical_matrix>` for `lmat`).
+Each function creates a unique pointer to a `*_matrix` of the appropriate type.
+
 
 ```cpp
+// creates a std::unique_ptr<beachmat::logical_matrix>
 auto lptr=beachmat::create_logical_matrix(lmat);
+
+// creates a std::unique_ptr<beachmat::integer_matrix>
 auto iptr=beachmat::create_integer_matrix(imat);
+
+// creates a std::unique_ptr<beachmat::character_matrix>
 auto cptr=beachmat::create_character_matrix(cmat);
 ```
 
 Equivalent methods are available for each matrix type with appropriate changes in type.
-For integer and logical matrices, `get` will return an integer, 
-while `in` can be an `iterator` of a `Rcpp::IntegerVector`, `Rcpp::LogicalVector` or `Rcpp::NumericVector` instance.
-For character matrices, `in` should be of type `Rcpp::StringVector::iterator`, and `get` will return a `Rcpp::String`.
+
+For integer and logical matrices, `get` will return an integer.
+`in` can be any type previously described for `numeric_matrix` objects^[Note the caveats previously discussed for `Rcpp::LogicalVector` iterators.].
+`work` should be an `iterator` to a `Rcpp::IntegerVector` for integer matrices or a `Rcpp::LogicalVector` for logical matrices.
+Similar changes apply to the iterator in the tuple from `get_const_col_indexed()`.
+
+For character matrices, all iterators should be of type `Rcpp::StringVector::iterator`, and `get` will return a `Rcpp::String`.
 
 __Additional notes: __
 
