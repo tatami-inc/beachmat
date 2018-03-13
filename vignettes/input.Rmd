@@ -261,8 +261,8 @@ An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look 
 ```cpp
 #pragma omp parallel
 {
-    numeric_matrix* rptr=NULL;
-    std::unique_ptr<numeric_matrix> uptr=nullptr;
+    beachmat::numeric_matrix* rptr=NULL;
+    std::unique_ptr<beachmat::numeric_matrix> uptr=nullptr;
     if (omp_get_thread_num()==0) {
         rptr=dptr.get();
     } else {
@@ -274,7 +274,7 @@ An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look 
     const size_t NC=rptr->get_ncol();
     Rcpp::NumericVector output(rptr->get_nrow());
 
-    #pragma omp parallel for schedule(static)
+    #pragma omp for schedule(static)
     for (col=0; col<NC; ++col) {
         // Do parallel operation here.
         rptr->get_col(col, output.begin());
@@ -285,7 +285,6 @@ An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look 
 The start of the parallel region uses the existing `dptr` in the master thread and clones a new matrix in the other threads.
 The parallelized `for` loop then uses `rptr` to avoid race conditions in cached variables.
 Note that a static schedule may be faster than other schedule types, as several of the matrix implementations in `r Biocpkg("beachmat")` are optimized for consecutive row/column access.
-
 
 <!--
 Advanced comments:

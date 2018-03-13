@@ -5,7 +5,7 @@ package: beachmat
 output: 
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{beachmat: a C++ API for R matrix objects}
+  %\VignetteIndexEntry{Linking to beachmat with C++ code from another package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
