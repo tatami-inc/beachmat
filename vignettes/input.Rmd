@@ -17,8 +17,8 @@ opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 
 # Overview of the input API
 
-This document demonstrates the use of the `r Biocpkg("beachmat")` API for numeric matrices.
-However, the same semantics are used for matrices of other types (e.g., logical, integer, character).
+This document describes the use of the `r Biocpkg("beachmat")` API for accessing data in R matrices.
+We will demonstrate the API on numeric matrices, though same semantics are used for matrices of other types (e.g., logical, integer, character).
 First, we include the relevant header file:
 
 ```cpp
@@ -28,7 +28,7 @@ First, we include the relevant header file:
 A double-precision matrix object `dmat` is handled in C++ by passing the `SEXP` struct from `.Call` to `create_numeric_matrix`:
 
 ```cpp
-std::unique_ptr<beachmat::numeric_matrix> dptr = beachmat::create_numeric_matrix(dmat);
+auto dptr = beachmat::create_numeric_matrix(dmat);
 ```
 
 This creates a unique pointer that points to an object of the `numeric_matrix` base class.
@@ -36,6 +36,7 @@ The exact derived class that is actually instantiated depends on the type of mat
 
 __Additional notes: __
 
+- The `auto` keyword just avoids the need to write the full type of the returned pointer, which is `std::unique_ptr<beachmat::numeric_matrix>`. 
 - The API will happily throw exceptions of the `std::exception` class, containing an informative error message.
 These should be caught and handled gracefully by the end-user code, otherwise a segmentation fault will probably occur.
 See the error-handling mechanism in `r CRANpkg("Rcpp")` for how to deal with these exceptions.
@@ -180,7 +181,7 @@ For all other matrices, `get_const_col` is called and iterator (2) is pointed at
 
 ## Other data types
 
-Logical, integer and character matrices can be handled by including the following header files:
+To create logical, integer and character matrices, include the following header files:
 
 ```cpp
 #include "beachmat/logical_matrix.h"
@@ -188,27 +189,18 @@ Logical, integer and character matrices can be handled by including the followin
 #include "beachmat/character_matrix.h"
 ```
 
-The dispatch function changes correspondingly for logical matrix `lmat`:
+The dispatch function changes correspondingly for logical matrix `lmat`, integer matrix `imat`  or character matrix `cmat`.
+Each function returns a unique pointer of the relevant type (e.g., `std::unique_ptr<beachmat::logical_matrix>` for `lmat`).
 
 ```cpp
-std::unique_ptr<beachmat::logical_matrix> lptr=beachmat::create_logical_matrix(lmat);
-```
-
-... for integer matrix `imat`:
-
-```cpp
-std::unique_ptr<beachmat::integer_matrix> iptr=beachmat::create_integer_matrix(imat);
-```
-
-... and for character matrix `cmat`:
-
-```cpp
-std::unique_ptr<beachmat::character_matrix> cptr=beachmat::create_character_matrix(cmat);
+auto lptr=beachmat::create_logical_matrix(lmat);
+auto iptr=beachmat::create_integer_matrix(imat);
+auto cptr=beachmat::create_character_matrix(cmat);
 ```
 
 Equivalent methods are available for each matrix type with appropriate changes in type.
 For integer and logical matrices, `get` will return an integer, 
-while `in` can be an `iterator` object of a `Rcpp::IntegerVector`, `Rcpp::LogicalVector` or `Rcpp::NumericVector` instance.
+while `in` can be an `iterator` of a `Rcpp::IntegerVector`, `Rcpp::LogicalVector` or `Rcpp::NumericVector` instance.
 For character matrices, `in` should be of type `Rcpp::StringVector::iterator`, and `get` will return a `Rcpp::String`.
 
 __Additional notes: __
