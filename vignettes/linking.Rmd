@@ -1,0 +1,120 @@
+---
+title: "Linking to beachmat with C++ code from another package"
+author: "Aaron Lun"
+package: beachmat
+output: 
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{beachmat: a C++ API for R matrix objects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r, echo=FALSE, results="hide", message=FALSE}
+require(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+```
+
+# Introduction
+
+The `r Biocpkg("beachmat")` package provides a C++ API for handling a variety of R matrix types.
+The aim is to abstract away the specific type of matrix object when writing C++ extensions, thus simplifying the processing of data stored in those objects.
+Currently, the API supports double-precision, integer, logical and character matrices.
+Supported classes include base `matrix` objects, a number of classes from the `r CRANpkg("Matrix")` package, and disk-backed matrices from the `r Biocpkg("HDF5Array")` package.
+This document describes how to link to `r Biocpkg("beachmat")` from the C++ code of another R package.
+
+# Prerequisites for linking  
+
+The _beachmat_ package currently has several dependencies:
+
+- The compiler should support the C++11 standard.
+This usually requires GCC version 4.8.1 or higher.
+You need to tell the build system to use C++11, by modifying the `SystemRequirements` field of the `DESCRIPTION` file:
+
+        SystemRequirements: C++11
+
+-  `r CRANpkg("Rcpp")` should be installed.
+You also need to ensure that `r CRANpkg("Rcpp")` is initialized when your package is loaded.
+This requires addition of `Rcpp` to the `Imports` field of the `DESCRIPTION` file:
+
+        Imports: Rcpp
+
+    ... and a corresponding  `importFrom` specification in the `NAMESPACE` file:
+
+        importFrom(Rcpp, sourceCpp)
+ 
+    (The exact function to be imported doesn't matter, as long as the namespace is loaded.
+    Check out the `r CRANpkg("Rcpp")` documentation for more details.)
+
+- `r Biocpkg("HDF5Array")`, `r Biocpkg("DelayedArray")` and  `r Biocpkg("beachmat")` itself should be added to the `Suggests` field, as the API will perform some calls to R functions in those packages to query certain parameters. 
+If you intend to accept instances of `r CRANpkg("Matrix")` classes, the package should also be listed in the `Suggests` field, if not already in `Imports` or `Depends`:
+
+        Suggests: beachmat, HDF5Array, DelayedArray, Matrix
+
+- `r Biocpkg("Rhdf5lib")` should be installed.
+
+# Linking to the library
+
+To link successfully to the _beachmat_ library, a package must include *both* a `src/Makevars.win` *and* `src/Makevars` file.  
+
+**Note**: the contents of `src/Makevars.win` and `src/Makevars` are almost identical, but not quite. 
+Be careful of the differences.
+
+Create a `src/Makevars.win` file with the following lines:
+
+```
+BEACHMAT_LIBS=$(shell echo 'beachmat::pkgconfig("PKG_LIBS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave)
+PKG_LIBS=$(BEACHMAT_LIBS)
+```
+
+... and a `src/Makevars` file with the following lines:
+
+```
+BEACHMAT_LIBS=`echo 'beachmat::pkgconfig("PKG_LIBS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave`
+PKG_LIBS=$(BEACHMAT_LIBS)
+```
+
+The statement for each platfrom modifies the `$PKG_LIBS` variable. 
+If your package needs to add to the `$PKG_LIBS` variable, do so by adding to the `PKG_LIBS=$(BEACHMAT_LIBS)` line.
+For example:
+
+```
+PKG_LIBS=$(BEACHMAT_LIBS) -L/path/to/foolib -lfoo
+```
+
+The Linux implementation embeds the location of the _beachmat_ library in the package-specific shared object via the compiler flag `-Wl,rpath,path`, where path is determined by `system.file("lib", package="beachmat")`. 
+The path determined by `system.file()` is from `.libPaths()` and will resolve all symbolic links.
+This can cause problems, e.g., when the "head" node of a cluster mimicks the cluster node via a symbolic link to the directory in which _beachmat_ is installed. 
+Use the environment variable `BEACHMAT_RPATH` to resolve this by setting it to the cluster-node accessible path.
+Similar arguments apply to `r Biocpkg("Rhdf5lib")` with the environment variable `RHDF5LIB_RPATH`.
+
+# Including the headers
+
+In order for the C/C++ compiler to find the _beachmat_ package headers during installation, add the following to the `LinkingTo` field of the `DESCRIPTION` file:
+
+```
+LinkingTo: Rcpp, Rhdf5lib, beachmat
+``` 
+    
+In C or C++ code files, use standard techniques, e.g., `#include "beachmat/numeric_matrix.h"` (see below for more details). 
+Header files are available for perusal at the following location (enter in an R session):
+
+```{R headers}
+system.file(package="beachmat", "include")
+```
+
+# Common problems
+
+- An `undefined symbol` error starting with `_ZN2H56H5FileC1ERKNSt7_...`
+usually indicates that `r Biocpkg("Rhdf5lib")` was compiled with a different GCC version than `r Biocpkg("beachmat")`, leading to incompatibilities in the binaries.
+This can usually be fixed by re-installing `r Biocpkg("Rhdf5lib")` prior to installing `r Biocpkg("beachmat")`.
+
+- An `expected unqualified-id before 'using'` error.
+This means that the version of GCC used to compile `r Biocpkg("beachmat")` is out of date and does not fully support C++11.
+
+Users can ask for help by making a post on the [Bioconductor support site](https://support.bioconductor.org), labelled with the _beachmat_ tag.
+This is the preferred avenue for questions.
+New users are advised to read the [posting guide](https://www.bioconductor.org/help/support/posting-guide/) before creating a post.
+
