@@ -1,11 +1,11 @@
 ---
-title: "Using beachmat to output data in R matrix objects"
+title: "Using beachmat to write data into R matrix objects"
 author: "Aaron Lun"
 package: beachmat
 output: 
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{Using beachmat to output data in R matrix objects}
+  %\VignetteIndexEntry{Using beachmat to write data into R matrix objects}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
@@ -184,13 +184,13 @@ Logical, integer and character output matrices are supported by changing the typ
 
 ```cpp
 // returns a std::unique_ptr<integer_output> 
-auto oimat=beachmat::create_integer_output(nrow, ncol);
+auto oimat=beachmat::create_integer_output(nrow, ncol, beachmat::SIMPLE_PARAM);
 
 // returns a std::unique_ptr<logical_output> 
-auto olmat=beachmat::create_logical_output(nrow, ncol);
+auto olmat=beachmat::create_logical_output(nrow, ncol, beachmat::SIMPLE_PARAM);
 
 // returns a std::unique_ptr<character_output> 
-auto ocmat=beachmat::create_character_output(nrow, ncol);
+auto ocmat=beachmat::create_character_output(nrow, ncol, beachmat::SIMPLE_PARAM);
 ```
 
 For integer and logical matrices, `Y` should be an integer.
