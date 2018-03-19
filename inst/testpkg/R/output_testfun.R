@@ -41,6 +41,7 @@
             # Checking that the set-and-get values are the same.
             ref <- as.matrix(test.mat)
             ref2 <- matrix(out[[2]], nrow(ref), ncol(ref), byrow=(i==2L))
+            dimnames(ref2) <- dimnames(ref)
             testthat::expect_identical(ref, ref2)
 
             # Reordering 'ref' to match the expected output. 
@@ -91,13 +92,14 @@ check_character_output_mat <- function(FUN, ...) {
         # Checking the standard fill.
         test <- out[[1]]
         ref <- as.matrix(test.mat)
-        testthat::expect_identical(ref[by.row, by.col], test[by.row, by.col]) 
+        testthat::expect_identical(ref[by.row, by.col,drop=FALSE], test[by.row, by.col,drop=FALSE]) 
         test[by.row,by.col] <- fill
         testthat::expect_true(all(test==fill))
 
         # Checking the set-and-get.
         ref2 <- matrix(out[[2]], diff(rx)+1L, diff(ry)+1L, byrow=(it==2))
-        testthat::expect_identical(ref[by.row, by.col], ref2) 
+        dimnames(ref2) <- dimnames(ref)
+        testthat::expect_identical(ref[by.row, by.col,drop=FALSE], ref2) 
     }
     return(invisible(NULL))
 }
@@ -183,16 +185,18 @@ check_character_output_indexed <- function(FUN, ..., N) {
     mats <- list(FUN(), FUN(), FUN())
     ref.mats <- lapply(mats, as.matrix)
     all.paths <- sapply(mats, path)
+    new.mats <- vector("list", length(mats)) 
 
     for (i in seq_along(mats)) { 
-        out <- .Call(cxxfun, mats[[1]], 1L, NULL)[[1]]
+        out <- .Call(cxxfun, mats[[i]], 1L, NULL)[[1]]
+        new.mats[[i]] <- out
         testthat::expect_s4_class(out, "HDF5Matrix")
-        testthat::expect_identical(ref, as.matrix(out))
+        testthat::expect_identical(ref.mats[[i]], as.matrix(out))
 
-        # Checking that all the other matrices are still where they should be.
+        # Checking that all the other matrices are still what they should be.
         for (j in seq_along(mats)) { 
             ref <- ref.mats[[j]]
-            testthat::expect_identical(ref, as.matrix(out))
+            testthat::expect_identical(ref, as.matrix(mats[[j]]))
         }
 
         all.paths <- c(all.paths, BiocGenerics::path(out))
@@ -209,7 +213,7 @@ check_character_output_indexed <- function(FUN, ..., N) {
                 current <- mats[[i]]
             }   
 
-            j <- which(log$name==current@seed@name & log$file==current@seed@filepath)
+            j <- which(log$name==DelayedArray::seed(current)@name & log$file==BiocGenerics::path(current))
             testthat::expect_true(length(j)==1L)
             testthat::expect_identical(type, log$type[j])
             testthat::expect_identical(sprintf("%ix%i", nrow(current), ncol(current)), log$dims[j])
@@ -236,7 +240,7 @@ check_character_order <- function(FUN, cxxfun) {
 
 ###############################
 
-.check_converted_output <- function(FUN, ..., cxxfun, rfun) { 
+.check_converted_output <- function(FUN, ..., cxxfun, old_type, new_type) {
     for (i in 1:3) { 
         test.mat <- FUN(...)
         
@@ -247,43 +251,30 @@ check_character_order <- function(FUN, cxxfun) {
             testthat::expect_s4_class(out[[1]], class(out[[1]]))
             out[[1]] <- as.matrix(out[[1]])
         }
+        
         ref <- as.matrix(test.mat)
-        testthat::expect_identical(rfun(ref), out[[1]])
-            
+        storage.mode(ref) <- new_type
+        testthat::expect_identical(ref, out[[1]])
+
         # Checking that the converted getters work properly too.
         ref2 <- matrix(out[[2]], nrow(ref), ncol(ref), byrow=(i==2L))
+        storage.mode(ref) <- old_type
         testthat::expect_identical(ref, ref2)
     }
     return(invisible(NULL))
 }
 
 check_numeric_converted_output  <- function(FUN, ...) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_numeric_to_integer_output, 
-                            rfun=function(x) {
-                                storage.mode(x) <- "integer" 
-                                return(x)
-                            })
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_numeric_to_integer_output, old_type="double", new_type="integer")
 }
 
 check_integer_converted_output <- function(FUN, ...) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_integer_to_numeric_output, 
-                            rfun=function(x) { 
-                                storage.mode(x) <- "double"
-                                return(x)
-                            })
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_integer_to_numeric_output, old_type="integer", new_type="double")
 }
 
 check_logical_converted_output <- function(FUN, ...) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_numeric_output, 
-                            rfun=function(x) { 
-                                storage.mode(x) <- "double"
-                                return(x)
-                            })
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_integer_output, 
-                            rfun=function(x) { 
-                                storage.mode(x) <- "integer"
-                                return(x)
-                            })
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_numeric_output, old_type="logical", new_type="double")
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_integer_output, old_type="logical", new_type="integer") 
 }
 
 ###############################
