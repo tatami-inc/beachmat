@@ -38,17 +38,6 @@ void lin_output<T, V>::get_row(size_t r, Rcpp::NumericVector::iterator out) {
     return;
 }
 
-template<typename T, class V>
-typename V::iterator lin_output<T, V>::get_const_col(size_t c, typename V::iterator work) {
-    return get_const_col(c, work, 0, get_nrow());
-}
-
-template<typename T, class V>
-typename V::iterator lin_output<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
-    get_col(c, work, first, last);
-    return work;
-}
-
 // Setters:
 template<typename T, class V>
 void lin_output<T, V>::set_col(size_t c, Rcpp::IntegerVector::iterator out) {
@@ -197,19 +186,6 @@ typename V::iterator simple_lin_output<T, V>::get_const_col(size_t c, typename V
 template<typename T, class V>
 std::unique_ptr<lin_output<T, V> > simple_lin_output<T, V>::clone() const {
     return std::unique_ptr<lin_output<T, V> >(new simple_lin_output<T, V>(*this));
-}
-
-/* Defining the sparse output interface. */ 
-
-template<typename T, class V>
-sparse_lin_output<T, V>::sparse_lin_output(size_t nr, size_t nc) : sparse_lin_output_precursor<T, V>(nr, nc) {}
-
-template<typename T, class V>
-sparse_lin_output<T, V>::~sparse_lin_output() {}
-
-template<typename T, class V>
-std::unique_ptr<lin_output<T, V> > sparse_lin_output<T, V>::clone() const {
-    return std::unique_ptr<lin_output<T, V> >(new sparse_lin_output<T, V>(*this));
 }
 
 /* Defining the HDF5 output interface. */

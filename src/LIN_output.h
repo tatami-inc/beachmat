@@ -32,9 +32,6 @@ public:
     virtual void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t)=0;
     virtual void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
 
-    typename V::iterator get_const_col(size_t, typename V::iterator);
-    virtual typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
-
     virtual T get(size_t, size_t)=0;
 
     // Setters:
@@ -121,15 +118,7 @@ public:
 /* Sparse LIN output */
 
 template<typename T, class V>
-using sparse_lin_output_precursor=general_lin_output<T, V, Csparse_output<T, V> >;
-
-template<typename T, class V>
-class sparse_lin_output : public sparse_lin_output_precursor<T, V> {
-public:
-    sparse_lin_output(size_t, size_t);
-    ~sparse_lin_output();
-    std::unique_ptr<lin_output<T, V> > clone() const;
-};
+using sparse_lin_output=general_lin_output<T, V, Csparse_output<T, V> >;
 
 /* HDF5 LIN output */
 
