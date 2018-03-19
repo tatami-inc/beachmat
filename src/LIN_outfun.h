@@ -270,25 +270,13 @@ void HDF5_lin_output<T, V>::set_col(size_t c, Rcpp::NumericVector::iterator out,
 
 template<typename T, class V>
 void HDF5_lin_output<T, V>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::IntegerVector>& info) {
-    size_t N=std::get<0>(info);
-    auto idx=std::get<1>(info);
-    auto val=std::get<2>(info);
-    for (size_t i=0; i<N; ++i, ++idx, ++val) {
-        T tmp=*val;
-        mat.insert_one(*idx, c, &tmp);
-    }
+    mat.insert_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info), H5::PredType::NATIVE_INT32);
     return;
 }
  
 template<typename T, class V>
 void HDF5_lin_output<T, V>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::NumericVector>& info) {
-    size_t N=std::get<0>(info);
-    auto idx=std::get<1>(info);
-    auto val=std::get<2>(info);
-    for (size_t i=0; i<N; ++i, ++idx, ++val) {
-        T tmp=*val;
-        mat.insert_one(*idx, c, &tmp);
-    }
+    mat.insert_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info), H5::PredType::NATIVE_DOUBLE);
     return;
 }
 
