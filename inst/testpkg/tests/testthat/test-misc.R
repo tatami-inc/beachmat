@@ -30,9 +30,8 @@ test_that("empty matrices are okay", {
         }
 
         expect_identical(ncol(out[[1]]), 0L)
-        expect_identical(ncol(out[[2]]), 0L)
         expect_identical(nrow(out[[1]]), 10L)
-        expect_identical(nrow(out[[2]]), 10L)
+        expect_identical(length(out[[2]]), 0L)
 
         # No rows
         ref <- as(matrix(0, 0, 10), mode)
@@ -45,9 +44,8 @@ test_that("empty matrices are okay", {
         }
 
         expect_identical(nrow(out[[1]]), 0L)
-        expect_identical(nrow(out[[2]]), 0L)
         expect_identical(ncol(out[[1]]), 10L)
-        expect_identical(ncol(out[[2]]), 10L)
+        expect_identical(length(out[[2]]), 0L)
     }
 })
 
