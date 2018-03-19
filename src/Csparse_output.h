@@ -137,6 +137,8 @@ void Csparse_output<T, V>::set(size_t r, size_t c, T in) {
 template<typename T, class V>
 template<class Iter>
 void Csparse_output<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
+    // It is not easy to use caching here, like Csparse_matrix() does. This is
+    // because cached indices can be invalidated upon set_row().
     check_rowargs(r, first, last);
     std::fill(out, out+last-first, get_empty());
 
@@ -150,7 +152,9 @@ void Csparse_output<T, V>::get_row(size_t r, Iter out, size_t first, size_t last
         } else if (r==current.front().first) {
             (*out)=current.front().second;
         } else {
-            auto loc=find_matching_row(current.begin(), current.end(), data_pair(r, *out)); // Equivalent to get_empty(), due to fill.
+            // (*out) is equivalent to get_empty(), due to fill; not that it matters, 
+            // as find_matching_row() will only use the first value anyway.
+            auto loc=find_matching_row(current.begin(), current.end(), data_pair(r, *out)); 
             if (loc!=current.end() && loc->first==r) { 
                 (*out)=loc->second;
             }
