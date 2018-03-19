@@ -40,9 +40,8 @@ public:
     typename V::iterator get_const_col(size_t, typename V::iterator);
     virtual typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
 
-    typedef std::tuple<size_t, Rcpp::IntegerVector::iterator, typename V::iterator> const_col_indexed_info;
-    const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator);
-    virtual const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
+    const_col_indexed_info<V> get_const_col_indexed(size_t, typename V::iterator);
+    virtual const_col_indexed_info<V> get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
 
     virtual std::unique_ptr<lin_matrix<T, V> > clone() const=0;
 
@@ -123,7 +122,7 @@ public:
     Csparse_lin_matrix(const Rcpp::RObject&);
     ~Csparse_lin_matrix();
 
-    typename lin_matrix<T, V>::const_col_indexed_info get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
+    const_col_indexed_info<V> get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
