@@ -1,11 +1,11 @@
 #ifndef TEMPLATE_TESTFUN_H
 #define TEMPLATE_TESTFUN_H
 
-/* This function tests the output fill_row/fill_col methods; that they
- * call the fill_row/fill_col methods of the derived classes (along with the
+/* This function tests the output set_row/set_col methods; that they
+ * call the set_row/set_col methods of the derived classes (along with the
  * correct arguments to the overloaded virtual methods). It also checks that
  * the get_row/get_col methods of the derived classes are working properly, 
- * by extracting rows/columns and and re-filling the output matrix. Finally, 
+ * by extracting rows/columns and and filling another output matrix. Finally, 
  * it does reordered requests to test that extraction is not affected by order.
  */
 
@@ -88,8 +88,8 @@ Rcpp::RObject pump_out(M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode
     return output;
 }
 
-/* This function tests the fill_row/fill_col methods, and that they properly
- * call the fill_row/fill_col methods of the derived classes with slices.
+/* This function tests the set_row/set_col methods, and that they properly
+ * call the set_row/set_col methods of the derived classes with slices.
  */
 
 template <class T, class M, class OX, class OY>  
@@ -145,6 +145,47 @@ Rcpp::RObject pump_out_slice (M ptr, OX optr, OY optr2, const Rcpp::IntegerVecto
     output[0]=optr->yield();
     output[1]=optr2->yield();
     return output;
+}
+
+/* This function tests the set_col_indexed methods. */
+
+template <class V, class OX>  
+Rcpp::RObject pump_out_indexed (OX optr, const Rcpp::IntegerVector& mode, const Rcpp::IntegerVector& indices, Rcpp::List subindices) {
+    if (mode.size()!=1) { 
+        throw std::runtime_error("'mode' should be an integer scalar"); 
+    }
+    const int Mode=mode[0];
+    if (Mode!=1 && Mode!=2) { 
+        throw std::runtime_error("'mode' should be in [1,2]"); 
+    }
+
+    if (indices.size()!=subindices.size()) { 
+        throw std::runtime_error("'index' and 'subindices' should be of the same length");
+    }
+
+    for (size_t i=0; i<indices.size(); ++i) {
+        Rcpp::List cursub=subindices[i];
+        if (cursub.size()!=2) { 
+            throw std::runtime_error("each element of 'subindices' should be a list of length 2");
+        }
+
+        Rcpp::IntegerVector I=cursub[0];
+        V X=cursub[1];
+        if (X.size()!=I.size()) {
+            throw std::runtime_error("length of vectors in each element of 'subindices' should be equal");
+        }
+        
+        // Some work required to get to zero-based indexing.
+        Rcpp::IntegerVector I2(Rcpp::clone(I));
+        for (auto& x : I2) { --x; } 
+
+        if (Mode==1) {
+            beachmat::const_col_indexed_info<V> info(I2.size(), I2.begin(), X.begin());
+            optr->set_col_indexed(indices[i] - 1, info); 
+        }
+    }
+
+    return optr->yield();
 }
 
 /* This function tests the edge cases and error triggers. */

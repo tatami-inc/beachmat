@@ -132,6 +132,54 @@ check_logical_output_slice <- function(FUN, ..., by.row, by.col) {
 check_character_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
                         cxxfun=cxx_test_character_output_slice, fill="")
+}
+
+###############################
+
+.check_output_indexed <- function(FUN, ..., N, cxxfun, fill) { 
+    for (n in N) {
+        for (it in 1:1) {
+            test.mat <- FUN(...)
+            all.values <- as.matrix(test.mat)
+            ref <- matrix(fill, nrow(test.mat), ncol(test.mat))
+
+            if (it==1L) {
+                # Constructing a list of row index vectors for a sampled set of columns.
+                c <- sample(ncol(test.mat), n, replace=TRUE)
+                subr <- vector("list", n)
+                for (i in seq_along(c)) {
+                    subr[[i]] <- list(sample(nrow(test.mat), n, replace=TRUE),
+                                      sample(all.values, n, replace=TRUE))
+                    to.use <- !duplicated(subr[[i]][[1]], fromLast=TRUE) # Last elements overwrite earlier elements.
+                    ref[subr[[i]][[1]][to.use],c[i]] <- subr[[i]][[2]][to.use]
+                }
+            }
+
+            out <- .Call(cxxfun, test.mat, it, c, subr)
+            if (is.matrix(test.mat)) { 
+                testthat::expect_true(is.matrix(out))
+            } else {
+                testthat::expect_s4_class(out, class(test.mat))
+                out <- as.matrix(out)
+                dimnames(out) <- NULL
+            }
+
+            testthat::expect_identical(ref, out)
+        }
+    }
+    return(invisible(NULL))
+}
+
+check_integer_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_integer_output_indexed, fill=0L)
+} 
+
+check_logical_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_logical_output_indexed, fill=FALSE)
+} 
+
+check_numeric_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_numeric_output_indexed, fill=0)
 } 
 
 ###############################

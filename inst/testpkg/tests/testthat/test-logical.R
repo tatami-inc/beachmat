@@ -268,6 +268,9 @@ test_that("Simple logical matrix output is okay", {
 
     beachtest:::check_logical_output_slice(sFUN, by.row=10:13, by.col=2:5)
     beachtest:::check_logical_output_slice(sFUN, nr=5, nc=30, by.row=1:3, by.col=2:25)
+
+    beachtest:::check_logical_output_indexed(sFUN, N=c(5, 10, 20))
+    beachtest:::check_logical_output_indexed(sFUN, nr=5, nc=30, N=c(5, 10, 20))
 })
 
 # Testing sparse logical output:
@@ -280,6 +283,10 @@ test_that("Sparse logical matrix output is okay", {
     beachtest:::check_logical_output_slice(csFUN, by.row=2:10, by.col=2:9)
     beachtest:::check_logical_output_slice(csFUN, by.row=1:12, by.col=3:7, d=0.2)
     beachtest:::check_logical_output_slice(csFUN, by.row=3:9, by.col=5:8, d=0.5)
+
+    beachtest:::check_logical_output_indexed(csFUN, d=0.2, N=c(5, 10, 20))
+    beachtest:::check_logical_output_indexed(csFUN, d=0.5, nr=5, nc=30, N=c(5, 10, 20))
+    beachtest:::check_logical_output_indexed(csFUN, d=0.5, N=c(5, 10, 20))
 })
 
 # Testing HDF5 logical output:
@@ -290,6 +297,9 @@ test_that("HDF5 logical matrix output is okay", {
 
     beachtest:::check_logical_output_slice(hFUN, by.row=12:15, by.col=1:5)
     beachtest:::check_logical_output_slice(hFUN, nr=5, nc=30, by.row=2:5, by.col=1:15)
+
+    beachtest:::check_logical_output_indexed(hFUN, N=c(5, 10, 20))
+    beachtest:::check_logical_output_indexed(hFUN, nr=5, nc=30, N=c(5, 10, 20))
 
     beachtest:::check_logical_order(hFUN)
 })

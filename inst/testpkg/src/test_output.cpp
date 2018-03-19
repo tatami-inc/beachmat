@@ -81,6 +81,32 @@ SEXP test_character_output_slice(SEXP in, SEXP mode, SEXP rx, SEXP cx) {
     END_RCPP
 }
 
+/* Realized output indexing functions. */
+
+SEXP test_integer_output_indexed(SEXP in, SEXP mode, SEXP index1, SEXP index2) {
+    BEGIN_RCPP
+    auto ptr=beachmat::create_integer_matrix(in);
+    auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+    return pump_out_indexed<Rcpp::IntegerVector>(optr.get(), mode, index1, index2);
+    END_RCPP
+}
+
+SEXP test_logical_output_indexed(SEXP in, SEXP mode, SEXP index1, SEXP index2) {
+    BEGIN_RCPP
+    auto ptr=beachmat::create_logical_matrix(in);
+    auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+    return pump_out_indexed<Rcpp::LogicalVector>(optr.get(), mode, index1, index2);
+    END_RCPP
+}
+
+SEXP test_numeric_output_indexed(SEXP in, SEXP mode, SEXP index1, SEXP index2) {
+    BEGIN_RCPP
+    auto ptr=beachmat::create_numeric_matrix(in);
+    auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+    return pump_out_indexed<Rcpp::NumericVector>(optr.get(), mode, index1, index2);
+    END_RCPP
+}
+
 /* Conversion functions. */
 
 SEXP test_integer_to_logical_output(SEXP in, SEXP mode) {

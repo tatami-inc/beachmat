@@ -169,6 +169,9 @@ test_that("Simple integer matrix output is okay", {
 
     beachtest:::check_integer_output_slice(sFUN, by.row=2:11, by.col=4:8)
     beachtest:::check_integer_output_slice(sFUN, nr=5, nc=30, by.row=3:5, by.col=4:8)
+
+    beachtest:::check_integer_output_indexed(sFUN, N=c(5, 10, 20))
+    beachtest:::check_integer_output_indexed(sFUN, nr=5, nc=30, N=c(5, 10, 20))
 })
 
 # Testing HDF5 integer output:
@@ -179,6 +182,9 @@ test_that("HDF5 integer matrix output is okay", {
 
     beachtest:::check_integer_output_slice(hFUN, by.row=5:15, by.col=8:10)
     beachtest:::check_integer_output_slice(hFUN, nr=5, nc=30, by.row=2:5, by.col=8:20)
+
+    beachtest:::check_integer_output_indexed(hFUN, N=c(5, 10, 20))
+    beachtest:::check_integer_output_indexed(hFUN, nr=5, nc=30, N=c(5, 10, 20))
 
     beachtest:::check_integer_order(hFUN)
 })
