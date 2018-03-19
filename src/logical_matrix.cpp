@@ -18,16 +18,21 @@ int HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
 
 /* DelayedMatrix input methods. */
 
-const std::vector<std::string> allowed_seeds={"lgeMatrix", "lgCMatrix", "lgTMatrix", "lspMatrix", "RleMatrix"};
+const std::vector<std::string> allowed_s4_seeds={"lgeMatrix", "lgCMatrix", "lgTMatrix", "lspMatrix", "RleMatrix"};
 
 template<>
-std::unique_ptr<logical_matrix> delayed_lin_matrix<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_seeds);
+std::unique_ptr<logical_matrix> delayed_lin_helper<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
+    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
     if (seed!=R_NilValue) {
         return create_logical_matrix(seed);
     } else {
         return nullptr;
     }
+} 
+
+template<>
+std::unique_ptr<logical_matrix> delayed_lin_helper<int, Rcpp::LogicalVector>::generate_unknown_seed(Rcpp::RObject incoming) {
+    return std::unique_ptr<logical_matrix>(new unknown_logical_matrix(incoming));
 } 
 
 /* Sparse logical output methods. */

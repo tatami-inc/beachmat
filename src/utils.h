@@ -33,9 +33,9 @@ Rcpp::RObject extract_seed(const Rcpp::RObject&, const std::vector<std::string>&
 
 // Matrix type enumeration.
 
-enum matrix_type { SIMPLE, HDF5, SPARSE, RLE, PSYMM, DENSE, DELAYED };
+enum matrix_type { SIMPLE, HDF5, SPARSE, RLE, PSYMM, DENSE, DELAYED, UNKNOWN};
 
-// Indexed handling.
+// Typedef for the indexing tuple.
 
 template<class V>
 using const_col_indexed_info=std::tuple<size_t, Rcpp::IntegerVector::iterator, typename V::iterator>;

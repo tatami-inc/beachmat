@@ -157,43 +157,17 @@ using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_base<T, RTYPE> >;
 
 /* DelayedMatrix of LINs */
 
-template<typename T, class V>
-class delayed_lin_matrix : public lin_matrix<T, V> {
-public:
-    delayed_lin_matrix(const Rcpp::RObject&);
-    ~delayed_lin_matrix();
-    delayed_lin_matrix(const delayed_lin_matrix&);
-    delayed_lin_matrix& operator=(const delayed_lin_matrix&);
-    delayed_lin_matrix(delayed_lin_matrix&&) = default;             // Move constructor
-    delayed_lin_matrix& operator=(delayed_lin_matrix&&) = default;  // Move assignment constructor
-    
-    size_t get_nrow() const;
-    size_t get_ncol() const;
-    
-    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+template <typename T, class V>
+using delayed_lin_helper=delayed_matrix<T, V, lin_matrix<T, V> >;
 
-    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+template <typename T, class V>
+using delayed_lin_matrix=general_lin_matrix<T, V, delayed_lin_helper<T, V> >;
 
-    T get(size_t, size_t);
+/* Unknown matrix of LINs */
 
-    std::unique_ptr<lin_matrix<T, V> > clone() const;
+template <typename T, class V>
+using unknown_lin_matrix=general_lin_matrix<T, V, unknown_matrix<T, V> >;
 
-    Rcpp::RObject yield() const;
-    matrix_type get_matrix_type() const;
-   
-private:
-    Rcpp::RObject original;
-    std::unique_ptr<lin_matrix<T, V> > seed_ptr;
-    delayed_coord_transformer<T, V> transformer;
-    static std::unique_ptr<lin_matrix<T, V> > generate_seed(Rcpp::RObject);
-
-    /* This class allows chunked extraction from a 'delayed_matrix' instance,
-     * mimicking a unique pointer to other top-level classes.
-     */
-    using enslaved=general_lin_matrix<T, V, delayed_matrix<T, V> >;
-};
 
 }
 

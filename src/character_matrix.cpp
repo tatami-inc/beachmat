@@ -112,80 +112,21 @@ matrix_type HDF5_character_matrix::get_matrix_type() const {
 
 /* Methods for the delayed character matrix. */
 
-delayed_character_matrix::delayed_character_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
-    check_DelayedMatrix(incoming);
-    
-    // Trying to generate the seed, if it's a valid object in itself.
-    if (only_delayed_coord_changes(incoming)) {
-        seed_ptr=generate_seed(incoming);
-    }
-        
-    // If the seed is still NULL, we switch to a chunked matrix format.
-    if (seed_ptr.get()==NULL) { 
-        seed_ptr=std::unique_ptr<character_matrix>(new delayed_character_matrix::enslaved(incoming));
-        transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(seed_ptr.get());
-    } else {
-        transformer=delayed_coord_transformer<Rcpp::String, Rcpp::StringVector>(incoming, seed_ptr.get());
-    }
+const std::vector<std::string> allowed_s4_seeds={"RleMatrix"};
 
-    return;
-}
-
-delayed_character_matrix::~delayed_character_matrix() {}
-
-delayed_character_matrix::delayed_character_matrix(const delayed_character_matrix& other) : original(other.original),
-    seed_ptr(other.seed_ptr->clone()), transformer(other.transformer) {}
-
-delayed_character_matrix& delayed_character_matrix::operator=(const delayed_character_matrix& other) {
-    original=other.original;
-    seed_ptr=other.seed_ptr->clone();
-    transformer=other.transformer;
-    return *this;
-}
-
-size_t delayed_character_matrix::get_nrow() const {
-    return transformer.get_nrow(); 
-}
-
-size_t delayed_character_matrix::get_ncol() const {
-    return transformer.get_ncol();
-}
-
-void delayed_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) {
-    transformer.get_col(seed_ptr.get(), c, out, first, last);
-    return;
-}
-
-void delayed_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) {
-    transformer.get_row(seed_ptr.get(), r, out, first, last);
-    return;
-}
-
-Rcpp::String delayed_character_matrix::get(size_t r, size_t c) {
-    return transformer.get(seed_ptr.get(), r, c);
-}
-
-std::unique_ptr<character_matrix> delayed_character_matrix::clone() const {
-    return std::unique_ptr<character_matrix>(new delayed_character_matrix(*this));
-}
-
-Rcpp::RObject delayed_character_matrix::yield() const {
-    return original;
-}
-
-matrix_type delayed_character_matrix::get_matrix_type() const { // returns the type of the SEED!
-    return DELAYED;
-}
-
-const std::vector<std::string> allowed_seeds={"RleMatrix"};
-
-std::unique_ptr<character_matrix> delayed_character_matrix::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_seeds);
+template<>
+std::unique_ptr<character_matrix> delayed_character_helper::generate_seed(Rcpp::RObject incoming) {
+    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
     if (seed!=R_NilValue) {
         return create_character_matrix(seed);
     } else {
         return nullptr;
     }
+}
+
+template <>
+std::unique_ptr<character_matrix> delayed_character_helper::generate_unknown_seed(Rcpp::RObject incoming) {
+    return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));
 }
 
 /* Dispatch definition */
@@ -200,9 +141,7 @@ std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject& i
         } else if (ctype=="DelayedMatrix") { 
             return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
         }
-        std::stringstream err;
-        err << "unsupported class '" << ctype << "' for character_matrix";
-        throw std::runtime_error(err.str().c_str());
+        return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));
     } 
     return std::unique_ptr<character_matrix>(new simple_character_matrix(incoming));
 }

@@ -38,6 +38,10 @@ typedef HDF5_lin_matrix<double, Rcpp::NumericVector, REALSXP> HDF5_numeric_matri
 
 typedef delayed_lin_matrix<double, Rcpp::NumericVector> delayed_numeric_matrix;
 
+/* Unknown matrix */
+
+typedef unknown_lin_matrix<double, Rcpp::NumericVector> unknown_numeric_matrix;
+
 /* Dispatcher */
 
 std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject&);
