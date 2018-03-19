@@ -68,39 +68,36 @@ private:
     static bool has_unmodified_values(Rcpp::RObject);
 };
 
-/* The 'delayed_matrix' class will realize chunks of the input DelayedMatrix
- * upon request from any calling function. This is necessary to avoid 
- * reimplementing arbitrary delayed R operations in C++.
- */
+/* The 'delayed_matrix' class, which wraps the coord_transformer class. */
 
-template<typename T, class V>
-class delayed_matrix : public any_matrix {
-public:    
+template<typename T, class V, class base_mat>
+class delayed_matrix : public any_matrix { 
+public:
     delayed_matrix(const Rcpp::RObject&);
     ~delayed_matrix();
-
+    delayed_matrix(const delayed_matrix&);
+    delayed_matrix& operator=(const delayed_matrix&);
+    delayed_matrix(delayed_matrix&&) = default;             // Move constructor
+    delayed_matrix& operator=(delayed_matrix&&) = default;  // Move assignment constructor
+    
     T get(size_t, size_t);
 
-    template <class Iter> 
+    template <class Iter>
     void get_row(size_t, Iter, size_t, size_t);
 
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield() const;
-    matrix_type get_matrix_type () const;
+    matrix_type get_matrix_type() const;
 private:
     Rcpp::RObject original;
+    std::unique_ptr<base_mat> seed_ptr;
+    delayed_coord_transformer<T, V> transformer;
 
-    Rcpp::Environment beachenv;
-    Rcpp::Function realizer_row, realizer_col;
-    
-    V storage;
-    void update_storage_by_row(size_t);
-    void update_storage_by_col(size_t);
-
-    Rcpp::IntegerVector row_indices, col_indices;
-    int chunk_nrow, chunk_ncol;
+    // Specialized function for each realized matrix type.
+    static std::unique_ptr<base_mat> generate_seed(Rcpp::RObject);
+    static std::unique_ptr<base_mat> generate_unknown_seed(Rcpp::RObject);
 };
 
 }

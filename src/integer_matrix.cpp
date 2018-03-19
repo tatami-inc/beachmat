@@ -13,16 +13,21 @@ int HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP>::get(size_t r, size_t c) {
 
 /* DelayedMatrix input methods. */
 
-const std::vector<std::string> allowed_seeds={"RleMatrix"};
+const std::vector<std::string> allowed_s4_seeds={"RleMatrix"};
 
 template<>
-std::unique_ptr<integer_matrix> delayed_lin_matrix<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_seeds);
+std::unique_ptr<integer_matrix> delayed_lin_helper<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
+    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
     if (seed!=R_NilValue) {
         return create_integer_matrix(seed);
     } else {
         return nullptr;
     }
+} 
+
+template<>
+std::unique_ptr<integer_matrix> delayed_lin_helper<int, Rcpp::IntegerVector>::generate_unknown_seed(Rcpp::RObject incoming) {
+    return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
 } 
     
 /* HDF5 integer output methods. */
@@ -49,9 +54,7 @@ std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject& incom
         } else if (ctype=="DelayedMatrix") {
             return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));  
         }
-        std::stringstream err;
-        err << "unsupported class '" << ctype << "' for integer_matrix";
-        throw std::runtime_error(err.str().c_str());
+        return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
     } 
     return std::unique_ptr<integer_matrix>(new simple_integer_matrix(incoming));
 }

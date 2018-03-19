@@ -28,6 +28,10 @@ typedef HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP> HDF5_integer_matrix;
 
 typedef delayed_lin_matrix<int, Rcpp::IntegerVector> delayed_integer_matrix;
 
+/* Unknown matrix */
+
+typedef unknown_lin_matrix<int, Rcpp::IntegerVector> unknown_integer_matrix;
+
 /* Dispatcher */
 
 std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject&);

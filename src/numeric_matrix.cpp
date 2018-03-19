@@ -18,16 +18,21 @@ double HDF5_lin_matrix<double, Rcpp::NumericVector, REALSXP>::get(size_t r, size
 
 /* DelayedMatrix input methods. */
 
-const std::vector<std::string> allowed_seeds={"dgeMatrix", "dgCMatrix", "dgTMatrix", "dspMatrix", "RleMatrix"};
+const std::vector<std::string> allowed_s4_seeds={"dgeMatrix", "dgCMatrix", "dgTMatrix", "dspMatrix", "RleMatrix"};
 
 template<>
-std::unique_ptr<numeric_matrix> delayed_lin_matrix<double, Rcpp::NumericVector>::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_seeds);
+std::unique_ptr<numeric_matrix> delayed_lin_helper<double, Rcpp::NumericVector>::generate_seed(Rcpp::RObject incoming) {
+    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
     if (seed!=R_NilValue) {
         return create_numeric_matrix(seed);
     } else {
         return nullptr;
     }
+} 
+
+template<>
+std::unique_ptr<numeric_matrix> delayed_lin_helper<double, Rcpp::NumericVector>::generate_unknown_seed(Rcpp::RObject incoming) {
+    return std::unique_ptr<numeric_matrix>(new unknown_numeric_matrix(incoming));
 } 
 
 /* Sparse numeric output methods. */
