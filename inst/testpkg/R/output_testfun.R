@@ -28,30 +28,28 @@
             } else {
                 class.out <- class(test.mat)
                 testthat::expect_s4_class(out[[1]], class.out)
+
                 if (class.out=="HDF5Matrix") { 
                     testthat::expect_equal(out[[1]]@seed@first_val, as.vector(out[[1]][1,1]))
                     testthat::expect_identical(dim(out[[1]]), dim(test.mat))
+                    testthat::expect_true(path(out[[1]])!=path(test.mat))
                 }
+
                 out[[1]] <- as.matrix(out[[1]])
             }      
 
-            # Reordering 'ref' to match the expected output. Also checking the flipped matrix.
-            # Here, we extract values by row/column from the filled output matrix, flip the values and refill the output matrix. 
-            # This checks whether the getters of the output matrix work as expected.
+            # Checking that the set-and-get values are the same.
             ref <- as.matrix(test.mat)
+            ref2 <- matrix(out[[2]], nrow(ref), ncol(ref), byrow=(i==2L))
+            testthat::expect_identical(ref, ref2)
+
+            # Reordering 'ref' to match the expected output. 
             if (i==1L) {
                 ref[,ordering+1L] <- ref
-                fref <- ref[nrow(ref):1,,drop=FALSE]
             } else if (i==2L) {
                 ref[ordering+1L,] <- ref
-                fref <- ref[,ncol(ref):1,drop=FALSE]
-            } else if (i==3L) {
-                fref <- ref[nrow(ref):1,ncol(ref):1,drop=FALSE]
             }
-
             testthat::expect_identical(ref, out[[1]])
-            dimnames(fref) <- NULL
-            testthat::expect_identical(fref, out[[2]])
         }
     }
     return(invisible(NULL))
@@ -256,15 +254,9 @@ check_character_order <- function(FUN, cxxfun) {
         ref <- as.matrix(test.mat)
         testthat::expect_identical(rfun(ref), out[[1]])
             
-        # With flipping.
-        if (i==1L) {
-            ref <- ref[nrow(ref):1,,drop=FALSE]
-        } else if (i==2L) {
-            ref <- ref[,ncol(ref):1,drop=FALSE]
-        } else if (i==3L) {
-            ref <- ref[nrow(ref):1,ncol(ref):1,drop=FALSE]
-        }
-        testthat::expect_identical(rfun(ref), out[[2]])
+        # Checking that the converted getters work properly too.
+        ref2 <- matrix(out[[2]], nrow(ref), ncol(ref), byrow=(i==2L))
+        testthat::expect_identical(ref, ref2)
     }
     return(invisible(NULL))
 }

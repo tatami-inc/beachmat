@@ -9,14 +9,16 @@
  * it does reordered requests to test that extraction is not affected by order.
  */
 
-template <class T, class M, class OX, class OY>  // M, O are automatically deduced.
-Rcpp::RObject pump_out(M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode, SEXP ordering=R_NilValue) { 
+template <typename T, class M, class OX>  // M, O are automatically deduced.
+Rcpp::RObject pump_out(M ptr, OX optr, const Rcpp::IntegerVector& mode, SEXP ordering=R_NilValue) { 
     if (mode.size()!=1) { 
         throw std::runtime_error("'mode' should be an integer scalar"); 
     }
     const int Mode=mode[0];
     const size_t& nrows=ptr->get_nrow();
     const size_t& ncols=ptr->get_ncol();
+    T out_rep(nrows*ncols);
+    auto oIt=out_rep.begin();
 
     if (Mode==1) { 
         // By column.
@@ -36,12 +38,8 @@ Rcpp::RObject pump_out(M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode
         for (const auto& o : order) { 
             ptr->get_col(c, target.begin());
             optr->set_col(o, target.begin());
-                
-            std::fill(target.begin(), target.end(), 0); // Wiping, to test that target is actually re-filled properly.
-            optr->get_col(o, target.begin());
-            std::reverse(target.begin(), target.end()); // Reversing the order, to keep it interesting.
-            optr2->set_col(o, target.begin());
-
+            optr->get_col(o, oIt);
+            oIt+=nrows;
             ++c;
         }
     } else if (Mode==2) { 
@@ -62,12 +60,8 @@ Rcpp::RObject pump_out(M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode
         for (const auto& o : order) {
             ptr->get_row(r, target.begin());
             optr->set_row(o, target.begin());                
-                
-            std::fill(target.begin(), target.end(), 0);  // Wiping.
-            optr->get_row(o, target.begin());
-            std::reverse(target.begin(), target.end()); // Reversing.
-            optr2->set_row(o, target.begin());
-
+            optr->get_row(o, oIt);
+            oIt+=ncols;
             ++r;
         }
     } else if (Mode==3) {
@@ -75,7 +69,7 @@ Rcpp::RObject pump_out(M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode
         for (int c=0; c<ncols; ++c){ 
             for (int r=0; r<nrows; ++r) {
                 optr->set(r, c, ptr->get(r, c));
-                optr2->set(nrows-r-1, ncols-c-1, optr->get(r, c));
+                *(oIt++)=optr->get(r, c);
             }
         }
     } else { 
@@ -84,7 +78,7 @@ Rcpp::RObject pump_out(M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode
 
     Rcpp::List output(2);
     output[0]=optr->yield();
-    output[1]=optr2->yield();
+    output[1]=out_rep;
     return output;
 }
 
