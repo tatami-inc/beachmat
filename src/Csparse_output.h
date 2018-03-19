@@ -15,18 +15,28 @@ public:
     Csparse_output(size_t, size_t);
     ~Csparse_output();
 
+    // Setters:
     template <class Iter>
     void set_row(size_t, Iter, size_t, size_t);
+
     template <class Iter>
     void set_col(size_t, Iter, size_t, size_t);
-    void set(size_t, size_t, T);
 
+    void set(size_t, size_t, T);
+    
+    template <class Iter>
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Iter);
+
+    // Getters:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
+
     template <class Iter>
     void get_row(size_t, Iter, size_t, size_t);
+
     T get(size_t, size_t);
 
+    // Other:
     Rcpp::RObject yield();
 
     matrix_type get_matrix_type() const;
@@ -129,6 +139,27 @@ template<typename T, class V>
 void Csparse_output<T, V>::set(size_t r, size_t c, T in) {
     check_oneargs(r, c);
     set_row(r, &in, c, c+1);
+    return;
+}
+
+template<typename T, class V>
+template <class Iter>
+void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
+    check_colargs(c, 0, 0);
+    std::deque<data_pair>& current=data[c];
+    size_t original_size=current.size();
+
+    for (size_t i=0; i<n; ++i, ++idx, ++in) { 
+        data_pair dp(*idx, *in);
+        auto cb=current.begin();
+        auto ce=current.begin() + original_size;
+        auto X=find_matching_row(cb, ce, dp);
+        if (X!=ce && X->first==dp.first) {
+            X->second=dp.second;
+        } else {
+            current.push_back(dp);
+        }
+    }
     return;
 }
 

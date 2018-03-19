@@ -15,20 +15,30 @@ public:
     simple_output(size_t, size_t);
     ~simple_output();
 
+    // Setters:
     template <class Iter>
     void set_row(size_t, Iter, size_t, size_t);
+
     template <class Iter>
     void set_col(size_t, Iter, size_t, size_t);
+
     void set(size_t, size_t, T);
 
     template <class Iter>
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Iter);
+
+    // Getters:
+    template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
+
     template <class Iter>
     void get_row(size_t, Iter, size_t, size_t);
+
     T get(size_t, size_t);
     
     typename V::iterator get_const_col(size_t, size_t, size_t);
 
+    // Other:
     Rcpp::RObject yield();
 
     matrix_type get_matrix_type() const;
@@ -73,6 +83,17 @@ template<typename T, class V>
 void simple_output<T, V>::set(size_t r, size_t c, T in) {
     check_oneargs(r, c);
     data[r + (this->nrow)*c]=in;
+    return;
+}
+
+template<typename T, class V>
+template <class Iter>
+void simple_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
+    check_colargs(c, 0, 0);
+    auto current=data.begin() + c * (this->nrow);
+    for (size_t i=0; i<n; ++i, ++idx, ++in) {
+        *(current + *idx) = *in;
+    }
     return;
 }
 

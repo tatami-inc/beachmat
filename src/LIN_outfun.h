@@ -13,6 +13,7 @@ lin_output<T, V>::lin_output() {}
 template<typename T, class V>
 lin_output<T, V>::~lin_output() {}
 
+// Getters:
 template<typename T, class V>
 void lin_output<T, V>::get_col(size_t c, Rcpp::IntegerVector::iterator out) {
     get_col(c, out, 0, get_nrow());
@@ -48,6 +49,7 @@ typename V::iterator lin_output<T, V>::get_const_col(size_t c, typename V::itera
     return work;
 }
 
+// Setters:
 template<typename T, class V>
 void lin_output<T, V>::set_col(size_t c, Rcpp::IntegerVector::iterator out) {
     set_col(c, out, 0, get_nrow());
@@ -80,6 +82,7 @@ general_lin_output<T, V, M>::general_lin_output(size_t nr, size_t nc) : mat(nr, 
 template<typename T, class V, class M>
 general_lin_output<T, V, M>::~general_lin_output() {}
 
+// Getters:
 template<typename T, class V, class M>
 size_t general_lin_output<T, V, M>::get_nrow() const {
     return mat.get_nrow();
@@ -119,6 +122,7 @@ T general_lin_output<T, V, M>::get(size_t r, size_t c) {
     return mat.get(r, c);
 }
 
+// Setters:
 template<typename T, class V, class M>
 void general_lin_output<T, V, M>::set_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     mat.set_col(c, out, first, last);
@@ -149,6 +153,19 @@ void general_lin_output<T, V, M>::set(size_t r, size_t c, T in) {
     return;
 }
 
+template<typename T, class V, class M>
+void general_lin_output<T, V, M>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::IntegerVector>& info) {
+    mat.set_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info));
+    return; 
+}
+
+template<typename T, class V, class M>
+void general_lin_output<T, V, M>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::NumericVector>& info) {
+    mat.set_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info));
+    return; 
+}
+
+// Other functions:
 template<typename T, class V, class M>
 Rcpp::RObject general_lin_output<T, V, M>::yield() {
     return mat.yield();
@@ -272,6 +289,30 @@ void HDF5_lin_output<T, V>::set_col(size_t c, Rcpp::IntegerVector::iterator out,
 template<typename T, class V>
 void HDF5_lin_output<T, V>::set_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     mat.insert_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+    return;
+}
+
+template<typename T, class V>
+void HDF5_lin_output<T, V>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::IntegerVector>& info) {
+    size_t N=std::get<0>(info);
+    auto idx=std::get<1>(info);
+    auto val=std::get<2>(info);
+    for (size_t i=0; i<N; ++i, ++idx, ++val) {
+        T tmp=*val;
+        mat.insert_one(*idx, c, &tmp);
+    }
+    return;
+}
+ 
+template<typename T, class V>
+void HDF5_lin_output<T, V>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::NumericVector>& info) {
+    size_t N=std::get<0>(info);
+    auto idx=std::get<1>(info);
+    auto val=std::get<2>(info);
+    for (size_t i=0; i<N; ++i, ++idx, ++val) {
+        T tmp=*val;
+        mat.insert_one(*idx, c, &tmp);
+    }
     return;
 }
 

@@ -16,6 +16,7 @@ public:
     lin_output();
     virtual ~lin_output();
     
+    // Getters:
     virtual size_t get_nrow() const=0;
     virtual size_t get_ncol() const=0;
 
@@ -33,9 +34,10 @@ public:
 
     typename V::iterator get_const_col(size_t, typename V::iterator);
     virtual typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
-    
+
     virtual T get(size_t, size_t)=0;
 
+    // Setters:
     void set_row(size_t, Rcpp::IntegerVector::iterator);
     void set_row(size_t, Rcpp::NumericVector::iterator);
 
@@ -48,13 +50,19 @@ public:
     virtual void set_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t)=0;
     virtual void set_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
 
+    virtual void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::IntegerVector>&)=0;
+    virtual void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::NumericVector>&)=0;
+
     virtual void set(size_t, size_t, T)=0;
 
+    // Other methods:
     virtual Rcpp::RObject yield()=0;
 
     virtual std::unique_ptr<lin_output<T, V> > clone() const=0;
 
     virtual matrix_type get_matrix_type() const=0;
+private:
+    Rcpp::IntegerVector indices; // needed for get_const_col_indexed.
 };
 
 /* General output */
@@ -81,6 +89,9 @@ public:
 
     void set_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
     void set_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+
+    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::IntegerVector>&);
+    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::NumericVector>&);
 
     void set(size_t, size_t, T);
 
@@ -149,6 +160,9 @@ public:
     void set_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
     void set(size_t, size_t, T);
+
+    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::IntegerVector>&);
+    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::NumericVector>&);
 
     Rcpp::RObject yield();
 
