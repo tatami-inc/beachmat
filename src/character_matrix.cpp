@@ -51,66 +51,47 @@ std::unique_ptr<character_matrix> simple_character_matrix::clone() const {
     return std::unique_ptr<character_matrix>(new simple_character_matrix(*this));
 }
 
-/* Methods for the HDF5 character matrix. */
+/* Methods for the helper class for the HDF5 character interface. */
 
-HDF5_character_matrix::HDF5_character_matrix(const Rcpp::RObject& incoming) : mat(incoming), str_type(mat.get_datatype()) {
+HDF5_character_helper::HDF5_character_helper(const Rcpp::RObject& incoming) : HDF5_matrix<Rcpp::String, STRSXP>(incoming), 
+        str_type(this->get_datatype()) {
+
     if (str_type.isVariableStr()) { 
         throw std::runtime_error("variable-length strings not supported for HDF5_character_matrix");
     }
+
     bufsize=str_type.getSize(); 
-    row_buf.resize(bufsize*(mat.get_ncol()));
-    col_buf.resize(bufsize*(mat.get_nrow()));
-    one_buf.resize(bufsize);
+    buffer.resize(bufsize * std::max({ this->get_ncol(), this->get_nrow(), size_t(1) }));
     return;
 }
 
-HDF5_character_matrix::~HDF5_character_matrix() {}
+HDF5_character_helper::~HDF5_character_helper() {}
 
-size_t HDF5_character_matrix::get_nrow() const {
-    return mat.get_nrow();
-}
-
-size_t HDF5_character_matrix::get_ncol() const {
-    return mat.get_ncol();
-}
-
-void HDF5_character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    char* ref=row_buf.data();
-    mat.extract_row(r, ref, str_type, first, last);
+void HDF5_character_helper::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
+    char* ref=buffer.data();
+    this->extract_row(r, ref, str_type, first, last);
     for (size_t c=first; c<last; ++c, ref+=bufsize, ++out) {
         (*out)=ref; 
     }
     return;
 } 
 
-void HDF5_character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    char* ref=col_buf.data();
-    mat.extract_col(c, ref, str_type, first, last);
+void HDF5_character_helper::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
+    char* ref=buffer.data();
+    this->extract_col(c, ref, str_type, first, last);
     for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
         (*out)=ref; 
     }
     return;
 }
  
-Rcpp::String HDF5_character_matrix::get(size_t r, size_t c) { 
-    char* ref=one_buf.data();
-    mat.extract_one(r, c, ref, str_type);
+Rcpp::String HDF5_character_helper::get(size_t r, size_t c) { 
+    char* ref=buffer.data();
+    this->extract_one(r, c, ref, str_type);
     return ref;
 }
 
-std::unique_ptr<character_matrix> HDF5_character_matrix::clone() const {
-    return std::unique_ptr<character_matrix>(new HDF5_character_matrix(*this));
-}
- 
-Rcpp::RObject HDF5_character_matrix::yield() const {
-    return mat.yield();
-}
-
-matrix_type HDF5_character_matrix::get_matrix_type() const {
-    return mat.get_matrix_type();
-}
-
-/* Methods for the delayed character matrix. */
+/* Methods for the Delayed character interface. */
 
 const std::vector<std::string> allowed_s4_seeds={"RleMatrix"};
 

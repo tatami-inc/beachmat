@@ -180,34 +180,34 @@ std::unique_ptr<lin_matrix<T, V> > Csparse_lin_matrix<T, V>::clone() const {
     return std::unique_ptr<lin_matrix<T, V> >(new Csparse_lin_matrix<T, V>(*this));
 }
 
-/* Defining the HDF5 interface (or specifically, the base object for LIN data). */
+/* Defining the helper class contained inside the HDF5 interface. */
 
 template<typename T, int RTYPE>
-HDF5_lin_base<T, RTYPE>::HDF5_lin_base(const Rcpp::RObject& incoming) : HDF5_matrix<T, RTYPE>(incoming) {}
+HDF5_lin_helper<T, RTYPE>::HDF5_lin_helper(const Rcpp::RObject& incoming) : HDF5_matrix<T, RTYPE>(incoming) {}
 
 template<typename T, int RTYPE>
-HDF5_lin_base<T, RTYPE>::~HDF5_lin_base() {}
+HDF5_lin_helper<T, RTYPE>::~HDF5_lin_helper() {}
 
 template<typename T, int RTYPE>
-void HDF5_lin_base<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_helper<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     this->extract_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
-void HDF5_lin_base<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_helper<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     this->extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
-void HDF5_lin_base<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_helper<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     this->extract_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
-void HDF5_lin_base<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_helper<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     this->extract_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
