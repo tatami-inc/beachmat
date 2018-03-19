@@ -119,6 +119,8 @@ SEXP test_numeric_output_indexed(SEXP, SEXP, SEXP, SEXP);
 
 SEXP test_logical_output_indexed(SEXP, SEXP, SEXP, SEXP);
 
+SEXP test_character_output_indexed(SEXP, SEXP, SEXP, SEXP);
+
 // Output type checks.
 
 SEXP test_numeric_to_logical_output (SEXP, SEXP);

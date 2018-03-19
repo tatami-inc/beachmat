@@ -107,6 +107,16 @@ SEXP test_numeric_output_indexed(SEXP in, SEXP mode, SEXP index1, SEXP index2) {
     END_RCPP
 }
 
+SEXP test_character_output_indexed(SEXP in, SEXP mode, SEXP index1, SEXP index2) {
+    BEGIN_RCPP
+    auto ptr=beachmat::create_character_matrix(in);
+    beachmat::output_param op(in);
+    op.set_strlen(10);
+    auto optr=beachmat::create_character_output(ptr->get_nrow(), ptr->get_ncol(), op);
+    return pump_out_indexed<Rcpp::StringVector>(optr.get(), mode, index1, index2);
+    END_RCPP
+}
+
 /* Conversion functions. */
 
 SEXP test_integer_to_logical_output(SEXP in, SEXP mode) {

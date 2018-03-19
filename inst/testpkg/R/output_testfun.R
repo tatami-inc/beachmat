@@ -182,6 +182,10 @@ check_numeric_output_indexed <- function(FUN, ..., N) {
     .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_numeric_output_indexed, fill=0)
 } 
 
+check_character_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_character_output_indexed, fill="")
+} 
+
 ###############################
 
 .check_execution_order <- function(FUN, cxxfun, type) {
