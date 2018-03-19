@@ -32,7 +32,7 @@
                 if (class.out=="HDF5Matrix") { 
                     testthat::expect_equal(out[[1]]@seed@first_val, as.vector(out[[1]][1,1]))
                     testthat::expect_identical(dim(out[[1]]), dim(test.mat))
-                    testthat::expect_true(path(out[[1]])!=path(test.mat))
+                    testthat::expect_true(BiocGenerics::path(out[[1]])!=BiocGenerics::path(test.mat))
                 }
 
                 out[[1]] <- as.matrix(out[[1]])
@@ -182,17 +182,22 @@ check_character_output_indexed <- function(FUN, ..., N) {
     # underlying HDF5 file and change the values of other HDF5Matrix objects. 
     mats <- list(FUN(), FUN(), FUN())
     ref.mats <- lapply(mats, as.matrix)
-    new.mats <- lapply(mats, function(x) .Call(cxxfun, x, 1L, NULL)[[1]]) 
+    all.paths <- sapply(mats, path)
 
     for (i in seq_along(mats)) { 
-        out <- new.mats[[i]]
+        out <- .Call(cxxfun, mats[[1]], 1L, NULL)[[1]]
         testthat::expect_s4_class(out, "HDF5Matrix")
-        ref <- ref.mats[[i]]
         testthat::expect_identical(ref, as.matrix(out))
-        original <- mats[[i]]
-        testthat::expect_identical(ref, as.matrix(original))
-        testthat::expect_true(original@seed@filepath!=out@seed@filepath)
+
+        # Checking that all the other matrices are still where they should be.
+        for (j in seq_along(mats)) { 
+            ref <- ref.mats[[j]]
+            testthat::expect_identical(ref, as.matrix(out))
+        }
+
+        all.paths <- c(all.paths, BiocGenerics::path(out))
     }
+    expect_false(any(duplicated(all.paths)))
 
     # Checking that the old and realized files are in the log.
     testthat::expect_message(log <- HDF5Array::showHDF5DumpLog())
