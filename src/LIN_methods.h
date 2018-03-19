@@ -124,7 +124,7 @@ matrix_type general_lin_matrix<T, V, M>::get_matrix_type() const {
     return mat.get_matrix_type();
 }
 
-/* Defining specific interface for simple/dense matrices. */
+/* Defining specific interface for simple matrices. */
 
 template <typename T, class V>
 simple_lin_matrix<T, V>::simple_lin_matrix(const Rcpp::RObject& in) : simple_lin_precursor<T, V>(in) {}
@@ -141,6 +141,8 @@ template <typename T, class V>
 std::unique_ptr<lin_matrix<T, V> > simple_lin_matrix<T, V>::clone() const {
     return std::unique_ptr<lin_matrix<T, V> >(new simple_lin_matrix<T, V>(*this));
 }
+
+/* Defining specific interface for dense matrices. */
 
 template <typename T, class V>
 dense_lin_matrix<T, V>::dense_lin_matrix(const Rcpp::RObject& in) : dense_lin_precursor<T, V>(in) {}
@@ -178,61 +180,36 @@ std::unique_ptr<lin_matrix<T, V> > Csparse_lin_matrix<T, V>::clone() const {
     return std::unique_ptr<lin_matrix<T, V> >(new Csparse_lin_matrix<T, V>(*this));
 }
 
-/* Defining the HDF5 interface. */
+/* Defining the HDF5 interface (or specifically, the base object for LIN data). */
 
-template<typename T, class V, int RTYPE>
-HDF5_lin_matrix<T, V, RTYPE>::HDF5_lin_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+template<typename T, int RTYPE>
+HDF5_lin_base<T, RTYPE>::HDF5_lin_base(const Rcpp::RObject& incoming) : HDF5_matrix<T, RTYPE>(incoming) {}
 
-template<typename T, class V, int RTYPE>
-HDF5_lin_matrix<T, V, RTYPE>::~HDF5_lin_matrix() {}
+template<typename T, int RTYPE>
+HDF5_lin_base<T, RTYPE>::~HDF5_lin_base() {}
 
-template<typename T, class V, int RTYPE>
-size_t HDF5_lin_matrix<T, V, RTYPE>::get_nrow() const {
-    return mat.get_nrow();
-}
-
-template<typename T, class V, int RTYPE>
-size_t HDF5_lin_matrix<T, V, RTYPE>::get_ncol() const {
-    return mat.get_ncol();
-}
-
-template<typename T, class V, int RTYPE>
-void HDF5_lin_matrix<T, V, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    mat.extract_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
+template<typename T, int RTYPE>
+void HDF5_lin_base<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+    this->extract_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
-template<typename T, class V, int RTYPE>
-void HDF5_lin_matrix<T, V, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    mat.extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+template<typename T, int RTYPE>
+void HDF5_lin_base<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+    this->extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
-template<typename T, class V, int RTYPE>
-void HDF5_lin_matrix<T, V, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    mat.extract_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
+template<typename T, int RTYPE>
+void HDF5_lin_base<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+    this->extract_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
-template<typename T, class V, int RTYPE>
-void HDF5_lin_matrix<T, V, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    mat.extract_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+template<typename T, int RTYPE>
+void HDF5_lin_base<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+    this->extract_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
-}
-
-template<typename T, class V, int RTYPE>
-std::unique_ptr<lin_matrix<T, V> > HDF5_lin_matrix<T, V, RTYPE>::clone() const {
-    return std::unique_ptr<lin_matrix<T, V> >(new HDF5_lin_matrix<T, V, RTYPE>(*this));
-}
-
-template<typename T, class V, int RTYPE> 
-Rcpp::RObject HDF5_lin_matrix<T, V, RTYPE>::yield() const {
-    return mat.yield();
-}
-
-template<typename T, class V, int RTYPE>
-matrix_type HDF5_lin_matrix<T, V, RTYPE>::get_matrix_type() const {
-    return mat.get_matrix_type();
 }
 
 /* Defining the DelayedMatrix interface. */
