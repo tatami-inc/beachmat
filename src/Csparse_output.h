@@ -47,6 +47,9 @@ private:
     T get_empty() const;
     template <class Iter>
     Iter find_matching_row(Iter, Iter, const data_pair&);
+
+    // Only comparing the first value.
+    static bool only_first_less(const data_pair& lhs, const data_pair& rhs) { return lhs.first < rhs.first; }
 };
 
 /*** Constructor definition ***/
@@ -98,8 +101,7 @@ void Csparse_output<T, V>::set_col(size_t c, Iter in, size_t first, size_t last)
 template<typename T, class V>
 template <class Iter>
 Iter Csparse_output<T, V>::find_matching_row(Iter begin, Iter end, const data_pair& incoming) {
-    return std::lower_bound(begin, end, incoming, 
-            [](const data_pair& lhs, const data_pair& rhs) -> bool { return lhs.first < rhs.first; }); // Using a lambda to only compare first value.
+    return std::lower_bound(begin, end, incoming, only_first_less);
 }
 
 template<typename T, class V>
@@ -147,19 +149,21 @@ template <class Iter>
 void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
     check_colargs(c, 0, 0);
     std::deque<data_pair>& current=data[c];
-    size_t original_size=current.size();
-
     for (size_t i=0; i<n; ++i, ++idx, ++in) { 
-        data_pair dp(*idx, *in);
-        auto cb=current.begin();
-        auto ce=current.begin() + original_size;
-        auto X=find_matching_row(cb, ce, dp);
-        if (X!=ce && X->first==dp.first) {
-            X->second=dp.second;
-        } else {
-            current.push_back(dp);
-        }
+        current.push_back(data_pair(*idx, *in));
     }
+
+    std::stable_sort(current.begin(), current.end(), only_first_less);
+    std::deque<data_pair> survivors;
+    auto cIt=current.begin();
+    while (cIt!=current.end()) { 
+        auto first=cIt->first; 
+        ++cIt;
+        while (cIt!=current.end() && cIt->first==first) { ++cIt; }
+        survivors.push_back(*(cIt-1));
+    }
+
+    current.swap(survivors);
     return;
 }
 
