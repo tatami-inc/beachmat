@@ -31,6 +31,7 @@ public:
 
     void insert_one(size_t, size_t, T*);
 
+    void insert_col_indexed(size_t, size_t, const int*, const T*); 
     template<typename X>
     void insert_col_indexed(size_t, size_t, const int*, const X*, const H5::DataType&); 
 
@@ -218,6 +219,11 @@ void HDF5_output<T, V>::insert_one(size_t r, size_t c, T* in) {
     select_one(r, c);
     hdata.write(in, default_type, onespace, hspace);
     return;
+}
+
+template<typename T, class V>
+void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, const T* val) {
+    insert_col_indexed(c, n, idx, val, default_type);    
 }
 
 template<typename T, class V>
