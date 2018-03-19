@@ -95,18 +95,9 @@ check_character_output_mat <- function(FUN, ...) {
         test[by.row,by.col] <- fill
         testthat::expect_true(all(test==fill))
 
-        # Checking the flipped fill.
-        flipped <- out[[2]]
-        dimnames(ref) <- NULL
-        if (it==1L) {
-            ref[,-by.col] <- fill
-            testthat::expect_identical(ref[rev(by.row),], flipped[by.row,])
-        } else {
-            ref[-by.row,] <- fill
-            testthat::expect_identical(ref[,rev(by.col)], flipped[,by.col])
-        }
-        flipped[by.row,by.col] <- fill
-        testthat::expect_true(all(flipped==fill))
+        # Checking the set-and-get.
+        ref2 <- matrix(out[[2]], diff(rx)+1L, diff(ry)+1L, byrow=(it==2))
+        testthat::expect_identical(ref[by.row, by.col], ref2) 
     }
     return(invisible(NULL))
 }

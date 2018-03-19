@@ -86,8 +86,8 @@ Rcpp::RObject pump_out(M ptr, OX optr, const Rcpp::IntegerVector& mode, SEXP ord
  * call the set_row/set_col methods of the derived classes with slices.
  */
 
-template <class T, class M, class OX, class OY>  
-Rcpp::RObject pump_out_slice (M ptr, OX optr, OY optr2, const Rcpp::IntegerVector& mode, 
+template <class T, class M, class OX>  
+Rcpp::RObject pump_out_slice (M ptr, OX optr, const Rcpp::IntegerVector& mode, 
         const Rcpp::IntegerVector& rows, const Rcpp::IntegerVector& cols) {
 
     if (mode.size()!=1) { 
@@ -106,6 +106,8 @@ Rcpp::RObject pump_out_slice (M ptr, OX optr, OY optr2, const Rcpp::IntegerVecto
     }
     const int cstart=cols[0]-1, cend=cols[1];
     const int ncols=cend-cstart;    
+    T out_rep(nrows*ncols);
+    auto oIt=out_rep.begin();
 
     if (Mode==1) { 
         // By column.
@@ -113,11 +115,8 @@ Rcpp::RObject pump_out_slice (M ptr, OX optr, OY optr2, const Rcpp::IntegerVecto
         for (int c=0; c<ncols; ++c) {
             ptr->get_col(c+cstart, target.begin(), rstart, rend);
             optr->set_col(c+cstart, target.begin(), rstart, rend);
-                
-            std::fill(target.begin(), target.end(), 0); // Wiping, to test that target is actually re-filled properly.
-            optr->get_col(c+cstart, target.begin(), rstart, rend);
-            std::reverse(target.begin(), target.end()); // Reversing the order, to keep it interesting.
-            optr2->set_col(c+cstart, target.begin(), rstart, rend);
+            optr->get_col(c+cstart, oIt, rstart, rend);
+            oIt+=nrows;
         }
     } else if (Mode==2) { 
         // By row.
@@ -125,11 +124,8 @@ Rcpp::RObject pump_out_slice (M ptr, OX optr, OY optr2, const Rcpp::IntegerVecto
         for (int r=0; r<nrows; ++r) {
             ptr->get_row(r+rstart, target.begin(), cstart, cend);
             optr->set_row(r+rstart, target.begin(), cstart, cend);
-                
-            std::fill(target.begin(), target.end(), 0); // Wiping.
-            optr->get_row(r+rstart, target.begin(), cstart, cend);
-            std::reverse(target.begin(), target.end()); // Reversing.
-            optr2->set_row(r+rstart, target.begin(), cstart, cend);
+            optr->get_row(r+rstart, oIt, cstart, cend);
+            oIt+=ncols;
         }
     } else { 
         throw std::runtime_error("'mode' should be in [1,2]"); 
@@ -137,7 +133,7 @@ Rcpp::RObject pump_out_slice (M ptr, OX optr, OY optr2, const Rcpp::IntegerVecto
 
     Rcpp::List output(2);
     output[0]=optr->yield();
-    output[1]=optr2->yield();
+    output[1]=out_rep;
     return output;
 }
 
