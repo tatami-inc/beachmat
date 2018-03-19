@@ -26,6 +26,8 @@ public:
     template <class Iter>
     void get_row(size_t, Iter, size_t, size_t);
     T get(size_t, size_t);
+    
+    typename V::iterator get_const_col(size_t, size_t, size_t);
 
     Rcpp::RObject yield();
 
@@ -93,6 +95,11 @@ void simple_output<T, V>::get_col(size_t c, Iter out, size_t start, size_t end) 
     auto src=data.begin() + c*(this->nrow);
     std::copy(src+start, src+end, out);
     return;
+}
+
+template<typename T, class V>
+typename V::iterator simple_output<T, V>::get_const_col(size_t c, size_t first, size_t last) {
+    return data.begin() + first + c*(this->nrow);
 }
 
 template<typename T, class V>

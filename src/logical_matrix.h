@@ -48,7 +48,7 @@ std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject&);
  * Virtual base class for output logical matrices. *
  ***************************************************/
 
-typedef lin_output<int> logical_output;
+typedef lin_output<int, Rcpp::LogicalVector> logical_output;
 
 /* Simple output logical matrix */
 
@@ -60,7 +60,7 @@ typedef sparse_lin_output<int, Rcpp::LogicalVector> sparse_logical_output;
 
 /* HDF5 output logical matrix */
 
-typedef HDF5_lin_output<int, LGLSXP> HDF5_logical_output;
+typedef HDF5_lin_output<int, Rcpp::LogicalVector> HDF5_logical_output;
 
 /* Output dispatchers */
 

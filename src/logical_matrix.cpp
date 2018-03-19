@@ -38,10 +38,10 @@ int Csparse_output<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
 /* HDF5 logical output methods. */
 
 template<>
-int HDF5_output<int, LGLSXP>::get_empty() const { return 0; }
+int HDF5_output<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
 
 template<>
-Rcpp::RObject HDF5_output<int, LGLSXP>::get_firstval() { 
+Rcpp::RObject HDF5_output<int, Rcpp::LogicalVector>::get_firstval() { 
     int first;
     extract_one(0, 0, &first);
     return Rcpp::LogicalVector::create(first);

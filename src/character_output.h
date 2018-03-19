@@ -102,7 +102,7 @@ public:
     matrix_type get_matrix_type() const;
 protected:
     size_t bufsize;
-    HDF5_output<char, STRSXP> mat; 
+    HDF5_output<char, Rcpp::StringVector> mat; 
     std::vector<char> row_buf, col_buf, one_buf;
 };
 
