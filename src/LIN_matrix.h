@@ -137,30 +137,23 @@ using Rle_lin_matrix=general_lin_matrix<T, V, Rle_matrix<T, V> >;
 
 /* HDF5Matrix of LINs */
 
-template<typename T, class V, int RTYPE>
-class HDF5_lin_matrix : public lin_matrix<T, V> {
+template<typename T, int RTYPE>
+class HDF5_lin_base : public HDF5_matrix<T, RTYPE> {
 public:
-    HDF5_lin_matrix(const Rcpp::RObject&);
-    ~HDF5_lin_matrix();
-
-    size_t get_nrow() const;
-    size_t get_ncol() const;
-
-    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
-    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
+    HDF5_lin_base(const Rcpp::RObject&);
+    ~HDF5_lin_base();
+    
     T get(size_t, size_t);
-
-    std::unique_ptr<lin_matrix<T, V> > clone() const;
-
-    Rcpp::RObject yield() const;
-    matrix_type get_matrix_type() const;
-protected:
-    HDF5_matrix<T, RTYPE> mat;
+    
+    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    
+    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
 };
+
+template <typename T, class V, int RTYPE>
+using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_base<T, RTYPE> >;
 
 /* DelayedMatrix of LINs */
 
