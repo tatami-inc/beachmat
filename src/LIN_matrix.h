@@ -138,10 +138,10 @@ using Rle_lin_matrix=general_lin_matrix<T, V, Rle_matrix<T, V> >;
 /* HDF5Matrix of LINs */
 
 template<typename T, int RTYPE>
-class HDF5_lin_base : public HDF5_matrix<T, RTYPE> {
+class HDF5_lin_helper : public HDF5_matrix<T, RTYPE> {
 public:
-    HDF5_lin_base(const Rcpp::RObject&);
-    ~HDF5_lin_base();
+    HDF5_lin_helper(const Rcpp::RObject&);
+    ~HDF5_lin_helper();
     
     T get(size_t, size_t);
     
@@ -153,7 +153,7 @@ public:
 };
 
 template <typename T, class V, int RTYPE>
-using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_base<T, RTYPE> >;
+using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_helper<T, RTYPE> >;
 
 /* DelayedMatrix of LINs */
 

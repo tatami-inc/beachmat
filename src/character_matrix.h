@@ -79,30 +79,22 @@ using Rle_character_matrix=general_character_matrix<Rle_matrix<Rcpp::String, Rcp
 
 /* HDF5Matrix */
 
-class HDF5_character_matrix : public character_matrix {
+class HDF5_character_helper : public HDF5_matrix<Rcpp::String, STRSXP> {
 public:    
-    HDF5_character_matrix(const Rcpp::RObject&);
-    ~HDF5_character_matrix();
+    HDF5_character_helper(const Rcpp::RObject&);
+    ~HDF5_character_helper();
 
-    size_t get_nrow() const;
-    size_t get_ncol() const;
- 
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
     Rcpp::String get(size_t, size_t);
-
-    std::unique_ptr<character_matrix> clone() const;
-
-    Rcpp::RObject yield () const;
-    matrix_type get_matrix_type() const;
 protected:
-    HDF5_matrix<char, STRSXP> mat; 
     H5::DataType str_type;
-
     size_t bufsize;
-    std::vector<char> row_buf, col_buf, one_buf;
+    std::vector<char> buffer;
 };
+
+using HDF5_character_matrix=general_character_matrix<HDF5_character_helper>;
 
 /* DelayedMatrix */
 

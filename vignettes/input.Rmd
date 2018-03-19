@@ -35,7 +35,7 @@ auto dptr = beachmat::create_numeric_matrix(dmat);
 This creates a unique pointer that points to an object of the `numeric_matrix` base class.
 The exact derived class that is actually instantiated depends on the type of matrix in `dmat`, though the behaviour of the user-level functions are not affected by this detail.
 
-__Additional notes: __
+**Additional notes:**
 
 - The `auto` keyword just avoids the need to write the full type of the returned pointer, which is `std::unique_ptr<beachmat::numeric_matrix>`. 
 We use unique pointers to control ownership and smoothly handle destruction and memory deallocation at the end of the function.
@@ -142,7 +142,7 @@ This would be interpreted as a logical `FALSE`, which is incorrect for non-zero 
 ### From dense matrices
 
 The `get_const_col()` method returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
-The arguments are the same as `dptr->get_col` with `work` being equivalent to `in`.
+The arguments are the same as `get_col()` with `work` being equivalent to `in`.
 (Note that `first` and `last` do not have to be specified and will default to the entire column.)
 The type of `work` and the output iterator must correspond to the data type of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
 
@@ -153,9 +153,16 @@ dptr->get_const_col(/* size_t */ c,
                     /* size_t */ last);
 ```
 
-For simple/dense matrices, this method is more efficient than `get_col` as it returns the iterator without needing to copy data into `work`.
-For other matrices, this function simply calls `get_col` to copy the data into `work`, and then returns an iterator to the start of `work`.
+For simple/dense matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data into `work`.
+For other matrices, this function simply calls `get_col()` to copy the data into the vector starting at `work`, and then returns an iterator equal to `work`.
 Thus, for general use, `work` must point to a writeable block of memory, even if it does not get used when `dptr` points to a simple/dense matrix.
+
+**Additional notes:**
+
+- Calling processes should consider the vector starting at `work` to be read-only after a call to `get_const_col()`.
+In particular, the underlying data will be modified if `get_const_col()` is called again with the same `work`.
+This has some consequences if a process calls `get_const_col()` multiple times to obtain more than one iterators for further computation.
+In such cases, developers should ensure that each `get_const_col()` call uses a `work` pointing to a different vector. 
 
 ### From sparse matrices
 
@@ -177,7 +184,7 @@ dptr->get_const_col_indexed(/* size_t */ c,
 
 This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the _non-zero entries only_.
 No copying is performed, and the zero values do not have to be explicitly generated as they would be in `get_col`.
-For all other matrices, `get_const_col` is called and iterator (2) is pointed at an internal array of consecutive integers (which should be treated as read-only).
+For all other matrices, `get_const_col` is called^[The comments above regarding the read-only nature of `work` also apply here.] and iterator (2) is pointed at an internal array of consecutive integers (which should be treated as read-only).
 
 # Generalizing to other matrices
 
@@ -215,7 +222,7 @@ Similar changes apply to the iterator in the tuple from `get_const_col_indexed()
 
 For character matrices, all iterators should be of type `Rcpp::StringVector::iterator`, and `get` will return a `Rcpp::String`.
 
-__Additional notes: __
+**Additional notes:**
 
 - If `in` is a `Rcpp::LogicalVector::iterator` for `integer_matrix` instances, integer values are not coerced to `{0, 1}` when they are assigned to `*in`.
 Thus, even though the interpretation is correct, the vector produced will not be equivalent to the result of an `as.logical` call.
@@ -237,7 +244,7 @@ Additional classes may be added on request.
 As a general rule, if a matrix-like object can be stored in a `SummarizedExperiment` class (from the `r Biocpkg("SummarizedExperiment")` package), the API should be able to handle it.
 Please contact the maintainers if you have a class that you would like to see supported.
 
-__Additional notes: __
+**Additional notes:**
 
 - `DelayedMatrix` objects can be directly parsed by the API if the only delayed operations involve transposition or subsetting.
 Otherwise, they are realized in a chunk-by-chunk manner, using methods in the `r Biocpkg("DelayedArray")` package.

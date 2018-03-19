@@ -12,6 +12,7 @@
 #include "Rle_matrix.h"
 #include "HDF5_matrix.h"
 #include "delayed_matrix.h"
+#include "unknown_matrix.h"
 
 #endif
 
