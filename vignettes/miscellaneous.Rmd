@@ -1,0 +1,59 @@
+---
+title: "Using beachmat's R helper functions"
+author: "Aaron Lun"
+package: beachmat
+output: 
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Using beachmat's helper functions in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r, echo=FALSE, results="hide", message=FALSE}
+require(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+```
+
+# Overview
+
+`r Biocpkg("beachmat")` has a few useful utilities outside of the C++ API.
+This document describes how to use them.
+
+# Choosing HDF5 chunk dimensions
+
+Given the dimensions of a matrix, users can choose HDF5 chunk dimensions that give fast performance for both row- and column-level access.
+
+```{r}
+library(beachmat)
+nrows <- 10000
+ncols <- 200
+getBestChunkDims(c(nrows, ncols))
+```
+
+In the future, it should be possible to feed this back into the API.
+Currently, if chunk dimensions are not specified in the C++ code, the API will retrieve them from R via the `getHDF5DumpChunkDim()` function from `r Biocpkg("HDF5Array")`.
+The aim is to also provide a `setHDF5DumpChunkDim()` function so that any chunk dimension specified in R will be respected.
+
+# Rechunking a HDF5 file
+
+The most common access patterns for matrices (at least, for high-throughput biological data) is by row or by column.
+The `rechunkByMargins()` will take a HDF5 file and convert it to using purely row- or column-based chunks.
+
+```{r}
+library(HDF5Array)
+A <- as(matrix(runif(5000), nrow=100, ncol=50), "HDF5Array")
+byrow <- rechunkByMargins(A, byrow=TRUE)
+byrow
+bycol <- rechunkByMargins(A, byrow=FALSE)
+bycol
+```
+
+Rechunking can provide a substantial speed-up to downstream functions, especially those requiring access to random columns or rows.
+Indeed, the time saved in those functions often offsets the time spent in constructing a new `HDF5Matrix`.
+
+# Session information
+
+```{r}
+sessionInfo()
+```
