@@ -143,14 +143,14 @@ void general_lin_output<T, V, M>::set(size_t r, size_t c, T in) {
 }
 
 template<typename T, class V, class M>
-void general_lin_output<T, V, M>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::IntegerVector>& info) {
-    mat.set_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info));
+void general_lin_output<T, V, M>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+    mat.set_col_indexed(c, N, idx, val);
     return; 
 }
 
 template<typename T, class V, class M>
-void general_lin_output<T, V, M>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::NumericVector>& info) {
-    mat.set_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info));
+void general_lin_output<T, V, M>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+    mat.set_col_indexed(c, N, idx, val);
     return; 
 }
 
@@ -269,14 +269,14 @@ void HDF5_lin_output<T, V>::set_col(size_t c, Rcpp::NumericVector::iterator out,
 }
 
 template<typename T, class V>
-void HDF5_lin_output<T, V>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::IntegerVector>& info) {
-    mat.insert_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info), H5::PredType::NATIVE_INT32);
+void HDF5_lin_output<T, V>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+    mat.insert_col_indexed(c, N, idx, val, H5::PredType::NATIVE_INT32);
     return;
 }
  
 template<typename T, class V>
-void HDF5_lin_output<T, V>::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::NumericVector>& info) {
-    mat.insert_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info), H5::PredType::NATIVE_DOUBLE);
+void HDF5_lin_output<T, V>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+    mat.insert_col_indexed(c, N, idx, val, H5::PredType::NATIVE_DOUBLE);
     return;
 }
 

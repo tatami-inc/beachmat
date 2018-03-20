@@ -170,8 +170,7 @@ Rcpp::RObject pump_out_indexed (OX optr, const Rcpp::IntegerVector& mode, const 
         for (auto& x : I2) { --x; } 
 
         if (Mode==1) {
-            beachmat::const_col_indexed_info<V> info(I2.size(), I2.begin(), X.begin());
-            optr->set_col_indexed(indices[i] - 1, info); 
+            optr->set_col_indexed(indices[i] - 1, I2.size(), I2.begin(), X.begin()); 
         }
     }
 

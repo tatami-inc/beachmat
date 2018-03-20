@@ -47,8 +47,8 @@ public:
     virtual void set_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t)=0;
     virtual void set_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
 
-    virtual void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::IntegerVector>&)=0;
-    virtual void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::NumericVector>&)=0;
+    virtual void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator)=0;
+    virtual void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator)=0;
 
     virtual void set(size_t, size_t, T)=0;
 
@@ -87,8 +87,8 @@ public:
     void set_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
     void set_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
-    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::IntegerVector>&);
-    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::NumericVector>&);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
 
     void set(size_t, size_t, T);
 
@@ -150,8 +150,8 @@ public:
 
     void set(size_t, size_t, T);
 
-    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::IntegerVector>&);
-    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::NumericVector>&);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
 
     Rcpp::RObject yield();
 

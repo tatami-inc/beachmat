@@ -63,8 +63,8 @@ void simple_character_output::set(size_t r, size_t c, Rcpp::String in) {
     return;
 }
 
-void simple_character_output::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::StringVector>& info) {
-    mat.set_col_indexed(c, std::get<0>(info), std::get<1>(info), std::get<2>(info));
+void simple_character_output::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    mat.set_col_indexed(c, N, idx, val);
     return;
 }
 
@@ -164,20 +164,18 @@ void HDF5_character_output::set(size_t r, size_t c, Rcpp::String in) {
     return;
 }
 
-void HDF5_character_output::set_col_indexed(size_t c, const const_col_indexed_info<Rcpp::StringVector>& info) {
-    size_t N=std::get<0>(info);
+void HDF5_character_output::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
     if (buffer.size() < N*bufsize) {
         buffer.resize(N*bufsize);
     }
 
-    auto in=std::get<2>(info);
     char* ref=buffer.data();
-    for (size_t i=0; i<N; ++i, ref+=bufsize, ++in) {
-        std::strncpy(ref, Rcpp::String(*in).get_cstring(), bufsize-1);
+    for (size_t i=0; i<N; ++i, ref+=bufsize, ++val) {
+        std::strncpy(ref, Rcpp::String(*val).get_cstring(), bufsize-1);
         ref[bufsize-1]='\0';
     }
  
-    mat.insert_col_indexed(c, N, std::get<1>(info), buffer.data());
+    mat.insert_col_indexed(c, N, idx, buffer.data());
     return;
 }
 

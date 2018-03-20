@@ -34,7 +34,7 @@ public:
 
     virtual void set(size_t, size_t, Rcpp::String)=0;
 
-    virtual void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::StringVector>& info)=0;
+    virtual void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator)=0;
 
     // Other stuff.
     virtual Rcpp::RObject yield()=0;
@@ -61,7 +61,7 @@ public:
     void set_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void set_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void set(size_t, size_t, Rcpp::String);
-    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::StringVector>& info);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator);
 
     Rcpp::RObject yield();
     std::unique_ptr<character_output> clone() const;
@@ -91,7 +91,7 @@ public:
     void set_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void set_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void set(size_t, size_t, Rcpp::String);
-    void set_col_indexed(size_t, const const_col_indexed_info<Rcpp::StringVector>& info);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator);
 
     Rcpp::RObject yield();
     std::unique_ptr<character_output> clone() const;
