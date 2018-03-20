@@ -16,23 +16,20 @@ void reopen_HDF5_file_by_dim(const std::string&, const std::string&,
         H5::H5File&, H5::DataSet&, const unsigned&, const H5::FileAccPropList&,
         bool&, const bool&, const bool&, const bool&);
 
-void HDF5_select_row(const size_t&, const size_t&, const size_t&,
-        hsize_t*, hsize_t*, 
-        H5::DataSpace&, H5::DataSpace&);
 
-void HDF5_select_col(const size_t&, const size_t&, const size_t&,
-        hsize_t*, hsize_t*, 
-        H5::DataSpace&, H5::DataSpace&);
+struct HDF5_selector {
+    void set_dims(size_t, size_t);   
+    void select_row(size_t, size_t, size_t);
+    void select_col(size_t, size_t, size_t);
+    void select_one(size_t, size_t);
 
-void HDF5_select_one(const size_t&, const size_t&,
-        hsize_t*, hsize_t*, 
-        H5::DataSpace& hspace);
+    H5::DataSpace col_space, row_space, one_space, mat_space;
+    hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];
+
+    static const hsize_t zero;
+};
 
 H5::DataType set_HDF5_data_type (int, size_t);
-
-void initialize_HDF5_size_arrays (const size_t&, const size_t&,
-        hsize_t*, hsize_t*, hsize_t*, 
-        hsize_t*, H5::DataSpace&);
 
 }
 

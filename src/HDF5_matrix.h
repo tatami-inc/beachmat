@@ -34,8 +34,7 @@ protected:
 
     H5::H5File hfile;
     H5::DataSet hdata;
-    H5::DataSpace hspace, rowspace, colspace, onespace;
-    hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];
+    HDF5_selector hselect;
 
     bool onrow, oncol;
     bool rowokay, colokay;
@@ -92,7 +91,7 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
     hfile.openFile(filename.c_str(), H5F_ACC_RDONLY);
     hdata = hfile.openDataSet(dataname.c_str());
 
-    hspace = hdata.getSpace();
+    H5::DataSpace hspace = hdata.getSpace();
     if (hspace.getSimpleExtentNdims()!=2) {
         throw std::runtime_error("data in HDF5 file is not a two-dimensional array");
     }
@@ -102,6 +101,8 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
     if (dims_out[1]!=NR || dims_out[0]!=NC) { 
         throw_custom_error("dimensions in HDF5 file do not equal dimensions in the ", ctype, " object");
     }
+
+    hselect.set_dims(NR, NC);
 
     // Checking the type.
     auto curtype=hdata.getTypeClass();
@@ -128,11 +129,6 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
             break;
     }
 
-    // Setting up the hsize_t[2] arrays.
-    initialize_HDF5_size_arrays(NR, NC, 
-            h5_start, col_count, row_count, 
-            one_count, onespace);
-
     // Setting the chunk cache parameters.
     calc_HDF5_chunk_cache_settings(this->nrow, this->ncol, hdata.getCreatePlist(), this->get_datatype(),
             onrow, oncol, rowokay, colokay, largerrow, largercol, rowlist, collist);
@@ -151,8 +147,8 @@ void HDF5_matrix<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HD
     reopen_HDF5_file_by_dim(filename, dataname, 
             hfile, hdata, H5F_ACC_RDONLY, rowlist, 
             onrow, oncol, largercol, rowokay);
-    HDF5_select_row(r, first, last, row_count, h5_start, rowspace, hspace);
-    hdata.read(out, HDT, rowspace, hspace);
+    hselect.select_row(r, first, last);
+    hdata.read(out, HDT, hselect.row_space, hselect.mat_space);
     return;
 }
 
@@ -163,8 +159,8 @@ void HDF5_matrix<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HD
     reopen_HDF5_file_by_dim(filename, dataname, 
             hfile, hdata, H5F_ACC_RDONLY, collist, 
             oncol, onrow, largerrow, colokay);
-    HDF5_select_col(c, first, last, col_count, h5_start, colspace, hspace);
-    hdata.read(out, HDT, colspace, hspace);
+    hselect.select_col(c, first, last);
+    hdata.read(out, HDT, hselect.col_space, hselect.mat_space);
     return;
 }
     
@@ -172,8 +168,8 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_matrix<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::DataType& HDT) { 
     check_oneargs(r, c);
-    HDF5_select_one(r, c, one_count, h5_start, hspace);
-    hdata.read(out, HDT, onespace, hspace);
+    hselect.select_one(r, c);
+    hdata.read(out, HDT, hselect.one_space, hselect.mat_space);
     return;
 }
 

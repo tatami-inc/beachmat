@@ -96,62 +96,68 @@ void reopen_HDF5_file_by_dim(const std::string& filename, const std::string& dat
     }
 }
 
-/* These functions set the rowspace and dataspace elements according to
+/* This struct's methods set the rowspace and dataspace elements according to
  * the requested data access profile. We have column, row and single access.
  */
 
-void HDF5_select_row(const size_t& r, const size_t& start, const size_t& end,
-        hsize_t* row_count, hsize_t* h5_start, 
-        H5::DataSpace& rowspace, H5::DataSpace& hspace) {
-    row_count[0] = end-start;
-    rowspace.setExtentSimple(1, row_count);
-    rowspace.selectAll();
-    h5_start[0] = start;
-    h5_start[1] = r;
-    hspace.selectHyperslab(H5S_SELECT_SET, row_count, h5_start);
-    return;
-}
-
-void HDF5_select_col(const size_t& c, const size_t& start, const size_t& end,
-        hsize_t* col_count, hsize_t* h5_start, 
-        H5::DataSpace& colspace, H5::DataSpace& hspace) {
-    col_count[1] = end-start;
-    colspace.setExtentSimple(1, col_count+1);
-    colspace.selectAll();
-    h5_start[0] = c;
-    h5_start[1] = start;
-    hspace.selectHyperslab(H5S_SELECT_SET, col_count, h5_start);
-    return;
-}
-
-void HDF5_select_one(const size_t& r, const size_t& c,
-        hsize_t* one_count, hsize_t* h5_start, 
-        H5::DataSpace& hspace) {
-    h5_start[0]=c;
-    h5_start[1]=r;  
-    hspace.selectHyperslab(H5S_SELECT_SET, one_count, h5_start);
-    return;
-}
-
-/* This function initializes the various hsize_t* arrays
- * that are present in the HDF5_matrix/output objects.
- */
-
-void initialize_HDF5_size_arrays (const size_t& NR, const size_t& NC,
-        hsize_t* h5_start, hsize_t* col_count, hsize_t* row_count, 
-        hsize_t* one_count, H5::DataSpace& onespace) {
+void HDF5_selector::set_dims(size_t NR, size_t NC) {
     h5_start[0]=0;
     h5_start[1]=0;
 
-    col_count[0]=1;
-    col_count[1]=NR;
-    row_count[0]=NC;
-    row_count[1]=1;
-
     one_count[0]=1;
     one_count[1]=1;
-    onespace.setExtentSimple(1, one_count);
-    onespace.selectAll();
+    one_space.setExtentSimple(1, one_count);
+    one_space.selectAll();
+
+    row_count[0]=NC;
+    row_count[1]=1;
+    row_space.setExtentSimple(1, row_count);
+    row_space.selectAll();
+
+    col_count[0]=1;
+    col_count[1]=NR;
+    col_space.setExtentSimple(1, col_count+1);
+    col_space.selectAll();
+
+    hsize_t dims[2];
+    dims[0]=NC;
+    dims[1]=NR;
+    mat_space.setExtentSimple(2, dims);
+    return;
+}
+
+const hsize_t HDF5_selector::zero=0;
+
+void HDF5_selector::select_row(size_t r, size_t start, size_t end) { 
+    hsize_t new_len = end - start;
+    if (new_len != row_count[0]) { 
+        row_count[0] = new_len;
+        row_space.selectHyperslab(H5S_SELECT_SET, row_count, &zero);
+    }
+
+    h5_start[0] = start;
+    h5_start[1] = r;
+    mat_space.selectHyperslab(H5S_SELECT_SET, row_count, h5_start);
+    return;
+}
+
+void HDF5_selector::select_col(size_t c, size_t start, size_t end) {
+    hsize_t new_len = end - start;
+    if (new_len != col_count[1]) { 
+        col_count[1] = new_len;
+        col_space.selectHyperslab(H5S_SELECT_SET, col_count+1, &zero);
+    }
+
+    h5_start[0] = c;
+    h5_start[1] = start;
+    mat_space.selectHyperslab(H5S_SELECT_SET, col_count, h5_start);
+    return;
+}
+
+void HDF5_selector::select_one(size_t r, size_t c) {
+    h5_start[0]=c;
+    h5_start[1]=r;  
+    mat_space.selectHyperslab(H5S_SELECT_SET, one_count, h5_start);
     return;
 }
 

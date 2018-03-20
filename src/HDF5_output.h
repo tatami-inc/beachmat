@@ -59,8 +59,7 @@ protected:
 
     H5::H5File hfile;
     H5::DataSet hdata;
-    H5::DataSpace hspace, rowspace, colspace, onespace;
-    hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];
+    HDF5_selector hselect;
 
     H5::DataType default_type;
     void select_row(size_t, size_t, size_t);
@@ -137,18 +136,14 @@ HDF5_output<T, V>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_t ch
     dims[0]=this->ncol; // Setting the dimensions (0 is column, 1 is row; internally transposed).
     dims[1]=this->nrow; 
 
-    hspace.setExtentSimple(2, dims.data());
-    hdata=hfile.createDataSet(dname.c_str(), default_type, hspace, plist); 
-
-    // Initializing the hsize_t[2] arrays.
-    initialize_HDF5_size_arrays (this->nrow, this->ncol, 
-            h5_start, col_count, row_count, 
-            one_count, onespace);
+    hselect.set_dims(this->nrow, this->ncol);
+    hdata=hfile.createDataSet(dname.c_str(), default_type, hselect.mat_space, plist); 
 
     // Setting logical attributes.
     if (RTYPE==LGLSXP) {
         H5::StrType str_type(0, H5T_VARIABLE);
-        H5::DataSpace att_space(1, one_count);
+        const hsize_t unit=1;
+        H5::DataSpace att_space(1, &unit);
         H5::Attribute att = hdata.createAttribute("storage.mode", str_type, att_space);
         att.write(str_type, std::string("logical"));
     }
@@ -170,7 +165,7 @@ void HDF5_output<T, V>::select_col(size_t c, size_t first, size_t last) {
     reopen_HDF5_file_by_dim(fname, dname,
             hfile, hdata, H5F_ACC_RDWR, collist, 
             oncol, onrow, largerrow, colokay);
-    HDF5_select_col(c, first, last, col_count, h5_start, colspace, hspace);
+    hselect.select_col(c, first, last);
     return;
 }
 
@@ -180,14 +175,14 @@ void HDF5_output<T, V>::select_row(size_t r, size_t first, size_t last) {
     reopen_HDF5_file_by_dim(fname, dname, 
             hfile, hdata, H5F_ACC_RDWR, rowlist, 
             onrow, oncol, largercol, rowokay);
-    HDF5_select_row(r, first, last, row_count, h5_start, rowspace, hspace);
+    hselect.select_row(r, first, last);
     return;
 }
 
 template<typename T, class V>
 void HDF5_output<T, V>::select_one(size_t r, size_t c) {
     check_oneargs(r, c);
-    HDF5_select_one(r, c, one_count, h5_start, hspace);
+    hselect.select_one(r, c);
     return;
 }
 
@@ -197,7 +192,7 @@ template<typename T, class V>
 template<typename X>
 void HDF5_output<T, V>::insert_col(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
     select_col(c, first, last);
-    hdata.write(in, HDT, colspace, hspace);
+    hdata.write(in, HDT, hselect.col_space, hselect.mat_space);
     return;
 }
 
@@ -211,7 +206,7 @@ template<typename T, class V>
 template<typename X>
 void HDF5_output<T, V>::insert_row(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
     select_row(c, first, last);
-    hdata.write(in, HDT, rowspace, hspace);
+    hdata.write(in, HDT, hselect.row_space, hselect.mat_space);
     return;
 }
 
@@ -224,7 +219,7 @@ void HDF5_output<T, V>::insert_row(size_t c, const T* in, size_t first, size_t l
 template<typename T, class V>
 void HDF5_output<T, V>::insert_one(size_t r, size_t c, T* in) {
     select_one(r, c);
-    hdata.write(in, default_type, onespace, hspace);
+    hdata.write(in, default_type, hselect.one_space, hselect.mat_space);
     return;
 }
 
@@ -254,6 +249,8 @@ void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, c
         (*wsIt)=*idx;
         ++wsIt;
     }
+
+    auto& hspace=hselect.mat_space;
     hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
 
     // Performing a write operation.
@@ -289,6 +286,8 @@ void HDF5_output<T, V>::insert_row_indexed(size_t r, size_t n, const int* idx, c
         (*wsIt)=r;
         ++wsIt;
     }
+
+    auto& hspace=hselect.mat_space;
     hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
 
     // Performing a write operation.
@@ -305,7 +304,7 @@ template<typename T, class V>
 template<typename X>
 void HDF5_output<T, V>::extract_row(size_t r, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     select_row(r, first, last);
-    hdata.read(out, HDT, rowspace, hspace);
+    hdata.read(out, HDT, hselect.row_space, hselect.mat_space);
     return;
 } 
 
@@ -319,7 +318,7 @@ template<typename T, class V>
 template<typename X>
 void HDF5_output<T, V>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     select_col(c, first, last);
-    hdata.read(out, HDT, colspace, hspace);
+    hdata.read(out, HDT, hselect.col_space, hselect.mat_space);
     return;
 }
 
@@ -332,7 +331,7 @@ void HDF5_output<T, V>::extract_col(size_t c, T* out, size_t first, size_t last)
 template<typename T, class V>
 void HDF5_output<T, V>::extract_one(size_t r, size_t c, T* out) { 
     select_one(r, c);
-    hdata.read(out, default_type, onespace, hspace);
+    hdata.read(out, default_type, hselect.one_space, hselect.mat_space);
     return;
 }
 
