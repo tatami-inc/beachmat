@@ -2,10 +2,18 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
-\section{Version 1.1.2}{\itemize{
+\section{Version 1.1.13}{\itemize{
 \item Changed environment variable to BEACHMAT_RPATH for consistency with other packages.
 
-\item Added limited native support for transposition and subsetting in DelayedMatrix objects.
+\item Added native support for transposition and subsetting in DelayedMatrix objects.
+
+\item Added support for chunk-by-chunk realization of otherwise unsupported matrices, including DelayedMatrix objects with other delayed operations.
+
+\item Added the get_const_col_indexed() method for input matrices, especially fast for sparse representations. 
+
+\item Added the set_col_indexed() and set_row_indexed() methods for output matrices.
+
+\item Updated vignettes and expanded the test suite.
 }}
 
 \section{Version 1.0.0}{\itemize{
