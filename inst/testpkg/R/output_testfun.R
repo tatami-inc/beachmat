@@ -2,6 +2,9 @@
 
 ###############################
 
+#' @importFrom testthat expect_equal expect_identical expect_true
+#' @importFrom BiocGenerics path 
+#' @importFrom DelayedArray seed
 .check_output_mat <- function(FUN, ..., class.out, cxxfun) { 
     for (i in 1:3) { 
         test.mat <- FUN(...)
@@ -28,53 +31,57 @@
             } else {
                 class.out <- class(test.mat)
                 testthat::expect_s4_class(out[[1]], class.out)
+
                 if (class.out=="HDF5Matrix") { 
-                    testthat::expect_equal(out[[1]]@seed@first_val, as.vector(out[[1]][1,1]))
+                    testthat::expect_equal(seed(out[[1]])@first_val, as.vector(out[[1]][1,1]))
                     testthat::expect_identical(dim(out[[1]]), dim(test.mat))
+                    testthat::expect_true(path(out[[1]])!=path(test.mat))
                 }
+
                 out[[1]] <- as.matrix(out[[1]])
             }      
 
-            # Reordering 'ref' to match the expected output. Also checking the flipped matrix.
-            # Here, we extract values by row/column from the filled output matrix, flip the values and refill the output matrix. 
-            # This checks whether the getters of the output matrix work as expected.
+            # Checking that the set-and-get values are the same.
             ref <- as.matrix(test.mat)
+            ref2 <- matrix(out[[2]], nrow(ref), ncol(ref), byrow=(i==2L))
+            dimnames(ref2) <- dimnames(ref)
+            expect_identical(ref, ref2)
+
+            # Reordering 'ref' to match the expected output. 
             if (i==1L) {
                 ref[,ordering+1L] <- ref
-                fref <- ref[nrow(ref):1,,drop=FALSE]
             } else if (i==2L) {
                 ref[ordering+1L,] <- ref
-                fref <- ref[,ncol(ref):1,drop=FALSE]
-            } else if (i==3L) {
-                fref <- ref[nrow(ref):1,ncol(ref):1,drop=FALSE]
             }
-
-            testthat::expect_identical(ref, out[[1]])
-            dimnames(fref) <- NULL
-            testthat::expect_identical(fref, out[[2]])
+            expect_identical(ref, out[[1]])
         }
     }
     return(invisible(NULL))
 }
-   
+
+#' @export
 check_integer_output_mat <- function(FUN, ...) {
     .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_integer_output)
 } 
 
+#' @export
 check_numeric_output_mat <- function(FUN, ...) {
     .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_numeric_output)
 } 
 
+#' @export
 check_logical_output_mat <- function(FUN, ...) {
     .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_logical_output)
 } 
 
+#' @export
 check_character_output_mat <- function(FUN, ...) {
     .check_output_mat(FUN=FUN, ..., cxxfun=cxx_test_character_output)
 } 
 
 ###############################
 
+#' @importFrom testthat expect_true expect_s4_class expect_identical
 .check_output_slice <- function(FUN, ..., by.row, by.col, cxxfun, fill) { 
     rx <- range(by.row)
     ry <- range(by.col)
@@ -84,77 +91,151 @@ check_character_output_mat <- function(FUN, ...) {
         out <- .Call(cxxfun, test.mat, it, rx, ry)
 
         if (is.matrix(test.mat)) { 
-            testthat::expect_true(is.matrix(out[[1]]))
+            expect_true(is.matrix(out[[1]]))
         } else {
-            testthat::expect_s4_class(out[[1]], class(test.mat))
+            expect_s4_class(out[[1]], class(test.mat))
             out[[1]] <- as.matrix(out[[1]])
         }
 
         # Checking the standard fill.
         test <- out[[1]]
         ref <- as.matrix(test.mat)
-        testthat::expect_identical(ref[by.row, by.col], test[by.row, by.col]) 
+        expect_identical(ref[by.row, by.col,drop=FALSE], test[by.row, by.col,drop=FALSE]) 
         test[by.row,by.col] <- fill
-        testthat::expect_true(all(test==fill))
+        expect_true(all(test==fill))
 
-        # Checking the flipped fill.
-        flipped <- out[[2]]
-        dimnames(ref) <- NULL
-        if (it==1L) {
-            ref[,-by.col] <- fill
-            testthat::expect_identical(ref[rev(by.row),], flipped[by.row,])
-        } else {
-            ref[-by.row,] <- fill
-            testthat::expect_identical(ref[,rev(by.col)], flipped[,by.col])
-        }
-        flipped[by.row,by.col] <- fill
-        testthat::expect_true(all(flipped==fill))
+        # Checking the set-and-get.
+        ref2 <- matrix(out[[2]], diff(rx)+1L, diff(ry)+1L, byrow=(it==2))
+        dimnames(ref2) <- dimnames(ref)
+        expect_identical(ref[by.row, by.col,drop=FALSE], ref2) 
     }
     return(invisible(NULL))
 }
 
-
+#' @export
 check_integer_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
                         cxxfun=cxx_test_integer_output_slice, fill=0L)
 } 
 
+#' @export
 check_numeric_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
                         cxxfun=cxx_test_numeric_output_slice, fill=0)
 } 
 
+#' @export
 check_logical_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
                         cxxfun=cxx_test_logical_output_slice, fill=FALSE)
 } 
 
+#' @export
 check_character_output_slice <- function(FUN, ..., by.row, by.col) {
     .check_output_slice(FUN=FUN, ..., by.row=by.row, by.col=by.col, 
                         cxxfun=cxx_test_character_output_slice, fill="")
+}
+
+###############################
+
+#' @importFrom testthat expect_identical expect_true expect_s4_class
+.check_output_indexed <- function(FUN, ..., N, cxxfun, fill) { 
+    for (n in N) {
+        for (it in 1:2) {
+            test.mat <- FUN(...)
+            all.values <- as.matrix(test.mat)
+            ref <- matrix(fill, nrow(test.mat), ncol(test.mat))
+
+            if (it==1L) {
+                # Constructing a list of row index vectors for a sampled set of columns.
+                c <- sample(ncol(test.mat), n, replace=TRUE)
+                subr <- vector("list", n)
+                for (i in seq_along(c)) {
+                    subr[[i]] <- list(sample(nrow(test.mat), n, replace=TRUE),
+                                      sample(all.values, n, replace=TRUE))
+                    to.use <- !duplicated(subr[[i]][[1]], fromLast=TRUE) # Last elements overwrite earlier elements.
+                    ref[subr[[i]][[1]][to.use],c[i]] <- subr[[i]][[2]][to.use]
+                }
+                out <- .Call(cxxfun, test.mat, it, c, subr)
+            } else {
+                # Constructing a list of row index vectors for a sampled set of columns.
+                r <- sample(nrow(test.mat), n, replace=TRUE)
+                subc <- vector("list", n)
+                for (i in seq_along(r)) {
+                    subc[[i]] <- list(sample(ncol(test.mat), n, replace=TRUE),
+                                      sample(all.values, n, replace=TRUE))
+                    to.use <- !duplicated(subc[[i]][[1]], fromLast=TRUE) # Last elements overwrite earlier elements.
+                    ref[r[i], subc[[i]][[1]][to.use]] <- subc[[i]][[2]][to.use]
+                }
+                out <- .Call(cxxfun, test.mat, it, r, subc)
+            }
+
+            if (is.matrix(test.mat)) { 
+                expect_true(is.matrix(out))
+            } else {
+                expect_s4_class(out, class(test.mat))
+                out <- as.matrix(out)
+                dimnames(out) <- NULL
+            }
+
+            expect_identical(ref, out)
+        }
+    }
+    return(invisible(NULL))
+}
+
+#' @export
+check_integer_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_integer_output_indexed, fill=0L)
+} 
+
+#' @export
+check_logical_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_logical_output_indexed, fill=FALSE)
+} 
+
+#' @export
+check_numeric_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_numeric_output_indexed, fill=0)
+} 
+
+#' @export
+check_character_output_indexed <- function(FUN, ..., N) {
+    .check_output_indexed(FUN=FUN, ..., N=N,cxxfun=cxx_test_character_output_indexed, fill="")
 } 
 
 ###############################
 
+#' @importFrom DelayedArray seed
+#' @importFrom HDF5Array showHDF5DumpLog
+#' @importFrom BiocGenerics path
+#' @importFrom testthat expect_s4_class expect_identical expect_false expect_true expect_message
 .check_execution_order <- function(FUN, cxxfun, type) {
     # Checking that the output function in '.Call' does not overwrite the 
     # underlying HDF5 file and change the values of other HDF5Matrix objects. 
     mats <- list(FUN(), FUN(), FUN())
     ref.mats <- lapply(mats, as.matrix)
-    new.mats <- lapply(mats, function(x) .Call(cxxfun, x, 1L, NULL)[[1]]) 
+    all.paths <- sapply(mats, path)
+    new.mats <- vector("list", length(mats)) 
 
     for (i in seq_along(mats)) { 
-        out <- new.mats[[i]]
-        testthat::expect_s4_class(out, "HDF5Matrix")
-        ref <- ref.mats[[i]]
-        testthat::expect_identical(ref, as.matrix(out))
-        original <- mats[[i]]
-        testthat::expect_identical(ref, as.matrix(original))
-        testthat::expect_true(original@seed@filepath!=out@seed@filepath)
+        out <- .Call(cxxfun, mats[[i]], 1L, NULL)[[1]]
+        new.mats[[i]] <- out
+        expect_s4_class(out, "HDF5Matrix")
+        expect_identical(ref.mats[[i]], as.matrix(out))
+
+        # Checking that all the other matrices are still what they should be.
+        for (j in seq_along(mats)) { 
+            ref <- ref.mats[[j]]
+            expect_identical(ref, as.matrix(mats[[j]]))
+        }
+
+        all.paths <- c(all.paths, BiocGenerics::path(out))
     }
+    expect_false(any(duplicated(all.paths)))
 
     # Checking that the old and realized files are in the log.
-    testthat::expect_message(log <- HDF5Array::showHDF5DumpLog())
+    expect_message(log <- showHDF5DumpLog())
     for (mode in c(TRUE, FALSE)) {
         for (i in seq_along(mats)) {
             if (mode) {
@@ -163,91 +244,81 @@ check_character_output_slice <- function(FUN, ..., by.row, by.col) {
                 current <- mats[[i]]
             }   
 
-            j <- which(log$name==current@seed@name & log$file==current@seed@filepath)
-            testthat::expect_true(length(j)==1L)
-            testthat::expect_identical(type, log$type[j])
-            testthat::expect_identical(sprintf("%ix%i", nrow(current), ncol(current)), log$dims[j])
+            j <- which(log$name==seed(current)@name & log$file==path(current))
+           expect_true(length(j)==1L)
+           expect_identical(type, log$type[j])
+           expect_identical(sprintf("%ix%i", nrow(current), ncol(current)), log$dims[j])
         }
     }
     return(invisible(NULL))
 }
 
+#' @export
 check_integer_order <- function(FUN, cxxfun) {
     .check_execution_order(FUN, cxxfun=cxx_test_integer_output, type="integer")
 }
 
+#' @export
 check_numeric_order <- function(FUN, cxxfun) {
     .check_execution_order(FUN, cxxfun=cxx_test_numeric_output, type="double")
 }
 
+#' @export
 check_logical_order <- function(FUN, cxxfun) {
     .check_execution_order(FUN, cxxfun=cxx_test_logical_output, type="logical")
 }
 
+#' @export
 check_character_order <- function(FUN, cxxfun) {
     .check_execution_order(FUN, cxxfun=cxx_test_character_output, type="character")
 }
 
 ###############################
 
-.check_converted_output <- function(FUN, ..., cxxfun, rfun) { 
+#' @importFrom testthat expect_true expect_s4_class expect_identical
+.check_converted_output <- function(FUN, ..., cxxfun, old_type, new_type) {
     for (i in 1:3) { 
         test.mat <- FUN(...)
         
         out <- .Call(cxxfun, test.mat, i)
         if (is.matrix(test.mat)) { 
-            testthat::expect_true(is.matrix(out[[1]]))
+            expect_true(is.matrix(out[[1]]))
         } else {
-            testthat::expect_s4_class(out[[1]], class(out[[1]]))
+            expect_s4_class(out[[1]], class(out[[1]]))
             out[[1]] <- as.matrix(out[[1]])
         }
+        
         ref <- as.matrix(test.mat)
-        testthat::expect_identical(rfun(ref), out[[1]])
-            
-        # With flipping.
-        if (i==1L) {
-            ref <- ref[nrow(ref):1,,drop=FALSE]
-        } else if (i==2L) {
-            ref <- ref[,ncol(ref):1,drop=FALSE]
-        } else if (i==3L) {
-            ref <- ref[nrow(ref):1,ncol(ref):1,drop=FALSE]
-        }
-        testthat::expect_identical(rfun(ref), out[[2]])
+        storage.mode(ref) <- new_type
+        expect_identical(ref, out[[1]])
+
+        # Checking that the converted getters work properly too.
+        ref2 <- matrix(out[[2]], nrow(ref), ncol(ref), byrow=(i==2L))
+        storage.mode(ref) <- old_type
+        expect_identical(ref, ref2)
     }
     return(invisible(NULL))
 }
 
+#' @export
 check_numeric_converted_output  <- function(FUN, ...) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_numeric_to_integer_output, 
-                            rfun=function(x) {
-                                storage.mode(x) <- "integer" 
-                                return(x)
-                            })
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_numeric_to_integer_output, old_type="double", new_type="integer")
 }
 
+#' @export
 check_integer_converted_output <- function(FUN, ...) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_integer_to_numeric_output, 
-                            rfun=function(x) { 
-                                storage.mode(x) <- "double"
-                                return(x)
-                            })
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_integer_to_numeric_output, old_type="integer", new_type="double")
 }
 
+#' @export
 check_logical_converted_output <- function(FUN, ...) {
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_numeric_output, 
-                            rfun=function(x) { 
-                                storage.mode(x) <- "double"
-                                return(x)
-                            })
-    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_integer_output, 
-                            rfun=function(x) { 
-                                storage.mode(x) <- "integer"
-                                return(x)
-                            })
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_numeric_output, old_type="logical", new_type="double")
+    .check_converted_output(FUN=FUN, ..., cxxfun=cxx_test_logical_to_integer_output, old_type="logical", new_type="integer") 
 }
 
 ###############################
 
+#' @export
 check_output_mode <- function(incoming, ..., simplify, preserve.zero) {
     all.modes <- .Call(cxx_get_all_modes)
     if (is.character(incoming)) { 
@@ -260,38 +331,43 @@ check_output_mode <- function(incoming, ..., simplify, preserve.zero) {
 
 ###############################
 
+#' @importFrom testthat expect_true expect_error 
 .check_edge_output_errors <- function(x, cxxfun) {
-    testthat::expect_true(.Call(cxxfun, x, 0L))
+    expect_true(.Call(cxxfun, x, 0L))
 
-    testthat::expect_error(.Call(cxxfun, x, 1L), "row index out of range")
-    testthat::expect_error(.Call(cxxfun, x, -1L), "column index out of range")        
-    testthat::expect_error(.Call(cxxfun, x, 2L), "column start index is greater than column end index")
-    testthat::expect_error(.Call(cxxfun, x, -2L), "row start index is greater than row end index")
-    testthat::expect_error(.Call(cxxfun, x, 3L), "column end index out of range")
-    testthat::expect_error(.Call(cxxfun, x, -3L), "row end index out of range")
+    expect_error(.Call(cxxfun, x, 1L), "row index out of range")
+    expect_error(.Call(cxxfun, x, -1L), "column index out of range")        
+    expect_error(.Call(cxxfun, x, 2L), "column start index is greater than column end index")
+    expect_error(.Call(cxxfun, x, -2L), "row start index is greater than row end index")
+    expect_error(.Call(cxxfun, x, 3L), "column end index out of range")
+    expect_error(.Call(cxxfun, x, -3L), "row end index out of range")
     
-    testthat::expect_error(.Call(cxxfun, x, 4L), "row index out of range")
-    testthat::expect_error(.Call(cxxfun, x, -4L), "column index out of range")        
-    testthat::expect_error(.Call(cxxfun, x, 5L), "column start index is greater than column end index")
-    testthat::expect_error(.Call(cxxfun, x, -5L), "row start index is greater than row end index")
-    testthat::expect_error(.Call(cxxfun, x, 6L), "column end index out of range")
-    testthat::expect_error(.Call(cxxfun, x, -6L), "row end index out of range")
+    expect_error(.Call(cxxfun, x, 4L), "row index out of range")
+    expect_error(.Call(cxxfun, x, -4L), "column index out of range")        
+    expect_error(.Call(cxxfun, x, 5L), "column start index is greater than column end index")
+    expect_error(.Call(cxxfun, x, -5L), "row start index is greater than row end index")
+    expect_error(.Call(cxxfun, x, 6L), "column end index out of range")
+    expect_error(.Call(cxxfun, x, -6L), "row end index out of range")
 
     return(invisible(NULL))
 }
 
+#' @export
 check_integer_edge_output_errors <- function(FUN, ...) {
     .check_edge_output_errors(FUN(...), cxxfun=cxx_test_integer_edge_output)
 }
 
+#' @export
 check_logical_edge_output_errors <- function(FUN, ...) {
     .check_edge_output_errors(FUN(...), cxxfun=cxx_test_logical_edge_output)
 }
 
+#' @export
 check_numeric_edge_output_errors <- function(FUN, ...) {
     .check_edge_output_errors(FUN(...), cxxfun=cxx_test_numeric_edge_output)
 }
 
+#' @export
 check_character_edge_output_errors <- function(FUN, ...) {
     .check_edge_output_errors(FUN(...), cxxfun=cxx_test_character_edge_output)
 }

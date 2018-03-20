@@ -34,6 +34,10 @@ public:
 
     virtual void set(size_t, size_t, Rcpp::String)=0;
 
+    virtual void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator)=0;
+
+    virtual void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator)=0;
+
     // Other stuff.
     virtual Rcpp::RObject yield()=0;
 
@@ -54,18 +58,16 @@ public:
  
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-
     Rcpp::String get(size_t, size_t);
 
     void set_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void set_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-    
     void set(size_t, size_t, Rcpp::String);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator);
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator);
 
     Rcpp::RObject yield();
-
     std::unique_ptr<character_output> clone() const;
-    
     matrix_type get_matrix_type() const;
 private:
     simple_output<Rcpp::String, Rcpp::StringVector> mat;
@@ -87,23 +89,22 @@ public:
  
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-
     Rcpp::String get(size_t, size_t);
 
     void set_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void set_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
-
     void set(size_t, size_t, Rcpp::String);
+    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator);
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::StringVector::iterator);
 
     Rcpp::RObject yield();
-
     std::unique_ptr<character_output> clone() const;
-
     matrix_type get_matrix_type() const;
 protected:
+    H5::StrType str_type;
     size_t bufsize;
-    HDF5_output<char, STRSXP> mat; 
-    std::vector<char> row_buf, col_buf, one_buf;
+    HDF5_output<char, Rcpp::StringVector> mat; 
+    std::vector<char> buffer;
 };
 
 /* Dispatcher */

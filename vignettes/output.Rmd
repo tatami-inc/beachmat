@@ -68,44 +68,64 @@ Exact zeroes are detected and ignored when filling this matrix.
 
 ## Storing data in columns
 
-The `set_col()` method fills column `c` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
+- The `set_col()` method fills column `c` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
 `c` should be a zero-indexed integer in `[0, ncol)`, and there should be at least `nrow` accessible elements, i.e., `*out` and `*(out+nrow-1)` should be valid entries.
 
-```cpp
-dptr->set_col(/* size_t */ c, /* Rcpp::Vector::iterator */ out);
-```
+    ```cpp
+    dptr->set_col(/* size_t */ c, /* Rcpp::Vector::iterator */ out);
+    ```
+    
+    `out` can be an iterator to a `Rcpp::NumericVector`, `Rcpp::LogicalVector` or `Rcpp::IntegerVector`; type conversions will occur as expected to the type of the output matrix.
+    No value is returned by this method.
 
-Filling of a range of the column can be achieved with the `first` and `last` arguments.
-This will fill column `c` from `first` to `last-1` with the entry at `*out` and `*(out+last-first-1)`, respectively.
+- `set_col()` can be used with `first` and `last` arguments.
+This will fill column `c` from rows `first` to `last-1` with the entries from `*out` to `*(out+last-first-1)`, respectively.
 Both `first` and `last` should be in `[0, nrow]` and zero-indexed, with the additional requirement that `last >= first`.
 
-```cpp
-dptr->set_col(/* size_t */ c, /* Rcpp::Vector::iterator */ out,
-    /* size_t */ first, /* size_t */ last);
-````
+    ```cpp
+    dptr->set_col(/* size_t */ c, /* Rcpp::Vector::iterator */ out,
+                  /* size_t */ first, /* size_t */ last);
+    ````
 
-No value is returned by either of these methods.
-`out` can be an iterator to a `Rcpp::NumericVector`, `Rcpp::LogicalVector` or `Rcpp::IntegerVector`; type conversions will occur as expected.
+- The `set_col_indexed()` method fills column `c` with the vector of elements starting at iterator `val` at a vector of row indices starting at `idx`.
+Row indices can be unordered and duplicated^[But obviously they should be zero-indexed.]; later entries will override earlier ones.
+Note that no check is performed for the sanity of the row indices.
+
+    ```cpp
+    dptr->set_col_indexed(/* size_t */ c, /* size_t */ N, 
+                          /* Rcpp::IntegerVector::iterator */ idx,
+                          /* Rcpp::Vector::iterator */ val);
+    ```
 
 ## Storing data in rows
 
-The `set_row()` method fills row `r` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
+- The `set_row()` method fills row `r` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
 `r` should be a zero-indexed integer in `[0, nrow)`, and there should be at least `nrow` accessible elements, i.e., `*out` and `*(out+nrow-1)` should be valid entries.
+No value is returned.
 
-```cpp
-dptr->set_row(/* size_t */ r, /* Rcpp::Vector::iterator */ out);
-```
+    ```cpp
+    dptr->set_row(/* size_t */ r, /* Rcpp::Vector::iterator */ out);
+    ```
 
-Filling of a range of the row can be achieved with the `first` and `last` arguments.
-This will fill row `r` from `first` to `last-1` with the entry at `*out` and `*(out+last-first-1)`, respectively.
+- Filling of a range of the row can be achieved with the `first` and `last` arguments.
+This will fill row `r` from columns `first` to `last-1` with entries from `*out` to `*(out+last-first-1)`, respectively.
 Both `first` and `last` should be in `[0, ncol]` and zero-indexed, with the additional requirement that `last >= first`.
 
-```cpp
-dptr->set_row(/* size_t */ r, /* Rcpp::Vector::iterator */ out,
-    /* size_t */ first, /* size_t */ last);
-````
+    ```cpp
+    dptr->set_row(/* size_t */ r, /* Rcpp::Vector::iterator */ out,
+        /* size_t */ first, /* size_t */ last);
+    ```
 
-No value is returned by either of these methods.
+
+- The `set_row_indexed()` method fills row `r` with the vector of elements starting at iterator `val` at a vector of column indices starting at `idx`.
+Column indices can be unordered and duplicated^[And again, zero-indexed.]; later entries will override earlier ones.
+Note that no check is performed for the sanity of the column indices.
+
+    ```cpp
+    dptr->set_row_indexed(/* size_t */ r, /* size_t */ N, 
+                          /* Rcpp::IntegerVector::iterator */ idx,
+                          /* Rcpp::Vector::iterator */ val);
+    ```
 
 ## Storing data in individual cells
 
@@ -131,7 +151,7 @@ This is commonly used at the end of the function to return a matrix to R:
 return dptr->yield();
 ```
 
-Note that this operation may involve a R-level memory allocation, which may subsequently trigger garbage collection.
+Note that this operation may involve an R-level memory allocation, which may subsequently trigger garbage collection.
 This is usually not a concern as `r CRANpkg("Rcpp")` is excellent at protecting against unintended collection of objects.
 
 However, one exception is that of random number generation, where the destruction of the `Rcpp::RNGScope` may trigger a collection of unprotected `SEXP`s.

@@ -5,7 +5,7 @@ namespace beachmat {
 /* Csparse logical input methods. */
 
 template<>
-int Csparse_matrix<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
+int Csparse_matrix<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 
 /* HDF5Matrix input methods. */
 
@@ -38,15 +38,15 @@ std::unique_ptr<logical_matrix> delayed_lin_helper<int, Rcpp::LogicalVector>::ge
 /* Sparse logical output methods. */
 
 template<>
-int Csparse_output<int, Rcpp::LogicalVector>::get_empty() const { return 0; }
+int Csparse_output<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 
 /* HDF5 logical output methods. */
 
 template<>
-int HDF5_output<int, LGLSXP>::get_empty() const { return 0; }
+int HDF5_output<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 
 template<>
-Rcpp::RObject HDF5_output<int, LGLSXP>::get_firstval() { 
+Rcpp::RObject HDF5_output<int, Rcpp::LogicalVector>::get_firstval() { 
     int first;
     extract_one(0, 0, &first);
     return Rcpp::LogicalVector::create(first);

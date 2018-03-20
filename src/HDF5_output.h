@@ -10,7 +10,7 @@ namespace beachmat {
 
 /*** Class definition ***/
 
-template<typename T, int RTYPE>
+template<typename T, class V>
 class HDF5_output : public any_matrix {
 public:
     HDF5_output(size_t, size_t, 
@@ -19,7 +19,8 @@ public:
             int=output_param::DEFAULT_COMPRESS, 
             size_t=output_param::DEFAULT_STRLEN);
     ~HDF5_output();
-    
+
+    // Setters:    
     void insert_row(size_t, const T*, size_t, size_t);
     template<typename X>
     void insert_row(size_t, const X*, const H5::DataType&, size_t, size_t);
@@ -30,6 +31,15 @@ public:
 
     void insert_one(size_t, size_t, T*);
 
+    void insert_col_indexed(size_t, size_t, const int*, const T*); 
+    template<typename X>
+    void insert_col_indexed(size_t, size_t, const int*, const X*, const H5::DataType&); 
+
+    void insert_row_indexed(size_t, size_t, const int*, const T*); 
+    template<typename X>
+    void insert_row_indexed(size_t, size_t, const int*, const X*, const H5::DataType&); 
+
+    // Getters:
     void extract_col(size_t, T*, size_t, size_t);
     template<typename X>
     void extract_col(size_t, X*, const H5::DataType&, size_t, size_t);
@@ -40,6 +50,7 @@ public:
 
     void extract_one(size_t, size_t, T*);
 
+    // Other:
     Rcpp::RObject yield();
 
     matrix_type get_matrix_type() const;
@@ -49,29 +60,38 @@ protected:
     H5::H5File hfile;
     H5::DataSet hdata;
     H5::DataSpace hspace, rowspace, colspace, onespace;
-    hsize_t h5_start[2], col_count[2], row_count[2], one_count[2], zero_start[1];
+    hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];
 
     H5::DataType default_type;
     void select_row(size_t, size_t, size_t);
     void select_col(size_t, size_t, size_t);
     void select_one(size_t, size_t);
 
-    T get_empty() const;
-    Rcpp::RObject get_firstval();
-
     bool onrow, oncol;
     bool rowokay, colokay;
     bool largerrow, largercol;
     H5::FileAccPropList rowlist, collist;
+
+    // These functions are defined for each realized matrix type separately.
+    static T get_empty();
+
+    // In particular, this needs to be defined separately as strings are handled
+    // very differently from LINs when creating any Rcpp::RObject.
+    Rcpp::RObject get_firstval();
+
+    // Objects for indexed access.
+    std::vector<hsize_t> index_coords;
+    H5::DataSpace index_space;   
 };
 
 /*** Constructor definition ***/
 
-template<typename T, int RTYPE>
-HDF5_output<T, RTYPE>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_t chunk_nc, int compress, size_t len) : any_matrix(nr, nc), 
+template<typename T, class V>
+HDF5_output<T, V>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_t chunk_nc, int compress, size_t len) : any_matrix(nr, nc), 
         rowlist(H5::FileAccPropList::DEFAULT.getId()), collist(H5::FileAccPropList::DEFAULT.getId()) {
 
     // Pulling out settings.
+    auto RTYPE=V().sexp_type();
     const Rcpp::Environment env=Rcpp::Environment::namespace_env("beachmat");
     Rcpp::Function fun=env["setupHDF5Matrix"];
     Rcpp::List collected=fun(Rcpp::IntegerVector::create(this->nrow, this->ncol), Rcpp::StringVector(translate_type(RTYPE)),
@@ -139,13 +159,13 @@ HDF5_output<T, RTYPE>::HDF5_output (size_t nr, size_t nc, size_t chunk_nr, size_
     return;
 }
 
-template<typename T, int RTYPE>
-HDF5_output<T, RTYPE>::~HDF5_output() {}
+template<typename T, class V>
+HDF5_output<T, V>::~HDF5_output() {}
 
-/*** Setter methods ***/
+/*** Defining selections ***/
 
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::select_col(size_t c, size_t first, size_t last) {
+template<typename T, class V>
+void HDF5_output<T, V>::select_col(size_t c, size_t first, size_t last) {
     check_colargs(c, first, last);
     reopen_HDF5_file_by_dim(fname, dname,
             hfile, hdata, H5F_ACC_RDWR, collist, 
@@ -154,22 +174,8 @@ void HDF5_output<T, RTYPE>::select_col(size_t c, size_t first, size_t last) {
     return;
 }
 
-template<typename T, int RTYPE>
-template<typename X>
-void HDF5_output<T, RTYPE>::insert_col(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
-    select_col(c, first, last);
-    hdata.write(in, HDT, colspace, hspace);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::insert_col(size_t c, const T* in, size_t first, size_t last) {
-    insert_col(c, in, default_type, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::select_row(size_t r, size_t first, size_t last) {
+template<typename T, class V>
+void HDF5_output<T, V>::select_row(size_t r, size_t first, size_t last) {
     check_rowargs(r, first, last);
     reopen_HDF5_file_by_dim(fname, dname, 
             hfile, hdata, H5F_ACC_RDWR, rowlist, 
@@ -178,79 +184,162 @@ void HDF5_output<T, RTYPE>::select_row(size_t r, size_t first, size_t last) {
     return;
 }
 
-template<typename T, int RTYPE>
-template<typename X>
-void HDF5_output<T, RTYPE>::insert_row(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
-    select_row(c, first, last);
-    hdata.write(in, HDT, rowspace, hspace);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::insert_row(size_t c, const T* in, size_t first, size_t last) {
-    insert_row(c, in, default_type, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::select_one(size_t r, size_t c) {
+template<typename T, class V>
+void HDF5_output<T, V>::select_one(size_t r, size_t c) {
     check_oneargs(r, c);
     HDF5_select_one(r, c, one_count, h5_start, hspace);
     return;
 }
 
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::insert_one(size_t r, size_t c, T* in) {
+/*** Setter methods ***/
+
+template<typename T, class V>
+template<typename X>
+void HDF5_output<T, V>::insert_col(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
+    select_col(c, first, last);
+    hdata.write(in, HDT, colspace, hspace);
+    return;
+}
+
+template<typename T, class V>
+void HDF5_output<T, V>::insert_col(size_t c, const T* in, size_t first, size_t last) {
+    insert_col(c, in, default_type, first, last);
+    return;
+}
+
+template<typename T, class V>
+template<typename X>
+void HDF5_output<T, V>::insert_row(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
+    select_row(c, first, last);
+    hdata.write(in, HDT, rowspace, hspace);
+    return;
+}
+
+template<typename T, class V>
+void HDF5_output<T, V>::insert_row(size_t c, const T* in, size_t first, size_t last) {
+    insert_row(c, in, default_type, first, last);
+    return;
+}
+
+template<typename T, class V>
+void HDF5_output<T, V>::insert_one(size_t r, size_t c, T* in) {
     select_one(r, c);
     hdata.write(in, default_type, onespace, hspace);
     return;
 }
 
+template<typename T, class V>
+void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, const T* val) {
+    insert_col_indexed(c, n, idx, val, default_type);    
+}
+
+template<typename T, class V>
+template<typename X>
+void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, const X* val, const H5::DataType& HDT) {
+    if (!n) { return; }
+
+    if (index_coords.size()/2 < n) {
+        size_t N=std::max(n, this->nrow);
+        index_coords.resize(N*2);
+        hsize_t tmp_N=N;
+        index_space.setExtentSimple(1, &tmp_N);
+    }
+
+    // Setting up the coordinate space.
+    check_colargs(c);
+    auto wsIt=index_coords.begin();
+    for (size_t i=0; i<n; ++i, ++idx) {
+        (*wsIt)=c;
+        ++wsIt;
+        (*wsIt)=*idx;
+        ++wsIt;
+    }
+    hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
+
+    // Performing a write operation.
+    hsize_t tmp_count=n, tmp_start=0;
+    index_space.selectHyperslab(H5S_SELECT_SET, &tmp_count, &tmp_start);
+    hdata.write(val, HDT, index_space, hspace);
+    return;
+}
+
+template<typename T, class V>
+void HDF5_output<T, V>::insert_row_indexed(size_t r, size_t n, const int* idx, const T* val) {
+    insert_row_indexed(r, n, idx, val, default_type);    
+}
+
+template<typename T, class V>
+template<typename X>
+void HDF5_output<T, V>::insert_row_indexed(size_t r, size_t n, const int* idx, const X* val, const H5::DataType& HDT) {
+    if (!n) { return; }
+
+    if (index_coords.size()/2 < n) {
+        size_t N=std::max(n, this->nrow);
+        index_coords.resize(N*2);
+        hsize_t tmp_N=N;
+        index_space.setExtentSimple(1, &tmp_N);
+    }
+
+    // Setting up the coordinate space.
+    check_rowargs(r);
+    auto wsIt=index_coords.begin();
+    for (size_t i=0; i<n; ++i, ++idx) {
+        (*wsIt)=*idx;
+        ++wsIt;
+        (*wsIt)=r;
+        ++wsIt;
+    }
+    hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
+
+    // Performing a write operation.
+    hsize_t tmp_count=n, tmp_start=0;
+    index_space.selectHyperslab(H5S_SELECT_SET, &tmp_count, &tmp_start);
+    hdata.write(val, HDT, index_space, hspace);
+    return;
+}
+
+
 /*** Getter methods ***/
 
-template<typename T, int RTYPE>
+template<typename T, class V>
 template<typename X>
-void HDF5_output<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+void HDF5_output<T, V>::extract_row(size_t r, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     select_row(r, first, last);
     hdata.read(out, HDT, rowspace, hspace);
     return;
 } 
 
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::extract_row(size_t r, T* out, size_t first, size_t last) { 
+template<typename T, class V>
+void HDF5_output<T, V>::extract_row(size_t r, T* out, size_t first, size_t last) { 
     extract_row(r, out, default_type, first, last);
     return;
 } 
 
-template<typename T, int RTYPE>
+template<typename T, class V>
 template<typename X>
-void HDF5_output<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+void HDF5_output<T, V>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     select_col(c, first, last);
     hdata.read(out, HDT, colspace, hspace);
     return;
 }
 
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::extract_col(size_t c, T* out, size_t first, size_t last) { 
+template<typename T, class V>
+void HDF5_output<T, V>::extract_col(size_t c, T* out, size_t first, size_t last) { 
     extract_col(c, out, default_type, first, last);
     return;
 }
 
-template<typename T, int RTYPE>
-void HDF5_output<T, RTYPE>::extract_one(size_t r, size_t c, T* out) { 
+template<typename T, class V>
+void HDF5_output<T, V>::extract_one(size_t r, size_t c, T* out) { 
     select_one(r, c);
     hdata.read(out, default_type, onespace, hspace);
     return;
 }
 
-// get_empty() defined for each realized class separately.
-
-// get_firstval() defined for each realized class separately.
-
 /*** Output function ***/
 
-template<typename T, int RTYPE>
-Rcpp::RObject HDF5_output<T, RTYPE>::yield() {
+template<typename T, class V>
+Rcpp::RObject HDF5_output<T, V>::yield() {
     std::string seedclass="HDF5ArraySeed";
     Rcpp::S4 h5seed(seedclass);
 
@@ -276,7 +365,7 @@ Rcpp::RObject HDF5_output<T, RTYPE>::yield() {
     if (this->nrow && this->ncol) { 
         h5seed.slot("first_val") = get_firstval();
     } else {
-        h5seed.slot("first_val") = Rcpp::Vector<RTYPE>(0); // empty vector.
+        h5seed.slot("first_val") = V(0); // empty vector.
     }
 
     // Assigning the seed to the HDF5Matrix.
@@ -289,8 +378,8 @@ Rcpp::RObject HDF5_output<T, RTYPE>::yield() {
     return Rcpp::RObject(h5mat);
 }
 
-template<typename T, int RTYPE>
-matrix_type HDF5_output<T, RTYPE>::get_matrix_type() const {
+template<typename T, class V>
+matrix_type HDF5_output<T, V>::get_matrix_type() const {
     return HDF5;
 }
 

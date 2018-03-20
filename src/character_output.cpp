@@ -63,6 +63,16 @@ void simple_character_output::set(size_t r, size_t c, Rcpp::String in) {
     return;
 }
 
+void simple_character_output::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    mat.set_col_indexed(c, N, idx, val);
+    return;
+}
+
+void simple_character_output::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    mat.set_row_indexed(r, N, idx, val);
+    return;
+}
+
 Rcpp::RObject simple_character_output::yield() {
     return mat.yield();
 }
@@ -78,10 +88,10 @@ matrix_type simple_character_output::get_matrix_type() const {
 /* Methods for the HDF5 output matrix. */
 
 template<>
-char HDF5_output<char, STRSXP>::get_empty() const { return '\0'; }
+char HDF5_output<char, Rcpp::StringVector>::get_empty() { return '\0'; }
 
 template<>
-Rcpp::RObject HDF5_output<char, STRSXP>::get_firstval() {
+Rcpp::RObject HDF5_output<char, Rcpp::StringVector>::get_firstval() {
     std::vector<char> first(default_type.getSize());
     extract_one(0, 0, first.data());
     return Rcpp::StringVector::create(Rcpp::String(first.data()));
@@ -91,7 +101,7 @@ Rcpp::RObject HDF5_output<char, STRSXP>::get_firstval() {
 
 HDF5_character_output::HDF5_character_output(size_t nr, size_t nc, size_t strlen, size_t chunk_nr, size_t chunk_nc, int compress) :
         bufsize(strlen+1), mat(nr, nc, chunk_nr, chunk_nc, compress, bufsize), 
-        row_buf(bufsize*nc), col_buf(bufsize*nr), one_buf(bufsize) {}
+        buffer(bufsize * std::max({ nr, nc, size_t(1) })) {}
 
 HDF5_character_output::~HDF5_character_output() {}
 
@@ -104,7 +114,7 @@ size_t HDF5_character_output::get_ncol() const {
 }
 
 void HDF5_character_output::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    char* ref=row_buf.data();
+    char* ref=buffer.data();
     mat.extract_row(r, ref, first, last);
     for (size_t c=first; c<last; ++c, ref+=bufsize, ++out) {
         (*out)=ref; 
@@ -113,7 +123,7 @@ void HDF5_character_output::get_row(size_t r, Rcpp::StringVector::iterator out, 
 } 
 
 void HDF5_character_output::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
-    char* ref=col_buf.data();
+    char* ref=buffer.data();
     mat.extract_col(c, ref, first, last);
     for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
         (*out)=ref; 
@@ -122,40 +132,70 @@ void HDF5_character_output::get_col(size_t c, Rcpp::StringVector::iterator out, 
 }
  
 Rcpp::String HDF5_character_output::get(size_t r, size_t c) { 
-    char* ref=one_buf.data();
+    char* ref=buffer.data();
     mat.extract_one(r, c, ref);
     return ref;
 }
 
 void HDF5_character_output::set_row(size_t r, Rcpp::StringVector::iterator in, size_t first, size_t last) { 
-    if (mat.get_ncol() + first >= last) { // ensure they can fit in 'row_buf'; if not, it should trigger an error in insert_row().
-        char* ref=row_buf.data();
+    if (mat.get_ncol() + first >= last) { // ensure they can fit in 'buffer'; if not, it should trigger an error in insert_row().
+        char* ref=buffer.data();
         for (size_t c=first; c<last; ++c, ref+=bufsize, ++in) {
             std::strncpy(ref, Rcpp::String(*in).get_cstring(), bufsize-1);
             ref[bufsize-1]='\0'; // strncpy only pads up to just before the last position.
         }
     }
-    mat.insert_row(r, row_buf.data(), first, last);
+    mat.insert_row(r, buffer.data(), first, last);
     return;
 } 
 
 void HDF5_character_output::set_col(size_t c, Rcpp::StringVector::iterator in, size_t first, size_t last) { 
-    if (mat.get_nrow() + first >= last) { // ensure they can fit in 'col_buf'.
-        char* ref=col_buf.data();
+    if (mat.get_nrow() + first >= last) { // ensure they can fit in 'buffer'.
+        char* ref=buffer.data();
         for (size_t r=first; r<last; ++r, ref+=bufsize, ++in) {
             std::strncpy(ref, Rcpp::String(*in).get_cstring(), bufsize-1);
             ref[bufsize-1]='\0';
         }
     }
-    mat.insert_col(c, col_buf.data(), first, last);
+    mat.insert_col(c, buffer.data(), first, last);
     return;
 }
  
 void HDF5_character_output::set(size_t r, size_t c, Rcpp::String in) { 
-    char* ref=one_buf.data();
+    char* ref=buffer.data();
     std::strncpy(ref, in.get_cstring(), bufsize-1);
     ref[bufsize-1]='\0';
     mat.insert_one(r, c, ref);
+    return;
+}
+
+void HDF5_character_output::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    if (buffer.size() < N*bufsize) {
+        buffer.resize(N*bufsize);
+    }
+
+    char* ref=buffer.data();
+    for (size_t i=0; i<N; ++i, ref+=bufsize, ++val) {
+        std::strncpy(ref, Rcpp::String(*val).get_cstring(), bufsize-1);
+        ref[bufsize-1]='\0';
+    }
+ 
+    mat.insert_col_indexed(c, N, idx, buffer.data());
+    return;
+}
+
+void HDF5_character_output::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    if (buffer.size() < N*bufsize) {
+        buffer.resize(N*bufsize);
+    }
+
+    char* ref=buffer.data();
+    for (size_t i=0; i<N; ++i, ref+=bufsize, ++val) {
+        std::strncpy(ref, Rcpp::String(*val).get_cstring(), bufsize-1);
+        ref[bufsize-1]='\0';
+    }
+ 
+    mat.insert_row_indexed(r, N, idx, buffer.data());
     return;
 }
 

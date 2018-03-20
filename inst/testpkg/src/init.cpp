@@ -69,6 +69,11 @@ static const R_CallMethodDef all_call_entries[] = {
     REGISTER(test_logical_output_slice, 4),
     REGISTER(test_character_output_slice, 4),
 
+    REGISTER(test_integer_output_indexed, 4),
+    REGISTER(test_numeric_output_indexed, 4),
+    REGISTER(test_logical_output_indexed, 4),
+    REGISTER(test_character_output_indexed, 4),
+
     // Output type tests.
     REGISTER(test_numeric_to_logical_output, 2), 
     REGISTER(test_numeric_to_integer_output, 2),

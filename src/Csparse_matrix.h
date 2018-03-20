@@ -36,7 +36,7 @@ protected:
     std::vector<int> indices; // Left as 'int' to simplify comparisons with 'i' and 'p'.
     void update_indices(size_t, size_t, size_t);
 
-    T get_empty() const; // Specialized function for each realization (easy to extend for non-int/double).
+    static T get_empty(); // Specialized function for each realization (easy to extend for non-int/double).
 };
 
 /*** Constructor definition ***/

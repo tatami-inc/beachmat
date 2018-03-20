@@ -1,3 +1,6 @@
+#' @export
+#' @importFrom DelayedArray DelayedArray
+#' @importFrom BiocGenerics rbind cbind t
 delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })  
 # Creates a list of supported DelayedMatrix operations 
 # that are handled natively in beachmat, without the 
@@ -9,17 +12,17 @@ delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })
     }
 
     subset_row_fun <- function(...) {
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         out[.choose_half(nrow(out)),]
     }
 
     subset_col_fun <- function(...) {
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         out[,.choose_half(ncol(out))]
     }
 
     subset_both_fun <- function(...) {
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         out[.choose_half(nrow(out)),.choose_half(ncol(out))]
     }
 
@@ -29,19 +32,19 @@ delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })
     }
 
     name_row_fun <- function(...) { 
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         rownames(out) <- .namers(nrow(out), "Gene")
         return(out)
     }
 
     name_col_fun <- function(...) { 
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         colnames(out) <- .namers(ncol(out), "Cell")
         return(out)
     }
 
     name_both_fun <- function(...) {
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         rownames(out) <- .namers(nrow(out), "Gene")
         colnames(out) <- .namers(ncol(out), "Cell")
         return(out)
@@ -49,28 +52,26 @@ delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })
 
     # Transposition
     trans_fun <- function(...) { 
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         DelayedArray::t(out)
     }
 
     trans_subset_fun <- function(...) {
-        DelayedArray::t(subset_both_fun(...))
+        t(subset_both_fun(...))
     }
 
     # Combining to generate an odd seed type that switches to chunked access.
     rcomb_fun <- function(...) {
-        DelayedArray::rbind(DelayedArray::DelayedArray(basefun(...)), 
-                            DelayedArray::DelayedArray(basefun(...)))
+        rbind(DelayedArray(basefun(...)), DelayedArray(basefun(...)))
     }
 
     ccomb_fun <- function(...) {
-        DelayedArray::cbind(DelayedArray::DelayedArray(basefun(...)), 
-                            DelayedArray::DelayedArray(basefun(...)))
+        cbind(DelayedArray(basefun(...)), DelayedArray(basefun(...)))
     }
 
     # Performing a delayed operation (DELAYED_FUN needs to be chosen to ensure the modification is of the same type).
     dops_fun <- function(...) { 
-        out <- DelayedArray::DelayedArray(basefun(...))
+        out <- DelayedArray(basefun(...))
         DELAYED_FUN(out)
     }
 
@@ -85,7 +86,7 @@ delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })
     }
 
     dops_transpose_fun <- function(...) { # Checking that transposition WITH delayed ops wipes the transformer.
-        DelayedArray::t(dops_fun(...))
+        t(dops_fun(...))
     }
 
     return(list(SR=subset_row_fun,

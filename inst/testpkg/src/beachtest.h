@@ -97,19 +97,29 @@ SEXP test_character_edge (SEXP, SEXP);
 
 SEXP test_integer_output(SEXP, SEXP, SEXP);
 
-SEXP test_integer_output_slice(SEXP, SEXP, SEXP, SEXP);
-
 SEXP test_numeric_output(SEXP, SEXP, SEXP);
-
-SEXP test_numeric_output_slice(SEXP, SEXP, SEXP, SEXP);
 
 SEXP test_logical_output(SEXP, SEXP, SEXP);
 
-SEXP test_logical_output_slice(SEXP, SEXP, SEXP, SEXP);
-
 SEXP test_character_output(SEXP, SEXP, SEXP);
 
+
+SEXP test_integer_output_slice(SEXP, SEXP, SEXP, SEXP);
+
+SEXP test_numeric_output_slice(SEXP, SEXP, SEXP, SEXP);
+
+SEXP test_logical_output_slice(SEXP, SEXP, SEXP, SEXP);
+
 SEXP test_character_output_slice(SEXP, SEXP, SEXP, SEXP);
+
+
+SEXP test_integer_output_indexed(SEXP, SEXP, SEXP, SEXP);
+
+SEXP test_numeric_output_indexed(SEXP, SEXP, SEXP, SEXP);
+
+SEXP test_logical_output_indexed(SEXP, SEXP, SEXP, SEXP);
+
+SEXP test_character_output_indexed(SEXP, SEXP, SEXP, SEXP);
 
 // Output type checks.
 

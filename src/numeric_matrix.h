@@ -50,7 +50,7 @@ std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject&);
  * Virtual base class for output numeric matrices. *
  ***************************************************/
 
-typedef lin_output<double> numeric_output;
+typedef lin_output<double, Rcpp::NumericVector> numeric_output;
 
 /* Simple output numeric matrix */
 
@@ -62,7 +62,7 @@ typedef sparse_lin_output<double, Rcpp::NumericVector> sparse_numeric_output;
 
 /* HDF5 output numeric matrix */
 
-typedef HDF5_lin_output<double, REALSXP> HDF5_numeric_output;
+typedef HDF5_lin_output<double, Rcpp::NumericVector> HDF5_numeric_output;
 
 /* Output dispatchers */
 

@@ -33,10 +33,10 @@ std::unique_ptr<integer_matrix> delayed_lin_helper<int, Rcpp::IntegerVector>::ge
 /* HDF5 integer output methods. */
 
 template<>
-int HDF5_output<int, INTSXP>::get_empty() const { return 0; }
+int HDF5_output<int, Rcpp::IntegerVector>::get_empty() { return 0; }
 
 template<>
-Rcpp::RObject HDF5_output<int, INTSXP>::get_firstval() { 
+Rcpp::RObject HDF5_output<int, Rcpp::IntegerVector>::get_firstval() { 
     int first;
     extract_one(0, 0, &first);
     return Rcpp::IntegerVector::create(first);
