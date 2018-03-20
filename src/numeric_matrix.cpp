@@ -5,7 +5,7 @@ namespace beachmat {
 /* Csparse numeric input methods. */
 
 template<>
-double Csparse_matrix<double, Rcpp::NumericVector>::get_empty() const { return 0; }
+double Csparse_matrix<double, Rcpp::NumericVector>::get_empty() { return 0; }
 
 /* HDF5Matrix input methods. */
 
@@ -38,12 +38,12 @@ std::unique_ptr<numeric_matrix> delayed_lin_helper<double, Rcpp::NumericVector>:
 /* Sparse numeric output methods. */
 
 template<>
-double Csparse_output<double, Rcpp::NumericVector>::get_empty() const { return 0; }
+double Csparse_output<double, Rcpp::NumericVector>::get_empty() { return 0; }
 
 /* HDF5 numeric output methods. */
 
 template<>
-double HDF5_output<double, Rcpp::NumericVector>::get_empty() const { return 0; }
+double HDF5_output<double, Rcpp::NumericVector>::get_empty() { return 0; }
 
 template<>
 Rcpp::RObject HDF5_output<double, Rcpp::NumericVector>::get_firstval() { 

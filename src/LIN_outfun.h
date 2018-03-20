@@ -154,6 +154,18 @@ void general_lin_output<T, V, M>::set_col_indexed(size_t c, size_t N, Rcpp::Inte
     return; 
 }
 
+template<typename T, class V, class M>
+void general_lin_output<T, V, M>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+    mat.set_row_indexed(r, N, idx, val);
+    return; 
+}
+
+template<typename T, class V, class M>
+void general_lin_output<T, V, M>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+    mat.set_row_indexed(r, N, idx, val);
+    return; 
+}
+
 // Other functions:
 template<typename T, class V, class M>
 Rcpp::RObject general_lin_output<T, V, M>::yield() {
@@ -277,6 +289,18 @@ void HDF5_lin_output<T, V>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVec
 template<typename T, class V>
 void HDF5_lin_output<T, V>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
     mat.insert_col_indexed(c, N, idx, val, H5::PredType::NATIVE_DOUBLE);
+    return;
+}
+
+template<typename T, class V>
+void HDF5_lin_output<T, V>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+    mat.insert_row_indexed(r, N, idx, val, H5::PredType::NATIVE_INT32);
+    return;
+}
+ 
+template<typename T, class V>
+void HDF5_lin_output<T, V>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+    mat.insert_row_indexed(r, N, idx, val, H5::PredType::NATIVE_DOUBLE);
     return;
 }
 

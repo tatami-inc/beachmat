@@ -35,6 +35,10 @@ public:
     template<typename X>
     void insert_col_indexed(size_t, size_t, const int*, const X*, const H5::DataType&); 
 
+    void insert_row_indexed(size_t, size_t, const int*, const T*); 
+    template<typename X>
+    void insert_row_indexed(size_t, size_t, const int*, const X*, const H5::DataType&); 
+
     // Getters:
     void extract_col(size_t, T*, size_t, size_t);
     template<typename X>
@@ -69,7 +73,10 @@ protected:
     H5::FileAccPropList rowlist, collist;
 
     // These functions are defined for each realized matrix type separately.
-    T get_empty() const;
+    static T get_empty();
+
+    // In particular, this needs to be defined separately as strings are handled
+    // very differently from LINs when creating any Rcpp::RObject.
     Rcpp::RObject get_firstval();
 
     // Objects for indexed access.
@@ -239,7 +246,7 @@ void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, c
     }
 
     // Setting up the coordinate space.
-    select_col(c, 0, 0);
+    check_colargs(c, 0, 0);
     auto wsIt=index_coords.begin();
     for (size_t i=0; i<n; ++i, ++idx) {
         (*wsIt)=c;
@@ -255,6 +262,42 @@ void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, c
     hdata.write(val, HDT, index_space, hspace);
     return;
 }
+
+template<typename T, class V>
+void HDF5_output<T, V>::insert_row_indexed(size_t r, size_t n, const int* idx, const T* val) {
+    insert_row_indexed(r, n, idx, val, default_type);    
+}
+
+template<typename T, class V>
+template<typename X>
+void HDF5_output<T, V>::insert_row_indexed(size_t r, size_t n, const int* idx, const X* val, const H5::DataType& HDT) {
+    if (!n) { return; }
+
+    if (index_coords.size()/2 < n) {
+        size_t N=std::max(n, this->nrow);
+        index_coords.resize(N*2);
+        hsize_t tmp_N=N;
+        index_space.setExtentSimple(1, &tmp_N);
+    }
+
+    // Setting up the coordinate space.
+    check_rowargs(r, 0, 0);
+    auto wsIt=index_coords.begin();
+    for (size_t i=0; i<n; ++i, ++idx) {
+        (*wsIt)=*idx;
+        ++wsIt;
+        (*wsIt)=r;
+        ++wsIt;
+    }
+    hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
+
+    // Performing a write operation.
+    hsize_t tmp_count=n, tmp_start=0;
+    index_space.selectHyperslab(H5S_SELECT_SET, &tmp_count, &tmp_start);
+    hdata.write(val, HDT, index_space, hspace);
+    return;
+}
+
 
 /*** Getter methods ***/
 

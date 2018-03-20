@@ -27,6 +27,9 @@ public:
     template <class Iter>
     void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Iter);
 
+    template <class Iter>
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Iter);
+
     // Getters:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
@@ -44,12 +47,17 @@ private:
     typedef std::pair<size_t, T> data_pair;
     std::vector<std::deque<data_pair> > data;
 
-    T get_empty() const;
-    template <class Iter>
-    Iter find_matching_row(Iter, Iter, const data_pair&);
+    // What is an empty value?
+    static T get_empty();
 
     // Only comparing the first value.
     static bool only_first_less(const data_pair& lhs, const data_pair& rhs) { return lhs.first < rhs.first; }
+
+    template <class Iter>
+    static Iter find_matching_row(Iter, Iter, const data_pair&);
+
+    // General column insertions.
+    static void insert_into_column(std::deque<data_pair>&, size_t, T);
 };
 
 /*** Constructor definition ***/
@@ -105,34 +113,38 @@ Iter Csparse_output<T, V>::find_matching_row(Iter begin, Iter end, const data_pa
 }
 
 template<typename T, class V>
+void Csparse_output<T, V>::insert_into_column(std::deque<data_pair>& column, size_t r, T val) {
+    if (column.size()) {
+        if (r < column.front().first) {
+            column.push_front(data_pair(r, val));
+        } else if (r==column.front().first) {
+            column.front().second=val;
+        } else if (r > column.back().first) {
+            column.push_back(data_pair(r, val));
+        } else if (r==column.back().first) {
+            column.back().second=val;
+        } else {
+            data_pair incoming(r, val);
+            auto insert_loc=find_matching_row(column.begin(), column.end(), incoming);
+            if (insert_loc!=column.end() && insert_loc->first==r) { 
+                insert_loc->second=val;
+            } else {
+                column.insert(insert_loc, incoming);
+            }
+        }
+    } else {
+        column.push_back(data_pair(r, val));
+    }
+    return;
+}
+
+template<typename T, class V>
 template<class Iter>
 void Csparse_output<T, V>::set_row(size_t r, Iter in, size_t first, size_t last) {
     check_rowargs(r, first, last);
     for (size_t c=first; c<last; ++c, ++in) {
         if ((*in)==get_empty()) { continue; }
-
-        std::deque<data_pair>& current=data[c];
-        if (current.size()) {
-            if (r < current.front().first) {
-                current.push_front(data_pair(r, *in));
-            } else if (r==current.front().first) {
-                current.front().second=*in;
-            } else if (r > current.back().first) {
-                current.push_back(data_pair(r, *in));
-            } else if (r==current.back().first) {
-                current.back().second=*in;
-            } else {
-                data_pair incoming(r, *in);
-                auto insert_loc=find_matching_row(current.begin(), current.end(), incoming);
-                if (insert_loc!=current.end() && insert_loc->first==r) { 
-                    insert_loc->second=*in;
-                } else {
-                    current.insert(insert_loc, incoming);
-                }
-            }
-        } else {
-            current.push_back(data_pair(r, *in));
-        }
+        insert_into_column(data[c], r, *in);
     }
     return;
 }
@@ -164,6 +176,16 @@ void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVect
     }
 
     current.swap(survivors);
+    return;
+}
+
+template<typename T, class V>
+template <class Iter>
+void Csparse_output<T, V>::set_row_indexed(size_t r, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
+    check_colargs(r, 0, 0);
+    for (size_t i=0; i<n; ++i, ++idx, ++in) { 
+        insert_into_column(data[*idx], r, *in);
+    }
     return;
 }
 

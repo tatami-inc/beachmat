@@ -50,6 +50,9 @@ public:
     virtual void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator)=0;
     virtual void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator)=0;
 
+    virtual void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator)=0;
+    virtual void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator)=0;
+
     virtual void set(size_t, size_t, T)=0;
 
     // Other methods:
@@ -70,6 +73,7 @@ public:
     general_lin_output(size_t, size_t);
     ~general_lin_output();
 
+    // Getters:
     size_t get_nrow() const;
     size_t get_ncol() const;
 
@@ -81,6 +85,7 @@ public:
 
     T get(size_t, size_t);
 
+    // Setters:
     void set_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
     void set_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
@@ -90,8 +95,12 @@ public:
     void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
     void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
 
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
+
     void set(size_t, size_t, T);
 
+    // Other:
     Rcpp::RObject yield();
 
     std::unique_ptr<lin_output<T, V> > clone() const;
@@ -131,6 +140,7 @@ public:
             int=output_param::DEFAULT_COMPRESS);
     ~HDF5_lin_output();
 
+    // Getters:
     size_t get_nrow() const;
     size_t get_ncol() const;
 
@@ -142,6 +152,7 @@ public:
 
     T get(size_t, size_t);
 
+    // Setters:
     void set_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
     void set_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
@@ -153,6 +164,10 @@ public:
     void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
     void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
 
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
+    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
+
+    // Other:
     Rcpp::RObject yield();
 
     std::unique_ptr<lin_output<T, V> > clone() const;

@@ -68,6 +68,11 @@ void simple_character_output::set_col_indexed(size_t c, size_t N, Rcpp::IntegerV
     return;
 }
 
+void simple_character_output::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    mat.set_row_indexed(r, N, idx, val);
+    return;
+}
+
 Rcpp::RObject simple_character_output::yield() {
     return mat.yield();
 }
@@ -83,7 +88,7 @@ matrix_type simple_character_output::get_matrix_type() const {
 /* Methods for the HDF5 output matrix. */
 
 template<>
-char HDF5_output<char, Rcpp::StringVector>::get_empty() const { return '\0'; }
+char HDF5_output<char, Rcpp::StringVector>::get_empty() { return '\0'; }
 
 template<>
 Rcpp::RObject HDF5_output<char, Rcpp::StringVector>::get_firstval() {
@@ -176,6 +181,21 @@ void HDF5_character_output::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVec
     }
  
     mat.insert_col_indexed(c, N, idx, buffer.data());
+    return;
+}
+
+void HDF5_character_output::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::StringVector::iterator val) {
+    if (buffer.size() < N*bufsize) {
+        buffer.resize(N*bufsize);
+    }
+
+    char* ref=buffer.data();
+    for (size_t i=0; i<N; ++i, ref+=bufsize, ++val) {
+        std::strncpy(ref, Rcpp::String(*val).get_cstring(), bufsize-1);
+        ref[bufsize-1]='\0';
+    }
+ 
+    mat.insert_row_indexed(r, N, idx, buffer.data());
     return;
 }
 
