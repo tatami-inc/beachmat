@@ -30,7 +30,7 @@
                 testthat::expect_s4_class(out[[1]], class.out)
 
                 if (class.out=="HDF5Matrix") { 
-                    testthat::expect_equal(out[[1]]@seed@first_val, as.vector(out[[1]][1,1]))
+                    testthat::expect_equal(DelayedArray::seed(out[[1]])@first_val, as.vector(out[[1]][1,1]))
                     testthat::expect_identical(dim(out[[1]]), dim(test.mat))
                     testthat::expect_true(BiocGenerics::path(out[[1]])!=BiocGenerics::path(test.mat))
                 }
@@ -129,7 +129,7 @@ check_character_output_slice <- function(FUN, ..., by.row, by.col) {
 
 .check_output_indexed <- function(FUN, ..., N, cxxfun, fill) { 
     for (n in N) {
-        for (it in 1:1) {
+        for (it in 1:2) {
             test.mat <- FUN(...)
             all.values <- as.matrix(test.mat)
             ref <- matrix(fill, nrow(test.mat), ncol(test.mat))
@@ -144,9 +144,20 @@ check_character_output_slice <- function(FUN, ..., by.row, by.col) {
                     to.use <- !duplicated(subr[[i]][[1]], fromLast=TRUE) # Last elements overwrite earlier elements.
                     ref[subr[[i]][[1]][to.use],c[i]] <- subr[[i]][[2]][to.use]
                 }
+                out <- .Call(cxxfun, test.mat, it, c, subr)
+            } else {
+                # Constructing a list of row index vectors for a sampled set of columns.
+                r <- sample(nrow(test.mat), n, replace=TRUE)
+                subc <- vector("list", n)
+                for (i in seq_along(r)) {
+                    subc[[i]] <- list(sample(ncol(test.mat), n, replace=TRUE),
+                                      sample(all.values, n, replace=TRUE))
+                    to.use <- !duplicated(subc[[i]][[1]], fromLast=TRUE) # Last elements overwrite earlier elements.
+                    ref[r[i], subc[[i]][[1]][to.use]] <- subc[[i]][[2]][to.use]
+                }
+                out <- .Call(cxxfun, test.mat, it, r, subc)
             }
 
-            out <- .Call(cxxfun, test.mat, it, c, subr)
             if (is.matrix(test.mat)) { 
                 testthat::expect_true(is.matrix(out))
             } else {

@@ -171,6 +171,8 @@ Rcpp::RObject pump_out_indexed (OX optr, const Rcpp::IntegerVector& mode, const 
 
         if (Mode==1) {
             optr->set_col_indexed(indices[i] - 1, I2.size(), I2.begin(), X.begin()); 
+        } else {
+            optr->set_row_indexed(indices[i] - 1, I2.size(), I2.begin(), X.begin()); 
         }
     }
 
