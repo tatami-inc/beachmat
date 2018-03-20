@@ -246,7 +246,7 @@ void HDF5_output<T, V>::insert_col_indexed(size_t c, size_t n, const int* idx, c
     }
 
     // Setting up the coordinate space.
-    check_colargs(c, 0, 0);
+    check_colargs(c);
     auto wsIt=index_coords.begin();
     for (size_t i=0; i<n; ++i, ++idx) {
         (*wsIt)=c;
@@ -281,7 +281,7 @@ void HDF5_output<T, V>::insert_row_indexed(size_t r, size_t n, const int* idx, c
     }
 
     // Setting up the coordinate space.
-    check_rowargs(r, 0, 0);
+    check_rowargs(r);
     auto wsIt=index_coords.begin();
     for (size_t i=0; i<n; ++i, ++idx) {
         (*wsIt)=*idx;

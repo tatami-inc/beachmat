@@ -90,7 +90,7 @@ void simple_output<T, V>::set(size_t r, size_t c, T in) {
 template<typename T, class V>
 template <class Iter>
 void simple_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
-    check_colargs(c, 0, 0);
+    check_colargs(c);
     auto current=data.begin() + c * (this->nrow);
     for (size_t i=0; i<n; ++i, ++idx, ++in) {
         *(current + *idx) = *in;
@@ -101,7 +101,7 @@ void simple_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVecto
 template<typename T, class V>
 template <class Iter>
 void simple_output<T, V>::set_row_indexed(size_t r, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
-    check_colargs(r, 0, 0);
+    check_rowargs(r);
     auto current=data.begin() + r;
     for (size_t i=0; i<n; ++i, ++idx, ++in) {
         *(current + (*idx)*(this->nrow)) = *in;

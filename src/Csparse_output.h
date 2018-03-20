@@ -159,7 +159,7 @@ void Csparse_output<T, V>::set(size_t r, size_t c, T in) {
 template<typename T, class V>
 template <class Iter>
 void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
-    check_colargs(c, 0, 0);
+    check_colargs(c);
     std::deque<data_pair>& current=data[c];
     for (size_t i=0; i<n; ++i, ++idx, ++in) { 
         current.push_back(data_pair(*idx, *in));
@@ -182,7 +182,7 @@ void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVect
 template<typename T, class V>
 template <class Iter>
 void Csparse_output<T, V>::set_row_indexed(size_t r, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
-    check_colargs(r, 0, 0);
+    check_rowargs(r);
     for (size_t i=0; i<n; ++i, ++idx, ++in) { 
         insert_into_column(data[*idx], r, *in);
     }
