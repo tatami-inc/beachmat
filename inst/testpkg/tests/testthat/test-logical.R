@@ -1,5 +1,5 @@
 # This tests the ability of the API to properly access logical matrices of different types.
-# library(testthat); source("test-logical.R")
+# library(testthat); library(beachtest); source("test-logical.R")
 
 #######################################################
 
@@ -11,20 +11,20 @@ sFUN <- function(nr=15, nc=10) {
 }
 
 test_that("Simple logical matrix input is okay", {
-    beachtest:::check_logical_mat(sFUN)
-    beachtest:::check_logical_mat(sFUN, nr=5, nc=30)
-    beachtest:::check_logical_mat(sFUN, nr=30, nc=5)
+    check_logical_mat(sFUN)
+    check_logical_mat(sFUN, nr=5, nc=30)
+    check_logical_mat(sFUN, nr=30, nc=5)
     
-    beachtest:::check_logical_slice(sFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(sFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
 
     # Testing const and non-zero options.   
-    beachtest:::check_logical_const_mat(sFUN)
-    beachtest:::check_logical_const_slice(sFUN, by.row=list(1:5, 6:8))
+    check_logical_const_mat(sFUN)
+    check_logical_const_slice(sFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(sFUN)
-    beachtest:::check_logical_indexed_slice(sFUN, by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(sFUN)
+    check_logical_indexed_slice(sFUN, by.row=list(1:5, 6:8))
 
-    beachtest:::check_type(sFUN, expected="logical")
+    check_type(sFUN, expected="logical")
 })
 
 # Testing dense matrices:
@@ -38,20 +38,20 @@ dFUN <- function(nr=15, nc=10) {
 test_that("Dense logical matrix input is okay", {
     expect_s4_class(dFUN(), "lgeMatrix")
     
-    beachtest:::check_logical_mat(dFUN)
-    beachtest:::check_logical_mat(dFUN, nr=5, nc=30)
-    beachtest:::check_logical_mat(dFUN, nr=30, nc=5)
+    check_logical_mat(dFUN)
+    check_logical_mat(dFUN, nr=5, nc=30)
+    check_logical_mat(dFUN, nr=30, nc=5)
     
-    beachtest:::check_logical_slice(dFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(dFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
       
     # Testing const and non-zero options.   
-    beachtest:::check_logical_const_mat(dFUN)
-    beachtest:::check_logical_const_slice(dFUN, by.row=list(1:5, 6:8))
+    check_logical_const_mat(dFUN)
+    check_logical_const_slice(dFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(dFUN)
-    beachtest:::check_logical_indexed_slice(dFUN, by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(dFUN)
+    check_logical_indexed_slice(dFUN, by.row=list(1:5, 6:8))
 
-    beachtest:::check_type(dFUN, expected="logical")
+    check_type(dFUN, expected="logical")
 })
 
 # Testing sparse matrices (lgCMatrix):
@@ -64,24 +64,24 @@ csFUN <- function(nr=15, nc=10, d=0.1) {
 test_that("Sparse logical matrix input is okay", {
     expect_s4_class(csFUN(), "lgCMatrix")
 
-    beachtest:::check_logical_mat(csFUN)
-    beachtest:::check_logical_mat(csFUN, nr=5, nc=30)
-    beachtest:::check_logical_mat(csFUN, nr=30, nc=5)
+    check_logical_mat(csFUN)
+    check_logical_mat(csFUN, nr=5, nc=30)
+    check_logical_mat(csFUN, nr=30, nc=5)
     
-    beachtest:::check_logical_mat(csFUN, d=0.2)
-    beachtest:::check_logical_mat(csFUN, nr=5, nc=30, d=0.2)
-    beachtest:::check_logical_mat(csFUN, nr=30, nc=5, d=0.2)
+    check_logical_mat(csFUN, d=0.2)
+    check_logical_mat(csFUN, nr=5, nc=30, d=0.2)
+    check_logical_mat(csFUN, nr=30, nc=5, d=0.2)
     
-    beachtest:::check_logical_slice(csFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(csFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
 
     # Testing const and non-zero options.   
-    beachtest:::check_logical_const_mat(csFUN)
-    beachtest:::check_logical_const_slice(csFUN, by.row=list(1:5, 6:8))
+    check_logical_const_mat(csFUN)
+    check_logical_const_slice(csFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(csFUN)
-    beachtest:::check_logical_indexed_slice(csFUN, by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(csFUN)
+    check_logical_indexed_slice(csFUN, by.row=list(1:5, 6:8))
 
-    beachtest:::check_type(csFUN, expected="logical")
+    check_type(csFUN, expected="logical")
 })
 
 # Testing dense symmetric matrices (lspMatrix):
@@ -94,30 +94,30 @@ spFUN <- function(nr=10, mode="U") {
 test_that("Symmetric logical matrix input is okay", {
     expect_s4_class(spFUN(), "lspMatrix")
     
-    beachtest:::check_logical_mat(spFUN)
-    beachtest:::check_logical_mat(spFUN, nr=5)
-    beachtest:::check_logical_mat(spFUN, nr=30)
+    check_logical_mat(spFUN)
+    check_logical_mat(spFUN, nr=5)
+    check_logical_mat(spFUN, nr=30)
     
-    beachtest:::check_logical_mat(spFUN, mode="L")
-    beachtest:::check_logical_mat(spFUN, nr=5, mode="L")
-    beachtest:::check_logical_mat(spFUN, nr=30, mode="L")
+    check_logical_mat(spFUN, mode="L")
+    check_logical_mat(spFUN, nr=5, mode="L")
+    check_logical_mat(spFUN, nr=30, mode="L")
     
-    beachtest:::check_logical_slice(spFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
-    beachtest:::check_logical_slice(spFUN, mode="L", by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(spFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(spFUN, mode="L", by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
 
     # Testing const and non-zero options.   
-    beachtest:::check_logical_const_mat(spFUN)
-    beachtest:::check_logical_const_mat(spFUN, mode="L")
-    beachtest:::check_logical_const_slice(spFUN, by.row=list(1:5, 6:8))
-    beachtest:::check_logical_const_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
+    check_logical_const_mat(spFUN)
+    check_logical_const_mat(spFUN, mode="L")
+    check_logical_const_slice(spFUN, by.row=list(1:5, 6:8))
+    check_logical_const_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(spFUN)
-    beachtest:::check_logical_indexed_mat(spFUN, mode="L")
-    beachtest:::check_logical_indexed_slice(spFUN, by.row=list(1:5, 6:8)) 
-    beachtest:::check_logical_indexed_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(spFUN)
+    check_logical_indexed_mat(spFUN, mode="L")
+    check_logical_indexed_slice(spFUN, by.row=list(1:5, 6:8)) 
+    check_logical_indexed_slice(spFUN, mode="L", by.row=list(1:5, 6:8))
 
-    beachtest:::check_type(spFUN, expected="logical")
-    beachtest:::check_type(spFUN, mode="L", expected="logical")
+    check_type(spFUN, expected="logical")
+    check_type(spFUN, mode="L", expected="logical")
 })
 
 # Testing RLE matrices:
@@ -136,34 +136,34 @@ rFUN <- function(nr=15, nc=10, chunk.ncols=NULL) {
 }
 
 test_that("RLE logical matrix input is okay", {
-    beachtest:::check_logical_mat(rFUN)
-    beachtest:::check_logical_mat(rFUN, nr=5, nc=30)
-    beachtest:::check_logical_mat(rFUN, nr=30, nc=5)
+    check_logical_mat(rFUN)
+    check_logical_mat(rFUN, nr=5, nc=30)
+    check_logical_mat(rFUN, nr=30, nc=5)
     
-    beachtest:::check_logical_slice(rFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(rFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
 
-    beachtest:::check_logical_const_mat(rFUN)
-    beachtest:::check_logical_const_slice(rFUN, by.row=list(1:5, 6:8))
+    check_logical_const_mat(rFUN)
+    check_logical_const_slice(rFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(rFUN)
-    beachtest:::check_logical_indexed_slice(rFUN, by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(rFUN)
+    check_logical_indexed_slice(rFUN, by.row=list(1:5, 6:8))
 
     # Testing chunks.
-    beachtest:::check_logical_mat(rFUN, chunk.ncol=3)
-    beachtest:::check_logical_mat(rFUN, nr=5, nc=30, chunk.ncol=5)
-    beachtest:::check_logical_mat(rFUN, nr=30, nc=5, chunk.ncol=2)
+    check_logical_mat(rFUN, chunk.ncol=3)
+    check_logical_mat(rFUN, nr=5, nc=30, chunk.ncol=5)
+    check_logical_mat(rFUN, nr=30, nc=5, chunk.ncol=2)
     
-    beachtest:::check_logical_slice(rFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8), chunk.ncol=2)
+    check_logical_slice(rFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8), chunk.ncol=2)
 
-    beachtest:::check_logical_const_mat(rFUN, chunk.ncols=2)
-    beachtest:::check_logical_const_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
+    check_logical_const_mat(rFUN, chunk.ncols=2)
+    check_logical_const_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(rFUN, chunk.ncols=2)
-    beachtest:::check_logical_indexed_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(rFUN, chunk.ncols=2)
+    check_logical_indexed_slice(rFUN, chunk.ncols=2, by.row=list(1:5, 6:8))
 
     # Checking type.
-    beachtest:::check_type(rFUN, expected="logical")
-    beachtest:::check_type(rFUN, chunk.ncol=2, expected="logical")
+    check_type(rFUN, expected="logical")
+    check_type(rFUN, chunk.ncol=2, expected="logical")
 })
 
 # Testing HDF5 matrices:
@@ -177,20 +177,20 @@ hFUN <- function(nr=15, nc=10) {
 test_that("HDF5 logical matrix input is okay", {
     expect_s4_class(hFUN(), "HDF5Matrix")
     
-    beachtest:::check_logical_mat(hFUN)
-    beachtest:::check_logical_mat(hFUN, nr=5, nc=30)
-    beachtest:::check_logical_mat(hFUN, nr=30, nc=5)
+    check_logical_mat(hFUN)
+    check_logical_mat(hFUN, nr=5, nc=30)
+    check_logical_mat(hFUN, nr=30, nc=5)
     
-    beachtest:::check_logical_slice(hFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
+    check_logical_slice(hFUN, by.row=list(1:5, 6:8), by.col=list(1:5, 6:8))
 
    # Checking const and non-zero options.
-    beachtest:::check_logical_const_mat(hFUN)
-    beachtest:::check_logical_const_slice(hFUN, by.row=list(1:5, 6:8))
+    check_logical_const_mat(hFUN)
+    check_logical_const_slice(hFUN, by.row=list(1:5, 6:8))
     
-    beachtest:::check_logical_indexed_mat(hFUN)
-    beachtest:::check_logical_indexed_slice(hFUN, by.row=list(1:5, 6:8))
+    check_logical_indexed_mat(hFUN)
+    check_logical_indexed_slice(hFUN, by.row=list(1:5, 6:8))
 
-    beachtest:::check_type(hFUN, expected="logical")
+    check_type(hFUN, expected="logical")
 })
 
 # Testing delayed operations
@@ -199,31 +199,31 @@ set.seed(928374)
 library(DelayedArray)
 test_that("Delayed logical matrix input is okay", {
     # HDF5-based seed.
-    hdf5.funs <- beachtest:::delayed_funs(hFUN, DELAYED_FUN=function(m) { !m })
+    hdf5.funs <- delayed_funs(hFUN, DELAYED_FUN=function(m) { !m })
     for (FUN in hdf5.funs) {
         expect_s4_class(FUN(), "DelayedMatrix")
-        beachtest:::check_logical_mat(FUN)
-        beachtest:::check_type(FUN, expected="logical")
+        check_logical_mat(FUN)
+        check_type(FUN, expected="logical")
     }
 
     # Sparse seed.
-    sparse.funs <- beachtest:::delayed_funs(csFUN, DELAYED_FUN=function(m) { !m })
+    sparse.funs <- delayed_funs(csFUN, DELAYED_FUN=function(m) { !m })
     for (FUN in sparse.funs) {
         expect_s4_class(FUN(), "DelayedMatrix")
-        beachtest:::check_logical_mat(FUN)
-        beachtest:::check_type(FUN, expected="logical")
+        check_logical_mat(FUN)
+        check_type(FUN, expected="logical")
     }
 
     # Simple seed.
-    simple.funs <- beachtest:::delayed_funs(sFUN, DELAYED_FUN=function(m) { !m })
+    simple.funs <- delayed_funs(sFUN, DELAYED_FUN=function(m) { !m })
     for (FUN in simple.funs) {
         expect_s4_class(FUN(), "DelayedMatrix")
-        beachtest:::check_logical_mat(FUN)
-        beachtest:::check_type(FUN, expected="logical")
+        check_logical_mat(FUN)
+        check_type(FUN, expected="logical")
     }
 
      # Proper type check upon coercion!
-     expect_identical("integer", .Call(beachtest:::cxx_test_type_check, hFUN()+1L))
+     expect_identical("integer", .Call(cxx_test_type_check, hFUN()+1L))
 })
 
 #######################################################
@@ -231,29 +231,29 @@ test_that("Delayed logical matrix input is okay", {
 # Testing conversions.
 
 test_that("Logical matrix input conversions are okay", {
-    beachtest:::check_logical_conversion(sFUN)
+    check_logical_conversion(sFUN)
 
-    beachtest:::check_logical_conversion(dFUN)
+    check_logical_conversion(dFUN)
 
-    beachtest:::check_logical_conversion(csFUN)
+    check_logical_conversion(csFUN)
 
-    beachtest:::check_logical_conversion(spFUN)
+    check_logical_conversion(spFUN)
 
-    beachtest:::check_logical_conversion(hFUN)
+    check_logical_conversion(hFUN)
 })
 
 # Testing error generation.
 
 test_that("Logical matrix input error generation is okay", {
-    beachtest:::check_logical_edge_errors(sFUN)
+    check_logical_edge_errors(sFUN)
 
-    beachtest:::check_logical_edge_errors(dFUN)
+    check_logical_edge_errors(dFUN)
 
-    beachtest:::check_logical_edge_errors(csFUN)
+    check_logical_edge_errors(csFUN)
 
-    beachtest:::check_logical_edge_errors(spFUN)
+    check_logical_edge_errors(spFUN)
 
-    beachtest:::check_logical_edge_errors(hFUN)
+    check_logical_edge_errors(hFUN)
 })
 
 #######################################################
@@ -263,75 +263,75 @@ test_that("Logical matrix input error generation is okay", {
 set.seed(12345)
 
 test_that("Simple logical matrix output is okay", {
-    beachtest:::check_logical_output_mat(sFUN)
-    beachtest:::check_logical_output_mat(sFUN, nr=5, nc=30)
+    check_logical_output_mat(sFUN)
+    check_logical_output_mat(sFUN, nr=5, nc=30)
 
-    beachtest:::check_logical_output_slice(sFUN, by.row=10:13, by.col=2:5)
-    beachtest:::check_logical_output_slice(sFUN, nr=5, nc=30, by.row=1:3, by.col=2:25)
+    check_logical_output_slice(sFUN, by.row=10:13, by.col=2:5)
+    check_logical_output_slice(sFUN, nr=5, nc=30, by.row=1:3, by.col=2:25)
 
-    beachtest:::check_logical_output_indexed(sFUN, N=c(5, 10, 20))
-    beachtest:::check_logical_output_indexed(sFUN, nr=5, nc=30, N=c(5, 10, 20))
+    check_logical_output_indexed(sFUN, N=c(5, 10, 20))
+    check_logical_output_indexed(sFUN, nr=5, nc=30, N=c(5, 10, 20))
 })
 
 # Testing sparse logical output:
 
 test_that("Sparse logical matrix output is okay", {
-    beachtest:::check_logical_output_mat(csFUN)
-    beachtest:::check_logical_output_mat(csFUN, d=0.2)
-    beachtest:::check_logical_output_mat(csFUN, d=0.5)
+    check_logical_output_mat(csFUN)
+    check_logical_output_mat(csFUN, d=0.2)
+    check_logical_output_mat(csFUN, d=0.5)
     
-    beachtest:::check_logical_output_slice(csFUN, by.row=2:10, by.col=2:9)
-    beachtest:::check_logical_output_slice(csFUN, by.row=1:12, by.col=3:7, d=0.2)
-    beachtest:::check_logical_output_slice(csFUN, by.row=3:9, by.col=5:8, d=0.5)
+    check_logical_output_slice(csFUN, by.row=2:10, by.col=2:9)
+    check_logical_output_slice(csFUN, by.row=1:12, by.col=3:7, d=0.2)
+    check_logical_output_slice(csFUN, by.row=3:9, by.col=5:8, d=0.5)
 
-    beachtest:::check_logical_output_indexed(csFUN, d=0.2, N=c(5, 10, 20))
-    beachtest:::check_logical_output_indexed(csFUN, d=0.5, nr=5, nc=30, N=c(5, 10, 20))
-    beachtest:::check_logical_output_indexed(csFUN, d=0.5, N=c(5, 10, 20))
+    check_logical_output_indexed(csFUN, d=0.2, N=c(5, 10, 20))
+    check_logical_output_indexed(csFUN, d=0.5, nr=5, nc=30, N=c(5, 10, 20))
+    check_logical_output_indexed(csFUN, d=0.5, N=c(5, 10, 20))
 })
 
 # Testing HDF5 logical output:
 
 test_that("HDF5 logical matrix output is okay", {
-    beachtest:::check_logical_output_mat(hFUN)
-    beachtest:::check_logical_output_mat(hFUN, nr=5, nc=30)
+    check_logical_output_mat(hFUN)
+    check_logical_output_mat(hFUN, nr=5, nc=30)
 
-    beachtest:::check_logical_output_slice(hFUN, by.row=12:15, by.col=1:5)
-    beachtest:::check_logical_output_slice(hFUN, nr=5, nc=30, by.row=2:5, by.col=1:15)
+    check_logical_output_slice(hFUN, by.row=12:15, by.col=1:5)
+    check_logical_output_slice(hFUN, nr=5, nc=30, by.row=2:5, by.col=1:15)
 
-    beachtest:::check_logical_output_indexed(hFUN, N=c(5, 10, 20))
-    beachtest:::check_logical_output_indexed(hFUN, nr=5, nc=30, N=c(5, 10, 20))
+    check_logical_output_indexed(hFUN, N=c(5, 10, 20))
+    check_logical_output_indexed(hFUN, nr=5, nc=30, N=c(5, 10, 20))
 
-    beachtest:::check_logical_order(hFUN)
+    check_logical_order(hFUN)
 })
 
 # Testing conversions:
 
 test_that("Logical matrix output conversions are okay", {
-    beachtest:::check_logical_converted_output(sFUN)
+    check_logical_converted_output(sFUN)
 
-    beachtest:::check_logical_converted_output(hFUN)
+    check_logical_converted_output(hFUN)
 })
 
 # Testing mode choices:
 
 test_that("Logical matrix mode choices are okay", {
-    expect_identical(beachtest:::check_output_mode(sFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
-    expect_identical(beachtest:::check_output_mode(csFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
-    expect_identical(beachtest:::check_output_mode(spFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
-    expect_identical(beachtest:::check_output_mode(rFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
-    expect_identical(beachtest:::check_output_mode(csFUN, simplify=FALSE, preserve.zero=TRUE), "sparse")
-    expect_identical(beachtest:::check_output_mode(csFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
-    expect_identical(beachtest:::check_output_mode(rFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
-    expect_identical(beachtest:::check_output_mode(spFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
-    expect_identical(beachtest:::check_output_mode(hFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
+    expect_identical(check_output_mode(sFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
+    expect_identical(check_output_mode(csFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
+    expect_identical(check_output_mode(spFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
+    expect_identical(check_output_mode(rFUN, simplify=TRUE, preserve.zero=FALSE), "simple")
+    expect_identical(check_output_mode(csFUN, simplify=FALSE, preserve.zero=TRUE), "sparse")
+    expect_identical(check_output_mode(csFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
+    expect_identical(check_output_mode(rFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
+    expect_identical(check_output_mode(spFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
+    expect_identical(check_output_mode(hFUN, simplify=FALSE, preserve.zero=FALSE), "HDF5")
 })
 
 # Testing for errors:
 
 test_that("Logical matrix output error generation is okay", {
-    beachtest:::check_logical_edge_output_errors(sFUN)
+    check_logical_edge_output_errors(sFUN)
 
-    beachtest:::check_logical_edge_output_errors(hFUN)
+    check_logical_edge_output_errors(hFUN)
 })
 
 #######################################################
