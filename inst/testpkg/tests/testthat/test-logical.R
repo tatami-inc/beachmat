@@ -223,7 +223,7 @@ test_that("Delayed logical matrix input is okay", {
     }
 
      # Proper type check upon coercion!
-     expect_identical("integer", .Call(cxx_test_type_check, hFUN()+1L))
+     expect_identical("integer", .Call(beachtest:::cxx_test_type_check, hFUN()+1L))
 })
 
 #######################################################

@@ -127,7 +127,7 @@ test_that("Delayed character matrix input is okay", {
     }
 
     # Proper type check upon coercion!
-    expect_identical("logical", .Call(cxx_test_type_check, hFUN()=="A")) 
+    expect_identical("logical", .Call(beachtest:::cxx_test_type_check, hFUN()=="A")) 
 })
 
 #######################################################

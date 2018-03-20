@@ -21,7 +21,7 @@ test_that("empty matrices are okay", {
     for (mode in c("matrix", "dgCMatrix", "HDF5Array")) {
         # No columns
         ref <- as(matrix(0, 10, 0), mode)
-        out <- .Call(cxx_test_numeric_output, ref, 3L, integer(0))
+        out <- .Call(beachtest:::cxx_test_numeric_output, ref, 3L, integer(0))
   
         if (isS4(ref)) { 
             expect_s4_class(out[[1]], mode)
@@ -35,7 +35,7 @@ test_that("empty matrices are okay", {
 
         # No rows
         ref <- as(matrix(0, 0, 10), mode)
-        out <- .Call(cxx_test_numeric_output, ref, 3L, integer(0))
+        out <- .Call(beachtest:::cxx_test_numeric_output, ref, 3L, integer(0))
 
         if (isS4(ref)) { 
             expect_s4_class(out[[1]], mode)
@@ -60,7 +60,7 @@ check_col_slices <- function(FUN, ...) {
     slice.start <- sample(ncol(A), nrow(A), replace=TRUE)
     slice.end <- pmin(ncol(A), slice.start + sample(10, nrow(A), replace=TRUE))
     
-    out <- .Call(cxx_test_sparse_numeric_slice, A, cbind(slice.start, slice.end))
+    out <- .Call(beachtest:::cxx_test_sparse_numeric_slice, A, cbind(slice.start, slice.end))
     ref <- vector('list', nrow(A))
     for (x in seq_along(ref)) { 
         ref[[x]] <- as.vector(A[x,slice.start[x]:slice.end[x]])
