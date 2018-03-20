@@ -43,10 +43,10 @@ double Csparse_output<double, Rcpp::NumericVector>::get_empty() { return 0; }
 /* HDF5 numeric output methods. */
 
 template<>
-double HDF5_output<double, Rcpp::NumericVector>::get_empty() { return 0; }
+double HDF5_output<double, REALSXP>::get_empty() { return 0; }
 
 template<>
-Rcpp::RObject HDF5_output<double, Rcpp::NumericVector>::get_firstval() { 
+Rcpp::RObject HDF5_output<double, REALSXP>::get_firstval() { 
     double first;
     extract_one(0, 0, &first);
     return Rcpp::NumericVector::create(first);

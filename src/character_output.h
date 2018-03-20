@@ -103,7 +103,7 @@ public:
 protected:
     H5::StrType str_type;
     size_t bufsize;
-    HDF5_output<char, Rcpp::StringVector> mat; 
+    HDF5_output<char, STRSXP> mat; 
     std::vector<char> buffer;
 };
 

@@ -202,120 +202,120 @@ std::unique_ptr<lin_output<T, V> > simple_lin_output<T, V>::clone() const {
 
 /* Defining the HDF5 output interface. */
 
-template<typename T, class V>
-HDF5_lin_output<T, V>::HDF5_lin_output(size_t nr, size_t nc, size_t chunk_nr, size_t chunk_nc, int compress) : 
+template<typename T, class V, int RTYPE>
+HDF5_lin_output<T, V, RTYPE>::HDF5_lin_output(size_t nr, size_t nc, size_t chunk_nr, size_t chunk_nc, int compress) : 
     mat(nr, nc, chunk_nr, chunk_nc, compress) {}
 
-template<typename T, class V>
-HDF5_lin_output<T, V>::~HDF5_lin_output() {}
+template<typename T, class V, int RTYPE>
+HDF5_lin_output<T, V, RTYPE>::~HDF5_lin_output() {}
 
-template<typename T, class V>
-size_t HDF5_lin_output<T, V>::get_nrow() const {
+template<typename T, class V, int RTYPE>
+size_t HDF5_lin_output<T, V, RTYPE>::get_nrow() const {
     return mat.get_nrow();
 }
 
-template<typename T, class V>
-size_t HDF5_lin_output<T, V>::get_ncol() const {
+template<typename T, class V, int RTYPE>
+size_t HDF5_lin_output<T, V, RTYPE>::get_ncol() const {
     return mat.get_ncol();
 }
 
-template<typename T, class V>
-T HDF5_lin_output<T, V>::get(size_t r, size_t c) {
+template<typename T, class V, int RTYPE>
+T HDF5_lin_output<T, V, RTYPE>::get(size_t r, size_t c) {
     T out;
     mat.extract_one(r, c, &out);
     return out;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set(size_t r, size_t c, T in) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set(size_t r, size_t c, T in) {
     mat.insert_one(r, c, &in);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     mat.extract_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     mat.extract_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     mat.extract_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     mat.extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     mat.insert_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     mat.insert_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     mat.insert_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     mat.insert_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
     mat.insert_col_indexed(c, N, idx, val, H5::PredType::NATIVE_INT32);
     return;
 }
  
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
     mat.insert_col_indexed(c, N, idx, val, H5::PredType::NATIVE_DOUBLE);
     return;
 }
 
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
     mat.insert_row_indexed(r, N, idx, val, H5::PredType::NATIVE_INT32);
     return;
 }
  
-template<typename T, class V>
-void HDF5_lin_output<T, V>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
     mat.insert_row_indexed(r, N, idx, val, H5::PredType::NATIVE_DOUBLE);
     return;
 }
 
-template<typename T, class V>
-Rcpp::RObject HDF5_lin_output<T, V>::yield() {
+template<typename T, class V, int RTYPE>
+Rcpp::RObject HDF5_lin_output<T, V, RTYPE>::yield() {
     return mat.yield();
 }
 
-template<typename T, class V>
-std::unique_ptr<lin_output<T, V> > HDF5_lin_output<T, V>::clone() const {
-    return std::unique_ptr<lin_output<T, V> >(new HDF5_lin_output<T, V>(*this));
+template<typename T, class V, int RTYPE>
+std::unique_ptr<lin_output<T, V> > HDF5_lin_output<T, V, RTYPE>::clone() const {
+    return std::unique_ptr<lin_output<T, V> >(new HDF5_lin_output<T, V, RTYPE>(*this));
 }
 
-template<typename T, class V>
-matrix_type HDF5_lin_output<T, V>::get_matrix_type() const {
+template<typename T, class V, int RTYPE>
+matrix_type HDF5_lin_output<T, V, RTYPE>::get_matrix_type() const {
     return mat.get_matrix_type();
 }
 

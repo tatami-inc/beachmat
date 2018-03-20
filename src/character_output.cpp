@@ -88,10 +88,10 @@ matrix_type simple_character_output::get_matrix_type() const {
 /* Methods for the HDF5 output matrix. */
 
 template<>
-char HDF5_output<char, Rcpp::StringVector>::get_empty() { return '\0'; }
+char HDF5_output<char, STRSXP>::get_empty() { return '\0'; }
 
 template<>
-Rcpp::RObject HDF5_output<char, Rcpp::StringVector>::get_firstval() {
+Rcpp::RObject HDF5_output<char, STRSXP>::get_firstval() {
     std::vector<char> first(default_type.getSize());
     extract_one(0, 0, first.data());
     return Rcpp::StringVector::create(Rcpp::String(first.data()));
