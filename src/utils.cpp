@@ -131,8 +131,9 @@ void check_DelayedMatrix (const Rcpp::RObject& incoming) {
 }
 
 bool only_delayed_coord_changes (const Rcpp::RObject& incoming) {
-    Rcpp::List delayed_ops(get_safe_slot(incoming, "delayed_ops"));
-    return (delayed_ops.size()==0);
+//    Rcpp::List delayed_ops(get_safe_slot(incoming, "delayed_ops"));
+//    return (delayed_ops.size()==0);
+    return false; // Awaiting Herve's fixes; meanwhile, diverting all DelayedArrays to chunked realization.
 }
 
 Rcpp::RObject extract_seed (const Rcpp::RObject& incoming, const std::vector<std::string>& allowed) { 
