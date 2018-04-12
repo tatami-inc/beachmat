@@ -3,6 +3,7 @@
 export(getBestChunkDims)
 export(pkgconfig)
 export(rechunkByMargins)
+importFrom(DelayedArray,DelayedArray)
 importFrom(DelayedArray,contentIsPristine)
 importFrom(DelayedArray,defaultGrid)
 importFrom(DelayedArray,netSubsetAndAperm)

@@ -14,35 +14,33 @@ realizeDelayedMatrixByCol <- function(mat, J) {
     return(as.matrix(mat[,ind,drop=FALSE]))
 }
 
-#' @importFrom DelayedArray netSubsetAndAperm contentIsPristine nseed seed 
+#' @importFrom DelayedArray netSubsetAndAperm contentIsPristine nseed seed DelayedArray 
 #' @importFrom methods is
 parseDelayedOps <- function(mat) {
     # Finding content-altering modifications.
     no.mod <- contentIsPristine(mat) && nseed(mat)==1L
 
-    net.sub <- is.trans <- NULL
     if (no.mod) {
         # Finding the net subsetting operations.
         net.sub <- netSubsetAndAperm(mat)
-        dimmap <- attr(net.sub, "dimmap")
 
-        # Determining whether the matrix is tranposed. 
-        if (identical(dimmap, NULL) || identical(dimmap, 1:2)) {
-            is.trans <- FALSE
-        } else  if (identical(dimmap, 2:1)) {
-            is.trans <- TRUE
-        } else {
-            no.mod <- FALSE # cannot extract directly from the seed matrix.
+        cur.seed <- seed(mat)
+        if (length(dim(cur.seed))==2L) {
+            # Determining whether the matrix is transposed (obviously, "dim(mat)"
+            # should also be of length 2, for a DelayedMatrix, so 2:1 and NULL
+            # are the only possibilities for dimmap).
+            dimmap <- attr(net.sub, "dimmap")
+            is.trans <- identical(dimmap, 2:1)
+
+            # Creating a matrix for beachmat's API to parse.
+            if (is(cur.seed, "HDF5ArraySeed") || is(cur.seed, "RleArraySeed")) {
+                mat <- DelayedArray(cur.seed)
+            } else {
+                mat <- cur.seed
+            }
+            return(list(sub=net.sub, trans=is.trans, mat=mat))
         }
     }
-      
-    # Creating a matrix for beachmat's API to parse.
-    if (no.mod) {
-        mat <- seed(mat)
-        if (is(mat, "HDF5ArraySeed") || is(mat, "RleArraySeed")) {
-            mat <- DelayedArray(mat)
-        }
-    }
 
-    return(list(sub=net.sub, trans=is.trans, mat=mat))
+    return(list(sub=NULL, trans=NULL, mat=mat))
 }
