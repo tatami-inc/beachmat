@@ -18,21 +18,11 @@ double HDF5_lin_matrix<double, Rcpp::NumericVector, REALSXP>::get(size_t r, size
 
 /* DelayedMatrix input methods. */
 
-const std::vector<std::string> allowed_s4_seeds={"dgeMatrix", "dgCMatrix", "dgTMatrix", "dspMatrix", "RleMatrix"};
+std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObject&, bool); 
 
 template<>
 std::unique_ptr<numeric_matrix> delayed_lin_helper<double, Rcpp::NumericVector>::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
-    if (seed!=R_NilValue) {
-        return create_numeric_matrix(seed);
-    } else {
-        return nullptr;
-    }
-} 
-
-template<>
-std::unique_ptr<numeric_matrix> delayed_lin_helper<double, Rcpp::NumericVector>::generate_unknown_seed(Rcpp::RObject incoming) {
-    return std::unique_ptr<numeric_matrix>(new unknown_numeric_matrix(incoming));
+    return create_numeric_matrix_internal(incoming, false);
 } 
 
 /* Sparse numeric output methods. */
@@ -54,7 +44,7 @@ Rcpp::RObject HDF5_output<double, REALSXP>::get_firstval() {
 
 /* Dispatch definition */
 
-std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject& incoming) { 
+std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) {
         std::string ctype=get_class(incoming);
         if (ctype=="dgeMatrix") { 
@@ -69,12 +59,16 @@ std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject& incom
             return std::unique_ptr<numeric_matrix>(new HDF5_numeric_matrix(incoming));
         } else if (ctype=="RleMatrix") {
             return std::unique_ptr<numeric_matrix>(new Rle_numeric_matrix(incoming));
-        } else if (ctype=="DelayedMatrix") { 
+        } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<numeric_matrix>(new delayed_numeric_matrix(incoming));
         }
         throw_custom_error("unsupported class '", ctype, "' for numeric_matrix");
     } 
     return std::unique_ptr<numeric_matrix>(new simple_numeric_matrix(incoming));
+}
+
+std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject& incoming) { 
+    return create_numeric_matrix_internal(incoming, true);
 }
 
 /* Output dispatch definition */

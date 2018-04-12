@@ -23,14 +23,6 @@ std::string translate_type(int);
 
 int find_sexp_type (const Rcpp::RObject&);
 
-// Delayed Array conversion utilities.
-
-void check_DelayedMatrix(const Rcpp::RObject&);
-
-bool only_delayed_coord_changes (const Rcpp::RObject&);
-
-Rcpp::RObject extract_seed(const Rcpp::RObject&, const std::vector<std::string>&);
-
 // Matrix type enumeration.
 
 enum matrix_type { SIMPLE, HDF5, SPARSE, RLE, PSYMM, DENSE, DELAYED, UNKNOWN};

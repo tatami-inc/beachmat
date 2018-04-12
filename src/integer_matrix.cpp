@@ -13,23 +13,13 @@ int HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP>::get(size_t r, size_t c) {
 
 /* DelayedMatrix input methods. */
 
-const std::vector<std::string> allowed_s4_seeds={"RleMatrix"};
+std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject&, bool);
 
 template<>
 std::unique_ptr<integer_matrix> delayed_lin_helper<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
-    if (seed!=R_NilValue) {
-        return create_integer_matrix(seed);
-    } else {
-        return nullptr;
-    }
+    return create_integer_matrix_internal(incoming, false);
 } 
 
-template<>
-std::unique_ptr<integer_matrix> delayed_lin_helper<int, Rcpp::IntegerVector>::generate_unknown_seed(Rcpp::RObject incoming) {
-    return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
-} 
-    
 /* HDF5 integer output methods. */
 
 template<>
@@ -44,19 +34,23 @@ Rcpp::RObject HDF5_output<int, INTSXP>::get_firstval() {
 
 /* Dispatch definition */
 
-std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject& incoming) { 
+std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) { 
         std::string ctype=get_class(incoming);
         if (ctype=="HDF5Matrix") { 
             return std::unique_ptr<integer_matrix>(new HDF5_integer_matrix(incoming));
         } else if (ctype=="RleMatrix") {
             return std::unique_ptr<integer_matrix>(new Rle_integer_matrix(incoming));
-        } else if (ctype=="DelayedMatrix") {
+        } else if (delayed && ctype=="DelayedMatrix") {
             return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));  
         }
         return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
     } 
     return std::unique_ptr<integer_matrix>(new simple_integer_matrix(incoming));
+}
+
+std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject& incoming) { 
+    return create_integer_matrix_internal(incoming, true);
 }
 
 /* Output dispatch definition */

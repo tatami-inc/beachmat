@@ -18,21 +18,11 @@ int HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
 
 /* DelayedMatrix input methods. */
 
-const std::vector<std::string> allowed_s4_seeds={"lgeMatrix", "lgCMatrix", "lgTMatrix", "lspMatrix", "RleMatrix"};
+std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject&, bool); 
 
 template<>
 std::unique_ptr<logical_matrix> delayed_lin_helper<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
-    if (seed!=R_NilValue) {
-        return create_logical_matrix(seed);
-    } else {
-        return nullptr;
-    }
-} 
-
-template<>
-std::unique_ptr<logical_matrix> delayed_lin_helper<int, Rcpp::LogicalVector>::generate_unknown_seed(Rcpp::RObject incoming) {
-    return std::unique_ptr<logical_matrix>(new unknown_logical_matrix(incoming));
+    return create_logical_matrix_internal(incoming, false);
 } 
 
 /* Sparse logical output methods. */
@@ -54,7 +44,7 @@ Rcpp::RObject HDF5_output<int, LGLSXP>::get_firstval() {
 
 /* Dispatch definition */
 
-std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject& incoming) { 
+std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) {
         std::string ctype=get_class(incoming);
         if (ctype=="lgeMatrix") { 
@@ -69,12 +59,16 @@ std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject& incom
             return std::unique_ptr<logical_matrix>(new HDF5_logical_matrix(incoming));
         } else if (ctype=="RleMatrix") {
             return std::unique_ptr<logical_matrix>(new Rle_logical_matrix(incoming));
-        } else if (ctype=="DelayedMatrix") { 
+        } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<logical_matrix>(new delayed_logical_matrix(incoming));
         }
         throw_custom_error("unsupported class '", ctype, "' for logical_matrix");
     } 
     return std::unique_ptr<logical_matrix>(new simple_logical_matrix(incoming));
+}
+
+std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject& incoming) {
+    return create_logical_matrix_internal(incoming, true);
 }
 
 /* Output dispatch definition */

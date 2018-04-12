@@ -16,19 +16,18 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(M mat) : transposed(f
 
 template<typename T, class V>
 template<class M>
-delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& in, M mat) : transposed(false), byrow(false), bycol(false),
-        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), tmp(std::max(delayed_nrow, delayed_ncol)) {
+delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::List& net_subset, const Rcpp::LogicalVector& net_trans, M mat) : 
+        transposed(false), byrow(false), bycol(false), delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), 
+        tmp(std::max(delayed_nrow, delayed_ncol)) {
    
-    check_DelayedMatrix(in);
-    if (!only_delayed_coord_changes(in)) { 
-        throw std::runtime_error("'delayed_coord_transformer' called with non-empty delayed operations");
-    }
-    
-    Rcpp::List indices(get_safe_slot(in, "index"));
     const size_t original_nrow(mat->get_nrow()), original_ncol(mat->get_ncol()); 
 
+    if (net_subset.size()!=2) {
+        throw std::runtime_error("subsetting list should be of length 2");
+    }
+
     // Checking indices for rows.
-    Rcpp::RObject rowdex(indices[0]);
+    Rcpp::RObject rowdex(net_subset[0]);
     byrow=!rowdex.isNULL();
     if (byrow){ 
         if (rowdex.sexp_type()!=INTSXP) {
@@ -57,7 +56,7 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& 
     }
 
     // Checking indices for columns.
-    Rcpp::RObject coldex(indices[1]);
+    Rcpp::RObject coldex(net_subset[1]);
     bycol=!coldex.isNULL();
     if (bycol){ 
         if (coldex.sexp_type()!=INTSXP) {
@@ -84,20 +83,14 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::RObject& 
             }
         } 
     }
-    
-    // Checking transposition by peering into the "SeedDimChecker" class.
-    Rcpp::RObject seed=get_safe_slot(in, "seed");
-    if (seed.isS4() && get_class(seed)=="SeedDimPicker") { 
-        Rcpp::IntegerVector dimorder(get_safe_slot(seed, "dim_combination"));
-        if (dimorder.size()!=2) {
-            throw std::runtime_error("'dim_combination' should be an integer vector of length 2");
-        }
-        transposed=(dimorder[0]==2);
 
-        // As the row/column indices refer to the matrix BEFORE transposition.
-        if (transposed) {
-            std::swap(delayed_nrow, delayed_ncol);
-        }
+    // Checking transposition.
+    if (net_trans.size()!=1) {
+        throw std::runtime_error("transposition specifier should be of length 1");
+    }
+    transposed=net_trans[0];
+    if (transposed) { // As the row/column indices refer to the matrix BEFORE transposition.
+        std::swap(delayed_nrow, delayed_ncol);
     }
 
     return;
@@ -238,19 +231,25 @@ void delayed_coord_transformer<T, V>::reallocate_col(size_t first, size_t last, 
 
 template<typename T, class V, class base_mat>
 delayed_matrix<T, V, base_mat>::delayed_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
-    check_DelayedMatrix(incoming);
-
-    // Trying to generate the seed, if it's a valid object in itself.
-    if (only_delayed_coord_changes(incoming)) {
-        seed_ptr=generate_seed(incoming);
+    if (get_class(incoming)!="DelayedMatrix" || !incoming.isS4()) {
+        throw std::runtime_error("input matrix should be a DelayedMatrix");
     }
-        
-    // If the seed is still NULL, we switch to a chunked matrix format.
-    if (seed_ptr.get()==NULL) { 
-        seed_ptr=generate_unknown_seed(incoming);
-        transformer=delayed_coord_transformer<T, V>(seed_ptr.get());
+
+    // Parsing the delayed operation structure.
+    const Rcpp::Environment beachenv=Rcpp::Environment::namespace_env("beachmat");
+    Rcpp::Function parser(beachenv["parseDelayedOps"]);
+    Rcpp::List parse_out=parser(incoming);
+
+    // Figuring if we can make use of the net subsetting/transposition state.
+    if (parse_out.size()!=3) {
+        throw std::runtime_error("output of beachmat:::parseDelayedOps should be a list of length 3");
+    }
+    seed_ptr=generate_seed(parse_out[2]);
+
+    if (seed_ptr->get_matrix_type()!=UNKNOWN) {
+        transformer=delayed_coord_transformer<T, V>(parse_out[0], parse_out[1], seed_ptr.get());
     } else {
-        transformer=delayed_coord_transformer<T, V>(incoming, seed_ptr.get());
+        transformer=delayed_coord_transformer<T, V>(seed_ptr.get());
     }
 
     nrow=transformer.get_nrow();

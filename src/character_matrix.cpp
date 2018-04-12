@@ -93,38 +93,33 @@ Rcpp::String HDF5_character_helper::get(size_t r, size_t c) {
 
 /* Methods for the Delayed character interface. */
 
-const std::vector<std::string> allowed_s4_seeds={"RleMatrix"};
+std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject&, bool); 
 
 template<>
 std::unique_ptr<character_matrix> delayed_character_helper::generate_seed(Rcpp::RObject incoming) {
-    Rcpp::RObject seed=extract_seed(incoming, allowed_s4_seeds);
-    if (seed!=R_NilValue) {
-        return create_character_matrix(seed);
-    } else {
-        return nullptr;
-    }
-}
-
-template <>
-std::unique_ptr<character_matrix> delayed_character_helper::generate_unknown_seed(Rcpp::RObject incoming) {
-    return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));
+    return create_character_matrix_internal(incoming, false);
 }
 
 /* Dispatch definition */
 
-std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject& incoming) { 
+std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) { 
         std::string ctype=get_class(incoming);
         if (ctype=="HDF5Matrix") {
             return std::unique_ptr<character_matrix>(new HDF5_character_matrix(incoming));
         } else if (ctype=="RleMatrix") { 
             return std::unique_ptr<character_matrix>(new Rle_character_matrix(incoming));
-        } else if (ctype=="DelayedMatrix") { 
+        } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
         }
         return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));
     } 
     return std::unique_ptr<character_matrix>(new simple_character_matrix(incoming));
 }
+
+std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject& incoming) { 
+    return create_character_matrix_internal(incoming, true);
+}
+
 
 }

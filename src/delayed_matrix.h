@@ -21,7 +21,7 @@ public:
     delayed_coord_transformer(M);
 
     template<class M>
-    delayed_coord_transformer(const Rcpp::RObject&, M);
+    delayed_coord_transformer(const Rcpp::List&, const Rcpp::LogicalVector&, M);
 
     template<class M, class Iter>
     void get_row(M, size_t, Iter, size_t, size_t);
@@ -64,8 +64,6 @@ private:
     void reallocate_row(size_t, size_t, Iter out);
     template<class Iter>
     void reallocate_col(size_t, size_t, Iter out);
-
-    static bool has_unmodified_values(Rcpp::RObject);
 };
 
 /* The 'delayed_matrix' class, which wraps the coord_transformer class. */
@@ -97,7 +95,6 @@ private:
 
     // Specialized function for each realized matrix type.
     static std::unique_ptr<base_mat> generate_seed(Rcpp::RObject);
-    static std::unique_ptr<base_mat> generate_unknown_seed(Rcpp::RObject);
 };
 
 }
