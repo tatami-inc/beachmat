@@ -6,19 +6,16 @@ namespace beachmat {
 /* Implementing methods for the 'delayed_coord_transformer' class */
 
 template<typename T, class V>
-delayed_coord_transformer<T, V>::delayed_coord_transformer() : transposed(false), byrow(false), bycol(false), 
-        delayed_nrow(0), delayed_ncol(0) {}
+delayed_coord_transformer<T, V>::delayed_coord_transformer() {}
 
 template<typename T, class V>
 template<class M>
-delayed_coord_transformer<T, V>::delayed_coord_transformer(M mat) : transposed(false), byrow(false), bycol(false), 
-        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()) {}
+delayed_coord_transformer<T, V>::delayed_coord_transformer(M mat) : delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()) {}
 
 template<typename T, class V>
 template<class M>
-delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::List& net_subset, const Rcpp::LogicalVector& net_trans, M mat) : 
-        transposed(false), byrow(false), bycol(false), delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), 
-        tmp(std::max(delayed_nrow, delayed_ncol)) {
+delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::List& net_subset, const Rcpp::LogicalVector& net_trans, M mat) :
+        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), tmp(std::max(delayed_nrow, delayed_ncol)) {
    
     const size_t original_nrow(mat->get_nrow()), original_ncol(mat->get_ncol()); 
 
@@ -27,62 +24,10 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::List& net
     }
 
     // Checking indices for rows.
-    Rcpp::RObject rowdex(net_subset[0]);
-    byrow=!rowdex.isNULL();
-    if (byrow){ 
-        if (rowdex.sexp_type()!=INTSXP) {
-            throw std::runtime_error("index vector should be integer");
-        }
-
-        Rcpp::IntegerVector rx(rowdex);
-        row_index.insert(row_index.end(), rx.begin(), rx.end());
-        for (auto& r : row_index) { 
-            --r; // 0-based indices.
-        }
-        delayed_nrow=row_index.size();
-
-        // If the indices are all consecutive from 0 to N, we turn byrow=false.
-        if (delayed_nrow && row_index.front()==0 && delayed_nrow==original_nrow) {
-            int count=0;
-            byrow=false;
-            for (auto r : row_index) {
-                if (r!=count) {
-                    byrow=true;
-                    break;
-                }
-                ++count;
-            }
-        } 
-    }
+    obtain_indices(net_subset[0], original_nrow, byrow, delayed_nrow, row_index);
 
     // Checking indices for columns.
-    Rcpp::RObject coldex(net_subset[1]);
-    bycol=!coldex.isNULL();
-    if (bycol){ 
-        if (coldex.sexp_type()!=INTSXP) {
-            throw std::runtime_error("index vector should be integer");
-        }
-
-        Rcpp::IntegerVector cx(coldex);
-        col_index.insert(col_index.end(), cx.begin(), cx.end());
-        for (auto& c : col_index) { 
-            --c; // 0-based indices.
-        }
-        delayed_ncol=col_index.size();
-
-        // If the indices are all consecutive from 0 to N, we turn bycol=false.
-        if (delayed_ncol && col_index.front()==0 && delayed_ncol==original_ncol) {
-            int count=0;
-            bycol=false;
-            for (auto c : col_index) {
-                if (c!=count) {
-                    bycol=true;
-                    break;
-                }
-                ++count;
-            }
-        } 
-    }
+    obtain_indices(net_subset[1], original_ncol, bycol, delayed_ncol, col_index);
 
     // Checking transposition.
     if (net_trans.size()!=1) {
@@ -95,6 +40,55 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::List& net
 
     return;
 }
+
+template<typename T, class V>
+void delayed_coord_transformer<T, V>::obtain_indices(const Rcpp::RObject& subset_in, size_t original_dim,
+        bool& affected, size_t& delayed_dim, std::vector<size_t>& subset_out) {
+    // This function simply converts the row or column subset indices to 0-indexed form,
+    // setting affected=false if there are no subset indices or if the subset indices are 1:original_dim.
+    // Note that delayed_dim is also reset to the length fo the subset index vector.
+
+    affected=!subset_in.isNULL();
+    if (!affected){ 
+        return;
+    }
+
+    // Coercing the subset indices to zero-indexed size_t's.
+    if (subset_in.sexp_type()!=INTSXP) {
+        throw std::runtime_error("index vector should be integer");
+    }
+
+    Rcpp::IntegerVector idx(subset_in);
+    delayed_dim=idx.size();
+    subset_out.reserve(delayed_dim);
+
+    for (const auto& i : idx) {
+        if (i < 1 || i > original_dim) {
+            throw std::runtime_error("delayed subset indices are out of range");
+        }
+        subset_out.push_back(i-1);
+    }
+
+    // If the indices are all consecutive from 0 to N-1, we turn off 'affected'. 
+    if (delayed_dim 
+            && delayed_dim==original_dim
+            && subset_out.front()==0 
+            && subset_out.back()+1==delayed_dim) {
+
+        size_t count=0;
+        affected=false;
+        for (auto i : subset_out) {
+            if (i!=count) {
+                affected=true;
+                break;
+            }
+            ++count;
+        }
+    }
+
+    return;
+}
+
 
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::get_nrow() const{ 
@@ -114,8 +108,7 @@ void delayed_coord_transformer<T, V>::get_row(M mat, size_t r, Iter out, size_t 
 
         // Column extraction, first/last refer to rows.
         if (byrow) {
-            mat->get_col(r, tmp.vec.begin());
-            reallocate_col(first, last, out);
+            reallocate_col(mat, r, first, last, out);
         } else {
             mat->get_col(r, out, first, last);
         }
@@ -124,8 +117,7 @@ void delayed_coord_transformer<T, V>::get_row(M mat, size_t r, Iter out, size_t 
 
         // Row extraction, first/last refer to columns.
         if (bycol) {
-            mat->get_row(r, tmp.vec.begin());
-            reallocate_row(first, last, out);
+            reallocate_row(mat, r, first, last, out);
         } else {
             mat->get_row(r, out, first, last);
         }
@@ -141,8 +133,7 @@ void delayed_coord_transformer<T, V>::get_col(M mat, size_t c, Iter out, size_t 
 
         // Row extraction, first/last refer to columns.
         if (bycol) {
-            mat->get_row(c, tmp.vec.begin());
-            reallocate_row(first, last, out);
+            reallocate_row(mat, c, first, last, out);
         } else {
             mat->get_row(c, out, first, last);
         }
@@ -151,8 +142,7 @@ void delayed_coord_transformer<T, V>::get_col(M mat, size_t c, Iter out, size_t 
 
         // Column extraction, first/last refer to rows.
         if (byrow) {
-            mat->get_col(c, tmp.vec.begin());
-            reallocate_col(first, last, out);
+            reallocate_col(mat, c, first, last, out);
         } else {
             mat->get_col(c, out, first, last);
         }
@@ -194,16 +184,43 @@ size_t delayed_coord_transformer<T, V>::transform_col(size_t c) const {
 }
 
 template<typename T, class V>
-template<class Iter>
-void delayed_coord_transformer<T, V>::reallocate_row(size_t first, size_t last, Iter out) {
-    if (first>last || last>col_index.size()) { 
-        throw std::runtime_error("invalid column start/end indices");
+void delayed_coord_transformer<T, V>::prepare_reallocation(size_t first, size_t last, 
+        size_t& old_first, size_t& old_last, size_t& min_index, size_t& max_index, 
+        const std::vector<size_t>& indices, const std::string& msg) {
+
+    if (first>last || last>indices.size()) { 
+        throw_custom_error("invalid ", msg, " start/end indices");
     }
-    
-    const V& holding=tmp.vec;
+
+    if (old_first!=first || old_last!=last) {
+        old_first=first;
+        old_last=last;
+        if (first!=last) {
+            min_index=*std::min_element(indices.begin()+first, indices.begin()+last);
+            max_index=*std::max_element(indices.begin()+first, indices.begin()+last)+1;
+        } else {
+            // Avoid problems with max/min of zero-length vectors.
+            min_index=0;
+            max_index=0;
+        }
+    }
+
+    return;
+}
+
+template<typename T, class V>
+template<class M, class Iter>
+void delayed_coord_transformer<T, V>::reallocate_row(M mat, size_t r, size_t first, size_t last, Iter out) {
+    // Yes, the use of *_col_* variables for row reallocation is intentional!
+    // This is because we're talking about the columns in the extracted row.
+    prepare_reallocation(first, last, old_col_first, old_col_last, 
+            min_col_index, max_col_index, col_index, "column");
+
+    V& holding=tmp.vec;
+    mat->get_row(r, holding.begin(), min_col_index, max_col_index);
     auto cIt=col_index.begin()+first, end=col_index.begin()+last;
     while (cIt!=end) {
-        (*out)=holding[*cIt];
+        (*out)=holding[*cIt - min_col_index];
         ++out;
         ++cIt;
     }
@@ -211,16 +228,18 @@ void delayed_coord_transformer<T, V>::reallocate_row(size_t first, size_t last, 
 }
 
 template<typename T, class V>
-template<class Iter>
-void delayed_coord_transformer<T, V>::reallocate_col(size_t first, size_t last, Iter out) {
-    if (first>last || last>row_index.size()) { 
-        throw std::runtime_error("invalid row start/end indices");
-    }
-    
-    const V& holding=tmp.vec;
+template<class M, class Iter>
+void delayed_coord_transformer<T, V>::reallocate_col(M mat, size_t c, size_t first, size_t last, Iter out) {
+    // Yes, the use of *_row_* variables for column reallocation is intentional!
+    // This is because we're talking about the rows in the extracted column.
+    prepare_reallocation(first, last, old_row_first, old_row_last, 
+            min_row_index, max_row_index, row_index, "row");
+
+    V& holding=tmp.vec;
+    mat->get_col(c, holding.begin(), min_row_index, max_row_index);
     auto rIt=row_index.begin()+first, end=row_index.begin()+last;
     while (rIt!=end) {
-        (*out)=holding[*rIt];
+        (*out)=holding[*rIt - min_row_index];
         ++out;
         ++rIt;
     }

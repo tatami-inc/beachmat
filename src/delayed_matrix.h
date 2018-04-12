@@ -35,9 +35,11 @@ public:
     size_t get_nrow() const;
     size_t get_ncol() const;
 private:
-    std::vector<int> row_index, col_index;
-    bool transposed, byrow, bycol;
-    size_t delayed_nrow, delayed_ncol;
+    std::vector<size_t> row_index, col_index;
+    bool transposed=false, byrow=false, bycol=false;
+    size_t delayed_nrow=0, delayed_ncol=0;
+
+    static void obtain_indices(const Rcpp::RObject&, size_t, bool&, size_t&, std::vector<size_t>&);
 
     /* Making a copyable vector to save myself having to write copy constructors for the entire transformer.
      * This is necessary as we need an internal Rcpp::Vector to extract from the underlying seed
@@ -57,13 +59,18 @@ private:
     };
     copyable_holder tmp;
 
+    // Various helper functions to implement the effect of the delayed subsetting.
     size_t transform_row(size_t) const;
     size_t transform_col(size_t) const;
 
-    template<class Iter>
-    void reallocate_row(size_t, size_t, Iter out);
-    template<class Iter>
-    void reallocate_col(size_t, size_t, Iter out);
+    template<class M, class Iter>
+    void reallocate_row(M, size_t, size_t, size_t, Iter out);
+    template<class M, class Iter>
+    void reallocate_col(M, size_t, size_t, size_t, Iter out);
+
+    size_t old_col_first=0, old_col_last=0, min_col_index=0, max_col_index=0;
+    size_t old_row_first=0, old_row_last=0, min_row_index=0, max_row_index=0;
+    static void prepare_reallocation(size_t, size_t, size_t&, size_t&, size_t&, size_t&, const std::vector<size_t>&, const std::string&);
 };
 
 /* The 'delayed_matrix' class, which wraps the coord_transformer class. */
