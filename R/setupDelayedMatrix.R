@@ -20,18 +20,20 @@ parseDelayedOps <- function(mat) {
     # Finding content-altering modifications.
     no.mod <- contentIsPristine(mat) && nseed(mat)==1L
 
-    # Finding the net subsetting operations.
-    net.sub <- netSubsetAndAPerm(mat)
-    dimmap <- attr(net.sub, "dimmap")
+    net.sub <- is.trans <- NULL
+    if (no.mod) {
+        # Finding the net subsetting operations.
+        net.sub <- netSubsetAndAperm(mat)
+        dimmap <- attr(net.sub, "dimmap")
 
-    # Determining whether the matrix is tranposed. 
-    if (identical(dimmap, NULL) || identical(dimmap, 1:2)) {
-        is.trans <- FALSE
-    } else  if (identical(dimmap, 2:1)) {
-        is.trans <- TRUE
-    } else {
-        is.trans <- NA
-        no.mod <- FALSE
+        # Determining whether the matrix is tranposed. 
+        if (identical(dimmap, NULL) || identical(dimmap, 1:2)) {
+            is.trans <- FALSE
+        } else  if (identical(dimmap, 2:1)) {
+            is.trans <- TRUE
+        } else {
+            no.mod <- FALSE # cannot extract directly from the seed matrix.
+        }
     }
       
     # Creating a matrix for beachmat's API to parse.
