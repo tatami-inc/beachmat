@@ -62,7 +62,7 @@ std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObje
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<logical_matrix>(new delayed_logical_matrix(incoming));
         }
-        throw_custom_error("unsupported class '", ctype, "' for logical_matrix");
+        return std::unique_ptr<logical_matrix>(new unknown_logical_matrix(incoming));
     } 
     return std::unique_ptr<logical_matrix>(new simple_logical_matrix(incoming));
 }

@@ -62,7 +62,7 @@ std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObje
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<numeric_matrix>(new delayed_numeric_matrix(incoming));
         }
-        throw_custom_error("unsupported class '", ctype, "' for numeric_matrix");
+        return std::unique_ptr<numeric_matrix>(new unknown_numeric_matrix(incoming));
     } 
     return std::unique_ptr<numeric_matrix>(new simple_numeric_matrix(incoming));
 }
