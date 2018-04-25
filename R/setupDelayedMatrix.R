@@ -31,12 +31,18 @@ parseDelayedOps <- function(mat) {
             # are the only possibilities for dimmap).
             dimmap <- attr(net.sub, "dimmap")
             is.trans <- identical(dimmap, 2:1)
+            attr(net.sub, "dimmap") <- NULL
 
-            # Creating a matrix for beachmat's API to parse.
-            if (is(cur.seed, "HDF5ArraySeed") || is(cur.seed, "RleArraySeed")) {
-                mat <- DelayedArray(cur.seed)
-            } else {
+            # Creating a matrix for beachmat's API to parse. The logic is that 
+            # a seed-only class will not have the "DelayedMatrix" class name when you 
+            # wrap it, and it is the wrapped version (e.g., HDF5Matrix, RleMatrix)
+            # that constitutes the full matrix. Otherwise, if the wrapped version is
+            # just a DelayedMatrix, the seed was a full matrix in the first place.
+            wrapped <- DelayedArray(cur.seed)
+            if (class(wrapped)=="DelayedMatrix") {
                 mat <- cur.seed
+            } else {
+                mat <- wrapped
             }
             return(list(sub=net.sub, trans=is.trans, mat=mat))
         }
