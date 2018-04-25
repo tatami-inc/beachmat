@@ -37,7 +37,7 @@ parseDelayedOps <- function(mat) {
             # a seed-only class will not have the "DelayedMatrix" class name when you 
             # wrap it, and it is the wrapped version (e.g., HDF5Matrix, RleMatrix)
             # that constitutes the full matrix. Otherwise, if the wrapped version is
-            # just a DelayedMatrix, the seed was a full matrix in the first place.
+            # just a DelayedMatrix, the seed was a full matrix in the first place.
             wrapped <- DelayedArray(cur.seed)
             if (class(wrapped)=="DelayedMatrix") {
                 mat <- cur.seed

@@ -92,7 +92,7 @@ test_that("delayed operations parsing works correctly", {
     expect_identical(parsed$trans, NULL)
     expect_identical(parsed$mat, xmod)
 
-    xmod <- cbind(delayed_ord, delayed_ord)
+    xmod <- BiocGenerics::cbind(delayed_ord, delayed_ord)
     parsed <- beachmat:::parseDelayedOps(xmod)
     expect_identical(parsed$sub, NULL)
     expect_identical(parsed$trans, NULL)
