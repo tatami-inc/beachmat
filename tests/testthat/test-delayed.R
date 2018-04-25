@@ -55,30 +55,35 @@ test_that("delayed operations parsing works correctly", {
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, seed(delayed_ord))
+    expect_identical(class(parsed$mat), "matrix")
 
     mod1 <- t(delayed_ord)
     parsed <- beachmat:::parseDelayedOps(mod1)
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_ord))
+    expect_identical(class(parsed$mat), "matrix")
 
     mod2 <- delayed_ord[20:1,]
     parsed <- beachmat:::parseDelayedOps(mod2)
     expect_identical(parsed$sub, list(20:1, NULL))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, seed(delayed_ord))
+    expect_identical(class(parsed$mat), "matrix")
 
     mod3 <- t(mod2)
     parsed <- beachmat:::parseDelayedOps(mod3)
     expect_identical(parsed$sub, list(20:1, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_ord))
+    expect_identical(class(parsed$mat), "matrix")
 
     mod4 <- mod1[,20:1]
     parsed <- beachmat:::parseDelayedOps(mod4)
     expect_identical(parsed$sub, list(20:1, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_ord))
+    expect_identical(class(parsed$mat), "matrix")
 
     # Checking out an actual opertion.
     xmod <- delayed_ord + 1
@@ -117,30 +122,36 @@ test_that("delayed operations parsing works correctly", {
     expect_identical(parsed$sub, list(1:20, NULL))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, full_hdf5)
+    expect_s4_class(parsed$mat, "HDF5Matrix")
 
     parsed <- beachmat:::parseDelayedOps(t(full_hdf5))
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, full_hdf5)
+    expect_s4_class(parsed$mat, "HDF5Matrix")
 
     parsed <- beachmat:::parseDelayedOps(delayed_rle)
     expect_identical(parsed$sub, list(NULL, 20:11))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, full_rle)
+    expect_s4_class(parsed$mat, "RleMatrix")
 
     parsed <- beachmat:::parseDelayedOps(t(full_rle))
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, full_rle)
+    expect_s4_class(parsed$mat, "RleMatrix")
 
     # Checking that sparse entities are not evaluated.
     parsed <- beachmat:::parseDelayedOps(delayed_sparse)
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, seed(delayed_sparse))
+    expect_s4_class(parsed$mat, "dgCMatrix")
 
     parsed <- beachmat:::parseDelayedOps(t(delayed_sparse[9:5,3:8]))
     expect_identical(parsed$sub, list(9:5, 3:8))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_sparse))
+    expect_s4_class(parsed$mat, "dgCMatrix")
 })
