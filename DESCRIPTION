@@ -1,5 +1,5 @@
 Package: beachmat
-Version: 1.2.0
+Version: 1.3.0
 Date: 2018-04-25
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
