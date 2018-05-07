@@ -4,12 +4,13 @@ Date: 2018-04-25
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
         "alun@wehi.edu.au"), person("Herve", "Pages", role="aut"),
-        person("Mike", "Smith", role="aut"))
+        person("Mike", "Smith", role="aut"),
+        person(c("Peter", "F."), "Hickey", role = "ctb"))
 Maintainer: Aaron Lun <alun@wehi.edu.au>
 Depends: R (>= 3.5)
 Imports: utils, methods, Rhdf5lib (>= 1.1.4), rhdf5, 
         HDF5Array (>= 1.7.3), DelayedArray (>= 0.5.30), 
-        Rcpp (>= 0.12.14) 
+        Rcpp (>= 0.12.14), usethis
 Suggests: testthat, BiocStyle, knitr, rmarkdown, Matrix, devtools
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for a variety of

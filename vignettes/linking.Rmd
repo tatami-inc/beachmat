@@ -15,6 +15,11 @@ require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 ```
 
+# Quick setup
+
+Run `beachmat::use_beachmat()` in your package's directory. This will automate 
+most of the steps described below and walk you through the remaining ones.
+
 # Introduction
 
 The `r Biocpkg("beachmat")` package provides a C++ API for handling a variety of R matrix types.
