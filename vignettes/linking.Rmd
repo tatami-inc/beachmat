@@ -15,11 +15,6 @@ require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 ```
 
-# Quick setup
-
-Run `beachmat::use_beachmat()` in your package's directory. This will automate 
-most of the steps described below and walk you through the remaining ones.
-
 # Introduction
 
 The `r Biocpkg("beachmat")` package provides a C++ API for handling a variety of R matrix types.
@@ -27,6 +22,10 @@ The aim is to abstract away the specific type of matrix object when writing C++ 
 Currently, the API supports double-precision, integer, logical and character matrices.
 Supported classes include base `matrix` objects, a number of classes from the `r CRANpkg("Matrix")` package, and disk-backed matrices from the `r Biocpkg("HDF5Array")` package.
 This document describes how to link to `r Biocpkg("beachmat")` from the C++ code of another R package.
+
+# Quick setup
+
+Run `beachmat:::use_beachmat()` in your package's directory. This will automate most of the steps described below and walk you through the remaining ones.
 
 # Prerequisites for linking  
 
