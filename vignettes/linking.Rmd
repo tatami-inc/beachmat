@@ -25,7 +25,8 @@ This document describes how to link to `r Biocpkg("beachmat")` from the C++ code
 
 # Quick setup
 
-Run `beachmat:::use_beachmat()` in your package's directory. This will automate most of the steps described below and walk you through the remaining ones.
+Run `beachmat:::use_beachmat()` in your package's directory. 
+This will automate most of the steps described below and walk you through the remaining ones.
 
 # Prerequisites for linking  
 
