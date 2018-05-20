@@ -1,10 +1,12 @@
 citEntry(
     entry = "article",
     author = "Aaron T. L. Lun and Herv{\\'e} Pag{\\`e}s and Mike L. Smith",
-    title = "beachmat: a Bioconductor C++ API for accessing single-cell genomics data from a variety of R matrix types",
-    year = "2017",
-    doi = "10.1101/167445",
-    journal = "bioRxiv",
-    textVersion = "Lun ATL, Pages H and Smith ML (2017). beachmat: a Bioconductor C++ API for accessing single-cell genomics data from a variety of R matrix types. biorXiv"
+    title = "beachmat: A Bioconductor C++ API for accessing high-throughput biological data from a variety of R matrix types",
+    year = "2018",
+    Volume="14",
+    Number="5",
+    Pages="e1006135",
+    Journal="PLoS Comput. Biol.",
+    textVersion = "Lun ATL, Pages H, Smith ML (2018). beachmat: A Bioconductor C++ API for accessing high-throughput biological data from a variety of R matrix types. PLoS Comput. Biol., 14, 5:e1006135."
 )
 
