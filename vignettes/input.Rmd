@@ -248,7 +248,7 @@ Please contact the maintainers if you have a class that you would like to see su
 
 - `DelayedMatrix` objects can be directly parsed by the API if the only delayed operations involve transposition or subsetting.
 Otherwise, they are realized in a chunk-by-chunk manner, using methods in the `r Biocpkg("DelayedArray")` package.
-The granularity of the chunking is determined using the `defaultGrid` function.
+The granularity of the chunking is determined using the `blockGrid` function.
 - For numeric matrices, _beachmat_ does not support higher-level matrix operations such as addition, multiplication or various factorizations. 
 Rather, the `yield` method can be used to obtain the original `Rcpp::RObject` for input to `r CRANpkg("RcppArmadillo")` or `r CRANpkg("RcppEigen")`.
 This functionality is generally limited to base matrices, though there is also limited support for sparse matrices in these libraries.

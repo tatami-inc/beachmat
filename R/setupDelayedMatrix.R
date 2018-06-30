@@ -1,6 +1,6 @@
-#' @importFrom DelayedArray defaultGrid
+#' @importFrom DelayedArray blockGrid
 setupDelayedMatrix <- function(mat) {
-    grid <- defaultGrid(mat)
+    grid <- blockGrid(mat)
     return(list(dim(mat), grid@spacings))
 }
 
