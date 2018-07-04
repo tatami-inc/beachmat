@@ -7,7 +7,7 @@ setupHDF5Matrix <- function(dims, storage.mode, chunk, compress)
     fname <- getHDF5DumpFile(for.use=TRUE)
     dname <- getHDF5DumpName(for.use=TRUE)
     if (any(chunk==0L)) {
-        chunk <- getHDF5DumpChunkDim(dims, storage.mode)
+        chunk <- getHDF5DumpChunkDim(dims)
     }
     if (compress < 0L) { 
         compress <- getHDF5DumpCompressionLevel()
