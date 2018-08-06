@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_LIN_MATRIX_H
 #define BEACHMAT_LIN_MATRIX_H
 
-#include "Input_matrix.h"
+#include "all_readers.h"
 
 namespace beachmat { 
 

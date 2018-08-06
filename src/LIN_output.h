@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_LIN_OUTPUT_H
 #define BEACHMAT_LIN_OUTPUT_H
 
-#include "Output_matrix.h"
+#include "all_writers.h"
 #include "output_param.h"
 
 namespace beachmat { 
