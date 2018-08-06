@@ -3,10 +3,10 @@
 
 #include "beachmat.h"
 #include "utils.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 
-#include "simple_output.h"
-#include "Csparse_output.h"
-#include "HDF5_output.h"
+#include "simple_writer.h"
+#include "Csparse_writer.h"
+#include "HDF5_writer.h"
 
 #endif
