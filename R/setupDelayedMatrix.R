@@ -14,6 +14,14 @@ realizeDelayedMatrixByCol <- function(mat, J) {
     return(as.matrix(mat[,ind,drop=FALSE]))
 }
 
+realizeDelayedMatrixByRowIndices <- function(mat, I) {
+    return(as.matrix(mat[I,,drop=FALSE]))
+}
+
+realizeDelayedMatrixByColIndices <- function(mat, J) { 
+    return(as.matrix(mat[,J,drop=FALSE]))
+}
+
 #' @importFrom DelayedArray netSubsetAndAperm contentIsPristine nseed seed DelayedArray 
 #' @importFrom methods is
 parseDelayedOps <- function(mat) {

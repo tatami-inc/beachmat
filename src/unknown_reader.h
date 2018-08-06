@@ -23,6 +23,12 @@ public:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
+    template <class Iter>
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+
+    template <class Iter>
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type () const;
 private:
@@ -78,6 +84,8 @@ void unknown_reader<T, V>::update_storage_by_col(size_t c) {
     }
 }
 
+/*** Basic getter methods ***/
+
 template<typename T, class V>
 T unknown_reader<T, V>::get(size_t r, size_t c) {
     check_oneargs(r, c);
@@ -105,7 +113,48 @@ void unknown_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
     std::copy(src + first, src + last, out);
     return;
 }
-    
+
+/*** Multi getter methods ***/
+
+template<typename T, class V>
+template<class Iter>
+void unknown_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_rowargs(0, first, last);
+    check_row_indices(cIt, n);
+
+    // Need to make a copy to pass to the function.
+    Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+    Rcpp::Function indexed_realizer(beachenv["realizeDelayedMatrixByRowIndex"]);
+    V tmp_store=indexed_realizer(original, cur_indices);
+
+    auto tmpIt=tmp_store.begin() + first * n;
+    for (size_t c=first; c<last; ++c, out+=n) {
+        std::copy(tmpIt, tmpIt+n, out);
+    }
+    return;
+}
+
+template<typename T, class V>
+template<class Iter>
+void unknown_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+
+    // Need to make a copy to pass to the function.
+    Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+    Rcpp::Function indexed_realizer(beachenv["realizeDelayedMatrixByColIndex"]);
+    V tmp_store=indexed_realizer(original, cur_indices);
+
+    auto tmpIt=tmp_store.begin();
+    size_t nrows=last - first;
+    for (size_t i=0; i<n; ++i, out+=nrows, tmpIt+=(this->nrow)) {
+        std::copy(tmpIt+first, tmpIt+last, out);
+    }
+    return;
+}
+
+/*** Other methods ***/
+
 template<typename T, class V>
 Rcpp::RObject unknown_reader<T, V>::yield() const {
     return original;
