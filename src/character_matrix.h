@@ -43,21 +43,21 @@ private:
 template<class RDR>
 class general_character_matrix : public character_matrix {
 public:    
-    general_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+    general_character_matrix(const Rcpp::RObject& incoming) : reader(incoming) {}
     ~general_character_matrix() {}
   
-    size_t get_nrow() const { return mat.get_nrow(); }
-    size_t get_ncol() const { return mat.get_ncol(); }
+    size_t get_nrow() const { return reader.get_nrow(); }
+    size_t get_ncol() const { return reader.get_ncol(); }
  
-    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { return mat.get_row(r, out, first, last); }
-    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { return mat.get_col(c, out, first, last); }
+    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { return reader.get_row(r, out, first, last); }
+    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { return reader.get_col(c, out, first, last); }
 
-    Rcpp::String get(size_t r, size_t c) { return mat.get(r, c); }
+    Rcpp::String get(size_t r, size_t c) { return reader.get(r, c); }
 
     std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new general_character_matrix(*this)); }
 
-    Rcpp::RObject yield () const { return mat.yield(); }
-    matrix_type get_matrix_type() const { return mat.get_matrix_type(); }
+    Rcpp::RObject yield () const { return reader.yield(); }
+    matrix_type get_matrix_type() const { return reader.get_matrix_type(); }
 protected:
     RDR reader;
 };
