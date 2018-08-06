@@ -130,10 +130,10 @@ public:
 /* HDF5Matrix of LINs */
 
 template<typename T, int RTYPE>
-class HDF5_lin_reader : public HDF5_matrix<T, RTYPE> {
+class HDF5_lin_reader : public HDF5_reader<T, RTYPE> {
 public:
-    HDF5_lin_helper(const Rcpp::RObject&);
-    ~HDF5_lin_helper();
+    HDF5_lin_reader(const Rcpp::RObject&);
+    ~HDF5_lin_reader();
     
     T get(size_t, size_t);
     
@@ -162,7 +162,7 @@ using unknown_lin_matrix=general_lin_matrix<T, V, unknown_reader<T, V> >;
 
 }
 
-#include "LIN_methods.h"
+#include "LIN_methods_read.h"
 
 #endif
 

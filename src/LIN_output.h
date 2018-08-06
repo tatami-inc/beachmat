@@ -179,7 +179,7 @@ protected:
 
 }
 
-#include "LIN_outfun.h"
+#include "LIN_methods_write.h"
 
 #endif
 

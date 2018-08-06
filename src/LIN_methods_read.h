@@ -64,63 +64,63 @@ const_col_indexed_info<V> lin_matrix<T, V>::get_const_col_indexed(size_t c, type
 
 /* Defining the general interface. */
 
-template<typename T, class V, class M>
-general_lin_matrix<T, V, M>::general_lin_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+template<typename T, class V, class RDR>
+general_lin_matrix<T, V, RDR>::general_lin_matrix(const Rcpp::RObject& incoming) : reader(incoming) {}
 
-template<typename T, class V, class M>
-general_lin_matrix<T, V, M>::~general_lin_matrix() {}
+template<typename T, class V, class RDR>
+general_lin_matrix<T, V, RDR>::~general_lin_matrix() {}
 
-template<typename T, class V, class M>
-size_t general_lin_matrix<T, V, M>::get_nrow() const {
+template<typename T, class V, class RDR>
+size_t general_lin_matrix<T, V, RDR>::get_nrow() const {
     return reader.get_nrow();
 }
 
-template<typename T, class V, class M>
-size_t general_lin_matrix<T, V, M>::get_ncol() const {
+template<typename T, class V, class RDR>
+size_t general_lin_matrix<T, V, RDR>::get_ncol() const {
     return reader.get_ncol();
 }
 
-template<typename T, class V, class M>
-void general_lin_matrix<T, V, M>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, class RDR>
+void general_lin_matrix<T, V, RDR>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     reader.get_col(c, out, first, last);
     return;
 }
 
-template<typename T, class V, class M>
-void general_lin_matrix<T, V, M>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, class RDR>
+void general_lin_matrix<T, V, RDR>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     reader.get_col(c, out, first, last);
     return;
 }
 
-template<typename T, class V, class M>
-void general_lin_matrix<T, V, M>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, class RDR>
+void general_lin_matrix<T, V, RDR>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     reader.get_row(r, out, first, last);
     return;
 }
 
-template<typename T, class V, class M>
-void general_lin_matrix<T, V, M>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+template<typename T, class V, class RDR>
+void general_lin_matrix<T, V, RDR>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     reader.get_row(r, out, first, last);
     return;
 }
 
-template<typename T, class V, class M>
-T general_lin_matrix<T, V, M>::get(size_t r, size_t c) {
+template<typename T, class V, class RDR>
+T general_lin_matrix<T, V, RDR>::get(size_t r, size_t c) {
     return reader.get(r, c);
 }
 
-template<typename T, class V, class M>
-std::unique_ptr<lin_matrix<T, V> > general_lin_matrix<T, V, M>::clone() const {
-    return std::unique_ptr<lin_matrix<T, V> >(new general_lin_matrix<T, V, M>(*this));
+template<typename T, class V, class RDR>
+std::unique_ptr<lin_matrix<T, V> > general_lin_matrix<T, V, RDR>::clone() const {
+    return std::unique_ptr<lin_matrix<T, V> >(new general_lin_matrix<T, V, RDR>(*this));
 }
 
-template<typename T, class V, class M> 
-Rcpp::RObject general_lin_matrix<T, V, M>::yield() const {
+template<typename T, class V, class RDR> 
+Rcpp::RObject general_lin_matrix<T, V, RDR>::yield() const {
     return reader.yield();
 }
 
-template<typename T, class V, class M> 
-matrix_type general_lin_matrix<T, V, M>::get_matrix_type() const {
+template<typename T, class V, class RDR> 
+matrix_type general_lin_matrix<T, V, RDR>::get_matrix_type() const {
     return reader.get_matrix_type();
 }
 
@@ -183,7 +183,7 @@ std::unique_ptr<lin_matrix<T, V> > Csparse_lin_matrix<T, V>::clone() const {
 /* Defining the helper class contained inside the HDF5 interface. */
 
 template<typename T, int RTYPE>
-HDF5_lin_reader<T, RTYPE>::HDF5_lin_reader(const Rcpp::RObject& incoming) : HDF5_matrix<T, RTYPE>(incoming) {}
+HDF5_lin_reader<T, RTYPE>::HDF5_lin_reader(const Rcpp::RObject& incoming) : HDF5_reader<T, RTYPE>(incoming) {}
 
 template<typename T, int RTYPE>
 HDF5_lin_reader<T, RTYPE>::~HDF5_lin_reader() {}

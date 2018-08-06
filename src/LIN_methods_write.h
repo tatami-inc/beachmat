@@ -66,119 +66,119 @@ void lin_output<T, V>::set_row(size_t r, Rcpp::NumericVector::iterator out) {
 /* Defining the general output interface. */ 
 
 template<typename T, class V, class WTR>
-general_lin_output<T, V, M>::general_lin_output(size_t nr, size_t nc) : mat(nr, nc) {}
+general_lin_output<T, V, WTR>::general_lin_output(size_t nr, size_t nc) : writer(nr, nc) {}
 
 template<typename T, class V, class WTR>
-general_lin_output<T, V, M>::~general_lin_output() {}
+general_lin_output<T, V, WTR>::~general_lin_output() {}
 
 // Getters:
 template<typename T, class V, class WTR>
-size_t general_lin_output<T, V, M>::get_nrow() const {
+size_t general_lin_output<T, V, WTR>::get_nrow() const {
     return writer.get_nrow();
 }
 
 template<typename T, class V, class WTR>
-size_t general_lin_output<T, V, M>::get_ncol() const {
+size_t general_lin_output<T, V, WTR>::get_ncol() const {
     return writer.get_ncol();
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     writer.get_col(c, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     writer.get_col(c, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     writer.get_row(r, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     writer.get_row(r, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-T general_lin_output<T, V, M>::get(size_t r, size_t c) {
+T general_lin_output<T, V, WTR>::get(size_t r, size_t c) {
     return writer.get(r, c);
 }
 
 // Setters:
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::set_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     writer.set_col(c, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::set_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     writer.set_col(c, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::set_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     writer.set_row(r, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void general_lin_output<T, V, WTR>::set_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     writer.set_row(r, out, first, last);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set(size_t r, size_t c, T in) {
+void general_lin_output<T, V, WTR>::set(size_t r, size_t c, T in) {
     writer.set(r, c, in);
     return;
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+void general_lin_output<T, V, WTR>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
     writer.set_col_indexed(c, N, idx, val);
     return; 
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+void general_lin_output<T, V, WTR>::set_col_indexed(size_t c, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
     writer.set_col_indexed(c, N, idx, val);
     return; 
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
+void general_lin_output<T, V, WTR>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::IntegerVector::iterator val) {
     writer.set_row_indexed(r, N, idx, val);
     return; 
 }
 
 template<typename T, class V, class WTR>
-void general_lin_output<T, V, M>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
+void general_lin_output<T, V, WTR>::set_row_indexed(size_t r, size_t N, Rcpp::IntegerVector::iterator idx, Rcpp::NumericVector::iterator val) {
     writer.set_row_indexed(r, N, idx, val);
     return; 
 }
 
 // Other functions:
 template<typename T, class V, class WTR>
-Rcpp::RObject general_lin_output<T, V, M>::yield() {
+Rcpp::RObject general_lin_output<T, V, WTR>::yield() {
     return writer.yield();
 }
 
 template<typename T, class V, class WTR>
-std::unique_ptr<lin_output<T, V> > general_lin_output<T, V, M>::clone() const {
-    return std::unique_ptr<lin_output<T, V> >(new general_lin_output<T, V, M>(*this));
+std::unique_ptr<lin_output<T, V> > general_lin_output<T, V, WTR>::clone() const {
+    return std::unique_ptr<lin_output<T, V> >(new general_lin_output<T, V, WTR>(*this));
 }
 
 template<typename T, class V, class WTR>
-matrix_type general_lin_output<T, V, M>::get_matrix_type() const {
+matrix_type general_lin_output<T, V, WTR>::get_matrix_type() const {
     return writer.get_matrix_type();
 }
 
@@ -204,7 +204,7 @@ std::unique_ptr<lin_output<T, V> > simple_lin_output<T, V>::clone() const {
 
 template<typename T, class V, int RTYPE>
 HDF5_lin_output<T, V, RTYPE>::HDF5_lin_output(size_t nr, size_t nc, size_t chunk_nr, size_t chunk_nc, int compress) : 
-    mat(nr, nc, chunk_nr, chunk_nc, compress) {}
+    writer(nr, nc, chunk_nr, chunk_nc, compress) {}
 
 template<typename T, class V, int RTYPE>
 HDF5_lin_output<T, V, RTYPE>::~HDF5_lin_output() {}
