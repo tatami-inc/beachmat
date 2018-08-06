@@ -3,17 +3,17 @@
 
 #include "beachmat.h"
 #include "utils.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 
 namespace beachmat {
 
 /*** Class definition ***/
 
 template<typename T, class V>
-class simple_matrix : public any_matrix {
+class simple_reader : public dim_checker {
 public:    
-    simple_matrix(const Rcpp::RObject&);
-    ~simple_matrix();
+    simple_reader(const Rcpp::RObject&);
+    ~simple_reader();
 
     T get(size_t, size_t);
 
@@ -35,7 +35,7 @@ private:
 /*** Constructor definitions ***/
 
 template<typename T, class V>
-simple_matrix<T, V>::simple_matrix(const Rcpp::RObject& incoming) : original(incoming) { 
+simple_reader<T, V>::simple_reader(const Rcpp::RObject& incoming) : original(incoming) { 
     if (!incoming.hasAttribute("dim")) { 
         throw std::runtime_error("matrix object should have 'dim' attribute"); 
     }
@@ -53,19 +53,19 @@ simple_matrix<T, V>::simple_matrix(const Rcpp::RObject& incoming) : original(inc
 }
 
 template<typename T, class V>
-simple_matrix<T, V>::~simple_matrix () {}
+simple_reader<T, V>::~simple_reader () {}
 
 /*** Getter methods ***/
 
 template<typename T, class V>
-T simple_matrix<T, V>::get(size_t r, size_t c) { 
+T simple_reader<T, V>::get(size_t r, size_t c) { 
     check_oneargs(r, c);
     return mat[r + c*(this->nrow)]; 
 }
 
 template<typename T, class V>
 template<class Iter>
-void simple_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
+void simple_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
     check_rowargs(r, first, last);
     const size_t& NR=this->nrow;
     auto src=mat.begin()+first*NR+r;
@@ -75,7 +75,7 @@ void simple_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last)
 
 template<typename T, class V>
 template<class Iter>
-void simple_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
+void simple_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
     auto src=mat.begin() + c*(this->nrow);
     std::copy(src+first, src+last, out);
@@ -83,17 +83,17 @@ void simple_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last)
 }
 
 template<typename T, class V>
-typename V::iterator simple_matrix<T, V>::get_const_col(size_t c, size_t first, size_t last) {
+typename V::iterator simple_reader<T, V>::get_const_col(size_t c, size_t first, size_t last) {
     return mat.begin() + first + c*(this->nrow);
 }
 
 template<typename T, class V>
-Rcpp::RObject simple_matrix<T, V>::yield() const {
+Rcpp::RObject simple_reader<T, V>::yield() const {
     return original;
 }
 
 template<typename T, class V>
-matrix_type simple_matrix<T, V>::get_matrix_type() const {
+matrix_type simple_reader<T, V>::get_matrix_type() const {
     return SIMPLE;
 }
 

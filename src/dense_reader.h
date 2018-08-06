@@ -1,19 +1,19 @@
-#ifndef BEACHMAT_DENSE_MATRIX_H
-#define BEACHMAT_DENSE_MATRIX_H
+#ifndef BEACHMAT_DENSE_READER_H
+#define BEACHMAT_DENSE_READER_H
 
 #include "beachmat.h"
 #include "utils.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 
 namespace beachmat { 
 
 /*** Class definition ***/
 
 template<typename T, class V>
-class dense_matrix : public any_matrix {
+class dense_reader : public dim_checker {
 public:    
-    dense_matrix(const Rcpp::RObject&);
-    ~dense_matrix();
+    dense_reader(const Rcpp::RObject&);
+    ~dense_reader();
 
     T get(size_t, size_t);
 
@@ -35,7 +35,7 @@ protected:
 /*** Constructor definitions ***/
 
 template <typename T, class V>
-dense_matrix<T, V>::dense_matrix(const Rcpp::RObject& incoming) : original(incoming) { 
+dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incoming) { 
     std::string ctype=check_Matrix_class(incoming, "geMatrix");
     this->fill_dims(incoming.attr("Dim"));
     const size_t& NC=this->ncol;
@@ -54,19 +54,19 @@ dense_matrix<T, V>::dense_matrix(const Rcpp::RObject& incoming) : original(incom
 }
 
 template <typename T, class V>
-dense_matrix<T, V>::~dense_matrix() {}
+dense_reader<T, V>::~dense_reader() {}
 
 /*** Getter functions ***/
 
 template <typename T, class V>
-T dense_matrix<T, V>::get(size_t r, size_t c) { 
+T dense_reader<T, V>::get(size_t r, size_t c) { 
     check_oneargs(r, c);
     return x[r + c*(this->nrow)]; 
 }
 
 template <typename T, class V>
 template <class Iter>
-void dense_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
+void dense_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
     check_rowargs(r, first, last);
     const size_t& NR=this->nrow;
     auto src=x.begin()+first*NR+r;
@@ -76,7 +76,7 @@ void dense_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) 
 
 template <typename T, class V>
 template <class Iter>
-void dense_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
+void dense_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
     auto src=x.begin() + c*(this->nrow);
     std::copy(src+first, src+last, out);
@@ -84,17 +84,17 @@ void dense_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) 
 }
 
 template<typename T, class V>
-typename V::iterator dense_matrix<T, V>::get_const_col(size_t c, size_t first, size_t last) {
+typename V::iterator dense_reader<T, V>::get_const_col(size_t c, size_t first, size_t last) {
     return x.begin() + first + c*(this->nrow);
 }
 
 template<typename T, class V>
-Rcpp::RObject dense_matrix<T, V>::yield() const {
+Rcpp::RObject dense_reader<T, V>::yield() const {
     return original;
 }
 
 template<typename T, class V>
-matrix_type dense_matrix<T, V>::get_matrix_type() const {
+matrix_type dense_reader<T, V>::get_matrix_type() const {
     return DENSE;
 }
 

@@ -2,7 +2,7 @@
 #define BEACHMAT_HDF5_MATRIX_H
 
 #include "beachmat.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 #include "HDF5_utils.h"
 
 namespace beachmat {
@@ -10,10 +10,10 @@ namespace beachmat {
 /*** Class definition ***/
 
 template<typename T, int RTYPE>
-class HDF5_matrix : public any_matrix {
+class HDF5_reader : public dim_checker {
 public:
-    HDF5_matrix(const Rcpp::RObject&);
-    ~HDF5_matrix();
+    HDF5_reader(const Rcpp::RObject&);
+    ~HDF5_reader();
 
     template<typename X>
     void extract_row(size_t, X*, const H5::DataType&, size_t, size_t);
@@ -45,7 +45,7 @@ protected:
 /*** Constructor definition ***/
 
 template<typename T, int RTYPE>
-HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(incoming),
+HDF5_reader<T, RTYPE>::HDF5_reader(const Rcpp::RObject& incoming) : original(incoming),
         rowlist(H5::FileAccPropList::DEFAULT.getId()), collist(H5::FileAccPropList::DEFAULT.getId()) {
 
     std::string ctype=get_class(incoming);
@@ -136,13 +136,13 @@ HDF5_matrix<T, RTYPE>::HDF5_matrix(const Rcpp::RObject& incoming) : original(inc
 }
 
 template<typename T, int RTYPE>
-HDF5_matrix<T, RTYPE>::~HDF5_matrix() {}
+HDF5_reader<T, RTYPE>::~HDF5_reader() {}
 
 /*** Getter functions ***/
 
 template<typename T, int RTYPE>
 template<typename X>
-void HDF5_matrix<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+void HDF5_reader<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     check_rowargs(r, first, last);
     reopen_HDF5_file_by_dim(filename, dataname, 
             hfile, hdata, H5F_ACC_RDONLY, rowlist, 
@@ -154,7 +154,7 @@ void HDF5_matrix<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HD
 
 template<typename T, int RTYPE>
 template<typename X>
-void HDF5_matrix<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+void HDF5_reader<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     check_colargs(c, first, last);
     reopen_HDF5_file_by_dim(filename, dataname, 
             hfile, hdata, H5F_ACC_RDONLY, collist, 
@@ -166,7 +166,7 @@ void HDF5_matrix<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HD
     
 template<typename T, int RTYPE>
 template<typename X>
-void HDF5_matrix<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::DataType& HDT) { 
+void HDF5_reader<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::DataType& HDT) { 
     check_oneargs(r, c);
     hselect.select_one(r, c);
     hdata.read(out, HDT, hselect.one_space, hselect.mat_space);
@@ -174,17 +174,17 @@ void HDF5_matrix<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::Da
 }
 
 template<typename T, int RTYPE>
-H5::DataType HDF5_matrix<T, RTYPE>::get_datatype() const {
+H5::DataType HDF5_reader<T, RTYPE>::get_datatype() const {
     return hdata.getDataType();
 }
 
 template<typename T, int RTYPE>
-Rcpp::RObject HDF5_matrix<T, RTYPE>::yield() const {
+Rcpp::RObject HDF5_reader<T, RTYPE>::yield() const {
     return original;
 }
 
 template<typename T, int RTYPE>
-matrix_type HDF5_matrix<T, RTYPE>::get_matrix_type() const {
+matrix_type HDF5_reader<T, RTYPE>::get_matrix_type() const {
     return HDF5;
 }
 

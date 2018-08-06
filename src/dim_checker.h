@@ -1,17 +1,17 @@
-#ifndef BEACHMAT_ANY_MATRIX_H
-#define BEACHMAT_ANY_MATRIX_H
+#ifndef BEACHMAT_DIM_CHECKER_H
+#define BEACHMAT_DIM_CHECKER_H
 
 #include "beachmat.h"
 
-/* Virtual base class for matrices. */
+/* Virtual base class for all reader/writer classes. */
 
 namespace beachmat{
 
-class any_matrix {
+class dim_checker {
 public:
-    any_matrix();
-    any_matrix(size_t, size_t);
-    virtual ~any_matrix();
+    dim_checker();
+    dim_checker(size_t, size_t);
+    virtual ~dim_checker();
     size_t get_nrow() const;
     size_t get_ncol() const;
 protected:

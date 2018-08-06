@@ -3,17 +3,17 @@
 
 #include "beachmat.h"
 #include "utils.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 
 namespace beachmat {
 
 /*** Class definition ***/
 
 template<typename T, class V>
-class Csparse_matrix : public any_matrix {
+class Csparse_reader : public dim_checker {
 public:    
-    Csparse_matrix(const Rcpp::RObject&);
-    ~Csparse_matrix();
+    Csparse_reader(const Rcpp::RObject&);
+    ~Csparse_reader();
 
     T get(size_t, size_t);
 
@@ -42,7 +42,7 @@ protected:
 /*** Constructor definition ***/
 
 template <typename T, class V>
-Csparse_matrix<T, V>::Csparse_matrix(const Rcpp::RObject& incoming) : original(incoming), currow(0), curstart(0), curend(this->ncol) {
+Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(incoming), currow(0), curstart(0), curend(this->ncol) {
     std::string ctype=check_Matrix_class(incoming, "gCMatrix");  
     this->fill_dims(get_safe_slot(incoming, "Dim"));
     const size_t& NC=this->ncol;
@@ -102,12 +102,12 @@ Csparse_matrix<T, V>::Csparse_matrix(const Rcpp::RObject& incoming) : original(i
 }
 
 template <typename T, class V>
-Csparse_matrix<T, V>::~Csparse_matrix () {}
+Csparse_reader<T, V>::~Csparse_reader () {}
 
 /*** Getter functions ***/
 
 template <typename T, class V>
-T Csparse_matrix<T, V>::get(size_t r, size_t c) {
+T Csparse_reader<T, V>::get(size_t r, size_t c) {
     check_oneargs(r, c);
     auto iend=i.begin() + p[c+1];
     auto loc=std::lower_bound(i.begin() + p[c], iend, r);
@@ -119,7 +119,7 @@ T Csparse_matrix<T, V>::get(size_t r, size_t c) {
 }
 
 template <typename T, class V>
-void Csparse_matrix<T, V>::update_indices(size_t r, size_t first, size_t last) {
+void Csparse_reader<T, V>::update_indices(size_t r, size_t first, size_t last) {
     /* Initializing the indices upon the first request, assuming currow=0 based on initialization above.
      * This avoids using up space for the indices if we never do row access.
      */
@@ -190,7 +190,7 @@ void Csparse_matrix<T, V>::update_indices(size_t r, size_t first, size_t last) {
 
 template <typename T, class V>
 template <class Iter>
-void Csparse_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
+void Csparse_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
     check_rowargs(r, first, last);
     update_indices(r, first, last);
     std::fill(out, out+last-first, get_empty());
@@ -205,7 +205,7 @@ void Csparse_matrix<T, V>::get_row(size_t r, Iter out, size_t first, size_t last
 
 template <typename T, class V>
 template <class Iter>
-void Csparse_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
+void Csparse_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
     const int& pstart=p[c]; 
     auto iIt=i.begin()+pstart, 
@@ -229,7 +229,7 @@ void Csparse_matrix<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
 }
 
 template <typename T, class V>
-size_t Csparse_matrix<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector::iterator& index, typename V::iterator& val, size_t first, size_t last) {
+size_t Csparse_reader<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector::iterator& index, typename V::iterator& val, size_t first, size_t last) {
     check_colargs(c, first, last);
     const int& pstart=p[c]; 
     index=i.begin()+pstart;
@@ -249,12 +249,12 @@ size_t Csparse_matrix<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector
 }
 
 template<typename T, class V>
-Rcpp::RObject Csparse_matrix<T, V>::yield() const {
+Rcpp::RObject Csparse_reader<T, V>::yield() const {
     return original;
 }
 
 template<typename T, class V>
-matrix_type Csparse_matrix<T, V>::get_matrix_type() const {
+matrix_type Csparse_reader<T, V>::get_matrix_type() const {
     return SPARSE;
 }
 
