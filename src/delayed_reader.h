@@ -3,7 +3,7 @@
 
 #include "beachmat.h"
 #include "utils.h"
-#include "unknown_matrix.h"
+#include "unknown_reader.h"
 
 namespace beachmat {
 
@@ -78,7 +78,7 @@ private:
 /* The 'delayed_matrix' class, which wraps the coord_transformer class. */
 
 template<typename T, class V, class base_mat>
-class delayed_matrix : public any_matrix { 
+class delayed_matrix : public dim_checker { 
 public:
     delayed_matrix(const Rcpp::RObject&);
     ~delayed_matrix();
@@ -428,3 +428,5 @@ matrix_type delayed_matrix<T, V, base_mat>::get_matrix_type() const {
 }
 
 }
+
+#endif
