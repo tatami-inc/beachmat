@@ -25,6 +25,9 @@ protected:
     void check_colargs(size_t, size_t, size_t) const;
 
     void check_oneargs(size_t, size_t) const;
+
+    void check_row_indices(Rcpp::IntegerVector::iterator, size_t);
+    void check_col_indices(Rcpp::IntegerVector::iterator, size_t);
 };
 
 }
