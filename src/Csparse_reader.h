@@ -25,6 +25,12 @@ public:
 
     size_t get_const_col_nonzero(size_t, Rcpp::IntegerVector::iterator&, typename V::iterator&, size_t, size_t);
 
+    template <class Iter>
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+    
+    template <class Iter>
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+
     Rcpp::RObject yield () const;
     matrix_type get_matrix_type () const;
 protected:
@@ -104,7 +110,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
 template <typename T, class V>
 Csparse_reader<T, V>::~Csparse_reader () {}
 
-/*** Getter functions ***/
+/*** Basic getter functions ***/
 
 template <typename T, class V>
 T Csparse_reader<T, V>::get(size_t r, size_t c) {
@@ -228,6 +234,63 @@ void Csparse_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
     return;
 }
 
+/*** Multi getter functions ***/
+
+template<typename T, class V>
+template<class Iter>
+void Csparse_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_rowargs(0, first, last);
+    check_row_indices(cIt, n);
+
+    Rcpp::IntegerVector::iterator indices;
+    typename V::iterator values;
+
+    for (size_t c=first; c<last; ++c) {
+		size_t nnzero=get_const_col_nonzero(c, indices, values, 0, this->nrow);
+        auto endpoint=indices+nnzero;
+        auto cIt_copy=cIt;
+
+        for (size_t i=0; i<n; ++i, ++out, ++cIt_copy) {  
+            if (indices==endpoint) {
+                (*out)=0;
+            } else if (*cIt_copy==*indices) {
+                (*out)=*values;
+                ++indices;
+                ++values;
+            } else if (*cIt_copy < *indices) {
+                (*out)=0;
+            } else {
+                auto next=std::lower_bound(indices, endpoint, *cIt_copy);
+                values+=(next - indices);
+                indices=next;
+                
+                if (next!=endpoint && *next==*cIt_copy) {
+                    (*out)=*values;
+                    ++indices;
+                    ++values;
+                } else {
+                    (*out)=0;
+                }
+            }
+        }
+    }
+    return;
+}
+
+template<typename T, class V>
+template<class Iter>
+void Csparse_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+    size_t nrows=last - first;
+    for (size_t i=0; i<n; ++i, ++cIt, out+=nrows) {
+        get_col(*cIt, out, first, last);
+    }
+    return;
+}
+
+/*** Specialized getter functions ***/
+
 template <typename T, class V>
 size_t Csparse_reader<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector::iterator& index, typename V::iterator& val, size_t first, size_t last) {
     check_colargs(c, first, last);
@@ -252,6 +315,8 @@ template<typename T, class V>
 Rcpp::RObject Csparse_reader<T, V>::yield() const {
     return original;
 }
+
+/*** Other methods ***/
 
 template<typename T, class V>
 matrix_type Csparse_reader<T, V>::get_matrix_type() const {
