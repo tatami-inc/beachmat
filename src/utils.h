@@ -25,7 +25,7 @@ int find_sexp_type (const Rcpp::RObject&);
 
 // Matrix type enumeration.
 
-enum matrix_type { SIMPLE, HDF5, SPARSE, RLE, PSYMM, DENSE, DELAYED, UNKNOWN};
+enum matrix_type { SIMPLE, HDF5, SPARSE, DENSE, DELAYED, UNKNOWN };
 
 // Typedef for the indexing tuple.
 
