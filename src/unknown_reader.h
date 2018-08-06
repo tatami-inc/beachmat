@@ -91,6 +91,7 @@ void unknown_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last
     check_rowargs(r, first, last);
     update_storage_by_row(r);
     auto src=storage.begin() + r - size_t(row_indices[0]);
+    src += first * chunk_nrow;
     for (size_t col=first; col<last; ++col, src+=chunk_nrow, ++out) { (*out)=(*src); }
     return;
 }
