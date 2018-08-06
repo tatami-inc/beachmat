@@ -10,9 +10,9 @@ int Csparse_reader<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 /* HDF5Matrix input methods. */
 
 template<>
-int HDF5_lin_reader<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
+int HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
     int out;
-    mat.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
+    reader.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
     return out; 
 }
 
@@ -33,10 +33,10 @@ int Csparse_writer<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 /* HDF5 logical output methods. */
 
 template<>
-int HDF5_output<int, LGLSXP>::get_empty() { return 0; }
+int HDF5_writer<int, LGLSXP>::get_empty() { return 0; }
 
 template<>
-Rcpp::RObject HDF5_output<int, LGLSXP>::get_firstval() { 
+Rcpp::RObject HDF5_writer<int, LGLSXP>::get_firstval() { 
     int first;
     extract_one(0, 0, &first);
     return Rcpp::LogicalVector::create(first);

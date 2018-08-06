@@ -5,9 +5,9 @@ namespace beachmat {
 /* HDF5Matrix input methods. */
 
 template<>
-int HDF5_lin_reader<int, Rcpp::IntegerVector, INTSXP>::get(size_t r, size_t c) {
+int HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP>::get(size_t r, size_t c) {
     int out;
-    mat.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
+    reader.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
     return out; 
 }
 
