@@ -217,12 +217,10 @@ SEXP select_output_by_mode (SEXP incoming, SEXP simplify, SEXP preserve_zero) {
         mode=beachmat::HDF5;
     } else if (thingy=="sparse") {
         mode=beachmat::SPARSE;
-    } else if (thingy=="RLE") {
-        mode=beachmat::RLE;
     } else if (thingy=="dense") {
         mode=beachmat::DENSE;
-    } else if (thingy=="Psymm") {
-        mode=beachmat::PSYMM;
+    } else if (thingy=="unknkown") {
+        mode=beachmat::UNKNOWN;
     }
 
     beachmat::output_param op(mode, Rf_asLogical(simplify), Rf_asLogical(preserve_zero));
@@ -233,8 +231,7 @@ SEXP get_all_modes () {
     return Rcpp::IntegerVector::create(Rcpp::Named("simple")=beachmat::SIMPLE,
                                        Rcpp::Named("HDF5")=beachmat::HDF5,
                                        Rcpp::Named("sparse")=beachmat::SPARSE,
-                                       Rcpp::Named("RLE")=beachmat::RLE,
                                        Rcpp::Named("dense")=beachmat::DENSE,
-                                       Rcpp::Named("Psymm")=beachmat::PSYMM);
+                                       Rcpp::Named("unknown")=beachmat::UNKNOWN);
 }
 

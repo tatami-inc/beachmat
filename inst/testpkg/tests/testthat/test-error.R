@@ -87,32 +87,6 @@ test_that("Sparse matrix errors thrown", {
     expect_fixed_error(.Call(beachtest:::cxx_test_logical_access, B, 1L, NULL), 
                        "lgTMatrix not supported, convert to lgCMatrix")
 })
-    
-# Packed symmetric matrices.
-
-A <- pack(forceSymmetric(matrix(1:10, 10, 10))) 
-
-test_that("Sparse matrix errors thrown", {
-    wrong <- A
-    expect_fixed_error(storage.mode(wrong@Dim) <- "double")
-    wrong@Dim <- c(5L, 5L)
-    expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, wrong, 1L, NULL),
-                       "length of 'x' in a dspMatrix object is inconsistent with its dimensions")
-    wrong@Dim <- c(10L, 5L)
-    expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, wrong, 1L, NULL),
-                       "'nrow' and 'ncol' should be equal for a dspMatrix object")
-    
-    wrong <- A
-    wrong@uplo <- "W"
-    expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, wrong, 1L, NULL),
-                       "'uplo' slot in a dspMatrix object should be either 'U' or 'L'")
-    expect_fixed_error(wrong@uplo <- 1L, NULL)
-    
-    wrong <- A
-    wrong@x <- wrong@x[1]
-    expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, wrong, 1L, NULL), 
-                       "length of 'x' in a dspMatrix object is inconsistent with its dimensions")
-})
 
 # HDF5 matrices.
 
@@ -162,11 +136,6 @@ test_that("Numeric errors thrown", {
     expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, B, 1L, NULL), 
                        "'x' slot in a dgCMatrix object should be double")
     
-    B <- pack(forceSymmetric(matrix(1:10, 10, 10)))
-    storage.mode(B@x) <- "integer"
-    expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, B, 1L, NULL), 
-                       "'x' slot in a dspMatrix object should be double")
-    
     test.mat <- matrix(150L, 15, 10)
     B <- as(test.mat, "HDF5Array")
     expect_fixed_error(.Call(beachtest:::cxx_test_numeric_access, B, 1L, NULL), 
@@ -190,9 +159,6 @@ test_that("Logical errors thrown", {
     expect_fixed_error(storage.mode(B@x) <- "integer")
     
     B <- as(rsparsematrix(10, 20, 0.5)!=0, "lgTMatrix")
-    expect_fixed_error(storage.mode(B@x) <- "integer")
-    
-    B <- pack(forceSymmetric(matrix(c(TRUE, FALSE), 10, 10)))
     expect_fixed_error(storage.mode(B@x) <- "integer")
     
     test.mat <- matrix(150, 15, 10)
