@@ -40,7 +40,7 @@ private:
 
 /* Advanced character matrix template */
 
-template<class M>
+template<class RDR>
 class general_character_matrix : public character_matrix {
 public:    
     general_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
@@ -59,12 +59,13 @@ public:
     Rcpp::RObject yield () const { return mat.yield(); }
     matrix_type get_matrix_type() const { return mat.get_matrix_type(); }
 protected:
-    M mat;
+    RDR reader;
 };
 
 /* Simple character matrix */
 
-using simple_character_precursor=general_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> >;
+using simple_character_precursor=general_character_matrix<simple_reader<Rcpp::String, Rcpp::StringVector> >;
+
 class simple_character_matrix : public simple_character_precursor {
 public:
     simple_character_matrix(const Rcpp::RObject& incoming);
@@ -73,16 +74,12 @@ public:
     std::unique_ptr<character_matrix> clone() const;
 };
 
-/* RLE character matrix */
-
-using Rle_character_matrix=general_character_matrix<Rle_matrix<Rcpp::String, Rcpp::StringVector> >;
-
 /* HDF5Matrix */
 
-class HDF5_character_helper : public HDF5_matrix<Rcpp::String, STRSXP> {
+class HDF5_character_reader : public HDF5_reader<Rcpp::String, STRSXP> {
 public:    
-    HDF5_character_helper(const Rcpp::RObject&);
-    ~HDF5_character_helper();
+    HDF5_character_reader(const Rcpp::RObject&);
+    ~HDF5_character_reader();
 
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
@@ -94,17 +91,17 @@ protected:
     std::vector<char> buffer;
 };
 
-using HDF5_character_matrix=general_character_matrix<HDF5_character_helper>;
+using HDF5_character_matrix=general_character_matrix<HDF5_character_reader>;
 
 /* DelayedMatrix */
 
-typedef delayed_matrix<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_helper;
+typedef delayed_matrix<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
 
-using delayed_character_matrix=general_character_matrix<delayed_character_helper>;
+using delayed_character_matrix=general_character_matrix<delayed_character_reader>;
 
 /* Unknown matrix type */
 
-using unknown_character_matrix=general_character_matrix<unknown_matrix<Rcpp::String, Rcpp::StringVector> >;
+using unknown_character_matrix=general_character_matrix<unknown_reader<Rcpp::String, Rcpp::StringVector> >;
 
 /* Dispatcher */
 
