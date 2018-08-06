@@ -22,14 +22,6 @@ typedef dense_lin_matrix<double, Rcpp::NumericVector> dense_numeric_matrix;
 
 typedef Csparse_lin_matrix<double, Rcpp::NumericVector> Csparse_numeric_matrix;
 
-/* dspMatrix */
-
-typedef Psymm_lin_matrix<double, Rcpp::NumericVector> Psymm_numeric_matrix;
-
-/* RleMatrix */
-
-typedef Rle_lin_matrix<double, Rcpp::NumericVector> Rle_numeric_matrix;
-
 /* HDF5Matrix */
 
 typedef HDF5_lin_matrix<double, Rcpp::NumericVector, REALSXP> HDF5_numeric_matrix;

@@ -5,12 +5,12 @@ namespace beachmat {
 /* Csparse logical input methods. */
 
 template<>
-int Csparse_matrix<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+int Csparse_reader<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 
 /* HDF5Matrix input methods. */
 
 template<>
-int HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
+int HDF5_lin_reader<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
     int out;
     mat.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
     return out; 
@@ -21,14 +21,14 @@ int HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP>::get(size_t r, size_t c) {
 std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject&, bool); 
 
 template<>
-std::unique_ptr<logical_matrix> delayed_lin_helper<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
+std::unique_ptr<logical_matrix> delayed_lin_reader<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
     return create_logical_matrix_internal(incoming, false);
 } 
 
 /* Sparse logical output methods. */
 
 template<>
-int Csparse_output<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+int Csparse_writer<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 
 /* HDF5 logical output methods. */
 
@@ -53,12 +53,8 @@ std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObje
             return std::unique_ptr<logical_matrix>(new Csparse_logical_matrix(incoming));
         } else if (ctype=="lgTMatrix") {
             throw std::runtime_error("lgTMatrix not supported, convert to lgCMatrix");
-        } else if (ctype=="lspMatrix") {
-            return std::unique_ptr<logical_matrix>(new Psymm_logical_matrix(incoming));
         } else if (ctype=="HDF5Matrix") {
             return std::unique_ptr<logical_matrix>(new HDF5_logical_matrix(incoming));
-        } else if (ctype=="RleMatrix") {
-            return std::unique_ptr<logical_matrix>(new Rle_logical_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<logical_matrix>(new delayed_logical_matrix(incoming));
         }
