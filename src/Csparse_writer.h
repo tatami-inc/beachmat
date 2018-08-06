@@ -1,19 +1,19 @@
-#ifndef BEACHMAT_CSPARSE_OUTPUT_H
-#define BEACHMAT_CSPARSE_OUTPUT_H
+#ifndef BEACHMAT_CSPARSE_WRITER_H
+#define BEACHMAT_CSPARSE_WRITER_H
 
 #include "beachmat.h"
 #include "utils.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 
 namespace beachmat { 
 
 /*** Class definition ***/
 
 template<typename T, class V>
-class Csparse_output : public any_matrix {
+class Csparse_writer : public dim_checker {
 public:
-    Csparse_output(size_t, size_t);
-    ~Csparse_output();
+    Csparse_writer(size_t, size_t);
+    ~Csparse_writer();
 
     // Setters:
     template <class Iter>
@@ -63,16 +63,16 @@ private:
 /*** Constructor definition ***/
 
 template<typename T, class V>
-Csparse_output<T, V>::Csparse_output(size_t nr, size_t nc) : any_matrix(nr, nc), data(nc) {}
+Csparse_writer<T, V>::Csparse_writer(size_t nr, size_t nc) : dim_checker(nr, nc), data(nc) {}
 
 template<typename T, class V>
-Csparse_output<T, V>::~Csparse_output() {}
+Csparse_writer<T, V>::~Csparse_writer() {}
 
 /*** Setter methods ***/
 
 template<typename T, class V>
 template<class Iter>
-void Csparse_output<T, V>::set_col(size_t c, Iter in, size_t first, size_t last) {
+void Csparse_writer<T, V>::set_col(size_t c, Iter in, size_t first, size_t last) {
     check_colargs(c, first, last);
     std::deque<data_pair>& current=data[c];
     std::deque<data_pair> new_set;
@@ -108,12 +108,12 @@ void Csparse_output<T, V>::set_col(size_t c, Iter in, size_t first, size_t last)
 
 template<typename T, class V>
 template <class Iter>
-Iter Csparse_output<T, V>::find_matching_row(Iter begin, Iter end, const data_pair& incoming) {
+Iter Csparse_writer<T, V>::find_matching_row(Iter begin, Iter end, const data_pair& incoming) {
     return std::lower_bound(begin, end, incoming, only_first_less);
 }
 
 template<typename T, class V>
-void Csparse_output<T, V>::insert_into_column(std::deque<data_pair>& column, size_t r, T val) {
+void Csparse_writer<T, V>::insert_into_column(std::deque<data_pair>& column, size_t r, T val) {
     if (column.size()) {
         if (r < column.front().first) {
             column.push_front(data_pair(r, val));
@@ -140,7 +140,7 @@ void Csparse_output<T, V>::insert_into_column(std::deque<data_pair>& column, siz
 
 template<typename T, class V>
 template<class Iter>
-void Csparse_output<T, V>::set_row(size_t r, Iter in, size_t first, size_t last) {
+void Csparse_writer<T, V>::set_row(size_t r, Iter in, size_t first, size_t last) {
     check_rowargs(r, first, last);
     for (size_t c=first; c<last; ++c, ++in) {
         if ((*in)==get_empty()) { continue; }
@@ -150,7 +150,7 @@ void Csparse_output<T, V>::set_row(size_t r, Iter in, size_t first, size_t last)
 }
 
 template<typename T, class V>
-void Csparse_output<T, V>::set(size_t r, size_t c, T in) {
+void Csparse_writer<T, V>::set(size_t r, size_t c, T in) {
     check_oneargs(r, c);
     set_row(r, &in, c, c+1);
     return;
@@ -158,7 +158,7 @@ void Csparse_output<T, V>::set(size_t r, size_t c, T in) {
 
 template<typename T, class V>
 template <class Iter>
-void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
+void Csparse_writer<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
     check_colargs(c);
     std::deque<data_pair>& current=data[c];
     for (size_t i=0; i<n; ++i, ++idx, ++in) { 
@@ -181,7 +181,7 @@ void Csparse_output<T, V>::set_col_indexed(size_t c, size_t n, Rcpp::IntegerVect
 
 template<typename T, class V>
 template <class Iter>
-void Csparse_output<T, V>::set_row_indexed(size_t r, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
+void Csparse_writer<T, V>::set_row_indexed(size_t r, size_t n, Rcpp::IntegerVector::iterator idx, Iter in) {
     check_rowargs(r);
     for (size_t i=0; i<n; ++i, ++idx, ++in) { 
         insert_into_column(data[*idx], r, *in);
@@ -193,7 +193,7 @@ void Csparse_output<T, V>::set_row_indexed(size_t r, size_t n, Rcpp::IntegerVect
 
 template<typename T, class V>
 template<class Iter>
-void Csparse_output<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
+void Csparse_writer<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
     // It is not easy to use caching here, like Csparse_matrix() does. This is
     // because cached indices can be invalidated upon set_row().
     check_rowargs(r, first, last);
@@ -222,7 +222,7 @@ void Csparse_output<T, V>::get_row(size_t r, Iter out, size_t first, size_t last
 
 template<typename T, class V>
 template<class Iter>
-void Csparse_output<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
+void Csparse_writer<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
     const std::deque<data_pair>& current=data[c];
 
@@ -241,7 +241,7 @@ void Csparse_output<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
 }
 
 template<typename T, class V>
-T Csparse_output<T, V>::get(size_t r, size_t c) {
+T Csparse_writer<T, V>::get(size_t r, size_t c) {
     check_oneargs(r, c);
     const std::deque<data_pair>& current=data[c];
     auto cIt=find_matching_row(current.begin(), current.end(), data_pair(r, get_empty()));
@@ -255,7 +255,7 @@ T Csparse_output<T, V>::get(size_t r, size_t c) {
 /*** Output function ***/
 
 template<typename T, class V>
-Rcpp::RObject Csparse_output<T, V>::yield() {
+Rcpp::RObject Csparse_writer<T, V>::yield() {
     const int RTYPE=V().sexp_type();
     std::string classname;
     switch (RTYPE) { 
@@ -316,7 +316,7 @@ Rcpp::RObject Csparse_output<T, V>::yield() {
 }
 
 template<typename T, class V>
-matrix_type Csparse_output<T, V>::get_matrix_type() const {
+matrix_type Csparse_writer<T, V>::get_matrix_type() const {
     return SPARSE;
 }
 
