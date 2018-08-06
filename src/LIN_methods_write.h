@@ -1,5 +1,5 @@
-#ifndef BEACHMAT_LIN_OUTFUN_H
-#define BEACHMAT_LIN_OUTFUN_H
+#ifndef BEACHMAT_LIN_METHODS_WRITE_H
+#define BEACHMAT_LIN_METHODS_WRITE_H
 
 namespace beachmat { 
 

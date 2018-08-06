@@ -1,5 +1,5 @@
-#ifndef UNKNOWN_MATRIX_H
-#define UNKNOWN_MATRIX_H
+#ifndef UNKNOWN_READER_H
+#define UNKNOWN_READER_H
 
 namespace beachmat {
 

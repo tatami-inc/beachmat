@@ -1,5 +1,5 @@
-#ifndef BEACHMAT_LIN_METHODS_H
-#define BEACHMAT_LIN_METHODS_H
+#ifndef BEACHMAT_LIN_METHODS_READ_H
+#define BEACHMAT_LIN_METHODS_READ_H
 
 namespace beachmat { 
 

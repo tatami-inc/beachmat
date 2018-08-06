@@ -1,5 +1,5 @@
-#ifndef BEACHMAT_SIMPLE_MATRIX_H
-#define BEACHMAT_SIMPLE_MATRIX_H
+#ifndef BEACHMAT_SIMPLE_READER_H
+#define BEACHMAT_SIMPLE_READER_H
 
 #include "beachmat.h"
 #include "utils.h"

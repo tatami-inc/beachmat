@@ -1,5 +1,5 @@
-#ifndef BEACHMAT_HDF5_MATRIX_H
-#define BEACHMAT_HDF5_MATRIX_H
+#ifndef BEACHMAT_HDF5_READER_H
+#define BEACHMAT_HDF5_READER_H
 
 #include "beachmat.h"
 #include "dim_checker.h"

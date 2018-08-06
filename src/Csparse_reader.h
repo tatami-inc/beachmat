@@ -1,5 +1,5 @@
-#ifndef BEACHMAT_CSPARSE_MATRIX_H
-#define BEACHMAT_CSPARSE_MATRIX_H
+#ifndef BEACHMAT_CSPARSE_READER_H
+#define BEACHMAT_CSPARSE_READER_H
 
 #include "beachmat.h"
 #include "utils.h"
