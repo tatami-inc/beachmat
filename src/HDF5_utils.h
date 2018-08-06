@@ -19,9 +19,9 @@ void reopen_HDF5_file_by_dim(const std::string&, const std::string&,
 
 struct HDF5_selector {
     void set_dims(size_t, size_t);   
-    void select_row(size_t, size_t, size_t);
-    void select_col(size_t, size_t, size_t);
-    void select_one(size_t, size_t);
+    void select_row(size_t, size_t, size_t, const H5S_seloper_t& op=H5S_SELECT_SET);
+    void select_col(size_t, size_t, size_t, const H5S_seloper_t& op=H5S_SELECT_SET);
+    void select_one(size_t, size_t, const H5S_seloper_t& op=H5S_SELECT_SET);
 
     H5::DataSpace col_space, row_space, one_space, mat_space;
     hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];

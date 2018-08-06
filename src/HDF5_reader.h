@@ -24,6 +24,12 @@ public:
     template<typename X>
     void extract_one(size_t, size_t, X*, const H5::DataType&);  
 
+    template<typename X>
+    void extract_rows(Rcpp::IntegerVector::iterator, size_t, X*, const H5::DataType&, size_t, size_t);
+
+    template<typename X>
+    void extract_cols(Rcpp::IntegerVector::iterator, size_t, X*, const H5::DataType&, size_t, size_t);
+
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type() const;
 
@@ -138,7 +144,7 @@ HDF5_reader<T, RTYPE>::HDF5_reader(const Rcpp::RObject& incoming) : original(inc
 template<typename T, int RTYPE>
 HDF5_reader<T, RTYPE>::~HDF5_reader() {}
 
-/*** Getter functions ***/
+/*** Basic getter methods ***/
 
 template<typename T, int RTYPE>
 template<typename X>
@@ -172,6 +178,44 @@ void HDF5_reader<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::Da
     hdata.read(out, HDT, hselect.one_space, hselect.mat_space);
     return;
 }
+
+/*** Multi getter methods ***/
+
+template<typename T, int RTYPE>
+template<typename X>
+void HDF5_reader<T, RTYPE>::extract_rows(Rcpp::IntegerVector::iterator cIt, size_t n, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+    check_rowargs(0, first, last);
+    check_row_indices(cIt, n);
+
+    hselect.mat_space.selectNone();
+    for (size_t i=0; i<n; ++i, ++cIt) {
+        hselect.select_row(*cIt, first, last, H5S_SELECT_OR);
+    }
+
+    hsize_t custom_dim=(first - last) * n;
+    H5::DataSpace custom_space(1, &custom_dim);
+    hdata.read(out, HDT, custom_space, hselect.mat_space); 
+    return;
+}
+
+template<typename T, int RTYPE>
+template<typename X>
+void HDF5_reader<T, RTYPE>::extract_cols(Rcpp::IntegerVector::iterator cIt, size_t n, X* out, const H5::DataType& HDT, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+
+    hselect.mat_space.selectNone();
+    for (size_t i=0; i<n; ++i, ++cIt) {
+        hselect.select_col(*cIt, first, last, H5S_SELECT_OR);
+    }
+
+    hsize_t custom_dim=(first - last) * n;
+    H5::DataSpace custom_space(1, &custom_dim);
+    hdata.read(out, HDT, custom_space, hselect.mat_space); 
+    return;
+}
+
+/*** Other methods ***/
 
 template<typename T, int RTYPE>
 H5::DataType HDF5_reader<T, RTYPE>::get_datatype() const {
