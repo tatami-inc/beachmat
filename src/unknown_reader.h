@@ -33,25 +33,24 @@ public:
     matrix_type get_matrix_type () const;
 private:
     Rcpp::RObject original;
-
     Rcpp::Environment beachenv;
-    Rcpp::Function realizer_row, realizer_col;
+    Rcpp::Function realizer;
     
-    V storage;
-    void update_storage_by_row(size_t);
-    void update_storage_by_col(size_t);
+    V storage; // this does not need to be copyable, as the entire object is replaced when a new block is loaded.
+    void update_storage_by_row(size_t, size_t, size_t);
+    void update_storage_by_col(size_t, size_t, size_t);
 
-    Rcpp::IntegerVector row_indices, col_indices;
+    copyable_holder<Rcpp::IntegerVector> row_indices, col_indices;
+    copyable_holder<Rcpp::LogicalVector> do_transpose;
     int chunk_nrow, chunk_ncol;
 };
 
 template<typename T, class V>
 unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in), 
-    beachenv(Rcpp::Environment::namespace_env("beachmat")),
-    realizer_row(beachenv["realizeDelayedMatrixByRow"]), realizer_col(beachenv["realizeDelayedMatrixByCol"]),
-    row_indices(2), col_indices(2), chunk_nrow(0), chunk_ncol(0) {
+        beachenv(Rcpp::Environment::namespace_env("beachmat")), realizer(beachenv["realizeByRange"]), 
+        row_indices(2), col_indices(2), do_transpose(1), chunk_nrow(0), chunk_ncol(0) {
 
-    Rcpp::Function getdims(beachenv["setupDelayedMatrix"]);
+    Rcpp::Function getdims(beachenv["setupUnknownMatrix"]);
     Rcpp::List dimdata=getdims(in);
 
     Rcpp::IntegerVector matdims(dimdata[0]);
@@ -60,6 +59,8 @@ unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in),
     Rcpp::IntegerVector chunkdims(dimdata[1]);
     chunk_nrow=chunkdims[0];
     chunk_ncol=chunkdims[1];
+
+    do_transpose.vec[0]=1;
     return;
 }
 
@@ -67,21 +68,43 @@ template<typename T, class V>
 unknown_reader<T, V>::~unknown_reader() {}
 
 template<typename T, class V>
-void unknown_reader<T, V>::update_storage_by_row(size_t r) {
-    if (r < row_indices[0] || r >= row_indices[1]) {
-        row_indices[0] = std::floor(r/chunk_nrow) * chunk_nrow;
-        row_indices[1] = std::min(row_indices[0] + chunk_nrow, int(this->nrow));
-        storage=realizer_row(original, row_indices); 
+void unknown_reader<T, V>::update_storage_by_row(size_t r, size_t first, size_t last) {
+    auto& rinds=row_indices.vec;
+    auto& cinds=col_indices.vec;
+
+    if (r < size_t(rinds[0]) || r >= size_t(rinds[1]) || first != size_t(cinds[0]) || last != size_t(cinds[1])) {
+        rinds[0] = std::floor(r/chunk_nrow) * chunk_nrow;
+        rinds[1] = std::min(chunk_nrow, int(this->nrow) - rinds[0]);
+
+        cinds[0] = first;
+        cinds[1] = last - first;
+        storage = realizer(original, rinds, cinds, do_transpose.vec); // Transposed, so storage is effectively row-major!
+
+        // Resetting for easier checks above.
+        rinds[1] += rinds[0];
+        cinds[1] = last;
     }
+    return;
 }
 
 template<typename T, class V>
-void unknown_reader<T, V>::update_storage_by_col(size_t c) {
-    if (c < col_indices[0] || c >= col_indices[1]) {
-        col_indices[0] = std::floor(c/chunk_ncol) * chunk_ncol;
-        col_indices[1] = std::min(col_indices[0] + chunk_ncol, int(this->ncol));
-        storage=realizer_col(original, col_indices); 
+void unknown_reader<T, V>::update_storage_by_col(size_t c, size_t first, size_t last) {
+    auto& cinds=col_indices.vec;
+    auto& rinds=row_indices.vec;
+
+    if (c < size_t(cinds[0]) || c >= size_t(cinds[1] + cinds[0]) || first != size_t(rinds[0]) || last != size_t(rinds[0] + rinds[1])) {
+        cinds[0] = std::floor(c/chunk_ncol) * chunk_ncol;
+        cinds[1] = std::min(chunk_ncol, int(this->ncol) - cinds[0]);
+
+        rinds[0] = first;
+        rinds[1] = last - first;
+        storage = realizer(original, rinds, cinds);
+
+        // Resetting for easier checks above.
+        cinds[1] += cinds[0];
+        rinds[1] = last;
     }
+    return;
 }
 
 /*** Basic getter methods ***/
@@ -89,18 +112,20 @@ void unknown_reader<T, V>::update_storage_by_col(size_t c) {
 template<typename T, class V>
 T unknown_reader<T, V>::get(size_t r, size_t c) {
     check_oneargs(r, c);
-    update_storage_by_col(c);
-    return storage[r + this->nrow * (c - size_t(col_indices[0]))]; 
+    update_storage_by_col(c, 0, this->nrow); // keeps the whole block for further 'get()' queries.
+    return storage[(c - size_t(col_indices.vec[0])) * this->nrow + r];
 }
 
 template<typename T, class V>
 template <class Iter>
 void unknown_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
     check_rowargs(r, first, last);
-    update_storage_by_row(r);
-    auto src=storage.begin() + r - size_t(row_indices[0]);
-    src += first * chunk_nrow;
-    for (size_t col=first; col<last; ++col, src+=chunk_nrow, ++out) { (*out)=(*src); }
+    update_storage_by_row(r, first, last);
+
+    // It's effectively row-major storage due the transposition.
+    const size_t stored_ncols=last - first;
+    auto src=storage.begin() + (r - size_t(row_indices.vec[0])) * stored_ncols;
+    std::copy(src, src + stored_ncols, out);
     return;
 }
  
@@ -108,9 +133,11 @@ template<typename T, class V>
 template <class Iter>
 void unknown_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
-    update_storage_by_col(c);
-    auto src=storage.begin() + (c - size_t(col_indices[0])) * (this->nrow);
-    std::copy(src + first, src + last, out);
+    update_storage_by_col(c, first, last);
+
+    const size_t stored_nrows=last - first;
+    auto src=storage.begin() + (c - size_t(col_indices.vec[0])) * stored_nrows;
+    std::copy(src, src + stored_nrows, out);
     return;
 }
 
@@ -124,13 +151,13 @@ void unknown_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n,
 
     // Need to make a copy to pass to the function.
     Rcpp::IntegerVector cur_indices(cIt, cIt+n);
-    Rcpp::Function indexed_realizer(beachenv["realizeDelayedMatrixByRowIndex"]);
-    V tmp_store=indexed_realizer(original, cur_indices);
-
-    auto tmpIt=tmp_store.begin() + first * n;
-    for (size_t c=first; c<last; ++c, out+=n) {
-        std::copy(tmpIt, tmpIt+n, out);
-    }
+    auto& cinds=col_indices.vec;
+    cinds[0]=first;
+    cinds[1]=last - first;
+    
+    Rcpp::Function indexed_realizer(beachenv["realizeByIndexRange"]);
+    V tmp_store=indexed_realizer(original, cur_indices, cinds);
+    std::copy(tmp_store.begin(), tmp_store.end(), out);
     return;
 }
 
@@ -142,14 +169,13 @@ void unknown_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n,
 
     // Need to make a copy to pass to the function.
     Rcpp::IntegerVector cur_indices(cIt, cIt+n);
-    Rcpp::Function indexed_realizer(beachenv["realizeDelayedMatrixByColIndex"]);
-    V tmp_store=indexed_realizer(original, cur_indices);
-
-    auto tmpIt=tmp_store.begin();
-    size_t nrows=last - first;
-    for (size_t i=0; i<n; ++i, out+=nrows, tmpIt+=(this->nrow)) {
-        std::copy(tmpIt+first, tmpIt+last, out);
-    }
+    auto& rinds=row_indices.vec;
+    rinds[0]=first;
+    rinds[1]=last - first;
+    
+    Rcpp::Function indexed_realizer(beachenv["realizeByRangeIndex"]);
+    V tmp_store=indexed_realizer(original, rinds, cur_indices);
+    std::copy(tmp_store.begin(), tmp_store.end(), out);
     return;
 }
 
