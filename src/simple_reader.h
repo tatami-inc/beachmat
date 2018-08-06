@@ -25,6 +25,12 @@ public:
 
     typename V::iterator get_const_col(size_t, size_t, size_t);
 
+    template <class Iter>
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+
+    template <class Iter>
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type () const;
 private:
@@ -55,7 +61,7 @@ simple_reader<T, V>::simple_reader(const Rcpp::RObject& incoming) : original(inc
 template<typename T, class V>
 simple_reader<T, V>::~simple_reader () {}
 
-/*** Getter methods ***/
+/*** Basic getter methods ***/
 
 template<typename T, class V>
 T simple_reader<T, V>::get(size_t r, size_t c) { 
@@ -82,10 +88,44 @@ void simple_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last)
     return;
 }
 
+/*** Multi getter methods ***/
+
+template<typename T, class V>
+template<class Iter>
+void simple_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_rowargs(0, first, last);
+    check_row_indices(cIt, n);
+
+    for (size_t c=first; c<last; ++c) {
+        auto it=get_const_col(c, 0, this->nrow);
+        auto cIt_copy=cIt;
+        for (size_t i=0; i<n; ++i, ++out, ++cIt_copy) {  
+            (*out)=*(it + *cIt_copy);
+        }
+    }
+    return;
+}
+
+template<typename T, class V>
+template<class Iter>
+void simple_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+    size_t nrows=last - first;
+    for (size_t i=0; i<n; ++i, ++cIt, out+=nrows) {
+        get_col(*cIt, out, first, last);
+    }
+    return;
+}
+
+/*** Specialized getter methods ***/
+
 template<typename T, class V>
 typename V::iterator simple_reader<T, V>::get_const_col(size_t c, size_t first, size_t last) {
     return mat.begin() + first + c*(this->nrow);
 }
+
+/*** Other methods ***/
 
 template<typename T, class V>
 Rcpp::RObject simple_reader<T, V>::yield() const {
