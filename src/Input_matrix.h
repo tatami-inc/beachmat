@@ -2,17 +2,15 @@
 #define BEACHMAT_INPUT_MATRIX_H
 
 #include "beachmat.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 #include "utils.h"
 
-#include "simple_matrix.h"
-#include "dense_matrix.h"
-#include "Csparse_matrix.h"
-#include "Psymm_matrix.h"
-#include "Rle_matrix.h"
-#include "HDF5_matrix.h"
-#include "delayed_matrix.h"
-#include "unknown_matrix.h"
+#include "simple_reader.h"
+#include "dense_reader.h"
+#include "Csparse_reader.h"
+#include "HDF5_reader.h"
+#include "delayed_reader.h"
+#include "unknown_reader.h"
 
 #endif
 

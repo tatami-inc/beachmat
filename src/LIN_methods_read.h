@@ -72,41 +72,41 @@ general_lin_matrix<T, V, M>::~general_lin_matrix() {}
 
 template<typename T, class V, class M>
 size_t general_lin_matrix<T, V, M>::get_nrow() const {
-    return mat.get_nrow();
+    return reader.get_nrow();
 }
 
 template<typename T, class V, class M>
 size_t general_lin_matrix<T, V, M>::get_ncol() const {
-    return mat.get_ncol();
+    return reader.get_ncol();
 }
 
 template<typename T, class V, class M>
 void general_lin_matrix<T, V, M>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    mat.get_col(c, out, first, last);
+    reader.get_col(c, out, first, last);
     return;
 }
 
 template<typename T, class V, class M>
 void general_lin_matrix<T, V, M>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    mat.get_col(c, out, first, last);
+    reader.get_col(c, out, first, last);
     return;
 }
 
 template<typename T, class V, class M>
 void general_lin_matrix<T, V, M>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    mat.get_row(r, out, first, last);
+    reader.get_row(r, out, first, last);
     return;
 }
 
 template<typename T, class V, class M>
 void general_lin_matrix<T, V, M>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    mat.get_row(r, out, first, last);
+    reader.get_row(r, out, first, last);
     return;
 }
 
 template<typename T, class V, class M>
 T general_lin_matrix<T, V, M>::get(size_t r, size_t c) {
-    return mat.get(r, c);
+    return reader.get(r, c);
 }
 
 template<typename T, class V, class M>
@@ -116,12 +116,12 @@ std::unique_ptr<lin_matrix<T, V> > general_lin_matrix<T, V, M>::clone() const {
 
 template<typename T, class V, class M> 
 Rcpp::RObject general_lin_matrix<T, V, M>::yield() const {
-    return mat.yield();
+    return reader.yield();
 }
 
 template<typename T, class V, class M> 
 matrix_type general_lin_matrix<T, V, M>::get_matrix_type() const {
-    return mat.get_matrix_type();
+    return reader.get_matrix_type();
 }
 
 /* Defining specific interface for simple matrices. */
@@ -134,7 +134,7 @@ simple_lin_matrix<T, V>::~simple_lin_matrix() {}
 
 template <typename T, class V>
 typename V::iterator simple_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
-    return this->mat.get_const_col(c, first, last);
+    return this->reader.get_const_col(c, first, last);
 }
 
 template <typename T, class V>
@@ -152,7 +152,7 @@ dense_lin_matrix<T, V>::~dense_lin_matrix() {}
 
 template <typename T, class V>
 typename V::iterator dense_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
-    return this->mat.get_const_col(c, first, last);
+    return this->reader.get_const_col(c, first, last);
 }
 
 template <typename T, class V>
@@ -171,7 +171,7 @@ Csparse_lin_matrix<T, V>::~Csparse_lin_matrix() {}
 template <typename T, class V>
 const_col_indexed_info<V> Csparse_lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator out, size_t first, size_t last) {
     Rcpp::IntegerVector::iterator iIt;
-    size_t nzero=this->mat.get_const_col_nonzero(c, iIt, out, first, last);
+    size_t nzero=this->reader.get_const_col_nonzero(c, iIt, out, first, last);
     return const_col_indexed_info<V>(nzero, iIt, out); 
 }
 
@@ -183,31 +183,31 @@ std::unique_ptr<lin_matrix<T, V> > Csparse_lin_matrix<T, V>::clone() const {
 /* Defining the helper class contained inside the HDF5 interface. */
 
 template<typename T, int RTYPE>
-HDF5_lin_helper<T, RTYPE>::HDF5_lin_helper(const Rcpp::RObject& incoming) : HDF5_matrix<T, RTYPE>(incoming) {}
+HDF5_lin_reader<T, RTYPE>::HDF5_lin_reader(const Rcpp::RObject& incoming) : HDF5_matrix<T, RTYPE>(incoming) {}
 
 template<typename T, int RTYPE>
-HDF5_lin_helper<T, RTYPE>::~HDF5_lin_helper() {}
+HDF5_lin_reader<T, RTYPE>::~HDF5_lin_reader() {}
 
 template<typename T, int RTYPE>
-void HDF5_lin_helper<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     this->extract_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
-void HDF5_lin_helper<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     this->extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
-void HDF5_lin_helper<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
     this->extract_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
-void HDF5_lin_helper<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
+void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     this->extract_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }

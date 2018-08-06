@@ -54,7 +54,7 @@ private:
 
 /* A general flavour for a LIN matrix */
 
-template <typename T, class V, class M>
+template <typename T, class V, class RDR>
 class general_lin_matrix : public lin_matrix<T, V> {
 public:    
     general_lin_matrix(const Rcpp::RObject&);
@@ -76,13 +76,13 @@ public:
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type() const;
 protected:
-    M mat;
+    RDR reader;
 };
 
 /* Realization of the general flavour for a simple matrix */
 
 template <typename T, class V>
-using simple_lin_precursor=general_lin_matrix<T, V, simple_matrix<T, V> >;
+using simple_lin_precursor=general_lin_matrix<T, V, simple_reader<T, V> >;
 
 template <typename T, class V>
 class simple_lin_matrix : public simple_lin_precursor<T, V> {
@@ -98,7 +98,7 @@ public:
 /* Realization of the general flavour for a dense matrix */
 
 template <typename T, class V>
-using dense_lin_precursor=general_lin_matrix<T, V, dense_matrix<T, V> >;
+using dense_lin_precursor=general_lin_matrix<T, V, dense_reader<T, V> >;
 
 template <typename T, class V>
 class dense_lin_matrix : public dense_lin_precursor<T, V> {
@@ -114,7 +114,7 @@ public:
 /* Realization of the general flavour for a C-sparse matrix */
 
 template <typename T, class V>
-using Csparse_lin_precursor=general_lin_matrix<T, V, Csparse_matrix<T, V> >;
+using Csparse_lin_precursor=general_lin_matrix<T, V, Csparse_reader<T, V> >;
 
 template <typename T, class V>
 class Csparse_lin_matrix : public Csparse_lin_precursor<T, V> {
@@ -127,18 +127,10 @@ public:
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
 
-/* Realization of the general flavour for other matrices */
-
-template <typename T, class V>
-using Psymm_lin_matrix=general_lin_matrix<T, V, Psymm_matrix<T, V> >;
-
-template <typename T, class V>
-using Rle_lin_matrix=general_lin_matrix<T, V, Rle_matrix<T, V> >;
-
 /* HDF5Matrix of LINs */
 
 template<typename T, int RTYPE>
-class HDF5_lin_helper : public HDF5_matrix<T, RTYPE> {
+class HDF5_lin_reader : public HDF5_matrix<T, RTYPE> {
 public:
     HDF5_lin_helper(const Rcpp::RObject&);
     ~HDF5_lin_helper();
@@ -153,21 +145,20 @@ public:
 };
 
 template <typename T, class V, int RTYPE>
-using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_helper<T, RTYPE> >;
+using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_reader<T, RTYPE> >;
 
 /* DelayedMatrix of LINs */
 
 template <typename T, class V>
-using delayed_lin_helper=delayed_matrix<T, V, lin_matrix<T, V> >;
+using delayed_lin_reader=delayed_matrix<T, V, lin_matrix<T, V> >;
 
 template <typename T, class V>
-using delayed_lin_matrix=general_lin_matrix<T, V, delayed_lin_helper<T, V> >;
+using delayed_lin_matrix=general_lin_matrix<T, V, delayed_lin_reader<T, V> >;
 
 /* Unknown matrix of LINs */
 
 template <typename T, class V>
-using unknown_lin_matrix=general_lin_matrix<T, V, unknown_matrix<T, V> >;
-
+using unknown_lin_matrix=general_lin_matrix<T, V, unknown_reader<T, V> >;
 
 }
 
