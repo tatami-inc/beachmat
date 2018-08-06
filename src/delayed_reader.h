@@ -42,24 +42,7 @@ private:
     size_t delayed_nrow=0, delayed_ncol=0;
 
     static void obtain_indices(const Rcpp::RObject&, size_t, bool&, size_t&, std::vector<size_t>&);
-
-    /* Making a copyable vector to save myself having to write copy constructors for the entire transformer.
-     * This is necessary as we need an internal Rcpp::Vector to extract from the underlying seed
-     * prior to subsetting, but such vectors are not actually default-copied between instances.
-     */
-    struct copyable_holder {
-        copyable_holder(size_t n=0) : vec(n) {}
-        ~copyable_holder() {};
-        copyable_holder(const copyable_holder& other) : vec(Rcpp::clone(other.vec)) {}
-        copyable_holder& operator=(const copyable_holder& other) { 
-            vec=Rcpp::clone(other.vec); 
-            return *this;
-        }
-        copyable_holder(copyable_holder&&) = default;
-        copyable_holder& operator=(copyable_holder&&) = default;
-        V vec;
-    };
-    copyable_holder tmp;
+    copyable_holder<V> tmp;
 
     // Various helper functions to implement the effect of the delayed subsetting.
     size_t transform_row(size_t) const;
@@ -94,6 +77,12 @@ public:
 
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
+
+    template<class Iter>
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
+
+    template<class Iter>
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type() const;
@@ -194,7 +183,6 @@ void delayed_coord_transformer<T, V>::obtain_indices(const Rcpp::RObject& subset
     return;
 }
 
-
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::get_nrow() const{ 
     return delayed_nrow;
@@ -204,6 +192,8 @@ template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::get_ncol() const{ 
     return delayed_ncol;
 }
+
+/*** Basic getter methods ***/
 
 template<typename T, class V>
 template<class M, class Iter>
@@ -265,6 +255,7 @@ T delayed_coord_transformer<T, V>::get(M mat, size_t r, size_t c) {
     }
 }
 
+/*** Internal methods to handle transposition/subsetting. ***/
 
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::transform_row(size_t r) const {
@@ -355,6 +346,8 @@ void delayed_coord_transformer<T, V>::reallocate_col(M mat, size_t c, size_t fir
  * Implementing methods for the 'delayed_matrix' class *
  *******************************************************/
 
+/*** Constructor definitions ***/
+
 template<typename T, class V, class base_mat>
 delayed_matrix<T, V, base_mat>::delayed_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
     if (get_class(incoming)!="DelayedMatrix" || !incoming.isS4()) {
@@ -363,12 +356,12 @@ delayed_matrix<T, V, base_mat>::delayed_matrix(const Rcpp::RObject& incoming) : 
 
     // Parsing the delayed operation structure.
     const Rcpp::Environment beachenv=Rcpp::Environment::namespace_env("beachmat");
-    Rcpp::Function parser(beachenv["parseDelayedOps"]);
+    Rcpp::Function parser(beachenv["setupDelayedMatrix"]);
     Rcpp::List parse_out=parser(incoming);
 
     // Figuring if we can make use of the net subsetting/transposition state.
     if (parse_out.size()!=3) {
-        throw std::runtime_error("output of beachmat:::parseDelayedOps should be a list of length 3");
+        throw std::runtime_error("output of beachmat:::setupDelayedMatrix should be a list of length 3");
     }
     seed_ptr=generate_seed(parse_out[2]);
 
@@ -398,6 +391,8 @@ delayed_matrix<T, V, base_mat>& delayed_matrix<T, V, base_mat>::operator=(const 
     return *this;
 }
 
+/*** Basic getter methods ***/
+
 template<typename T, class V, class base_mat>
 template<class Iter>
 void delayed_matrix<T, V, base_mat>::get_col(size_t c, Iter out, size_t first, size_t last) {
@@ -416,6 +411,49 @@ template<typename T, class V, class base_mat>
 T delayed_matrix<T, V, base_mat>::get(size_t r, size_t c) {
     return transformer.get(seed_ptr.get(), r, c);
 }
+
+/*** Multi getter methods ***/
+
+template<typename T, class V, class base_mat>
+template<class Iter>
+void delayed_matrix<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_rowargs(0, first, last);
+    check_row_indices(cIt, n);
+
+    // No easy way to save memory or time, as we'd have to do a transposition if we use transformer.get_row().
+    Rcpp::Environment beachenv(Rcpp::Environment::namespace_env("beachmat"));
+    Rcpp::Function indexed_realizer(beachenv["realizeByIndexRange"]);
+    Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+    V tmp_store=indexed_realizer(original, cur_indices, Rcpp::IntegerVector::create(first, last-first));
+    std::copy(tmp_store.begin(), tmp_store.end(), out);
+    return;
+}
+
+template<typename T, class V, class base_mat>
+template<class Iter>
+void delayed_matrix<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+
+    auto mattype=seed_ptr->get_matrix_type();
+    if (mattype==SIMPLE || mattype==DENSE || mattype==SPARSE) {
+        // Per column retrieval is probably faster than block realization for wholly in-memory structures.
+        const size_t nrows=last - first;
+        for (size_t i=0; i<n; ++i, ++cIt, out+=nrows) {
+            transformer.get_col(seed_ptr.get(), *cIt, out, first, last); 
+        }
+    } else {
+        // Unknown or HDF5 matrices use block realization for speed (HDF5 = single call to OS for reading; unknown = single block realization).
+        Rcpp::Environment beachenv(Rcpp::Environment::namespace_env("beachmat"));
+        Rcpp::Function indexed_realizer(beachenv["realizeByRangeIndex"]);
+        Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+        V tmp_store=indexed_realizer(original, Rcpp::IntegerVector::create(first, last-first), cur_indices);
+        std::copy(tmp_store.begin(), tmp_store.end(), out);
+    }
+    return;
+}
+
+/*** Other methods ***/
 
 template<typename T, class V, class base_mat> 
 Rcpp::RObject delayed_matrix<T, V, base_mat>::yield() const {
