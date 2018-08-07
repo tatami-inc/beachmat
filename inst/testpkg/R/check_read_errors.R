@@ -1,4 +1,4 @@
-#' export
+#' @export
 #' @importFrom testthat expect_true expect_error
 check_read_errors <- function(FUN, ..., mode) {
     x <- FUN(...)
