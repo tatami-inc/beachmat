@@ -113,7 +113,7 @@ void HDF5_character_reader::get_rows(Rcpp::IntegerVector::iterator it, size_t n,
 
     char* ref=buffer.data();
     this->extract_rows(it, n, ref, str_type, first, last);
-    for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
+    for (size_t i=0; i<required; i+=bufsize, ref+=bufsize, ++out) {
         (*out)=ref; 
     }
     return;
@@ -127,7 +127,7 @@ void HDF5_character_reader::get_cols(Rcpp::IntegerVector::iterator it, size_t n,
 
     char* ref=buffer.data();
     this->extract_cols(it, n, ref, str_type, first, last);
-    for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
+    for (size_t i=0; i<required; i+=bufsize, ref+=bufsize, ++out) {
         (*out)=ref; 
     }
     return;
