@@ -1,7 +1,7 @@
 #' @export
 #' @importFrom testthat expect_identical
 check_read_type <- function(FUN, ..., mode) {
-    expect_identical(.Call("get_type", FUN(...), PACKAGE="beachtest"), mode)
+    expect_identical(.Call("get_type", FUN(...), PACKAGE="beachtest"), if (mode=="numeric") "double" else mode)
 
     convertible <- c("logical", "numeric", "integer")
     if (mode %in% convertible) {
