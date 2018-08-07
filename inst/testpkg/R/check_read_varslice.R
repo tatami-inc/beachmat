@@ -1,13 +1,14 @@
 #' @export
 #' @importFrom testthat expect_identical
 check_read_varslice <- function(FUN, ..., mode) {
-    # Checking row access.
-    test.mat <- FUN(...)
-    NROW <- nrow(test.mat)
-    NCOL <- ncol(test.mat)
+    check_read_varslice_row(FUN(...), mode)
+    check_read_varslice_col(FUN(...), mode)
+}
 
-    rranges <- list(forward=seq_len(NROW), random=sample(NROW), subset=sample(NROW, NROW/2L))
-    rranges$reverse <- rev(rranges$forward)
+#' @importFrom testthat expect_identical
+check_read_varslice_row <- function(test.mat, mode, FUN="get_row_varslice") {
+    NCOL <- ncol(test.mat)
+    rranges <- spawn_row_ordering(nrow(test.mat))
 
     for (o in rranges) {
         nentries <- length(o)
@@ -19,13 +20,14 @@ check_read_varslice <- function(FUN, ..., mode) {
         for (i in seq_len(nentries)) {
             ref[[i]] <- test.mat[o[i], cbounds[i,1]:cbounds[i,2]]
         }
-        expect_identical(ref, .Call(paste0("get_row_varslice_", mode), test.mat, o, cbounds, PACKAGE="beachtest"))
+        expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, cbounds, PACKAGE="beachtest"))
     }
+}
 
-    # Checking column access.
-    test.mat <- FUN(...)
-    cranges <- list(forward=seq_len(NCOL), random=sample(NCOL), subset=sample(NCOL, NCOL/2L))
-    cranges$reverse <- rev(cranges$forward)
+#' @importFrom testthat expect_identical
+check_read_varslice_col <- function(test.mat, mode, FUN="get_col_varslice") {
+    NROW <- nrow(test.mat)
+    cranges <- spawn_col_ordering(ncol(test.mat))
 
     for (o in cranges) {
         nentries <- length(o)
@@ -37,7 +39,7 @@ check_read_varslice <- function(FUN, ..., mode) {
         for (i in seq_len(nentries)) {
             ref[[i]] <- test.mat[rbounds[i,1]:rbounds[i,2], o[i]]
         }
-        expect_identical(ref, .Call(paste0("get_col_varslice_", mode), test.mat, o, rbounds, PACKAGE="beachtest"))
+        expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, rbounds, PACKAGE="beachtest"))
     }
 
     return(invisible(NULL))
