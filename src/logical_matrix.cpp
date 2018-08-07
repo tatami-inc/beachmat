@@ -51,8 +51,6 @@ std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObje
             return std::unique_ptr<logical_matrix>(new dense_logical_matrix(incoming));
         } else if (ctype=="lgCMatrix") { 
             return std::unique_ptr<logical_matrix>(new Csparse_logical_matrix(incoming));
-        } else if (ctype=="lgTMatrix") {
-            throw std::runtime_error("lgTMatrix not supported, convert to lgCMatrix");
         } else if (ctype=="HDF5Matrix") {
             return std::unique_ptr<logical_matrix>(new HDF5_logical_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
