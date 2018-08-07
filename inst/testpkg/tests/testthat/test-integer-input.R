@@ -1,0 +1,154 @@
+# This tests the ability of the API to properly access integer matrices of different types.
+# library(testthat); library(beachtest); source("test-integer-input.R")
+
+library(beachtest)
+
+#######################################################
+# Testing simple matrices:
+
+set.seed(12345)
+sFUN <- function(nr=15, nc=10, lambda=5) {
+    matrix(rpois(nr*nc, lambda=lambda), nr, nc)
+}
+
+test_that("Simple integer matrix input is okay", {
+    check_read_all(sFUN, mode="integer")
+    check_read_all(sFUN, nr=5, nc=30, mode="integer")
+    check_read_all(sFUN, nr=30, nc=5, mode="integer")
+
+    check_read_slice(sFUN, mode="integer")
+    check_read_slice(sFUN, nr=5, nc=30, mode="integer")
+    check_read_slice(sFUN, nr=30, nc=5, mode="integer")
+
+    check_read_varslice(sFUN, mode="integer")
+    check_read_varslice(sFUN, nr=5, nc=30, mode="integer")
+    check_read_varslice(sFUN, nr=30, nc=5, mode="integer")
+
+    check_read_const(sFUN, mode="integer")
+    check_read_const(sFUN, nr=5, nc=30, mode="integer")
+    check_read_const(sFUN, nr=30, nc=5, mode="integer")
+
+    check_read_indexed(sFUN, mode="integer")
+    check_read_indexed(sFUN, nr=5, nc=30, mode="integer")
+    check_read_indexed(sFUN, nr=30, nc=5, mode="integer")
+
+    check_read_multi(sFUN, mode="integer")
+    check_read_multi(sFUN, nr=5, nc=30, mode="integer")
+    check_read_multi(sFUN, nr=30, nc=5, mode="integer")
+
+    check_read_type(sFUN, mode="integer")
+    check_read_errors(sFUN, mode="integer")
+})
+
+#######################################################
+# Testing RLE matrices:
+
+set.seed(23456)
+library(DelayedArray)
+rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
+    x <- sFUN(nr, nc, lambda=lambda)
+    rle <- Rle(x)
+    if (!is.null(chunk.ncols)) {
+        chunksize <- chunk.ncols*nrow(x)
+    } else {
+        chunksize <- NULL
+    }
+    RleArray(rle, dim(x), chunksize=chunksize)
+}
+
+test_that("RLE integer matrix input is okay", {
+    check_read_all(rFUN, mode="integer")
+    check_read_all(rFUN, nr=5, nc=30, mode="integer")
+    check_read_all(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_slice(rFUN, mode="integer")
+    check_read_slice(rFUN, nr=5, nc=30, mode="integer")
+    check_read_slice(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_varslice(rFUN, mode="integer")
+    check_read_varslice(rFUN, nr=5, nc=30, mode="integer")
+    check_read_varslice(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_const(rFUN, mode="integer")
+    check_read_const(rFUN, nr=5, nc=30, mode="integer")
+    check_read_const(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_indexed(rFUN, mode="integer")
+    check_read_indexed(rFUN, nr=5, nc=30, mode="integer")
+    check_read_indexed(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_multi(rFUN, mode="integer")
+    check_read_multi(rFUN, nr=5, nc=30, mode="integer")
+    check_read_multi(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_type(rFUN, mode="integer")
+    check_read_errors(rFUN, mode="integer")
+})
+
+#######################################################
+# Testing HDF5 matrices:
+
+set.seed(34567)
+library(HDF5Array)
+hFUN <- function(nr=15, nc=10) {
+    as(sFUN(nr, nc), "HDF5Array")
+}
+
+test_that("HDF5 integer matrix input is okay", {
+    check_read_all(hFUN, mode="integer")
+    check_read_all(hFUN, nr=5, nc=30, mode="integer")
+    check_read_all(hFUN, nr=30, nc=5, mode="integer")
+
+    check_read_slice(hFUN, mode="integer")
+    check_read_slice(hFUN, nr=5, nc=30, mode="integer")
+    check_read_slice(hFUN, nr=30, nc=5, mode="integer")
+
+    check_read_varslice(hFUN, mode="integer")
+    check_read_varslice(hFUN, nr=5, nc=30, mode="integer")
+    check_read_varslice(hFUN, nr=30, nc=5, mode="integer")
+
+    check_read_const(hFUN, mode="integer")
+    check_read_const(hFUN, nr=5, nc=30, mode="integer")
+    check_read_const(hFUN, nr=30, nc=5, mode="integer")
+
+    check_read_indexed(hFUN, mode="integer")
+    check_read_indexed(hFUN, nr=5, nc=30, mode="integer")
+    check_read_indexed(hFUN, nr=30, nc=5, mode="integer")
+
+    check_read_multi(hFUN, mode="integer")
+    check_read_multi(hFUN, nr=5, nc=30, mode="integer")
+    check_read_multi(hFUN, nr=30, nc=5, mode="integer")
+
+    check_read_type(hFUN, mode="integer")
+    check_read_errors(hFUN, mode="integer")
+})
+
+#######################################################
+# Testing delayed operations:
+
+set.seed(981347)
+library(DelayedArray)
+test_that("Delayed integer matrix input is okay", {
+    delfuns <- delayed_funs(sFUN)
+
+    for (FUN in delfuns) {
+        check_read_all(FUN, mode="integer")
+
+        check_read_slice(FUN, mode="integer")
+
+        check_read_varslice(FUN, mode="integer")
+
+        check_read_const(FUN, mode="integer")
+
+        check_read_indexed(FUN, mode="integer")
+
+        check_read_multi(FUN, mode="integer")
+
+        check_read_type(FUN, mode="integer")
+
+        check_read_errors(FUN, mode="integer")
+    }
+
+    # Proper type check upon coercion!
+    expect_identical("double", .Call("get_type", hFUN()+1, PACKAGE="beachtest"))
+})
