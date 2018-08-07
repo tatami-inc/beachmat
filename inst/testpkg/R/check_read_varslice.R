@@ -18,7 +18,7 @@ check_read_varslice_row <- function(test.mat, mode, FUN="get_row_varslice") {
 
         ref <- vector("list", nentries)
         for (i in seq_len(nentries)) {
-            ref[[i]] <- test.mat[o[i], cbounds[i,1]:cbounds[i,2]]
+            ref[[i]] <- as.vector(test.mat[o[i], cbounds[i,1]:cbounds[i,2]])
         }
         expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, cbounds, PACKAGE="beachtest"))
     }
@@ -37,7 +37,7 @@ check_read_varslice_col <- function(test.mat, mode, FUN="get_col_varslice") {
 
         ref <- vector("list", nentries)
         for (i in seq_len(nentries)) {
-            ref[[i]] <- test.mat[rbounds[i,1]:rbounds[i,2], o[i]]
+            ref[[i]] <- as.vector(test.mat[rbounds[i,1]:rbounds[i,2], o[i]])
         }
         expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, rbounds, PACKAGE="beachtest"))
     }
