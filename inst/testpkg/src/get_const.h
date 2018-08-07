@@ -1,5 +1,5 @@
-#ifndef BEACHTEST_GET_ALL_H
-#define BEACHTEST_GET_ALL_H
+#ifndef BEACHTEST_GET_CONST_H
+#define BEACHTEST_GET_CONST_H
 #include "beachtest.h"
 
 template <class T, class O, class M>  // M is automatically deduced.

@@ -1,5 +1,5 @@
-#ifndef BEACHTEST_GET_SLICE_H
-#define BEACHTEST_GET_SLICE_H
+#ifndef BEACHTEST_GET_MULTI_H
+#define BEACHTEST_GET_MULTI_H
 #include "beachtest.h"
 
 template <class T, class O, class M>  
