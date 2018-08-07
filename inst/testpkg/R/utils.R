@@ -9,3 +9,11 @@ spawn_col_ordering <- function(NCOL) {
     cranges$reverse <- rev(cranges$forward)
     cranges
 }
+
+spawn_row_bounds <- function(NROW) {
+    list(full=c(1L, NROW), left=c(1L, floor(NROW/2L)), right=c(ceiling(NROW/2L), NROW), middle=sort(sample(NROW, 2)), single=rep(sample(NROW, 1), 2))
+}
+
+spawn_col_bounds <- function(NCOL) {
+    list(full=c(1L, NCOL), left=c(1L, floor(NCOL/2L)), right=c(ceiling(NCOL/2L), NCOL), middle=sort(sample(NCOL, 2)), single=rep(sample(NCOL, 1), 2))
+}

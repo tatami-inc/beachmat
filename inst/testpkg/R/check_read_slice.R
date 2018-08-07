@@ -11,8 +11,7 @@ check_read_slice_row <- function(test.mat, mode, FUN="get_row_slice") {
     dimnames(ref) <- NULL
 
     rranges <- spawn_row_ordering(nrow(test.mat))
-    NCOL <- ncol(test.mat)
-    cbounds <- list(full=c(1L, NCOL), left=c(1L, floor(NCOL/2L)), right=c(ceiling(NCOL/2L), NCOL), middle=sort(sample(NCOL, 2)), single=rep(sample(NCOL, 1), 2))
+    cbounds <- spawn_col_bounds(ncol(test.mat))
 
     for (o in rranges) {
         for (b in cbounds) {
@@ -30,8 +29,7 @@ check_read_slice_col <- function(test.mat, mode, FUN="get_col_slice") {
     dimnames(ref) <- NULL
 
     cranges <- spawn_col_ordering(ncol(test.mat))
-    NROW <- nrow(test.mat)
-    rbounds <- list(full=c(1L, NROW), left=c(1L, floor(NROW/2L)), right=c(ceiling(NROW/2L), NROW), middle=sort(sample(NROW, 2)), single=rep(sample(NROW, 1), 2))
+    rbounds <- spawn_row_bounds(nrow(test.mat))
 
     for (o in cranges) {
         for (b in rbounds) {
