@@ -166,21 +166,24 @@ test_that("Delayed integer matrix input is okay", {
     delfuns <- delayed_funs(sFUN)
 
     for (FUN in delfuns) {
-        check_read_all(FUN, mode="integer")
+        NR <- 10 + sample(10, 1)
+        NC <- 10 + sample(10, 1)
 
-        check_read_slice(FUN, mode="integer")
+        check_read_all(FUN, NR, NC, mode="integer")
 
-        check_read_varslice(FUN, mode="integer")
+        check_read_slice(FUN, NR, NC, mode="integer")
 
-        check_read_const(FUN, mode="integer")
+        check_read_varslice(FUN, NR, NC, mode="integer")
 
-        check_read_indexed(FUN, mode="integer")
+        check_read_const(FUN, NR, NC, mode="integer")
 
-        check_read_multi(FUN, mode="integer")
+        check_read_indexed(FUN, NR, NC, mode="integer")
 
-        check_read_type(FUN, mode="integer")
+        check_read_multi(FUN, NR, NC, mode="integer")
 
-        check_read_errors(FUN, mode="integer")
+        check_read_type(FUN, NR, NC, mode="integer")
+
+        check_read_errors(FUN, NR, NC, mode="integer")
     }
 
     # Proper type check upon coercion!
