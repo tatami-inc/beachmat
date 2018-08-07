@@ -11,6 +11,23 @@ extern "C" {
 
 // Standard access.
 
+SEXP get_row_all_integer(SEXP, SEXP);
+SEXP get_row_all_numeric(SEXP, SEXP);
+SEXP get_row_all_logical(SEXP, SEXP);
+SEXP get_row_all_character(SEXP, SEXP);
+
+SEXP get_col_all_integer(SEXP, SEXP);
+SEXP get_col_all_numeric(SEXP, SEXP);
+SEXP get_col_all_logical(SEXP, SEXP);
+SEXP get_col_all_character(SEXP, SEXP);
+
+SEXP get_single_all_integer(SEXP, SEXP, SEXP);
+SEXP get_single_all_numeric(SEXP, SEXP, SEXP);
+SEXP get_single_all_logical(SEXP, SEXP, SEXP);
+SEXP get_single_all_character(SEXP, SEXP, SEXP);
+
+// Standard access.
+
 SEXP test_numeric_access (SEXP, SEXP, SEXP);
 
 SEXP test_integer_access (SEXP, SEXP, SEXP);

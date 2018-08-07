@@ -7,6 +7,22 @@
 extern "C" {
 
 static const R_CallMethodDef all_call_entries[] = {
+    // All access.
+    REGISTER(get_row_all_numeric, 2),
+    REGISTER(get_row_all_integer, 2),
+    REGISTER(get_row_all_logical, 2),
+    REGISTER(get_row_all_character, 2),
+
+    REGISTER(get_col_all_numeric, 2),
+    REGISTER(get_col_all_integer, 2),
+    REGISTER(get_col_all_logical, 2),
+    REGISTER(get_col_all_character, 2),
+
+    REGISTER(get_single_all_numeric, 3),
+    REGISTER(get_single_all_integer, 3),
+    REGISTER(get_single_all_logical, 3),
+    REGISTER(get_single_all_character, 3),
+
     // Standard access.
     REGISTER(test_numeric_access, 3),
     REGISTER(test_integer_access, 3),
