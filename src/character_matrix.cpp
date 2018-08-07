@@ -10,11 +10,25 @@ character_matrix::~character_matrix() {}
 
 void character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out) { 
     get_col(c, out, 0, get_nrow());
+    return;
 }
 
 void character_matrix::get_row(size_t r, Rcpp::StringVector::iterator out) { 
     get_row(r, out, 0, get_ncol());
+    return;
 }
+
+void character_matrix::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out) {
+    get_cols(it, n, out, 0, get_nrow());
+    return;
+}
+
+void character_matrix::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out) {
+    get_rows(it, n, out, 0, get_ncol());
+    return;
+}
+
+// Specialized getters
 
 Rcpp::StringVector::iterator character_matrix::get_const_col(size_t c, Rcpp::StringVector::iterator work) {
     return get_const_col(c, work, 0, get_nrow());
@@ -89,6 +103,34 @@ Rcpp::String HDF5_character_reader::get(size_t r, size_t c) {
     char* ref=buffer.data();
     this->extract_one(r, c, ref, str_type);
     return ref;
+}
+
+void HDF5_character_reader::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+    const size_t required=bufsize * n * (last - first);
+    if (required > buffer.size()) {
+        buffer.resize(required);
+    }
+
+    char* ref=buffer.data();
+    this->extract_rows(it, n, ref, str_type, first, last);
+    for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
+        (*out)=ref; 
+    }
+    return;
+}
+
+void HDF5_character_reader::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+    const size_t required=bufsize * n * (last - first);
+    if (required > buffer.size()) {
+        buffer.resize(required);
+    }
+
+    char* ref=buffer.data();
+    this->extract_cols(it, n, ref, str_type, first, last);
+    for (size_t r=first; r<last; ++r, ref+=bufsize, ++out) {
+        (*out)=ref; 
+    }
+    return;
 }
 
 /* Methods for the Delayed character interface. */

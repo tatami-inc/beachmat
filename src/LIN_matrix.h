@@ -18,13 +18,13 @@ public:
     virtual size_t get_nrow() const=0;
     virtual size_t get_ncol() const=0;
 
-    void get_row(size_t, Rcpp::IntegerVector::iterator);
-    void get_row(size_t, Rcpp::NumericVector::iterator);
-
     /* We can't add a LogicalVector::iterator method because IntegerVector::iterator==LogicalVector::iterator
      * under the hood in Rcpp. The compiler then complains that overloading is not possible. Thus, for all 
      * references here to LogicalVector, we will consider the use of IntegerVector in its place.
      */
+
+    void get_row(size_t, Rcpp::IntegerVector::iterator);
+    void get_row(size_t, Rcpp::NumericVector::iterator);
 
     virtual void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t)=0;
     virtual void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
@@ -37,12 +37,27 @@ public:
 
     virtual T get(size_t, size_t)=0;
 
+    // Multi-row/column getters.
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator);
+    void get_rows(Rcpp::IntegerVector::iterator ,size_t, Rcpp::NumericVector::iterator);
+
+    virtual void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t)=0;
+    virtual void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
+
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator);
+
+    virtual void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t)=0;
+    virtual void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
+
+    // Specialist getters.
     typename V::iterator get_const_col(size_t, typename V::iterator);
     virtual typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
 
     const_col_indexed_info<V> get_const_col_indexed(size_t, typename V::iterator);
     virtual const_col_indexed_info<V> get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
 
+    // Other methods.
     virtual std::unique_ptr<lin_matrix<T, V> > clone() const=0;
 
     virtual Rcpp::RObject yield() const=0;
@@ -70,6 +85,12 @@ public:
     void get_row(size_t,  Rcpp::NumericVector::iterator, size_t, size_t);
 
     T get(size_t, size_t);
+
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 
@@ -142,6 +163,12 @@ public:
     
     void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
+
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 };
 
 template <typename T, class V, int RTYPE>

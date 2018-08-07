@@ -15,6 +15,7 @@ public:
     virtual size_t get_nrow() const=0;
     virtual size_t get_ncol() const=0;
     
+    // Basic getters.
     void get_row(size_t, Rcpp::StringVector::iterator); 
     virtual void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
 
@@ -23,12 +24,21 @@ public:
 
     virtual Rcpp::String get(size_t, size_t)=0;
 
+    // Multi getters.
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator); 
+    virtual void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
+
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator);
+    virtual void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
+
+    // Specialized getters.
     Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator);
     virtual Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
     const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator);
     virtual const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
+    // Other methods.
     virtual std::unique_ptr<character_matrix> clone() const=0;
 
     virtual Rcpp::RObject yield () const=0;
@@ -48,12 +58,30 @@ public:
   
     size_t get_nrow() const { return reader.get_nrow(); }
     size_t get_ncol() const { return reader.get_ncol(); }
- 
-    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { return reader.get_row(r, out, first, last); }
-    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { return reader.get_col(c, out, first, last); }
+
+    // Basic getters.
+    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+        reader.get_row(r, out, first, last);
+        return;
+    }
+    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
+        reader.get_col(c, out, first, last); 
+        return;
+    }
 
     Rcpp::String get(size_t r, size_t c) { return reader.get(r, c); }
 
+    // Multi getters.
+    void get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
+        reader.get_rows(it, n, out, first, last);
+        return;
+    }
+    void get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+        reader.get_cols(it, n, out, first, last);
+        return;
+    }
+
+    // Other methods.
     std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new general_character_matrix(*this)); }
 
     Rcpp::RObject yield () const { return reader.yield(); }
@@ -85,6 +113,9 @@ public:
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
     Rcpp::String get(size_t, size_t);
+
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t);
 protected:
     H5::DataType str_type;
     size_t bufsize;
