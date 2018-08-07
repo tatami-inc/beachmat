@@ -45,9 +45,6 @@ private:
     copyable_holder<V> tmp;
 
     // Various helper functions to implement the effect of the delayed subsetting.
-    size_t transform_row(size_t) const;
-    size_t transform_col(size_t) const;
-
     template<class M, class Iter>
     void reallocate_row(M, size_t, size_t, size_t, Iter out);
     template<class M, class Iter>
@@ -109,7 +106,7 @@ delayed_coord_transformer<T, V>::delayed_coord_transformer(M mat) : delayed_nrow
 template<typename T, class V>
 template<class M>
 delayed_coord_transformer<T, V>::delayed_coord_transformer(const Rcpp::List& net_subset, const Rcpp::LogicalVector& net_trans, M mat) :
-        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), tmp(std::max(delayed_nrow, delayed_ncol)) {
+        delayed_nrow(mat->get_nrow()), delayed_ncol(mat->get_ncol()), tmp(std::max(delayed_nrow, delayed_ncol)) { 
    
     const size_t original_nrow(mat->get_nrow()), original_ncol(mat->get_ncol()); 
 
@@ -199,7 +196,12 @@ template<typename T, class V>
 template<class M, class Iter>
 void delayed_coord_transformer<T, V>::get_row(M mat, size_t r, Iter out, size_t first, size_t last) {
     if (transposed) {
-        r=transform_col(r);
+        dim_checker::check_dimension(r, get_nrow(), "row");
+        dim_checker::check_subset(first, last, get_ncol(), "column");
+
+        if (bycol) {
+            r=col_index[r];
+        }
 
         // Column extraction, first/last refer to rows.
         if (byrow) {
@@ -208,10 +210,14 @@ void delayed_coord_transformer<T, V>::get_row(M mat, size_t r, Iter out, size_t 
             mat->get_col(r, out, first, last);
         }
     } else {
-        r=transform_row(r);
+        if (byrow) {
+            dim_checker::check_dimension(r, get_nrow(), "row");
+            r=row_index[r];
+        }
 
         // Row extraction, first/last refer to columns.
         if (bycol) {
+            dim_checker::check_subset(first, last, get_ncol(), "column");
             reallocate_row(mat, r, first, last, out);
         } else {
             mat->get_row(r, out, first, last);
@@ -224,7 +230,12 @@ template<typename T, class V>
 template<class M, class Iter>
 void delayed_coord_transformer<T, V>::get_col(M mat, size_t c, Iter out, size_t first, size_t last) {
     if (transposed) {
-        c=transform_row(c);
+        dim_checker::check_dimension(c, get_ncol(), "column");
+        dim_checker::check_subset(first, last, get_nrow(), "row");
+
+        if (byrow) {
+            c=row_index[c];
+        }
 
         // Row extraction, first/last refer to columns.
         if (bycol) {
@@ -233,10 +244,14 @@ void delayed_coord_transformer<T, V>::get_col(M mat, size_t c, Iter out, size_t 
             mat->get_row(c, out, first, last);
         }
     } else {
-        c=transform_col(c);
+        if (bycol) {
+            dim_checker::check_dimension(c, get_ncol(), "column");
+            c=col_index[c];
+        }
 
         // Column extraction, first/last refer to rows.
         if (byrow) {
+            dim_checker::check_subset(first, last, get_nrow(), "row");
             reallocate_col(mat, c, first, last, out);
         } else {
             mat->get_col(c, out, first, last);
@@ -249,38 +264,35 @@ template<typename T, class V>
 template<class M>
 T delayed_coord_transformer<T, V>::get(M mat, size_t r, size_t c) {
     if (transposed) {
-        return mat->get(transform_row(c), transform_col(r));
+        dim_checker::check_dimension(r, get_nrow(), "row");
+        dim_checker::check_dimension(c, get_ncol(), "column");
+        if (bycol) {
+            r=col_index[r];
+        }
+        if (byrow) {
+            c=row_index[c];
+        }
+        return mat->get(c, r);
     } else {
-        return mat->get(transform_row(r), transform_col(c));
+        if (byrow) {
+            dim_checker::check_dimension(r, get_nrow(), "row");
+            r=row_index[r];
+        }
+        if (bycol) {
+            dim_checker::check_dimension(c, get_ncol(), "column");
+            c=col_index[c];
+        }
+        return mat->get(r, c);
     }
 }
 
-/*** Internal methods to handle transposition/subsetting. ***/
-
-template<typename T, class V>
-size_t delayed_coord_transformer<T, V>::transform_row(size_t r) const {
-    if (byrow) {
-        dim_checker::check_dimension(r, row_index.size(), "row");
-        r=row_index[r];
-    }
-    return r;
-}
-
-template<typename T, class V>
-size_t delayed_coord_transformer<T, V>::transform_col(size_t c) const {
-    if (bycol) {
-        dim_checker::check_dimension(c, col_index.size(), "column");
-        c=col_index[c];
-    }
-    return c;
-}
+/*** Internal methods to handle reallocation after subsetting. ***/
 
 template<typename T, class V>
 void delayed_coord_transformer<T, V>::prepare_reallocation(size_t first, size_t last, 
         size_t& old_first, size_t& old_last, size_t& min_index, size_t& max_index, 
         const std::vector<size_t>& indices, const char* msg) {
 
-    dim_checker::check_subset(first, last, indices.size(), msg);
     if (old_first!=first || old_last!=last) {
         old_first=first;
         old_last=last;
