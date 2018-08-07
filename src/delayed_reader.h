@@ -261,7 +261,7 @@ template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::transform_row(size_t r) const {
     if (byrow) {
         if (r<0 || r>=row_index.size()) { 
-            throw std::runtime_error("row indices out of range");
+            throw std::runtime_error("row index out of range");
         }
         r=row_index[r];
     }
@@ -272,7 +272,7 @@ template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::transform_col(size_t c) const {
     if (bycol) {
         if (c<0 || c>=col_index.size()) { 
-            throw std::runtime_error("column indices out of range");
+            throw std::runtime_error("column index out of range");
         }
         c=col_index[c];
     }
@@ -423,7 +423,9 @@ void delayed_matrix<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator cIt,
     // No easy way to save memory or time, as we'd have to do a transposition if we use transformer.get_row().
     Rcpp::Environment beachenv(Rcpp::Environment::namespace_env("beachmat"));
     Rcpp::Function indexed_realizer(beachenv["realizeByIndexRange"]);
+
     Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+    for (auto& i : cur_indices) { ++i; }
     V tmp_store=indexed_realizer(original, cur_indices, Rcpp::IntegerVector::create(first, last-first));
     std::copy(tmp_store.begin(), tmp_store.end(), out);
     return;
@@ -446,7 +448,9 @@ void delayed_matrix<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt,
         // Unknown or HDF5 matrices use block realization for speed (HDF5 = single call to OS for reading; unknown = single block realization).
         Rcpp::Environment beachenv(Rcpp::Environment::namespace_env("beachmat"));
         Rcpp::Function indexed_realizer(beachenv["realizeByRangeIndex"]);
+
         Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+        for (auto& i : cur_indices) { ++i; }
         V tmp_store=indexed_realizer(original, Rcpp::IntegerVector::create(first, last-first), cur_indices);
         std::copy(tmp_store.begin(), tmp_store.end(), out);
     }
