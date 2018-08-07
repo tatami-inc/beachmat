@@ -39,12 +39,15 @@ private:
     V storage; // this does not need to be copyable, as the entire object is replaced when a new block is loaded.
     void update_storage_by_row(size_t, size_t, size_t);
     void update_storage_by_col(size_t, size_t, size_t);
+
     size_t get_row_storage_start_row() const;
     size_t get_row_storage_start_col() const;
     size_t get_row_storage_ncols() const;
     size_t get_col_storage_start_row() const;
     size_t get_col_storage_start_col() const;
     size_t get_col_storage_nrows() const;
+
+    static int get_upper_chunk_bound (size_t end, size_t chunk_dim);
 
     copyable_holder<Rcpp::IntegerVector> row_indices, row_slices;
     copyable_holder<Rcpp::IntegerVector> col_indices, col_slices;
@@ -78,21 +81,30 @@ unknown_reader<T, V>::~unknown_reader() {}
 /* Define storage-related methods. */
 
 template<typename T, class V>
+int unknown_reader<T, V>::get_upper_chunk_bound (size_t end, size_t chunk_dim) {
+    if (end <= chunk_dim) {
+        return chunk_dim;
+    }
+    return (int((end - 1)/chunk_dim) + 1) * chunk_dim; // implicit and intended floor upon division.
+}
+
+template<typename T, class V>
 void unknown_reader<T, V>::update_storage_by_row(size_t r, size_t first, size_t last) {
+    // We assume that all inputs are valid, as check_* functions are called elsewhere.
     auto& rinds=row_indices.vec;
     auto& cinds=col_slices.vec;
 
     if (r < size_t(rinds[0]) || r >= size_t(rinds[1]) || first < size_t(cinds[0]) || last > size_t(cinds[1])) {
-        rinds[0] = std::floor(r/chunk_nrow) * chunk_nrow;
+        rinds[0] = int(r/chunk_nrow) * chunk_nrow; // implicit floor in the division.
         rinds[1] = std::min(chunk_nrow, int(this->nrow) - rinds[0]);
 
-        cinds[0] = first;
-        cinds[1] = last - first;
+        cinds[0] = int(first/chunk_ncol) * chunk_ncol;
+        cinds[1] = std::min(get_upper_chunk_bound(last, chunk_ncol), int(this->ncol)) - cinds[0];
         storage = realizer(original, rinds, cinds, do_transpose.vec); // Transposed, so storage is effectively row-major!
 
         // Resetting for easier checks above.
         rinds[1] += rinds[0];
-        cinds[1] = last;
+        cinds[1] += cinds[0];
     }
     return;
 }
@@ -103,16 +115,16 @@ void unknown_reader<T, V>::update_storage_by_col(size_t c, size_t first, size_t 
     auto& rinds=row_slices.vec;
 
     if (c < size_t(cinds[0]) || c >= size_t(cinds[1]) || first < size_t(rinds[0]) || last > size_t(rinds[1])) {
-        cinds[0] = std::floor(c/chunk_ncol) * chunk_ncol;
+        cinds[0] = int(c/chunk_ncol) * chunk_ncol; // implicit floor in the division.
         cinds[1] = std::min(chunk_ncol, int(this->ncol) - cinds[0]);
 
-        rinds[0] = first;
-        rinds[1] = last - first;
+        rinds[0] = int(first/chunk_nrow) * chunk_nrow;
+        rinds[1] = std::min(get_upper_chunk_bound(last, chunk_nrow), int(this->nrow)) - rinds[0];
         storage = realizer(original, rinds, cinds);
 
         // Resetting for easier checks above.
         cinds[1] += cinds[0];
-        rinds[1] = last;
+        rinds[1] += rinds[0];
     }
     return;
 }
