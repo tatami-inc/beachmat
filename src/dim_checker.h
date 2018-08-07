@@ -14,6 +14,10 @@ public:
     virtual ~dim_checker();
     size_t get_nrow() const;
     size_t get_ncol() const;
+
+    // Helper functions that might be useful elsewhere.
+    static void check_dimension(size_t, size_t, const char*);
+    static void check_subset(size_t, size_t, size_t, const char*);
 protected:
     size_t nrow, ncol;
     void fill_dims(const Rcpp::RObject&);

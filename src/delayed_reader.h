@@ -55,7 +55,7 @@ private:
 
     size_t old_col_first=0, old_col_last=0, min_col_index=0, max_col_index=0;
     size_t old_row_first=0, old_row_last=0, min_row_index=0, max_row_index=0;
-    static void prepare_reallocation(size_t, size_t, size_t&, size_t&, size_t&, size_t&, const std::vector<size_t>&, const std::string&);
+    static void prepare_reallocation(size_t, size_t, size_t&, size_t&, size_t&, size_t&, const std::vector<size_t>&, const char*);
 };
 
 /* The 'delayed_matrix' class, which wraps the coord_transformer class. */
@@ -260,9 +260,7 @@ T delayed_coord_transformer<T, V>::get(M mat, size_t r, size_t c) {
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::transform_row(size_t r) const {
     if (byrow) {
-        if (r<0 || r>=row_index.size()) { 
-            throw std::runtime_error("row index out of range");
-        }
+        dim_checker::check_dimension(r, row_index.size(), "row");
         r=row_index[r];
     }
     return r;
@@ -271,9 +269,7 @@ size_t delayed_coord_transformer<T, V>::transform_row(size_t r) const {
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::transform_col(size_t c) const {
     if (bycol) {
-        if (c<0 || c>=col_index.size()) { 
-            throw std::runtime_error("column index out of range");
-        }
+        dim_checker::check_dimension(c, col_index.size(), "column");
         c=col_index[c];
     }
     return c;
@@ -282,12 +278,9 @@ size_t delayed_coord_transformer<T, V>::transform_col(size_t c) const {
 template<typename T, class V>
 void delayed_coord_transformer<T, V>::prepare_reallocation(size_t first, size_t last, 
         size_t& old_first, size_t& old_last, size_t& min_index, size_t& max_index, 
-        const std::vector<size_t>& indices, const std::string& msg) {
+        const std::vector<size_t>& indices, const char* msg) {
 
-    if (first>last || last>indices.size()) { 
-        throw_custom_error("invalid ", msg, " start/end indices");
-    }
-
+    dim_checker::check_subset(first, last, indices.size(), msg);
     if (old_first!=first || old_last!=last) {
         old_first=first;
         old_last=last;
