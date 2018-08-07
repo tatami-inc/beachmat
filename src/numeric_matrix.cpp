@@ -51,8 +51,6 @@ std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObje
             return std::unique_ptr<numeric_matrix>(new dense_numeric_matrix(incoming));
         } else if (ctype=="dgCMatrix") { 
             return std::unique_ptr<numeric_matrix>(new Csparse_numeric_matrix(incoming));
-        } else if (ctype=="dgTMatrix") {
-            throw std::runtime_error("dgTMatrix not supported, convert to dgCMatrix");
         } else if (ctype=="HDF5Matrix") {
             return std::unique_ptr<numeric_matrix>(new HDF5_numeric_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
