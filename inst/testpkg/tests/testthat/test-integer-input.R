@@ -85,6 +85,40 @@ test_that("RLE integer matrix input is okay", {
     check_read_errors(rFUN, mode="integer")
 })
 
+test_that("RLE integer matrix input is okay with reduced block size", {
+    old <- getOption("DelayedArray.block.size")
+    options(DelayedArray.block.size=6*4)
+
+    check_read_all(rFUN, mode="integer")
+    check_read_all(rFUN, nr=5, nc=30, mode="integer")
+    check_read_all(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_slice(rFUN, mode="integer")
+    check_read_slice(rFUN, nr=5, nc=30, mode="integer")
+    check_read_slice(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_varslice(rFUN, mode="integer")
+    check_read_varslice(rFUN, nr=5, nc=30, mode="integer")
+    check_read_varslice(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_const(rFUN, mode="integer")
+    check_read_const(rFUN, nr=5, nc=30, mode="integer")
+    check_read_const(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_indexed(rFUN, mode="integer")
+    check_read_indexed(rFUN, nr=5, nc=30, mode="integer")
+    check_read_indexed(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_multi(rFUN, mode="integer")
+    check_read_multi(rFUN, nr=5, nc=30, mode="integer")
+    check_read_multi(rFUN, nr=30, nc=5, mode="integer")
+
+    check_read_type(rFUN, mode="integer")
+    check_read_errors(rFUN, mode="integer")
+             
+    options(DelayedArray.block.size=old)
+})
+
 #######################################################
 # Testing HDF5 matrices:
 
