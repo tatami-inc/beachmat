@@ -41,22 +41,19 @@ test_that("Simple integer matrix input is okay", {
 })
 
 #######################################################
-# Testing RLE matrices:
+# Testing RLE matrices, treated as unknown.
 
 set.seed(23456)
 library(DelayedArray)
 rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
     x <- sFUN(nr, nc, lambda=lambda)
     rle <- Rle(x)
-    if (!is.null(chunk.ncols)) {
-        chunksize <- chunk.ncols*nrow(x)
-    } else {
-        chunksize <- NULL
-    }
-    RleArray(rle, dim(x), chunksize=chunksize)
+    RleArray(rle, dim(x))
 }
 
 test_that("RLE integer matrix input is okay", {
+    expect_s4_class(rFUN(), "RleMatrix")
+
     check_read_all(rFUN, mode="integer")
     check_read_all(rFUN, nr=5, nc=30, mode="integer")
     check_read_all(rFUN, nr=30, nc=5, mode="integer")
@@ -129,6 +126,8 @@ hFUN <- function(nr=15, nc=10) {
 }
 
 test_that("HDF5 integer matrix input is okay", {
+    expect_s4_class(hFUN(), "HDF5Matrix")
+
     check_read_all(hFUN, mode="integer")
     check_read_all(hFUN, nr=5, nc=30, mode="integer")
     check_read_all(hFUN, nr=30, nc=5, mode="integer")
@@ -168,6 +167,7 @@ test_that("Delayed integer matrix input is okay", {
     for (FUN in delfuns) {
         NR <- 10 + sample(10, 1)
         NC <- 10 + sample(10, 1)
+        expect_s4_class(FUN(), "DelayedMatrix")
 
         check_read_all(FUN, NR, NC, mode="integer")
 
