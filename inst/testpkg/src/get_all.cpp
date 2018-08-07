@@ -1,5 +1,7 @@
 #include "get_all.h"
 
+extern "C" {
+
 // Get all rows.
 
 SEXP get_row_all_numeric (SEXP in, SEXP order) {
@@ -90,3 +92,4 @@ SEXP get_single_all_character (SEXP in, SEXP rorder, SEXP corder) {
     END_RCPP
 }
 
+}
