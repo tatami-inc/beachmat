@@ -16,10 +16,7 @@ check_read_varslice_row <- function(test.mat, mode, FUN="get_row_varslice") {
         bound2 <- sample(NCOL, nentries, replace=TRUE)
         cbounds <- cbind(pmin(bound1, bound2), pmax(bound1, bound2))
 
-        ref <- vector("list", nentries)
-        for (i in seq_len(nentries)) {
-            ref[[i]] <- as.vector(test.mat[o[i], cbounds[i,1]:cbounds[i,2]])
-        }
+        ref <- get_reference_varslice(test.mat, o, cbounds, byrow=TRUE)
         expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, cbounds, PACKAGE="beachtest"))
     }
 }
@@ -35,12 +32,23 @@ check_read_varslice_col <- function(test.mat, mode, FUN="get_col_varslice") {
         bound2 <- sample(NROW, nentries, replace=TRUE)
         rbounds <- cbind(pmin(bound1, bound2), pmax(bound1, bound2))
 
-        ref <- vector("list", nentries)
-        for (i in seq_len(nentries)) {
-            ref[[i]] <- as.vector(test.mat[rbounds[i,1]:rbounds[i,2], o[i]])
-        }
+        ref <- get_reference_varslice(test.mat, o, cbounds, byrow=FALSE)
         expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, rbounds, PACKAGE="beachtest"))
     }
 
     return(invisible(NULL))
+}
+
+get_reference_varslice <- function(test.mat, order, bounds, byrow=TRUE) {
+    ref <- vector("list", length(order))
+    for (i in seq_along(order)) {
+        range <- bounds[i,1]:bounds[i,2]
+        if (byrow) {
+            out <- test.mat[order[i], range]
+        } else {
+            out <- test.mat[range, order[i]]
+        }
+        ref[[i]] <- as.vector(out)
+    }
+    return(ref)
 }
