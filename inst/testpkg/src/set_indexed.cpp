@@ -7,7 +7,10 @@ extern "C" {
 SEXP set_row_indexed_integer(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
-    auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), op);
+
     return set_row_indexed<Rcpp::IntegerVector>(optr.get(), index1, index2);
     END_RCPP
 }
@@ -15,7 +18,10 @@ SEXP set_row_indexed_integer(SEXP in, SEXP index1, SEXP index2) {
 SEXP set_row_indexed_logical(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
-    auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), op);
+
     return set_row_indexed<Rcpp::LogicalVector>(optr.get(), index1, index2);
     END_RCPP
 }
@@ -23,7 +29,10 @@ SEXP set_row_indexed_logical(SEXP in, SEXP index1, SEXP index2) {
 SEXP set_row_indexed_numeric(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
-    auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+    
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), op);
+
     return set_row_indexed<Rcpp::NumericVector>(optr.get(), index1, index2);
     END_RCPP
 }
@@ -32,7 +41,7 @@ SEXP set_row_indexed_character(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_character_matrix(in);
 
-    beachmat::output_param op(in);
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
     op.set_strlen(10);
     auto optr=beachmat::create_character_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
@@ -45,7 +54,9 @@ SEXP set_row_indexed_character(SEXP in, SEXP index1, SEXP index2) {
 SEXP set_col_indexed_integer(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
-    auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), op);
     return set_col_indexed<Rcpp::IntegerVector>(optr.get(), index1, index2);
     END_RCPP
 }
@@ -53,7 +64,9 @@ SEXP set_col_indexed_integer(SEXP in, SEXP index1, SEXP index2) {
 SEXP set_col_indexed_logical(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
-    auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), op);
     return set_col_indexed<Rcpp::LogicalVector>(optr.get(), index1, index2);
     END_RCPP
 }
@@ -61,7 +74,9 @@ SEXP set_col_indexed_logical(SEXP in, SEXP index1, SEXP index2) {
 SEXP set_col_indexed_numeric(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
-    auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), beachmat::output_param(in, false, true));
+
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), op);
     return set_col_indexed<Rcpp::NumericVector>(optr.get(), index1, index2);
     END_RCPP
 }
@@ -70,7 +85,7 @@ SEXP set_col_indexed_character(SEXP in, SEXP index1, SEXP index2) {
     BEGIN_RCPP
     auto ptr=beachmat::create_character_matrix(in);
 
-    beachmat::output_param op(in);
+    beachmat::output_param op(ptr->get_matrix_type(), true, true);
     op.set_strlen(10);
     auto optr=beachmat::create_character_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
