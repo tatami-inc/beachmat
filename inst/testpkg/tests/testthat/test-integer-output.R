@@ -99,3 +99,20 @@ test_that("HDF5 integer matrix output is okay", {
 
     check_write_HDF5(hFUN, mode="integer")
 })
+
+#######################################################
+
+test_that("Integer matrix mode choices are okay", {
+    check_write_mode(sFUN(), "simple", simplify=TRUE)
+    check_write_mode(sFUN(), "simple", simplify=FALSE)
+    check_write_mode(sFUN(), "simple", preserve.zeroes=FALSE)
+
+    check_write_mode(rFUN(), "simple", simplify=TRUE) 
+    check_write_mode(rFUN(), "HDF5", simplify=FALSE) 
+
+    check_write_mode(hFUN(), "HDF5", simplify=TRUE) 
+    check_write_mode(hFUN(), "HDF5", simplify=FALSE) 
+
+    check_write_mode(hFUN()+1L, "simple", simplify=TRUE) 
+    check_write_mode(hFUN()+1L, "HDF5", simplify=FALSE) 
+})

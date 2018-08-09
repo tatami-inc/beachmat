@@ -131,3 +131,25 @@ test_that("HDF5 logical matrix output is okay", {
 
     check_write_HDF5(hFUN, mode="logical")
 })
+
+#######################################################
+
+test_that("Logical matrix mode choices are okay", {
+    check_write_mode(sFUN(), "simple", simplify=TRUE)
+    check_write_mode(sFUN(), "simple", simplify=FALSE)
+    check_write_mode(sFUN(), "simple", preserve.zeroes=FALSE)
+
+    check_write_mode(csFUN(), "simple", simplify=TRUE, preserve.zeroes=FALSE) 
+    check_write_mode(csFUN(), "HDF5", simplify=FALSE, preserve.zeroes=FALSE) 
+    check_write_mode(csFUN(), "sparse", simplify=FALSE, preserve.zeroes=TRUE) 
+    check_write_mode(csFUN(), "sparse", simplify=FALSE, preserve.zeroes=TRUE) 
+
+    check_write_mode(rFUN(), "simple", simplify=TRUE) 
+    check_write_mode(rFUN(), "HDF5", simplify=FALSE) 
+
+    check_write_mode(hFUN(), "HDF5", simplify=TRUE) 
+    check_write_mode(hFUN(), "HDF5", simplify=FALSE) 
+
+    check_write_mode(!hFUN(), "simple", simplify=TRUE) 
+    check_write_mode(!hFUN(), "HDF5", simplify=FALSE) 
+})
