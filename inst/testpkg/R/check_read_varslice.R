@@ -32,7 +32,7 @@ check_read_varslice_col <- function(test.mat, mode, FUN="get_col_varslice") {
         bound2 <- sample(NROW, nentries, replace=TRUE)
         rbounds <- cbind(pmin(bound1, bound2), pmax(bound1, bound2))
 
-        ref <- get_reference_varslice(test.mat, o, cbounds, byrow=FALSE)
+        ref <- get_reference_varslice(test.mat, o, rbounds, byrow=FALSE)
         expect_identical(ref, .Call(paste0(FUN, "_", mode), test.mat, o, rbounds, PACKAGE="beachtest"))
     }
 
