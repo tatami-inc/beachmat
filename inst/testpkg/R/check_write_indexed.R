@@ -1,11 +1,13 @@
 #' @export
-check_write_indexed <- function(FUN, ..., mode, out.class) {
+check_write_indexed <- function(FUN, ..., mode, out.class=NULL) {
     check_write_indexed_row(FUN(...), mode, out.class)
     check_write_indexed_col(FUN(...), mode, out.class)
 }
 
-#' @importFrom testthat expect_identical expect_equal
 check_write_indexed_row <- function(test.mat, mode, out.class, FUN="set_row_indexed") {
+    if (is.null(out.class)) {
+        out.class <- as.character(class(test.mat))
+    }
     ref <- as.matrix(test.mat)
     rranges <- spawn_row_ordering(nrow(test.mat))
 
@@ -25,15 +27,16 @@ check_write_indexed_row <- function(test.mat, mode, out.class, FUN="set_row_inde
         }
         
         out <- .Call(paste0(FUN, "_", mode), test.mat, o, subr)
-        expect_identical(as.character(class(out)), out.class)
-        expect_equal(REF, out)
+        expect_matrix(REF, out, out.class)
     }
 
     return(invisible(NULL))
 }
 
-#' @importFrom testthat expect_identical expect_equal
 check_write_indexed_col <- function(test.mat, mode, out.class, FUN="set_col_indexed") {
+    if (is.null(out.class)) {
+        out.class <- as.character(class(test.mat))
+    }
     ref <- as.matrix(test.mat)
     cranges <- spawn_col_ordering(ncol(test.mat))
 
@@ -53,8 +56,7 @@ check_write_indexed_col <- function(test.mat, mode, out.class, FUN="set_col_inde
         }
         
         out <- .Call(paste0(FUN, "_", mode), test.mat, o, subr)
-        expect_identical(as.character(class(out)), out.class)
-        expect_equal(REF, out)
+        expect_matrix(REF, out, out.class)
     }
 
     return(invisible(NULL))

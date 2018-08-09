@@ -19,20 +19,10 @@ spawn_col_bounds <- function(NCOL) {
 }
 
 #' @importFrom testthat expect_s4_class expect_identical
-expect_matrix <- function(truth, observed, xclass=NULL) {
-    if (is.null(xclass)) {
-        if (typeof(truth)=="S4") {
-            expect_s4_class(observed, class(truth))
-        } else {
-            expect_identical(class(truth), class(observed))
-        }
-    } else {
-        expect_identical(xclass, as.character(class(observed)))
-    }
+expect_matrix <- function(truth, observed, xclass) {
+    expect_identical(xclass, as.character(class(observed)))
 
     ref <- as.matrix(observed)
     dimnames(ref) <- NULL
-    truth <- as.matrix(truth)
-    dimnames(truth) <- NULL
     expect_identical(ref, truth)
 }
