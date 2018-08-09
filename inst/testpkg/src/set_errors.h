@@ -16,9 +16,9 @@ void set_errors(M ptr, const Rcpp::IntegerVector& mode) {
         ptr->set_row(0, stuff.begin(), 0, 0); // Should not break.
         ptr->set_col(0, stuff.begin(), 0, 0); 
     } else if (Mode==1) {
-        ptr->set_row(-1, stuff.begin()); // break!
+        ptr->set_row(-1, stuff.begin(), 0, 0); // break!
     } else if (Mode==-1) {
-        ptr->set_col(-1, stuff.begin()); // break!
+        ptr->set_col(-1, stuff.begin(), 0, 0); // break!
     } else if (Mode==2) {
         ptr->set_row(0, stuff.begin(), 1, 0); // break!
     } else if (Mode==-2) {
