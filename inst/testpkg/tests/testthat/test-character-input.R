@@ -43,6 +43,10 @@ test_that("Simple character matrix input is okay", {
 
     check_read_type(sFUN, mode="character")
     check_read_errors(sFUN, mode="character")
+
+    check_read_all(sFUN, nr=0, nc=0, mode="character")
+    check_read_all(sFUN, nr=10, nc=0, mode="character")
+    check_read_all(sFUN, nr=0, nc=10, mode="character")
 })
 
 #######################################################
@@ -85,6 +89,10 @@ test_that("RLE character matrix input is okay", {
 
     check_read_type(rFUN, mode="character")
     check_read_errors(rFUN, mode="character")
+
+    check_read_all(rFUN, nr=0, nc=0, mode="character")
+    check_read_all(rFUN, nr=10, nc=0, mode="character")
+    check_read_all(rFUN, nr=0, nc=10, mode="character")
 })
 
 test_that("RLE character matrix input is okay with reduced block size", {
@@ -117,7 +125,11 @@ test_that("RLE character matrix input is okay with reduced block size", {
 
     check_read_type(rFUN, mode="character")
     check_read_errors(rFUN, mode="character")
-             
+ 
+    check_read_all(rFUN, nr=0, nc=0, mode="character")
+    check_read_all(rFUN, nr=10, nc=0, mode="character")
+    check_read_all(rFUN, nr=0, nc=10, mode="character")
+            
     options(DelayedArray.block.size=old)
 })
 
@@ -159,6 +171,10 @@ test_that("HDF5 character matrix input is okay", {
 
     check_read_type(hFUN, mode="character")
     check_read_errors(hFUN, mode="character")
+
+    check_read_all(hFUN, nr=0, nc=0, mode="character")
+    check_read_all(hFUN, nr=10, nc=0, mode="character")
+    check_read_all(hFUN, nr=0, nc=10, mode="character")
 })
 
 #######################################################
@@ -189,6 +205,11 @@ test_that("Delayed character matrix input is okay", {
         check_read_type(FUN, NR, NC, mode="character")
 
         check_read_errors(FUN, NR, NC, mode="character")
+
+        # Edge case checks.
+        check_read_all(FUN, nr=0, nc=0, mode="character")
+        check_read_all(FUN, nr=10, nc=0, mode="character")
+        check_read_all(FUN, nr=0, nc=10, mode="character")
     }
 
     # Proper type check upon coercion!

@@ -38,6 +38,10 @@ test_that("Simple integer matrix input is okay", {
 
     check_read_type(sFUN, mode="integer")
     check_read_errors(sFUN, mode="integer")
+
+    check_read_all(sFUN, nr=0, nc=0, mode="integer")
+    check_read_all(sFUN, nr=10, nc=0, mode="integer")
+    check_read_all(sFUN, nr=0, nc=10, mode="integer")
 })
 
 #######################################################
@@ -80,6 +84,10 @@ test_that("RLE integer matrix input is okay", {
 
     check_read_type(rFUN, mode="integer")
     check_read_errors(rFUN, mode="integer")
+
+    check_read_all(rFUN, nr=0, nc=0, mode="integer")
+    check_read_all(rFUN, nr=10, nc=0, mode="integer")
+    check_read_all(rFUN, nr=0, nc=10, mode="integer")
 })
 
 test_that("RLE integer matrix input is okay with reduced block size", {
@@ -113,6 +121,10 @@ test_that("RLE integer matrix input is okay with reduced block size", {
     check_read_type(rFUN, mode="integer")
     check_read_errors(rFUN, mode="integer")
              
+    check_read_all(rFUN, nr=0, nc=0, mode="integer")
+    check_read_all(rFUN, nr=10, nc=0, mode="integer")
+    check_read_all(rFUN, nr=0, nc=10, mode="integer")
+
     options(DelayedArray.block.size=old)
 })
 
@@ -154,6 +166,10 @@ test_that("HDF5 integer matrix input is okay", {
 
     check_read_type(hFUN, mode="integer")
     check_read_errors(hFUN, mode="integer")
+
+    check_read_all(hFUN, nr=0, nc=0, mode="integer")
+    check_read_all(hFUN, nr=10, nc=0, mode="integer")
+    check_read_all(hFUN, nr=0, nc=10, mode="integer")
 })
 
 #######################################################
@@ -162,7 +178,7 @@ test_that("HDF5 integer matrix input is okay", {
 set.seed(981347)
 library(DelayedArray)
 test_that("Delayed integer matrix input is okay", {
-    delfuns <- delayed_funs(sFUN)
+    delfuns <- delayed_funs(sFUN, DELAYED_FUN=function(x) { x + sample(nrow(x)) })
 
     for (FUN in delfuns) {
         NR <- 10 + sample(10, 1)
@@ -184,6 +200,11 @@ test_that("Delayed integer matrix input is okay", {
         check_read_type(FUN, NR, NC, mode="integer")
 
         check_read_errors(FUN, NR, NC, mode="integer")
+
+        # Edge case checks.
+        check_read_all(FUN, nr=0, nc=0, mode="integer")
+        check_read_all(FUN, nr=10, nc=0, mode="integer")
+        check_read_all(FUN, nr=0, nc=10, mode="integer")
     }
 
     # Proper type check upon coercion!

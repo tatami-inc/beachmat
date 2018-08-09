@@ -38,6 +38,10 @@ test_that("Simple numeric matrix input is okay", {
 
     check_read_type(sFUN, mode="numeric")
     check_read_errors(sFUN, mode="numeric")
+
+    check_read_all(sFUN, nr=0, nc=0, mode="numeric")
+    check_read_all(sFUN, nr=10, nc=0, mode="numeric")
+    check_read_all(sFUN, nr=0, nc=10, mode="numeric")
 })
 
 #######################################################
@@ -78,6 +82,10 @@ test_that("Dense numeric matrix input is okay", {
 
     check_read_type(dFUN, mode="numeric")
     check_read_errors(dFUN, mode="numeric")
+
+    check_read_all(dFUN, nr=0, nc=0, mode="numeric")
+    check_read_all(dFUN, nr=10, nc=0, mode="numeric")
+    check_read_all(dFUN, nr=0, nc=10, mode="numeric")
 })  
 
 #######################################################
@@ -117,13 +125,16 @@ test_that("Sparse numeric matrix input is okay", {
 
     check_read_type(csFUN, mode="numeric")
     check_read_errors(csFUN, mode="numeric")
+
+    check_read_all(csFUN, nr=0, nc=0, mode="numeric")
+    check_read_all(csFUN, nr=10, nc=0, mode="numeric")
+    check_read_all(csFUN, nr=0, nc=10, mode="numeric")
 })
 
 #######################################################
 # Testing triplet sparse matrices, treated as unknown.
 
 set.seed(23456)
-library(DelayedArray)
 tsFUN <- function(...) {
 	as(csFUN(...), 'dgTMatrix')
 }
@@ -157,6 +168,10 @@ test_that("dgTMatrix input is okay", {
 
     check_read_type(tsFUN, mode="numeric")
     check_read_errors(tsFUN, mode="numeric")
+
+    check_read_all(tsFUN, nr=0, nc=0, mode="numeric")
+    check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
+    check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
 })
 
 test_that("dgTMatrix input is okay with reduced block size", {
@@ -189,6 +204,10 @@ test_that("dgTMatrix input is okay with reduced block size", {
 
     check_read_type(tsFUN, mode="numeric")
     check_read_errors(tsFUN, mode="numeric")
+
+    check_read_all(tsFUN, nr=0, nc=0, mode="numeric")
+    check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
+    check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
              
     options(DelayedArray.block.size=old)
 })
@@ -231,6 +250,10 @@ test_that("HDF5 numeric matrix input is okay", {
 
     check_read_type(hFUN, mode="numeric")
     check_read_errors(hFUN, mode="numeric")
+
+    check_read_all(hFUN, nr=0, nc=0, mode="numeric")
+    check_read_all(hFUN, nr=10, nc=0, mode="numeric")
+    check_read_all(hFUN, nr=0, nc=10, mode="numeric")
 })
 
 #######################################################
@@ -239,7 +262,7 @@ test_that("HDF5 numeric matrix input is okay", {
 set.seed(981347)
 library(DelayedArray)
 test_that("Delayed numeric matrix input is okay", {
-    delfuns <- delayed_funs(sFUN)
+    delfuns <- delayed_funs(sFUN, DELAYED_FUN=function(x) { x + runif(nrow(x)) })
 
     for (FUN in delfuns) {
         NR <- 10 + sample(10, 1)
@@ -261,6 +284,11 @@ test_that("Delayed numeric matrix input is okay", {
         check_read_type(FUN, NR, NC, mode="numeric")
 
         check_read_errors(FUN, NR, NC, mode="numeric")
+
+        # Edge case checks.
+        check_read_all(FUN, nr=0, nc=0, mode="numeric")
+        check_read_all(FUN, nr=10, nc=0, mode="numeric")
+        check_read_all(FUN, nr=0, nc=10, mode="numeric")
     }
 
     # Proper type check upon coercion!
