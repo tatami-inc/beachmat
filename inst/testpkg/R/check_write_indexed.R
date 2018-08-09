@@ -9,6 +9,7 @@ check_write_indexed_row <- function(test.mat, mode, out.class, FUN="set_row_inde
         out.class <- as.character(class(test.mat))
     }
     ref <- as.matrix(test.mat)
+    dimnames(ref) <- NULL
     rranges <- spawn_row_ordering(nrow(test.mat))
 
     for (o in rranges) {
@@ -38,6 +39,7 @@ check_write_indexed_col <- function(test.mat, mode, out.class, FUN="set_col_inde
         out.class <- as.character(class(test.mat))
     }
     ref <- as.matrix(test.mat)
+    dimnames(ref) <- NULL
     cranges <- spawn_col_ordering(ncol(test.mat))
 
     for (o in cranges) {
