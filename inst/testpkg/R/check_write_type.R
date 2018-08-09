@@ -1,8 +1,11 @@
 #' @export
-check_write_type <- function(FUN, ..., mode, out.class=NULL) {
+check_write_type <- function(FUN, ..., mode, out.class=NULL, allowed=NULL) {
     convertible <- c("logical", "numeric", "integer")
     if (mode %in% convertible) {
         alternative <- setdiff(convertible, mode)
+        if (!is.null(allowed)) {
+            alternative <- intersect(alternative, allowed)
+        }
 
         for (alt.mode in alternative) {
             if (alt.mode=="logical") {
