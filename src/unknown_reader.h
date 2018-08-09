@@ -68,8 +68,8 @@ unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in),
     this->fill_dims(matdims);
 
     Rcpp::IntegerVector chunkdims(dimdata[1]);
-    chunk_nrow=chunkdims[0];
-    chunk_ncol=chunkdims[1];
+    chunk_nrow=std::max(1, chunkdims[0]);
+    chunk_ncol=std::max(1, chunkdims[1]);
 
     do_transpose.vec[0]=1;
     return;
