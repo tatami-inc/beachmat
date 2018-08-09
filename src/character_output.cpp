@@ -10,18 +10,22 @@ character_output::~character_output() {}
 
 void character_output::get_col(size_t c, Rcpp::StringVector::iterator out) { 
     get_col(c, out, 0, get_nrow());
+    return;
 }
 
 void character_output::get_row(size_t r, Rcpp::StringVector::iterator out) { 
     get_row(r, out, 0, get_ncol());
+    return;
 }
 
 void character_output::set_col(size_t c, Rcpp::StringVector::iterator out) { 
     set_col(c, out, 0, get_nrow());
+    return;
 }
 
 void character_output::set_row(size_t r, Rcpp::StringVector::iterator out) { 
     set_row(r, out, 0, get_ncol());
+    return;
 }
 
 /* Methods for the simple character matrix. */
@@ -40,10 +44,12 @@ size_t simple_character_output::get_ncol() const {
 
 void simple_character_output::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
     writer.get_row(r, out, first, last);
+    return;
 }
 
 void simple_character_output::get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
     writer.get_col(c, out, first, last);
+    return;
 }
 
 Rcpp::String simple_character_output::get(size_t r, size_t c) {
@@ -52,10 +58,12 @@ Rcpp::String simple_character_output::get(size_t r, size_t c) {
 
 void simple_character_output::set_row(size_t r, Rcpp::StringVector::iterator in, size_t first, size_t last) { 
     writer.set_row(r, in, first, last);
+    return;
 }
 
 void simple_character_output::set_col(size_t c, Rcpp::StringVector::iterator in, size_t first, size_t last) { 
     writer.set_col(c, in, first, last);
+    return;
 }
 
 void simple_character_output::set(size_t r, size_t c, Rcpp::String in) {
