@@ -60,9 +60,8 @@ test_that("sparse logical matrix output is okay", {
     check_write_indexed(csFUN, nr=5, nc=30, mode="logical")
     check_write_indexed(csFUN, nr=30, nc=5, mode="logical")
 
+    check_write_type(csFUN, mode="logical", allowable="numeric") # no sparse integer matrix class.
     check_write_errors(csFUN, mode="logical")
-
-    # Not checking type conversions, as integers don't get sparse support and logical->logical isn't consistent between C++ and R.
 })
 
 #######################################################

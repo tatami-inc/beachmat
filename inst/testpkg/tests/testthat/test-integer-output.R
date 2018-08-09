@@ -37,7 +37,7 @@ test_that("Simple integer matrix output is okay", {
 
 set.seed(23456)
 library(DelayedArray)
-rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
+rFUN <- function(nr=15, nc=10, lambda=1) {
     x <- sFUN(nr, nc, lambda=lambda)
     rle <- Rle(x)
     RleArray(rle, dim(x))
