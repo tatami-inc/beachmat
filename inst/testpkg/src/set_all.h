@@ -19,7 +19,8 @@ void set_col_all(O in, M ptr, Rcpp::IntegerVector ordering) {
     size_t c=0;
     T target(in->get_nrow());
     for (auto o : ordering) {
-        ptr->set_col(c, in->get_const_col(o-1, target.begin()));
+        in->get_col(o-1, target.begin());
+        ptr->set_col(c, target.begin());
         ++c;
     }
     return;
