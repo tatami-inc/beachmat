@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 1.3.3
-Date: 2018-06-29
+Version: 1.3.4
+Date: 2018-08-10
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
@@ -21,4 +21,4 @@ NeedsCompilation: yes
 VignetteBuilder: knitr
 SystemRequirements: C++11
 LinkingTo: Rcpp, Rhdf5lib
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
