@@ -30,6 +30,10 @@ test_that("Simple logical matrix output is okay", {
 
     check_write_type(sFUN, mode="logical")
     check_write_errors(sFUN, mode="logical")
+
+    check_write_all(sFUN, nr=0, nc=0, mode="logical")
+    check_write_all(sFUN, nr=10, nc=0, mode="logical")
+    check_write_all(sFUN, nr=0, nc=10, mode="logical")
 })
 
 #######################################################
@@ -96,6 +100,10 @@ test_that("RLE logical matrix output is okay", {
 
     check_write_type(rFUN, mode="logical", out.class="matrix")
     check_write_errors(rFUN, mode="logical", out.class="matrix")
+
+    check_write_all(rFUN, nr=0, nc=0, mode="logical", out.class="matrix")
+    check_write_all(rFUN, nr=10, nc=0, mode="logical", out.class="matrix")
+    check_write_all(rFUN, nr=0, nc=10, mode="logical", out.class="matrix")
 })
 
 #######################################################
@@ -128,6 +136,10 @@ test_that("HDF5 logical matrix output is okay", {
 
     check_write_type(hFUN, mode="logical")
     check_write_errors(hFUN, mode="logical")
+
+    check_write_all(hFUN, nr=0, nc=0, mode="logical")
+    check_write_all(hFUN, nr=10, nc=0, mode="logical")
+    check_write_all(hFUN, nr=0, nc=10, mode="logical")
 
     check_write_HDF5(hFUN, mode="logical")
 })

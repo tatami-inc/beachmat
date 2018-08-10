@@ -30,6 +30,10 @@ test_that("Simple numeric matrix output is okay", {
 
     check_write_type(sFUN, mode="numeric")
     check_write_errors(sFUN, mode="numeric")
+
+    check_write_all(sFUN, nr=0, nc=0, mode="numeric")
+    check_write_all(sFUN, nr=10, nc=0, mode="numeric")
+    check_write_all(sFUN, nr=0, nc=10, mode="numeric")
 })
 
 #######################################################
@@ -60,9 +64,13 @@ test_that("sparse numeric matrix output is okay", {
     check_write_indexed(csFUN, nr=5, nc=30, mode="numeric")
     check_write_indexed(csFUN, nr=30, nc=5, mode="numeric")
 
+    # Not checking type conversions, as integers don't get sparse support and numeric->logical isn't consistent between C++ and R.
+
     check_write_errors(csFUN, mode="numeric")
 
-    # Not checking type conversions, as integers don't get sparse support and numeric->logical isn't consistent between C++ and R.
+    check_write_all(csFUN, nr=0, nc=0, mode="numeric")
+    check_write_all(csFUN, nr=10, nc=0, mode="numeric")
+    check_write_all(csFUN, nr=0, nc=10, mode="numeric")
 })
 
 #######################################################
@@ -97,6 +105,10 @@ test_that("RLE numeric matrix output is okay", {
 
     check_write_type(rFUN, mode="numeric", out.class="matrix")
     check_write_errors(rFUN, mode="numeric", out.class="matrix")
+
+    check_write_all(rFUN, nr=0, nc=0, mode="numeric", out.class="matrix")
+    check_write_all(rFUN, nr=10, nc=0, mode="numeric", out.class="matrix")
+    check_write_all(rFUN, nr=0, nc=10, mode="numeric", out.class="matrix")
 })
 
 #######################################################
@@ -129,6 +141,10 @@ test_that("HDF5 numeric matrix output is okay", {
 
     check_write_type(hFUN, mode="numeric")
     check_write_errors(hFUN, mode="numeric")
+
+    check_write_all(hFUN, nr=0, nc=0, mode="numeric")
+    check_write_all(hFUN, nr=10, nc=0, mode="numeric")
+    check_write_all(hFUN, nr=0, nc=10, mode="numeric")
 
     check_write_HDF5(hFUN, mode="numeric")
 })

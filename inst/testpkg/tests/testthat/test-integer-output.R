@@ -30,6 +30,10 @@ test_that("Simple integer matrix output is okay", {
 
     check_write_type(sFUN, mode="integer")
     check_write_errors(sFUN, mode="integer")
+
+    check_write_all(sFUN, nr=0, nc=0, mode="integer")
+    check_write_all(sFUN, nr=10, nc=0, mode="integer")
+    check_write_all(sFUN, nr=0, nc=10, mode="integer")
 })
 
 #######################################################
@@ -64,6 +68,10 @@ test_that("RLE integer matrix output is okay", {
 
     check_write_type(rFUN, mode="integer", out.class="matrix")
     check_write_errors(rFUN, mode="integer", out.class="matrix")
+
+    check_write_all(rFUN, nr=0, nc=0, mode="integer", out.class="matrix")
+    check_write_all(rFUN, nr=10, nc=0, mode="integer", out.class="matrix")
+    check_write_all(rFUN, nr=0, nc=10, mode="integer", out.class="matrix")
 })
 
 #######################################################
@@ -98,6 +106,10 @@ test_that("HDF5 integer matrix output is okay", {
     check_write_errors(hFUN, mode="integer")
 
     check_write_HDF5(hFUN, mode="integer")
+
+    check_write_all(hFUN, nr=0, nc=0, mode="integer")
+    check_write_all(hFUN, nr=10, nc=0, mode="integer")
+    check_write_all(hFUN, nr=0, nc=10, mode="integer")
 })
 
 #######################################################
