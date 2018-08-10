@@ -1,16 +1,13 @@
 # This tests the ability of the API to properly access integer matrices of different types.
-# library(testthat); library(beachtest); source("test-integer-input.R")
+# library(testthat); library(beachtest); source("setup-fun.R"); source("test-integer-input.R")
 
-library(beachtest)
+sFUN <- integer_sFUN
+rFUN <- integer_rFUN
+hFUN <- integer_hFUN
 
 #######################################################
-# Testing simple matrices:
 
 set.seed(12345)
-sFUN <- function(nr=15, nc=10, lambda=5) {
-    matrix(rpois(nr*nc, lambda=lambda), nr, nc)
-}
-
 test_that("Simple integer matrix input is okay", {
     check_read_all(sFUN, mode="integer")
     check_read_all(sFUN, nr=5, nc=30, mode="integer")
@@ -46,17 +43,9 @@ test_that("Simple integer matrix input is okay", {
 })
 
 #######################################################
-# Testing RLE matrices, treated as unknown.
 
 set.seed(23456)
-library(DelayedArray)
-rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
-    x <- sFUN(nr, nc, lambda=lambda)
-    rle <- Rle(x)
-    RleArray(rle, dim(x))
-}
-
-test_that("RLE integer matrix input is okay", {
+test_that("RLE integer matrix input (i.e., unknown) is okay", {
     expect_s4_class(rFUN(), "RleMatrix")
 
     check_read_all(rFUN, mode="integer")
@@ -132,14 +121,8 @@ test_that("RLE integer matrix input is okay with reduced block size", {
 })
 
 #######################################################
-# Testing HDF5 matrices:
 
 set.seed(34567)
-library(HDF5Array)
-hFUN <- function(nr=15, nc=10) {
-    as(sFUN(nr, nc), "HDF5Array")
-}
-
 test_that("HDF5 integer matrix input is okay", {
     expect_s4_class(hFUN(), "HDF5Matrix")
 
@@ -177,10 +160,8 @@ test_that("HDF5 integer matrix input is okay", {
 })
 
 #######################################################
-# Testing delayed operations:
 
 set.seed(981347)
-library(DelayedArray)
 test_that("Delayed integer matrix input is okay", {
     delfuns <- delayed_funs(sFUN, DELAYED_FUN=function(x) { x + sample(nrow(x)) })
 

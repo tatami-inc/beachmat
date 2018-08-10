@@ -1,16 +1,15 @@
 # This tests the ability of the API to properly access logical matrices of different types.
-# library(testthat); library(beachtest); source("test-logical-input.R")
+# library(testthat); library(beachtest); source("setup-fun.R"); source("test-logical-input.R")
 
-library(beachtest)
+sFUN <- logical_sFUN
+dFUN <- logical_dFUN
+csFUN <- logical_csFUN
+tsFUN <- logical_tsFUN
+hFUN <- logical_hFUN
 
 #######################################################
-# Testing simple matrices:
 
 set.seed(12345)
-sFUN <- function(nr=15, nc=10) {
-    matrix(rbinom(nr*nc, 1, 0.5)==0, nr, nc)
-}
-
 test_that("Simple logical matrix input is okay", {
     check_read_all(sFUN, mode="logical")
     check_read_all(sFUN, nr=5, nc=30, mode="logical")
@@ -46,14 +45,8 @@ test_that("Simple logical matrix input is okay", {
 })
 
 #######################################################
-# Testing dense matrices
 
 set.seed(13579)
-library(Matrix) 
-dFUN <- function(nr=15, nc=10) {
-    Matrix(sFUN(nr, nc), sparse=FALSE, doDiag=FALSE)
-}
-
 test_that("Dense logical matrix input is okay", {
     expect_s4_class(dFUN(), "lgeMatrix")
 
@@ -91,13 +84,8 @@ test_that("Dense logical matrix input is okay", {
 })  
 
 #######################################################
-# Testing sparse matrices:
 
 set.seed(23456)
-csFUN <- function(nr=15, nc=10, d=0.1) {
-    rsparsematrix(nrow=nr, ncol=nc, density=d) != 0
-}
-
 test_that("Sparse logical matrix input is okay", {
     expect_s4_class(csFUN(), "lgCMatrix")
 
@@ -135,14 +123,9 @@ test_that("Sparse logical matrix input is okay", {
 })
 
 #######################################################
-# Testing triplet sparse matrices, treated as unknown.
 
 set.seed(23456)
-tsFUN <- function(...) {
-	as(csFUN(...), 'lgTMatrix')
-}
-
-test_that("lgTMatrix input is okay", {
+test_that("lgTMatrix (i.e., unknown) input is okay", {
     expect_s4_class(tsFUN(), "lgTMatrix")
 
     check_read_all(tsFUN, mode="logical")
@@ -218,14 +201,8 @@ test_that("lgTMatrix input is okay with reduced block size", {
 })
 
 #######################################################
-# Testing HDF5 matrices:
 
 set.seed(34567)
-library(HDF5Array)
-hFUN <- function(nr=15, nc=10) {
-    as(sFUN(nr, nc), "HDF5Array")
-}
-
 test_that("HDF5 logical matrix input is okay", {
     expect_s4_class(hFUN(), "HDF5Matrix")
 
@@ -263,10 +240,8 @@ test_that("HDF5 logical matrix input is okay", {
 })
 
 #######################################################
-# Testing delayed operations:
 
 set.seed(981347)
-library(DelayedArray)
 test_that("Delayed logical matrix input is okay", {
     delfuns <- delayed_funs(sFUN, DELAYED_FUN=function(m) !m)
 

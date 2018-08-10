@@ -1,21 +1,13 @@
 # This tests the ability of the API to properly access character matrices of different types.
-# library(testthat); library(beachtest); source("test-character-input.R")
+# library(testthat); library(beachtest); source("setup-fun.R"); source("test-character-input.R")
 
-library(beachtest)
-genwords <- function(n = 5000) {
-    all.choices <- c(rep("", 4), LETTERS) # to get variable length strings.
-    a <- do.call(paste0, replicate(5, sample(all.choices, n, TRUE), FALSE))
-    paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
-}
+sFUN <- character_sFUN
+rFUN <- character_rFUN
+hFUN <- character_hFUN
 
 #######################################################
-# Testing simple matrices:
 
 set.seed(12345)
-sFUN <- function(nr=15, nc=10, lambda=5) {
-    matrix(genwords(nr*nc), nr, nc)
-}
-
 test_that("Simple character matrix input is okay", {
     check_read_all(sFUN, mode="character")
     check_read_all(sFUN, nr=5, nc=30, mode="character")
@@ -54,13 +46,6 @@ test_that("Simple character matrix input is okay", {
 # Testing RLE matrices, treated as unknown.
 
 set.seed(23456)
-library(DelayedArray)
-rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
-    x <- matrix(sample(LETTERS[1:4], nr*nc, replace=TRUE), nr, nc)
-    rle <- Rle(x)
-    RleArray(rle, dim(x))
-}
-
 test_that("RLE character matrix input is okay", {
     expect_s4_class(rFUN(), "RleMatrix")
 
@@ -137,14 +122,8 @@ test_that("RLE character matrix input is okay with reduced block size", {
 })
 
 #######################################################
-# Testing HDF5 matrices:
 
 set.seed(34567)
-library(HDF5Array)
-hFUN <- function(nr=15, nc=10) {
-    as(sFUN(nr, nc), "HDF5Array")
-}
-
 test_that("HDF5 character matrix input is okay", {
     expect_s4_class(hFUN(), "HDF5Matrix")
 
@@ -182,10 +161,8 @@ test_that("HDF5 character matrix input is okay", {
 })
 
 #######################################################
-# Testing delayed operations:
 
 set.seed(981347)
-library(DelayedArray)
 test_that("Delayed character matrix input is okay", {
     delfuns <- delayed_funs(sFUN, DELAYED_FUN=DelayedArray::tolower)
 

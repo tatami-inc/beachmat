@@ -1,16 +1,15 @@
 # This tests the ability of the API to properly output logical matrices of different types.
-# library(testthat); library(beachtest); source("test-logical-output.R")
+# library(testthat); library(beachtest); source("setup-fun.R"); source("test-logical-output.R")
 
-library(beachtest)
+sFUN <- logical_sFUN
+dFUN <- logical_dFUN
+csFUN <- logical_csFUN
+tsFUN <- logical_tsFUN
+hFUN <- logical_hFUN
 
 #######################################################
-# Testing simple matrices:
 
-set.seed(12345)
-sFUN <- function(nr=15, nc=10) {
-    matrix(rbinom(nr*nc, 1, 0.5)==0, nr, nc)
-}
-
+set.seed(12346)
 test_that("Simple logical matrix output is okay", {
     check_write_all(sFUN, mode="logical")
     check_write_all(sFUN, nr=5, nc=30, mode="logical")
@@ -37,14 +36,8 @@ test_that("Simple logical matrix output is okay", {
 })
 
 #######################################################
-# Testing sparse matrices.
 
-set.seed(23456)
-library(Matrix)
-csFUN <- function(nr=15, nc=10, d=0.1) {
-    rsparsematrix(nrow=nr, ncol=nc, density=d) != 0
-}
-
+set.seed(23457)
 test_that("sparse logical matrix output is okay", {
     expect_s4_class(csFUN(), "lgCMatrix")
 
@@ -73,52 +66,8 @@ test_that("sparse logical matrix output is okay", {
 })
 
 #######################################################
-# Testing RLE matrices, treated as unknown.
 
-set.seed(23456)
-library(DelayedArray)
-rFUN <- function(nr=15, nc=10) {
-    x <- sFUN(nr, nc)
-    rle <- Rle(x)
-    RleArray(rle, dim(x))
-}
-
-test_that("RLE logical matrix output is okay", {
-    expect_s4_class(rFUN(), "RleMatrix")
-
-    check_write_all(rFUN, mode="logical", out.class="matrix")
-    check_write_all(rFUN, nr=5, nc=30, mode="logical", out.class="matrix")
-    check_write_all(rFUN, nr=30, nc=5, mode="logical", out.class="matrix")
-
-    check_write_slice(rFUN, mode="logical", out.class="matrix")
-    check_write_slice(rFUN, nr=5, nc=30, mode="logical", out.class="matrix")
-    check_write_slice(rFUN, nr=30, nc=5, mode="logical", out.class="matrix")
-
-    check_write_varslice(rFUN, mode="logical", out.class="matrix")
-    check_write_varslice(rFUN, nr=5, nc=30, mode="logical", out.class="matrix")
-    check_write_varslice(rFUN, nr=30, nc=5, mode="logical", out.class="matrix")
-
-    check_write_indexed(rFUN, mode="logical", out.class="matrix")
-    check_write_indexed(rFUN, nr=5, nc=30, mode="logical", out.class="matrix")
-    check_write_indexed(rFUN, nr=30, nc=5, mode="logical", out.class="matrix")
-
-    check_write_type(rFUN, mode="logical", out.class="matrix")
-    check_write_errors(rFUN, mode="logical", out.class="matrix")
-
-    check_write_all(rFUN, nr=0, nc=0, mode="logical", out.class="matrix")
-    check_write_all(rFUN, nr=10, nc=0, mode="logical", out.class="matrix")
-    check_write_all(rFUN, nr=0, nc=10, mode="logical", out.class="matrix")
-})
-
-#######################################################
-# Testing HDF5 matrices:
-
-set.seed(34567)
-library(HDF5Array)
-hFUN <- function(nr=15, nc=10) {
-    as(sFUN(nr, nc), "HDF5Array")
-}
-
+set.seed(34568)
 test_that("HDF5 logical matrix output is okay", {
     expect_s4_class(hFUN(), "HDF5Matrix")
 
@@ -155,16 +104,20 @@ test_that("Logical matrix mode choices are okay", {
     check_write_class(sFUN(), "simple", simplify=FALSE)
     check_write_class(sFUN(), "simple", preserve.zeroes=FALSE)
 
+    check_write_class(dFUN(), "simple", simplify=TRUE)
+    check_write_class(dFUN(), "simple", simplify=FALSE)
+    check_write_class(dFUN(), "simple", preserve.zeroes=FALSE)
+
     check_write_class(csFUN(), "simple", simplify=TRUE, preserve.zeroes=FALSE) 
     check_write_class(csFUN(), "HDF5", simplify=FALSE, preserve.zeroes=FALSE) 
     check_write_class(csFUN(), "sparse", simplify=FALSE, preserve.zeroes=TRUE) 
     check_write_class(csFUN(), "sparse", simplify=FALSE, preserve.zeroes=TRUE) 
 
-    check_write_class(rFUN(), "simple", simplify=TRUE) 
-    check_write_class(rFUN(), "HDF5", simplify=FALSE) 
-
     check_write_class(hFUN(), "HDF5", simplify=TRUE) 
     check_write_class(hFUN(), "HDF5", simplify=FALSE) 
+
+    check_write_class(tsFUN(), "simple", simplify=TRUE) 
+    check_write_class(tsFUN(), "HDF5", simplify=FALSE) 
 
     check_write_class(!hFUN(), "simple", simplify=TRUE) 
     check_write_class(!hFUN(), "HDF5", simplify=FALSE) 
