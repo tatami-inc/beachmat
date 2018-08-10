@@ -28,23 +28,31 @@ Rcpp::StringVector translate_class(beachmat::matrix_type X) {
 extern "C" {
 
 SEXP get_class_integer(SEXP incoming) {
+    BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(incoming);
     return translate_class(ptr->get_matrix_type());	
+    END_RCPP
 }
 
 SEXP get_class_numeric(SEXP incoming) {
+    BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(incoming);
     return translate_class(ptr->get_matrix_type());	
+    END_RCPP
 }
 
 SEXP get_class_logical(SEXP incoming) {
+    BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(incoming);
     return translate_class(ptr->get_matrix_type());	
+    END_RCPP
 }
 
 SEXP get_class_character(SEXP incoming) {
+    BEGIN_RCPP
     auto ptr=beachmat::create_character_matrix(incoming);
     return translate_class(ptr->get_matrix_type());	
+    END_RCPP
 }
 
 }
