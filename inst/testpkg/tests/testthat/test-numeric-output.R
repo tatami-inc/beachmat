@@ -64,8 +64,7 @@ test_that("sparse numeric matrix output is okay", {
     check_write_indexed(csFUN, nr=5, nc=30, mode="numeric")
     check_write_indexed(csFUN, nr=30, nc=5, mode="numeric")
 
-    # Not checking type conversions, as integers don't get sparse support and numeric->logical isn't consistent between C++ and R.
-
+    check_write_type(csFUN, mode="numeric")
     check_write_errors(csFUN, mode="numeric")
 
     check_write_all(csFUN, nr=0, nc=0, mode="numeric")

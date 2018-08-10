@@ -64,8 +64,12 @@ test_that("sparse logical matrix output is okay", {
     check_write_indexed(csFUN, nr=5, nc=30, mode="logical")
     check_write_indexed(csFUN, nr=30, nc=5, mode="logical")
 
-    check_write_type(csFUN, mode="logical", allowable="numeric") # no sparse integer matrix class.
+    check_write_type(csFUN, mode="logical")
     check_write_errors(csFUN, mode="logical")
+
+    check_write_all(csFUN, nr=0, nc=0, mode="logical")
+    check_write_all(csFUN, nr=10, nc=0, mode="logical")
+    check_write_all(csFUN, nr=0, nc=10, mode="logical")
 })
 
 #######################################################
