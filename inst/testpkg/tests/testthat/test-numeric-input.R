@@ -37,8 +37,9 @@ test_that("Simple numeric matrix input is okay", {
     check_read_multi(sFUN, nr=30, nc=5, mode="numeric")
 
     check_read_type(sFUN, mode="numeric")
+    check_read_mode(sFUN(), mode="numeric", "simple")
+    
     check_read_errors(sFUN, mode="numeric")
-
     check_read_all(sFUN, nr=0, nc=0, mode="numeric")
     check_read_all(sFUN, nr=10, nc=0, mode="numeric")
     check_read_all(sFUN, nr=0, nc=10, mode="numeric")
@@ -81,8 +82,9 @@ test_that("Dense numeric matrix input is okay", {
     check_read_multi(dFUN, nr=30, nc=5, mode="numeric")
 
     check_read_type(dFUN, mode="numeric")
-    check_read_errors(dFUN, mode="numeric")
+    check_read_mode(dFUN(), mode="numeric", "dense")
 
+    check_read_errors(dFUN, mode="numeric")
     check_read_all(dFUN, nr=0, nc=0, mode="numeric")
     check_read_all(dFUN, nr=10, nc=0, mode="numeric")
     check_read_all(dFUN, nr=0, nc=10, mode="numeric")
@@ -124,8 +126,9 @@ test_that("Sparse numeric matrix input is okay", {
     check_read_multi(csFUN, nr=30, nc=5, mode="numeric")
 
     check_read_type(csFUN, mode="numeric")
-    check_read_errors(csFUN, mode="numeric")
+    check_read_mode(csFUN(), mode="numeric", "sparse")
 
+    check_read_errors(csFUN, mode="numeric")
     check_read_all(csFUN, nr=0, nc=0, mode="numeric")
     check_read_all(csFUN, nr=10, nc=0, mode="numeric")
     check_read_all(csFUN, nr=0, nc=10, mode="numeric")
@@ -167,8 +170,9 @@ test_that("dgTMatrix input is okay", {
     check_read_multi(tsFUN, nr=30, nc=5, mode="numeric")
 
     check_read_type(tsFUN, mode="numeric")
-    check_read_errors(tsFUN, mode="numeric")
+    check_read_mode(tsFUN(), mode="numeric", "unknown")
 
+    check_read_errors(tsFUN, mode="numeric")
     check_read_all(tsFUN, nr=0, nc=0, mode="numeric")
     check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
     check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
@@ -203,8 +207,9 @@ test_that("dgTMatrix input is okay with reduced block size", {
     check_read_multi(tsFUN, nr=30, nc=5, mode="numeric")
 
     check_read_type(tsFUN, mode="numeric")
-    check_read_errors(tsFUN, mode="numeric")
+    check_read_mode(tsFUN(), mode="numeric", "unknown")
 
+    check_read_errors(tsFUN, mode="numeric")
     check_read_all(tsFUN, nr=0, nc=0, mode="numeric")
     check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
     check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
@@ -249,8 +254,9 @@ test_that("HDF5 numeric matrix input is okay", {
     check_read_multi(hFUN, nr=30, nc=5, mode="numeric")
 
     check_read_type(hFUN, mode="numeric")
-    check_read_errors(hFUN, mode="numeric")
+    check_read_mode(hFUN(), mode="numeric", "HDF5")
 
+    check_read_errors(hFUN, mode="numeric")
     check_read_all(hFUN, nr=0, nc=0, mode="numeric")
     check_read_all(hFUN, nr=10, nc=0, mode="numeric")
     check_read_all(hFUN, nr=0, nc=10, mode="numeric")
@@ -282,10 +288,9 @@ test_that("Delayed numeric matrix input is okay", {
         check_read_multi(FUN, NR, NC, mode="numeric")
 
         check_read_type(FUN, NR, NC, mode="numeric")
+        check_read_mode(FUN(), mode="numeric", "delayed")
 
         check_read_errors(FUN, NR, NC, mode="numeric")
-
-        # Edge case checks.
         check_read_all(FUN, nr=0, nc=0, mode="numeric")
         check_read_all(FUN, nr=10, nc=0, mode="numeric")
         check_read_all(FUN, nr=0, nc=10, mode="numeric")

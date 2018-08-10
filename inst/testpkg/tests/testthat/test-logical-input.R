@@ -37,8 +37,9 @@ test_that("Simple logical matrix input is okay", {
     check_read_multi(sFUN, nr=30, nc=5, mode="logical")
 
     check_read_type(sFUN, mode="logical")
-    check_read_errors(sFUN, mode="logical")
+    check_read_mode(sFUN(), mode="logical", "simple")
 
+    check_read_errors(sFUN, mode="logical")
     check_read_all(sFUN, nr=0, nc=0, mode="logical")
     check_read_all(sFUN, nr=10, nc=0, mode="logical")
     check_read_all(sFUN, nr=0, nc=10, mode="logical")
@@ -81,8 +82,9 @@ test_that("Dense logical matrix input is okay", {
     check_read_multi(dFUN, nr=30, nc=5, mode="logical")
 
     check_read_type(dFUN, mode="logical")
-    check_read_errors(dFUN, mode="logical")
+    check_read_mode(dFUN(), mode="logical", "dense")
 
+    check_read_errors(dFUN, mode="logical")
     check_read_all(dFUN, nr=0, nc=0, mode="logical")
     check_read_all(dFUN, nr=10, nc=0, mode="logical")
     check_read_all(dFUN, nr=0, nc=10, mode="logical")
@@ -124,8 +126,9 @@ test_that("Sparse logical matrix input is okay", {
     check_read_multi(csFUN, nr=30, nc=5, mode="logical")
 
     check_read_type(csFUN, mode="logical")
-    check_read_errors(csFUN, mode="logical")
+    check_read_mode(csFUN(), mode="logical", "sparse")
 
+    check_read_errors(csFUN, mode="logical")
     check_read_all(csFUN, nr=0, nc=0, mode="logical")
     check_read_all(csFUN, nr=10, nc=0, mode="logical")
     check_read_all(csFUN, nr=0, nc=10, mode="logical")
@@ -167,8 +170,9 @@ test_that("lgTMatrix input is okay", {
     check_read_multi(tsFUN, nr=30, nc=5, mode="logical")
 
     check_read_type(tsFUN, mode="logical")
-    check_read_errors(tsFUN, mode="logical")
+    check_read_mode(tsFUN(), mode="logical", "unknown")
 
+    check_read_errors(tsFUN, mode="logical")
     check_read_all(tsFUN, nr=0, nc=0, mode="logical")
     check_read_all(tsFUN, nr=10, nc=0, mode="logical")
     check_read_all(tsFUN, nr=0, nc=10, mode="logical")
@@ -203,8 +207,9 @@ test_that("lgTMatrix input is okay with reduced block size", {
     check_read_multi(tsFUN, nr=30, nc=5, mode="logical")
 
     check_read_type(tsFUN, mode="logical")
+    check_read_mode(tsFUN(), mode="logical", "unknown")
+
     check_read_errors(tsFUN, mode="logical")
- 
     check_read_all(tsFUN, nr=0, nc=0, mode="logical")
     check_read_all(tsFUN, nr=10, nc=0, mode="logical")
     check_read_all(tsFUN, nr=0, nc=10, mode="logical")
@@ -249,8 +254,9 @@ test_that("HDF5 logical matrix input is okay", {
     check_read_multi(hFUN, nr=30, nc=5, mode="logical")
 
     check_read_type(hFUN, mode="logical")
-    check_read_errors(hFUN, mode="logical")
+    check_read_mode(hFUN(), mode="logical", "HDF5")
 
+    check_read_errors(hFUN, mode="logical")
     check_read_all(hFUN, nr=0, nc=0, mode="logical")
     check_read_all(hFUN, nr=10, nc=0, mode="logical")
     check_read_all(hFUN, nr=0, nc=10, mode="logical")
@@ -282,10 +288,9 @@ test_that("Delayed logical matrix input is okay", {
         check_read_multi(FUN, NR, NC, mode="logical")
 
         check_read_type(FUN, NR, NC, mode="logical")
+        check_read_mode(FUN(), mode="logical", "delayed")
 
         check_read_errors(FUN, NR, NC, mode="logical")
-
-        # Edge case checks.
         check_read_all(FUN, nr=0, nc=0, mode="logical")
         check_read_all(FUN, nr=10, nc=0, mode="logical")
         check_read_all(FUN, nr=0, nc=10, mode="logical")

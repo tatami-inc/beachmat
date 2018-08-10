@@ -42,8 +42,9 @@ test_that("Simple character matrix input is okay", {
     check_read_multi(sFUN, nr=30, nc=5, mode="character")
 
     check_read_type(sFUN, mode="character")
-    check_read_errors(sFUN, mode="character")
+    check_read_mode(sFUN(), mode="character", "simple")
 
+    check_read_errors(sFUN, mode="character")
     check_read_all(sFUN, nr=0, nc=0, mode="character")
     check_read_all(sFUN, nr=10, nc=0, mode="character")
     check_read_all(sFUN, nr=0, nc=10, mode="character")
@@ -88,8 +89,9 @@ test_that("RLE character matrix input is okay", {
     check_read_multi(rFUN, nr=30, nc=5, mode="character")
 
     check_read_type(rFUN, mode="character")
-    check_read_errors(rFUN, mode="character")
+    check_read_mode(rFUN(), mode="character", "unknown")
 
+    check_read_errors(rFUN, mode="character")
     check_read_all(rFUN, nr=0, nc=0, mode="character")
     check_read_all(rFUN, nr=10, nc=0, mode="character")
     check_read_all(rFUN, nr=0, nc=10, mode="character")
@@ -124,8 +126,9 @@ test_that("RLE character matrix input is okay with reduced block size", {
     check_read_multi(rFUN, nr=30, nc=5, mode="character")
 
     check_read_type(rFUN, mode="character")
+    check_read_mode(rFUN(), mode="character", "unknown")
+
     check_read_errors(rFUN, mode="character")
- 
     check_read_all(rFUN, nr=0, nc=0, mode="character")
     check_read_all(rFUN, nr=10, nc=0, mode="character")
     check_read_all(rFUN, nr=0, nc=10, mode="character")
@@ -170,8 +173,9 @@ test_that("HDF5 character matrix input is okay", {
     check_read_multi(hFUN, nr=30, nc=5, mode="character")
 
     check_read_type(hFUN, mode="character")
-    check_read_errors(hFUN, mode="character")
+    check_read_mode(hFUN(), mode="character", "HDF5")
 
+    check_read_errors(hFUN, mode="character")
     check_read_all(hFUN, nr=0, nc=0, mode="character")
     check_read_all(hFUN, nr=10, nc=0, mode="character")
     check_read_all(hFUN, nr=0, nc=10, mode="character")
@@ -203,10 +207,9 @@ test_that("Delayed character matrix input is okay", {
         check_read_multi(FUN, NR, NC, mode="character")
 
         check_read_type(FUN, NR, NC, mode="character")
+        check_read_mode(FUN(), mode="character", "delayed")
 
         check_read_errors(FUN, NR, NC, mode="character")
-
-        # Edge case checks.
         check_read_all(FUN, nr=0, nc=0, mode="character")
         check_read_all(FUN, nr=10, nc=0, mode="character")
         check_read_all(FUN, nr=0, nc=10, mode="character")
