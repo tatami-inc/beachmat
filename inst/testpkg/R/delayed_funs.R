@@ -1,7 +1,7 @@
 #' @export
 #' @importFrom DelayedArray DelayedArray
 #' @importFrom BiocGenerics rbind cbind t
-delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })  
+delayed_funs <- function(basefun, DELAYED_FUN)
 # Creates a list of supported DelayedMatrix operations 
 # that are handled natively in beachmat, without the 
 # need for explicit realization.
@@ -28,7 +28,7 @@ delayed_funs <- function(basefun, DELAYED_FUN=function(m) { m + m[,1] })
 
     # Dimnaming
     .namers <- function(n, pre) {
-        paste0(pre, seq_len(n))
+        sprintf("%s%i", pre, seq_len(n))
     }
 
     name_row_fun <- function(...) { 

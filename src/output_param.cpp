@@ -5,33 +5,31 @@ namespace beachmat {
 output_param::output_param (matrix_type m) : mode(m), chunk_nr(DEFAULT_CHUNKDIM), chunk_nc(DEFAULT_CHUNKDIM), 
     compress(DEFAULT_COMPRESS), strlen(DEFAULT_STRLEN) {}
 
-output_param::output_param (const Rcpp::RObject& in, bool simplify, bool preserve_zero) : output_param(SIMPLE) { 
-    if (!in.isS4()) {
-        return;
-    } 
-
-    auto curclass=get_class(in);
-    if (curclass=="HDF5Array" || curclass=="DelayedArray") { 
-        mode=HDF5;
-        return;
+matrix_type robject_to_matrix_class(const Rcpp::RObject& in) {
+    if (in.isS4()) {
+        auto curclass=get_class(in);
+        if (curclass=="HDF5Matrix") {
+            return HDF5;
+        } else if (curclass=="DelayedMatrix") { 
+            return DELAYED;
+        } else if (!curclass.empty() && curclass.substr(1)=="gCMatrix") {
+            return SPARSE;
+        } else if (!curclass.empty() && curclass.substr(1)=="geMatrix") {
+            return DENSE;
+        }
+        return UNKNOWN;
     }
-
-    if (simplify) {
-        return;
-    }
-
-    if (preserve_zero && !curclass.empty() && curclass.substr(1)=="gCMatrix") {
-        mode=SPARSE;
-        return;
-    } 
-
-    mode=HDF5;
-    return;
+    return SIMPLE;
 }
+
+output_param::output_param (const Rcpp::RObject& in, bool simplify, bool preserve_zero) : output_param(robject_to_matrix_class(in), simplify, preserve_zero) {}
 
 output_param::output_param(matrix_type m, bool simplify, bool preserve_zero) : output_param(m) {
     switch (mode) {
         case SIMPLE: case HDF5: // keeping to the two extremes.
+            break;
+        case DENSE:
+            mode=SIMPLE;
             break;
         case SPARSE:
             if (preserve_zero) { break; } // keeping sparse, if preserve_zero is true.

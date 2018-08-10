@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_CHARACTER_MATRIX_H
 #define BEACHMAT_CHARACTER_MATRIX_H
 
-#include "Input_matrix.h"
+#include "all_readers.h"
 
 namespace beachmat { 
 
@@ -15,6 +15,7 @@ public:
     virtual size_t get_nrow() const=0;
     virtual size_t get_ncol() const=0;
     
+    // Basic getters.
     void get_row(size_t, Rcpp::StringVector::iterator); 
     virtual void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
 
@@ -23,12 +24,21 @@ public:
 
     virtual Rcpp::String get(size_t, size_t)=0;
 
+    // Multi getters.
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator); 
+    virtual void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
+
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator);
+    virtual void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
+
+    // Specialized getters.
     Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator);
     virtual Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
     const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator);
     virtual const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
+    // Other methods.
     virtual std::unique_ptr<character_matrix> clone() const=0;
 
     virtual Rcpp::RObject yield () const=0;
@@ -40,31 +50,50 @@ private:
 
 /* Advanced character matrix template */
 
-template<class M>
+template<class RDR>
 class general_character_matrix : public character_matrix {
 public:    
-    general_character_matrix(const Rcpp::RObject& incoming) : mat(incoming) {}
+    general_character_matrix(const Rcpp::RObject& incoming) : reader(incoming) {}
     ~general_character_matrix() {}
   
-    size_t get_nrow() const { return mat.get_nrow(); }
-    size_t get_ncol() const { return mat.get_ncol(); }
- 
-    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { return mat.get_row(r, out, first, last); }
-    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { return mat.get_col(c, out, first, last); }
+    size_t get_nrow() const { return reader.get_nrow(); }
+    size_t get_ncol() const { return reader.get_ncol(); }
 
-    Rcpp::String get(size_t r, size_t c) { return mat.get(r, c); }
+    // Basic getters.
+    void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+        reader.get_row(r, out, first, last);
+        return;
+    }
+    void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
+        reader.get_col(c, out, first, last); 
+        return;
+    }
 
+    Rcpp::String get(size_t r, size_t c) { return reader.get(r, c); }
+
+    // Multi getters.
+    void get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
+        reader.get_rows(it, n, out, first, last);
+        return;
+    }
+    void get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+        reader.get_cols(it, n, out, first, last);
+        return;
+    }
+
+    // Other methods.
     std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new general_character_matrix(*this)); }
 
-    Rcpp::RObject yield () const { return mat.yield(); }
-    matrix_type get_matrix_type() const { return mat.get_matrix_type(); }
+    Rcpp::RObject yield () const { return reader.yield(); }
+    matrix_type get_matrix_type() const { return reader.get_matrix_type(); }
 protected:
-    M mat;
+    RDR reader;
 };
 
 /* Simple character matrix */
 
-using simple_character_precursor=general_character_matrix<simple_matrix<Rcpp::String, Rcpp::StringVector> >;
+using simple_character_precursor=general_character_matrix<simple_reader<Rcpp::String, Rcpp::StringVector> >;
+
 class simple_character_matrix : public simple_character_precursor {
 public:
     simple_character_matrix(const Rcpp::RObject& incoming);
@@ -73,38 +102,37 @@ public:
     std::unique_ptr<character_matrix> clone() const;
 };
 
-/* RLE character matrix */
-
-using Rle_character_matrix=general_character_matrix<Rle_matrix<Rcpp::String, Rcpp::StringVector> >;
-
 /* HDF5Matrix */
 
-class HDF5_character_helper : public HDF5_matrix<Rcpp::String, STRSXP> {
+class HDF5_character_reader : public HDF5_reader<Rcpp::String, STRSXP> {
 public:    
-    HDF5_character_helper(const Rcpp::RObject&);
-    ~HDF5_character_helper();
+    HDF5_character_reader(const Rcpp::RObject&);
+    ~HDF5_character_reader();
 
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
     Rcpp::String get(size_t, size_t);
+
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t);
 protected:
     H5::DataType str_type;
     size_t bufsize;
     std::vector<char> buffer;
 };
 
-using HDF5_character_matrix=general_character_matrix<HDF5_character_helper>;
+using HDF5_character_matrix=general_character_matrix<HDF5_character_reader>;
 
 /* DelayedMatrix */
 
-typedef delayed_matrix<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_helper;
+typedef delayed_matrix<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
 
-using delayed_character_matrix=general_character_matrix<delayed_character_helper>;
+using delayed_character_matrix=general_character_matrix<delayed_character_reader>;
 
 /* Unknown matrix type */
 
-using unknown_character_matrix=general_character_matrix<unknown_matrix<Rcpp::String, Rcpp::StringVector> >;
+using unknown_character_matrix=general_character_matrix<unknown_reader<Rcpp::String, Rcpp::StringVector> >;
 
 /* Dispatcher */
 

@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_LIN_OUTPUT_H
 #define BEACHMAT_LIN_OUTPUT_H
 
-#include "Output_matrix.h"
+#include "all_writers.h"
 #include "output_param.h"
 
 namespace beachmat { 
@@ -67,7 +67,7 @@ private:
 
 /* General output */
 
-template<typename T, class V, class M>
+template<typename T, class V, class WTR>
 class general_lin_output : public lin_output<T, V> {
 public:
     general_lin_output(size_t, size_t);
@@ -107,13 +107,13 @@ public:
 
     matrix_type get_matrix_type() const;
 protected:
-    M mat;
+    WTR writer;
 };
 
 /* Simple LIN output */
 
 template<typename T, class V>
-using simple_lin_output_precursor=general_lin_output<T, V, simple_output<T, V> >;
+using simple_lin_output_precursor=general_lin_output<T, V, simple_writer<T, V> >;
 
 template<typename T, class V>
 class simple_lin_output : public simple_lin_output_precursor<T, V> {
@@ -127,7 +127,7 @@ public:
 /* Sparse LIN output */
 
 template<typename T, class V>
-using sparse_lin_output=general_lin_output<T, V, Csparse_output<T, V> >;
+using sparse_lin_output=general_lin_output<T, V, Csparse_writer<T, V> >;
 
 /* HDF5 LIN output */
 
@@ -174,12 +174,12 @@ public:
 
     matrix_type get_matrix_type() const;
 protected:
-    HDF5_output<T, RTYPE> mat;
+    HDF5_writer<T, RTYPE> writer;
 };
 
 }
 
-#include "LIN_outfun.h"
+#include "LIN_methods_write.h"
 
 #endif
 

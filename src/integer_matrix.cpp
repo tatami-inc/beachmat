@@ -7,7 +7,7 @@ namespace beachmat {
 template<>
 int HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP>::get(size_t r, size_t c) {
     int out;
-    mat.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
+    reader.extract_one(r, c, &out, H5::PredType::NATIVE_INT32);
     return out; 
 }
 
@@ -16,17 +16,17 @@ int HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP>::get(size_t r, size_t c) {
 std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject&, bool);
 
 template<>
-std::unique_ptr<integer_matrix> delayed_lin_helper<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
+std::unique_ptr<integer_matrix> delayed_lin_reader<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
     return create_integer_matrix_internal(incoming, false);
 } 
 
 /* HDF5 integer output methods. */
 
 template<>
-int HDF5_output<int, INTSXP>::get_empty() { return 0; }
+int HDF5_writer<int, INTSXP>::get_empty() { return 0; }
 
 template<>
-Rcpp::RObject HDF5_output<int, INTSXP>::get_firstval() { 
+Rcpp::RObject HDF5_writer<int, INTSXP>::get_firstval() { 
     int first;
     extract_one(0, 0, &first);
     return Rcpp::IntegerVector::create(first);
@@ -39,8 +39,6 @@ std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObje
         std::string ctype=get_class(incoming);
         if (ctype=="HDF5Matrix") { 
             return std::unique_ptr<integer_matrix>(new HDF5_integer_matrix(incoming));
-        } else if (ctype=="RleMatrix") {
-            return std::unique_ptr<integer_matrix>(new Rle_integer_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") {
             return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));  
         }

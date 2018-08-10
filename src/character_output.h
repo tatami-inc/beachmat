@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_CHARACTER_OUTPUT_H
 #define BEACHMAT_CHARACTER_OUTPUT_H
 
-#include "Output_matrix.h"
+#include "all_writers.h"
 #include "output_param.h"
 
 namespace beachmat { 
@@ -70,7 +70,7 @@ public:
     std::unique_ptr<character_output> clone() const;
     matrix_type get_matrix_type() const;
 private:
-    simple_output<Rcpp::String, Rcpp::StringVector> mat;
+    simple_writer<Rcpp::String, Rcpp::StringVector> writer;
 };
 
 /* HDF5Matrix */
@@ -103,7 +103,7 @@ public:
 protected:
     H5::StrType str_type;
     size_t bufsize;
-    HDF5_output<char, STRSXP> mat; 
+    HDF5_writer<char, STRSXP> writer; 
     std::vector<char> buffer;
 };
 

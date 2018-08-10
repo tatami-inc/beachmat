@@ -1,22 +1,6 @@
-#' @importFrom DelayedArray blockGrid
-setupDelayedMatrix <- function(mat) {
-    grid <- blockGrid(mat)
-    return(list(dim(mat), grid@spacings))
-}
-
-realizeDelayedMatrixByRow <- function(mat, I) {
-    ind <- (I[1] + 1L):I[2]
-    return(as.matrix(mat[ind,,drop=FALSE]))
-}
-
-realizeDelayedMatrixByCol <- function(mat, J) { 
-    ind <- (J[1] + 1L):J[2]
-    return(as.matrix(mat[,ind,drop=FALSE]))
-}
-
 #' @importFrom DelayedArray netSubsetAndAperm contentIsPristine nseed seed DelayedArray 
 #' @importFrom methods is
-parseDelayedOps <- function(mat) {
+setupDelayedMatrix <- function(mat) {
     # Finding content-altering modifications.
     no.mod <- contentIsPristine(mat) && nseed(mat)==1L
 

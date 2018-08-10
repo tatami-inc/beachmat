@@ -1,3 +1,3 @@
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib beachtest, .registration=TRUE, .fixes="cxx_"
+#' @useDynLib beachtest
 NULL
