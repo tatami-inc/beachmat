@@ -17,6 +17,11 @@ setMethod("show", "AaronMatrix", function(object) {
 setMethod("as.matrix", "AaronMatrix", function(x) x@data)
 
 #' @export
+as.matrix.AaronMatrix <- function(x) {
+    x@data
+}
+
+#' @export
 setMethod("dim", "AaronMatrix", function(x) dim(x@data))
 
 #' @export
