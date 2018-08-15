@@ -24,48 +24,48 @@ void * clone_integer(void * ptr) {
 
 // Basic getters
 
-void get_dim_integer(void* ptr, int* nr, int* nc){ 
+void get_dim_integer(void* ptr, size_t* nr, size_t* nc){ 
     AaronIntMat* thing=static_cast<AaronIntMat*>(ptr);
     *nr=thing->get_nrow();
     *nc=thing->get_ncol();
     return;
 }
 
-int load_integer(void * ptr, int r, int c) {
+size_t load_integer(void * ptr, size_t r, size_t c) {
     return static_cast<AaronIntMat*>(ptr)->get(r, c);	
 }
 
-void load_row2int_integer(void * ptr, int r, int* out, int first, int last) {
+void load_row2int_integer(void * ptr, size_t r, int* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_row(r, out, first, last);
 }
 
-void load_col2int_integer(void * ptr, int c, int* out, int first, int last) {
+void load_col2int_integer(void * ptr, size_t c, int* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_col(c, out, first, last);
 }
 
-void load_row2dbl_integer(void * ptr, int r, double* out, int first, int last) {
+void load_row2dbl_integer(void * ptr, size_t r, double* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_row(r, out, first, last);
 }
 
-void load_col2dbl_integer(void * ptr, int c, double* out, int first, int last) {
+void load_col2dbl_integer(void * ptr, size_t c, double* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_col(c, out, first, last);
 }
 
 // Multi getters
 
-void load_rows2int_integer(void * ptr, int* r, int n, int* out, int first, int last) {
+void load_rows2int_integer(void * ptr, int* r, size_t n, int* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_rows(r, n, out, first, last);
 }
 
-void load_cols2int_integer(void * ptr, int* c, int n, int* out, int first, int last) {
+void load_cols2int_integer(void * ptr, int* c, size_t n, int* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_cols(c, n, out, first, last);
 }
 
-void load_rows2dbl_integer(void * ptr, int* r, int n, double* out, int first, int last) {
+void load_rows2dbl_integer(void * ptr, int* r, size_t n, double* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_rows(r, n, out, first, last);
 }
 
-void load_cols2dbl_integer(void * ptr, int* c, int n, double* out, int first, int last) {
+void load_cols2dbl_integer(void * ptr, int* c, size_t n, double* out, size_t first, size_t last) {
     return static_cast<AaronIntMat*>(ptr)->get_cols(c, n, out, first, last);
 }
 

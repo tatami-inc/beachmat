@@ -14,22 +14,22 @@ class AaronMatrix {
 public:
     AaronMatrix(const Rcpp::RObject& incoming) : mat(Rcpp::RObject(Rcpp::S4(incoming).slot("data"))) {}
 
-    int get_nrow() const { return mat.nrow(); }
-    int get_ncol() const { return mat.ncol(); }
+    size_t get_nrow() const { return mat.nrow(); }
+    size_t get_ncol() const { return mat.ncol(); }
 
     // Basic getters.
 
-    T get(int r, int c) { return mat(r, c); }
+    T get(size_t r, size_t c) { return mat(r, c); }
 
     template<class Iter>
-    void get_row(int r, Iter out, int first, int last) {
+    void get_row(size_t r, Iter out, size_t first, size_t last) {
         auto currow=mat.row(r);
         std::copy(currow.begin()+first, currow.begin()+last, out);
         return;
     }
 
     template<class Iter>
-    void get_col(int c, Iter out, int first, int last) {
+    void get_col(size_t c, Iter out, size_t first, size_t last) {
         auto curcol=mat.column(c);
         std::copy(curcol.begin()+first, curcol.begin()+last, out);
         return;
@@ -38,7 +38,7 @@ public:
     // Multi getters.
 
     template<class Iter>
-    void get_rows(int * r, int n, Iter out, int first, int last) {
+    void get_rows(int* r, size_t n, Iter out, size_t first, size_t last) {
         for (size_t c=first; c<last; ++c) {
             auto curcol=mat.column(c);
             auto it=curcol.begin();
@@ -50,8 +50,8 @@ public:
     }
 
     template<class Iter>
-    void get_cols(int* c, int n, Iter out, int first, int last) {
-        for (int i=0; i<n; ++i) {
+    void get_cols(int* c, size_t n, Iter out, size_t first, size_t last) {
+        for (size_t i=0; i<n; ++i) {
             get_col(*c, out, first, last);
             out+=last - first;
             ++c;

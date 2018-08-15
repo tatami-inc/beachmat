@@ -35,17 +35,17 @@ private:
     Rcpp::RObject original;
     void * ptr;
 
-    T (*load) (void *, int, int);
-    
-    void (*load_col_int) (void *, int, int*, int, int);
-    void (*load_row_int) (void *, int, int*, int, int);
-    void (*load_col_dbl) (void *, int, double*, int, int);
-    void (*load_row_dbl) (void *, int, double*, int, int);
+    T (*load) (void *, size_t, size_t);
 
-    void (*load_cols_int) (void *, int*, int, int*, int, int);
-    void (*load_rows_int) (void *, int*, int, int*, int, int);
-    void (*load_cols_dbl) (void *, int*, int, double*, int, int);
-    void (*load_rows_dbl) (void *, int*, int, double*, int, int);
+    void (*load_col_int) (void *, size_t, int*, size_t, size_t);
+    void (*load_row_int) (void *, size_t, int*, size_t, size_t);
+    void (*load_col_dbl) (void *, size_t, double*, size_t, size_t);
+    void (*load_row_dbl) (void *, size_t, double*, size_t, size_t);
+
+    void (*load_cols_int) (void *, int*, size_t, int*, size_t, size_t);
+    void (*load_rows_int) (void *, int*, size_t, int*, size_t, size_t);
+    void (*load_cols_dbl) (void *, int*, size_t, double*, size_t, size_t);
+    void (*load_rows_dbl) (void *, int*, size_t, double*, size_t, size_t);
 
     void * (*clone) (void *);
     void (*destroy) (void *);
@@ -64,17 +64,17 @@ external_lin_reader<T, V>::external_lin_reader(const Rcpp::RObject& incoming) : 
     const char* pkg=classinfo.second.c_str();
 
     // Getting all required functions from the corresponding shared library.
-    load=reinterpret_cast<T (*)(void *, int, int)>(R_GetCCallable(pkg, combine_strings("load_", type).c_str()));
+    load=reinterpret_cast<T (*)(void *, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_", type).c_str()));
 
-    load_col_int=reinterpret_cast<void (*)(void *, int, int*, int, int)>(R_GetCCallable(pkg, combine_strings("load_col2int_", type).c_str()));
-    load_row_int=reinterpret_cast<void (*)(void *, int, int*, int, int)>(R_GetCCallable(pkg, combine_strings("load_row2int_", type).c_str()));
-    load_col_dbl=reinterpret_cast<void (*)(void *, int, double*, int, int)>(R_GetCCallable(pkg, combine_strings("load_col2dbl_", type).c_str()));
-    load_row_dbl=reinterpret_cast<void (*)(void *, int, double*, int, int)>(R_GetCCallable(pkg, combine_strings("load_row2dbl_", type).c_str()));
+    load_col_int=reinterpret_cast<void (*)(void *, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_col2int_", type).c_str()));
+    load_row_int=reinterpret_cast<void (*)(void *, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_row2int_", type).c_str()));
+    load_col_dbl=reinterpret_cast<void (*)(void *, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_col2dbl_", type).c_str()));
+    load_row_dbl=reinterpret_cast<void (*)(void *, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_row2dbl_", type).c_str()));
 
-    load_cols_int=reinterpret_cast<void (*)(void *, int*, int, int*, int, int)>(R_GetCCallable(pkg, combine_strings("load_cols2int_", type).c_str()));
-    load_rows_int=reinterpret_cast<void (*)(void *, int*, int, int*, int, int)>(R_GetCCallable(pkg, combine_strings("load_rows2int_", type).c_str()));
-    load_cols_dbl=reinterpret_cast<void (*)(void *, int*, int, double*, int, int)>(R_GetCCallable(pkg, combine_strings("load_cols2dbl_", type).c_str()));
-    load_rows_dbl=reinterpret_cast<void (*)(void *, int*, int, double*, int, int)>(R_GetCCallable(pkg, combine_strings("load_rows2dbl_", type).c_str()));
+    load_cols_int=reinterpret_cast<void (*)(void *, int*, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_cols2int_", type).c_str()));
+    load_rows_int=reinterpret_cast<void (*)(void *, int*, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_rows2int_", type).c_str()));
+    load_cols_dbl=reinterpret_cast<void (*)(void *, int*, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_cols2dbl_", type).c_str()));
+    load_rows_dbl=reinterpret_cast<void (*)(void *, int*, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_rows2dbl_", type).c_str()));
 
     clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg, combine_strings("clone_", type).c_str()));
     destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg, combine_strings("destroy_", type).c_str()));
@@ -85,11 +85,8 @@ external_lin_reader<T, V>::external_lin_reader(const Rcpp::RObject& incoming) : 
 
     try {
         // Getting the dimensions from the created object.
-        int nr, nc;
-        auto dimgetter=reinterpret_cast<void (*)(void*, int*, int*)>(R_GetCCallable(pkg, combine_strings("get_dim_", type).c_str()));
-        dimgetter(ptr, &nr, &nc);
-        nrow=nr;
-        ncol=nc;
+        auto dimgetter=reinterpret_cast<void (*)(void*, size_t*, size_t*)>(R_GetCCallable(pkg, combine_strings("get_dim_", type).c_str()));
+        dimgetter(ptr, &nrow, &ncol);
     } catch (std::exception& e) {
         destroy(ptr);
         throw;
