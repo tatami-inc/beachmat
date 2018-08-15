@@ -17,17 +17,17 @@ public:
 
     T get(size_t, size_t);
 
-    void get_row(size_t, int*, size_t, size_t);
-    void get_row(size_t, double*, size_t, size_t);
+    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
-    void get_col(size_t, int*, size_t, size_t);
-    void get_col(size_t, double*, size_t, size_t);
+    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
-    void get_rows(int*, size_t, int*, size_t, size_t);
-    void get_rows(int*, size_t, double*, size_t, size_t);
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
-    void get_cols(int*, size_t, int*, size_t, size_t);
-    void get_cols(int*, size_t, double*, size_t, size_t);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type () const;
@@ -37,15 +37,19 @@ private:
 
     T (*load) (void *, size_t, size_t);
 
-    void (*load_col_int) (void *, size_t, int*, size_t, size_t);
-    void (*load_row_int) (void *, size_t, int*, size_t, size_t);
-    void (*load_col_dbl) (void *, size_t, double*, size_t, size_t);
-    void (*load_row_dbl) (void *, size_t, double*, size_t, size_t);
+    // Typedef'd for convenience.
+    typedef Rcpp::IntegerVector::iterator RcppIntIt;
+    typedef Rcpp::NumericVector::iterator RcppNumIt;
 
-    void (*load_cols_int) (void *, int*, size_t, int*, size_t, size_t);
-    void (*load_rows_int) (void *, int*, size_t, int*, size_t, size_t);
-    void (*load_cols_dbl) (void *, int*, size_t, double*, size_t, size_t);
-    void (*load_rows_dbl) (void *, int*, size_t, double*, size_t, size_t);
+    void (*load_col_int) (void *, size_t, RcppIntIt, size_t, size_t);
+    void (*load_row_int) (void *, size_t, RcppIntIt, size_t, size_t);
+    void (*load_col_dbl) (void *, size_t, RcppNumIt, size_t, size_t);
+    void (*load_row_dbl) (void *, size_t, RcppNumIt, size_t, size_t);
+
+    void (*load_cols_int) (void *, RcppIntIt, size_t, RcppIntIt, size_t, size_t);
+    void (*load_rows_int) (void *, RcppIntIt, size_t, RcppIntIt, size_t, size_t);
+    void (*load_cols_dbl) (void *, RcppIntIt, size_t, RcppNumIt, size_t, size_t);
+    void (*load_rows_dbl) (void *, RcppIntIt, size_t, RcppNumIt, size_t, size_t);
 
     void * (*clone) (void *);
     void (*destroy) (void *);
@@ -66,15 +70,15 @@ external_lin_reader<T, V>::external_lin_reader(const Rcpp::RObject& incoming) : 
     // Getting all required functions from the corresponding shared library.
     load=reinterpret_cast<T (*)(void *, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_", type).c_str()));
 
-    load_col_int=reinterpret_cast<void (*)(void *, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_col2int_", type).c_str()));
-    load_row_int=reinterpret_cast<void (*)(void *, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_row2int_", type).c_str()));
-    load_col_dbl=reinterpret_cast<void (*)(void *, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_col2dbl_", type).c_str()));
-    load_row_dbl=reinterpret_cast<void (*)(void *, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_row2dbl_", type).c_str()));
+    load_col_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_col2int_", type).c_str()));
+    load_row_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_row2int_", type).c_str()));
+    load_col_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_col2dbl_", type).c_str()));
+    load_row_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_row2dbl_", type).c_str()));
 
-    load_cols_int=reinterpret_cast<void (*)(void *, int*, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_cols2int_", type).c_str()));
-    load_rows_int=reinterpret_cast<void (*)(void *, int*, size_t, int*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_rows2int_", type).c_str()));
-    load_cols_dbl=reinterpret_cast<void (*)(void *, int*, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_cols2dbl_", type).c_str()));
-    load_rows_dbl=reinterpret_cast<void (*)(void *, int*, size_t, double*, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_rows2dbl_", type).c_str()));
+    load_cols_int=reinterpret_cast<void (*)(void *, RcppIntIt, size_t, RcppIntIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_cols2int_", type).c_str()));
+    load_rows_int=reinterpret_cast<void (*)(void *, RcppIntIt, size_t, RcppIntIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_rows2int_", type).c_str()));
+    load_cols_dbl=reinterpret_cast<void (*)(void *, RcppIntIt, size_t, RcppNumIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_cols2dbl_", type).c_str()));
+    load_rows_dbl=reinterpret_cast<void (*)(void *, RcppIntIt, size_t, RcppNumIt, size_t, size_t)>(R_GetCCallable(pkg, combine_strings("load_rows2dbl_", type).c_str()));
 
     clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg, combine_strings("clone_", type).c_str()));
     destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg, combine_strings("destroy_", type).c_str()));
@@ -146,29 +150,34 @@ external_lin_reader<T, V>& external_lin_reader<T, V>::operator=(const external_l
 
 template<typename T, class V>
 T external_lin_reader<T, V>::get(size_t r, size_t c) {
+    check_oneargs(r, c);
     return load(ptr, r, c);
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_row(size_t r, int* out, size_t first, size_t last) {
+void external_lin_reader<T, V>::get_row(size_t r, RcppIntIt out, size_t first, size_t last) {
+    check_rowargs(r, first, last);
     load_row_int(ptr, r, out, first, last);
     return;
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_row(size_t r, double* out, size_t first, size_t last) {
+void external_lin_reader<T, V>::get_row(size_t r, RcppNumIt out, size_t first, size_t last) {
+    check_rowargs(r, first, last);
     load_row_dbl(ptr, r, out, first, last);
     return;
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_col(size_t c, int* out, size_t first, size_t last) {
+void external_lin_reader<T, V>::get_col(size_t c, RcppIntIt out, size_t first, size_t last) {
+    check_colargs(c, first, last);
     load_col_int(ptr, c, out, first, last);
     return;
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_col(size_t c, double* out, size_t first, size_t last) {
+void external_lin_reader<T, V>::get_col(size_t c, RcppNumIt out, size_t first, size_t last) {
+    check_colargs(c, first, last);
     load_col_dbl(ptr, c, out, first, last);
     return;
 }
@@ -176,26 +185,34 @@ void external_lin_reader<T, V>::get_col(size_t c, double* out, size_t first, siz
 /* Multi getters. */
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_rows(int* r, size_t n, int* out, size_t first, size_t last) {
-    load_rows_int(ptr, r, n, out, first, last);
+void external_lin_reader<T, V>::get_rows(RcppIntIt rIt, size_t n, RcppIntIt out, size_t first, size_t last) {
+    check_rowargs(0, first, last);
+    check_row_indices(rIt, n);
+    load_rows_int(ptr, rIt, n, out, first, last);
     return;
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_rows(int* r, size_t n, double* out, size_t first, size_t last) {
-    load_rows_dbl(ptr, r, n, out, first, last);
+void external_lin_reader<T, V>::get_rows(RcppIntIt rIt, size_t n, RcppNumIt out, size_t first, size_t last) {
+    check_rowargs(0, first, last);
+    check_row_indices(rIt, n);
+    load_rows_dbl(ptr, rIt, n, out, first, last);
     return;
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_cols(int* c, size_t n, int* out, size_t first, size_t last) {
-    load_cols_int(ptr, c, n, out, first, last);
+void external_lin_reader<T, V>::get_cols(RcppIntIt cIt, size_t n, RcppIntIt out, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+    load_cols_int(ptr, cIt, n, out, first, last);
     return;
 }
 
 template<typename T, class V>
-void external_lin_reader<T, V>::get_cols(int* c, size_t n, double* out, size_t first, size_t last) {
-    load_cols_dbl(ptr, c, n, out, first, last);
+void external_lin_reader<T, V>::get_cols(RcppIntIt cIt, size_t n, RcppNumIt out, size_t first, size_t last) {
+    check_colargs(0, first, last);
+    check_col_indices(cIt, n);
+    load_cols_dbl(ptr, cIt, n, out, first, last);
     return;
 }
 
