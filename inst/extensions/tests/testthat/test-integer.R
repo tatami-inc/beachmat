@@ -36,7 +36,7 @@ test_that("Aaron's Matrix can be read by beachmat", {
     check_read_type(generator, mode="integer")
     check_read_class(generator(), mode="integer", "external")
 
-#   check_read_errors(generator, mode="integer")
+    check_read_errors(generator, mode="integer")
     check_read_all(generator, nr=0, nc=0, mode="integer")
     check_read_all(generator, nr=10, nc=0, mode="integer")
     check_read_all(generator, nr=0, nc=10, mode="integer")

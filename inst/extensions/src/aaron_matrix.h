@@ -3,10 +3,9 @@
 
 #include "Rcpp.h"
 
-/* NOTE: I have not checked for valid inputs here to keep this demonstration code simple.
- * Real-life applications should add bound checks, otherwise segmentation faults may occur.
- * The recommended option is to derive from beachmat::dim_checker and add check_args() calls to each get_* method. 
- * See beachmat/simple_reader.h for an example.
+/* NOTE: input indices can be guaranteed to be within [0, nrow) for rows and [0, ncol) for columns.
+ * For get_rows() and get_cols(), indices are also guaranteed to be strictly increasing.
+ * Further checks are therefore unnecessary at this point.
  */
 
 template<typename T, class V, class M>
@@ -38,7 +37,7 @@ public:
     // Multi getters.
 
     template<class Iter>
-    void get_rows(int* r, size_t n, Iter out, size_t first, size_t last) {
+    void get_rows(Rcpp::IntegerVector::iterator r, size_t n, Iter out, size_t first, size_t last) {
         for (size_t c=first; c<last; ++c) {
             auto curcol=mat.column(c);
             auto it=curcol.begin();
@@ -50,7 +49,7 @@ public:
     }
 
     template<class Iter>
-    void get_cols(int* c, size_t n, Iter out, size_t first, size_t last) {
+    void get_cols(Rcpp::IntegerVector::iterator c, size_t n, Iter out, size_t first, size_t last) {
         for (size_t i=0; i<n; ++i) {
             get_col(*c, out, first, last);
             out+=last - first;
