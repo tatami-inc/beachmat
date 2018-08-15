@@ -3,6 +3,8 @@
 export(getBestChunkDims)
 export(pkgconfig)
 export(rechunkByMargins)
+export(supportCppAccess)
+exportMethods(supportCppAccess)
 importFrom(BiocGenerics,t)
 importFrom(DelayedArray,DelayedArray)
 importFrom(DelayedArray,blockGrid)
