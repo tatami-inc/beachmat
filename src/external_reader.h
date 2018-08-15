@@ -55,6 +55,7 @@ private:
 
 template<typename T, class V>
 external_lin_reader<T, V>::external_lin_reader(const Rcpp::RObject& incoming) : original(incoming) {
+    // Getting the current data type.
     std::string data_type=translate_type(V(0).sexp_type());
     const char* type=data_type.c_str();
 
@@ -78,9 +79,22 @@ external_lin_reader<T, V>::external_lin_reader(const Rcpp::RObject& incoming) : 
     clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg, combine_strings("clone_", type).c_str()));
     destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg, combine_strings("destroy_", type).c_str()));
    
-    // Allocating memory last, so we don't have to handle memory deallocation if the above steps throw.
-    auto create=reinterpret_cast<void * (*)(SEXP)>(R_GetCCallable(pkg, combine_strings("clone_", type).c_str()));
+    // Allocating memory as late as possible, to minimize the code in the try/catch block.
+    auto create=reinterpret_cast<void * (*)(SEXP)>(R_GetCCallable(pkg, combine_strings("create_", type).c_str()));
     ptr=create(original);
+
+    try {
+        // Getting the dimensions from the created object.
+        int nr, nc;
+        auto dimgetter=reinterpret_cast<void (*)(void*, int*, int*)>(R_GetCCallable(pkg, combine_strings("get_dim_", type).c_str()));
+        dimgetter(ptr, &nr, &nc);
+        nrow=nr;
+        ncol=nc;
+    } catch (std::exception& e) {
+        destroy(ptr);
+        throw;
+    }
+
     return;
 }
 
@@ -107,7 +121,7 @@ external_lin_reader<T, V>::external_lin_reader(const external_lin_reader& other)
     load_rows_dbl(other.load_rows_dbl), 
 
     clone(other.clone),
-    destroy{other.destroy}
+    destroy(other.destroy)
 {}
 
 template<typename T, class V>
