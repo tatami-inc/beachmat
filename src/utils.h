@@ -40,7 +40,7 @@ bool has_external_support (const Rcpp::RObject&);
 
 // Matrix type enumeration.
 
-enum matrix_type { SIMPLE, HDF5, SPARSE, DENSE, DELAYED, UNKNOWN };
+enum matrix_type { SIMPLE, HDF5, SPARSE, DENSE, DELAYED, UNKNOWN, EXTERNAL };
 
 // Typedef for the indexing tuple.
 

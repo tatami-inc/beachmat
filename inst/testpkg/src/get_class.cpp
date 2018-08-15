@@ -15,6 +15,9 @@ Rcpp::StringVector translate_class(beachmat::matrix_type X) {
         case beachmat::UNKNOWN:
             out[0]="unknown";
             return out;
+        case beachmat::EXTERNAL:
+            out[0]="external";
+            return out;
         case beachmat::DELAYED:
             out[0]="delayed";
             return out;

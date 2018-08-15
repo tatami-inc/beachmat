@@ -208,7 +208,7 @@ Rcpp::RObject external_lin_reader<T, V>::yield() const {
 
 template<typename T, class V>
 matrix_type external_lin_reader<T, V>::get_matrix_type () const {
-    return UNKNOWN;
+    return EXTERNAL;
 }
 
 }
