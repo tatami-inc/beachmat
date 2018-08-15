@@ -10,6 +10,12 @@ std::string make_to_string(const Rcpp::RObject& str) {
     return Rcpp::as<std::string>(as_str[0]);
 }
 
+std::string make_to_string(const char* left, const char* right) {
+    std::stringstream err;
+    err << left << right;
+    return err.str();    
+}
+
 void throw_custom_error(const std::string& left, const std::string& classname, const std::string& right) {
     std::stringstream err;
     err << left << classname << right;

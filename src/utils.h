@@ -7,6 +7,8 @@ namespace beachmat {
 
 std::string make_to_string(const Rcpp::RObject&);
 
+std::string make_to_string(const char*, const char*);
+
 void throw_custom_error(const std::string&, const std::string&, const std::string&);
 
 // Class checking.

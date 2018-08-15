@@ -187,6 +187,12 @@ using delayed_lin_matrix=general_lin_matrix<T, V, delayed_lin_reader<T, V> >;
 template <typename T, class V>
 using unknown_lin_matrix=general_lin_matrix<T, V, unknown_reader<T, V> >;
 
+/* External matrix of LINs */
+
+template <typename T, class V>
+using external_lin_matrix=general_lin_matrix<T, V, external_lin_reader<T, V> >;
+
+
 }
 
 #include "LIN_methods_read.h"
