@@ -5,15 +5,24 @@
 
 namespace beachmat { 
 
+/* String-related helper functions */
+
 std::string make_to_string(const Rcpp::RObject&);
 
-std::string make_to_string(const char*, const char*);
+template <class L, class R>
+std::string combine_strings(const L& left, const R& right) {
+    std::stringstream err;
+    err << left << right;
+    return err.str();    
+}
 
 void throw_custom_error(const std::string&, const std::string&, const std::string&);
 
 // Class checking.
 
 std::string get_class(const Rcpp::RObject&);
+
+std::pair<std::string, std::string> get_class_package(const Rcpp::RObject&);
 
 Rcpp::RObject get_safe_slot(const Rcpp::RObject&, const std::string&);
 
@@ -24,6 +33,10 @@ std::string check_Matrix_class (const Rcpp::RObject&, const std::string&);
 std::string translate_type(int);
 
 int find_sexp_type (const Rcpp::RObject&);
+
+// Dispatch function for external access check.
+
+bool has_external_support (const Rcpp::RObject&);
 
 // Matrix type enumeration.
 

@@ -2,18 +2,14 @@
 
 namespace beachmat {
 
+/* String-related helper functions */
+
 std::string make_to_string(const Rcpp::RObject& str) {
     Rcpp::StringVector as_str(str);
     if (as_str.size()!=1) { 
         throw std::runtime_error("input RObject should contain a single string");
     }
     return Rcpp::as<std::string>(as_str[0]);
-}
-
-std::string make_to_string(const char* left, const char* right) {
-    std::stringstream err;
-    err << left << right;
-    return err.str();    
 }
 
 void throw_custom_error(const std::string& left, const std::string& classname, const std::string& right) {
@@ -24,11 +20,23 @@ void throw_custom_error(const std::string& left, const std::string& classname, c
 
 /* Class checks. */
 
-std::string get_class(const Rcpp::RObject& incoming) {
+Rcpp::RObject get_class_object(const Rcpp::RObject& incoming) {
     if (!incoming.isObject()) {
-        throw std::runtime_error("object has no class attribute");
+        throw std::runtime_error("object has no 'class' attribute");
     }
-    return make_to_string(incoming.attr("class"));
+    return incoming.attr("class");
+}
+
+std::string get_class(const Rcpp::RObject& incoming) {
+    return make_to_string(get_class_object(incoming));
+}
+
+std::pair<std::string, std::string> get_class_package(const Rcpp::RObject& incoming) {
+    Rcpp::RObject classname=get_class_object(incoming);
+    if (!classname.hasAttribute("package")) {
+        throw std::runtime_error("class name has no 'package' attribute");
+    }
+    return std::make_pair(make_to_string(classname), make_to_string(classname.attr("package")));
 }
 
 Rcpp::RObject get_safe_slot(const Rcpp::RObject& incoming, const std::string& slotname) {
@@ -47,7 +55,6 @@ std::string check_Matrix_class (const Rcpp::RObject& mat, const std::string& exp
     }
     return mattype;
 }
-
 
 /* Type checks */
 
@@ -91,40 +98,44 @@ int reverse_translate_type (const std::string& curtype) {
 
 int find_sexp_type (const Rcpp::RObject& incoming) {
     if (incoming.isObject()) {
-        const std::string classname=get_class(incoming);
-        if (classname=="DelayedMatrix") {
-            Rcpp::Environment delayenv("package:DelayedArray");
-            Rcpp::Function typefun=delayenv["type"];
-            std::string curtype=Rcpp::as<std::string>(typefun(incoming));
-            return reverse_translate_type(curtype);
-            
-        } else if (classname=="HDF5Matrix") {
-            Rcpp::RObject h5seed=get_safe_slot(incoming, "seed");
-            Rcpp::RObject first_val=get_safe_slot(h5seed, "first_val");
-            return first_val.sexp_type();
-
-        } else if (classname=="RleMatrix") {
-            Rcpp::RObject rleseed=get_safe_slot(incoming, "seed");
-            std::string rclass=get_class(rleseed);
-            if (rclass=="SolidRleArraySeed") {
-                Rcpp::RObject rle=get_safe_slot(rleseed, "rle");
-                return get_safe_slot(rle, "values").sexp_type();
-            } else if (rclass=="ChunkedRleArraySeed") {
-                std::string curtype=Rcpp::as<std::string>(get_safe_slot(rleseed, "type"));
-                return reverse_translate_type(curtype);               
-            }
-
-        } else if (classname.length()==9 && classname.substr(3)=="Matrix") {
+        const auto classinfo=get_class_package(incoming);
+        const std::string& classname=classinfo.first;
+        const std::string& classpkg=classinfo.second;
+        
+        if (classpkg=="Matrix" && classname.length()==9 && classname.substr(3)=="Matrix") {
             if (classname[0]=='d') {
                 return REALSXP;
             } else if (classname[0]=='l') {
                 return LGLSXP;
             }
 
-        }
+        } else if (classname=="HDF5Matrix") {
+            Rcpp::RObject h5seed=get_safe_slot(incoming, "seed");
+            Rcpp::RObject first_val=get_safe_slot(h5seed, "first_val");
+            return first_val.sexp_type();
+
+        } else {
+            Rcpp::Environment delayenv=Rcpp::Environment::namespace_env("DelayedArray");
+            Rcpp::Function typefun=delayenv["type"];
+            std::string curtype=Rcpp::as<std::string>(typefun(incoming));
+            return reverse_translate_type(curtype);
+
+        } 
         throw_custom_error("unknown SEXP type for ", classname, " object");
     }
     return incoming.sexp_type();
+}
+
+/* External access checks */
+
+bool has_external_support (const Rcpp::RObject& incoming) {
+    Rcpp::Environment beachenv=Rcpp::Environment::namespace_env("beachmat");
+    Rcpp::Function supfun=beachenv["supportCppAccess"];
+    Rcpp::LogicalVector supported=supfun(incoming);
+    if (supported.size()!=1) {
+        throw std::runtime_error("'supportCppAccess' should return a logical scalar");
+    }
+    return supported[0];
 }
 
 }

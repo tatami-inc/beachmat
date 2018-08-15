@@ -55,6 +55,8 @@ std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObje
             return std::unique_ptr<logical_matrix>(new HDF5_logical_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<logical_matrix>(new delayed_logical_matrix(incoming));
+        } else if (has_external_support(incoming)) {
+            return std::unique_ptr<logical_matrix>(new external_logical_matrix(incoming));
         }
         return std::unique_ptr<logical_matrix>(new unknown_logical_matrix(incoming));
     } 

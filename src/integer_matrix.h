@@ -28,6 +28,10 @@ typedef delayed_lin_matrix<int, Rcpp::IntegerVector> delayed_integer_matrix;
 
 typedef unknown_lin_matrix<int, Rcpp::IntegerVector> unknown_integer_matrix;
 
+/* External matrix */
+
+typedef external_lin_matrix<int, Rcpp::IntegerVector> external_integer_matrix;
+
 /* Dispatcher */
 
 std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject&);

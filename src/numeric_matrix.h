@@ -34,6 +34,10 @@ typedef delayed_lin_matrix<double, Rcpp::NumericVector> delayed_numeric_matrix;
 
 typedef unknown_lin_matrix<double, Rcpp::NumericVector> unknown_numeric_matrix;
 
+/* External matrix */
+
+typedef external_lin_matrix<double, Rcpp::NumericVector> external_numeric_matrix;
+
 /* Dispatcher */
 
 std::unique_ptr<numeric_matrix> create_numeric_matrix(const Rcpp::RObject&);
