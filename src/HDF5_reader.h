@@ -183,17 +183,17 @@ void HDF5_reader<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::Da
 
 template<typename T, int RTYPE>
 template<typename X>
-void HDF5_reader<T, RTYPE>::extract_rows(Rcpp::IntegerVector::iterator cIt, size_t n, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+void HDF5_reader<T, RTYPE>::extract_rows(Rcpp::IntegerVector::iterator rIt, size_t n, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     check_rowargs(0, first, last);
-    check_row_indices(cIt, n);
+    check_row_indices(rIt, n);
 
     reopen_HDF5_file_by_dim(filename, dataname, 
             hfile, hdata, H5F_ACC_RDONLY, rowlist, 
             onrow, oncol, largercol, rowokay);
 
     hselect.clear_mat_space();
-    for (size_t i=0; i<n; ++i, ++cIt) {
-        hselect.select_row(*cIt, first, last, H5S_SELECT_OR);
+    for (size_t i=0; i<n; ++i, ++rIt) {
+        hselect.select_row(*rIt, first, last, H5S_SELECT_OR);
     }
 
     hsize_t custom_dim[2];

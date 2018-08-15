@@ -173,12 +173,12 @@ void unknown_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
 
 template<typename T, class V>
 template<class Iter>
-void unknown_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+void unknown_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, Iter out, size_t first, size_t last) {
     check_rowargs(0, first, last);
-    check_row_indices(cIt, n);
+    check_row_indices(rIt, n);
 
     // Need to make a copy of the indexed (1-indexed) to pass to the function.
-    Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+    Rcpp::IntegerVector cur_indices(rIt, rIt+n);
     for (auto& i : cur_indices) { ++i; }
     slices.vec[0]=first;
     slices.vec[1]=last-first;

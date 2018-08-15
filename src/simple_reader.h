@@ -92,15 +92,15 @@ void simple_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last)
 
 template<typename T, class V>
 template<class Iter>
-void simple_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+void simple_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, Iter out, size_t first, size_t last) {
     check_rowargs(0, first, last);
-    check_row_indices(cIt, n);
+    check_row_indices(rIt, n);
 
     for (size_t c=first; c<last; ++c) {
         auto it=get_const_col(c, 0, this->nrow);
-        auto cIt_copy=cIt;
-        for (size_t i=0; i<n; ++i, ++out, ++cIt_copy) {  
-            (*out)=*(it + *cIt_copy);
+        auto rIt_copy=rIt;
+        for (size_t i=0; i<n; ++i, ++out, ++rIt_copy) {  
+            (*out)=*(it + *rIt_copy);
         }
     }
     return;
