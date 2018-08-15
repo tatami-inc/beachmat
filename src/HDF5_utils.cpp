@@ -96,9 +96,10 @@ void reopen_HDF5_file_by_dim(const std::string& filename, const std::string& dat
     }
 }
 
-/* This struct's methods set the rowspace and dataspace elements according to
+/***************************************************************************
+ * This struct's methods set the rowspace and dataspace elements according to
  * the requested data access profile. We have column, row and single access.
- */
+ ***************************************************************************/
 
 void HDF5_selector::set_dims(size_t NR, size_t NC) {
     h5_start[0]=0;
@@ -159,6 +160,32 @@ void HDF5_selector::select_one(size_t r, size_t c, const H5S_seloper_t& op) {
     h5_start[1]=r;  
     mat_space.selectHyperslab(op, one_count, h5_start);
     return;
+}
+
+void HDF5_selector::select_indices(size_t n, const hsize_t* indices, const H5S_seloper_t& op) {
+    mat_space.selectElements(op, n, indices);
+    return;
+}
+
+void HDF5_selector::clear_mat_space () {
+    mat_space.selectNone();
+    return;
+}
+
+const H5::DataSpace& HDF5_selector::get_mat_space() const {
+    return mat_space;
+}
+
+const H5::DataSpace& HDF5_selector::get_col_space() const {
+    return col_space;
+}
+
+const H5::DataSpace& HDF5_selector::get_row_space() const {
+    return row_space;
+}
+
+const H5::DataSpace& HDF5_selector::get_one_space() const {
+    return one_space;
 }
 
 /* These overloaded functions return an output DataType for a 
