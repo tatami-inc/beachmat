@@ -8,7 +8,7 @@ void destroy_character(void *);
 
 void * clone_character(void *);
 
-// Basic getters
+// Basic getters.
 
 void get_dim_character(void*, size_t*, size_t*);
 
@@ -18,7 +18,13 @@ void load_row_character(void *, size_t, Rcpp::StringVector::iterator, size_t, si
 
 void load_col_character(void *, size_t, Rcpp::StringVector::iterator, size_t, size_t);
 
-// Multi getters
+// Special getters.
+
+Rcpp::StringVector::iterator load_const_col_character(void *, size_t, Rcpp::StringVector::iterator, size_t, size_t);
+
+size_t load_const_col_indexed_character(void *, size_t, Rcpp::IntegerVector::iterator&, Rcpp::StringVector::iterator&, size_t, size_t);
+
+// Multi getters.
 
 void load_rows_character(void *, Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t);
 

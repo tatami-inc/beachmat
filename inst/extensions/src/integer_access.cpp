@@ -50,6 +50,16 @@ void load_col2dbl_integer(void * ptr, size_t c, Rcpp::NumericVector::iterator ou
     return static_cast<AaronIntMat*>(ptr)->get_col(c, out, first, last);
 }
 
+// Special getters
+
+Rcpp::IntegerVector::iterator load_const_col_integer(void* ptr, size_t c, Rcpp::IntegerVector::iterator it, size_t first, size_t last) {
+    return static_cast<AaronIntMat*>(ptr)->get_const_col(c, first, last);
+}
+
+size_t load_const_col_indexed_integer(void* ptr, size_t c, Rcpp::IntegerVector::iterator& iIt, Rcpp::IntegerVector::iterator& vIt, size_t first, size_t last) {
+    return static_cast<AaronIntMat*>(ptr)->get_const_col_indexed(c, iIt, vIt, first, last);
+}
+
 // Multi getters
 
 void load_rows2int_integer(void * ptr, Rcpp::IntegerVector::iterator r, size_t n, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {

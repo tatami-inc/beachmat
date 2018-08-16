@@ -19,6 +19,9 @@ void R_init_morebeach(DllInfo *info) {
     REGISTER(load_row2dbl_integer);
     REGISTER(load_col2dbl_integer);
 
+    REGISTER(load_const_col_integer);
+    REGISTER(load_const_col_indexed_integer);
+
     REGISTER(load_rows2int_integer);
     REGISTER(load_cols2int_integer);
     REGISTER(load_rows2dbl_integer);
@@ -33,6 +36,9 @@ void R_init_morebeach(DllInfo *info) {
     REGISTER(load_character);
     REGISTER(load_row_character);
     REGISTER(load_col_character);
+
+    REGISTER(load_const_col_character);
+    REGISTER(load_const_col_indexed_character);
 
     REGISTER(load_rows_character);
     REGISTER(load_cols_character);

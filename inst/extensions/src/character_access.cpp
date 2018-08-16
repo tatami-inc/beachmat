@@ -42,6 +42,16 @@ void load_col_character(void * ptr, size_t c, Rcpp::StringVector::iterator out, 
     return static_cast<AaronStrMat*>(ptr)->get_col(c, out, first, last);
 }
 
+// Special getters
+
+Rcpp::StringVector::iterator load_const_col_character(void* ptr, size_t c, Rcpp::StringVector::iterator it, size_t first, size_t last) {
+    return static_cast<AaronStrMat*>(ptr)->get_const_col(c, first, last);
+}
+
+size_t load_const_col_indexed_character(void* ptr, size_t c, Rcpp::IntegerVector::iterator& iIt, Rcpp::StringVector::iterator& vIt, size_t first, size_t last) {
+    return static_cast<AaronStrMat*>(ptr)->get_const_col_indexed(c, iIt, vIt, first, last);
+}
+
 // Multi getters
 
 void load_rows_character(void * ptr, Rcpp::IntegerVector::iterator r, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
