@@ -190,8 +190,20 @@ using unknown_lin_matrix=general_lin_matrix<T, V, unknown_reader<T, V> >;
 /* External matrix of LINs */
 
 template <typename T, class V>
-using external_lin_matrix=general_lin_matrix<T, V, external_lin_reader<T, V> >;
+using external_lin_precursor=general_lin_matrix<T, V, external_lin_reader<T, V> >;
 
+template <typename T, class V>
+class external_lin_matrix : public external_lin_precursor<T, V> {
+public:
+    external_lin_matrix(const Rcpp::RObject&);
+    ~external_lin_matrix();
+    
+    typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
+
+    const_col_indexed_info<V> get_const_col_indexed(size_t, typename V::iterator, size_t, size_t);
+
+    std::unique_ptr<lin_matrix<T, V> > clone() const;
+};
 
 }
 

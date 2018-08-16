@@ -136,7 +136,16 @@ using unknown_character_matrix=general_character_matrix<unknown_reader<Rcpp::Str
 
 /* External matrix type */
 
-using external_character_matrix=general_character_matrix<external_reader<Rcpp::String, Rcpp::StringVector> >;
+using external_character_precursor=general_character_matrix<external_reader<Rcpp::String, Rcpp::StringVector> >;
+
+class external_character_matrix : public external_character_precursor {
+public:
+    external_character_matrix(const Rcpp::RObject& incoming);
+    ~external_character_matrix();
+    Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
+    const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator, size_t, size_t);
+    std::unique_ptr<character_matrix> clone() const;
+};
 
 /* Dispatcher */
 

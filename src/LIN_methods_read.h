@@ -298,6 +298,31 @@ void HDF5_lin_reader<T, RTYPE>::get_rows(Rcpp::IntegerVector::iterator it, size_
     return;
 }
 
+/* Defining specific interface for external matrices. */
+
+template <typename T, class V>
+external_lin_matrix<T, V>::external_lin_matrix(const Rcpp::RObject& in) : external_lin_precursor<T, V>(in) {}
+
+template <typename T, class V>
+external_lin_matrix<T, V>::~external_lin_matrix() {} 
+
+template <typename T, class V>
+typename V::iterator external_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
+    return this->reader.get_const_col(c, work, first, last);
+}
+
+template <typename T, class V>
+const_col_indexed_info<V> external_lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator out, size_t first, size_t last) {
+    Rcpp::IntegerVector::iterator iIt;
+    size_t nzero=this->reader.get_const_col_indexed(c, iIt, out, first, last);
+    return const_col_indexed_info<V>(nzero, iIt, out); 
+}
+
+template <typename T, class V>
+std::unique_ptr<lin_matrix<T, V> > external_lin_matrix<T, V>::clone() const {
+    return std::unique_ptr<lin_matrix<T, V> >(new external_lin_matrix<T, V>(*this));
+}
+
 }
 
 #endif

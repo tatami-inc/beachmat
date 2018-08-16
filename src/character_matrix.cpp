@@ -144,6 +144,26 @@ std::unique_ptr<character_matrix> delayed_character_reader::generate_seed(Rcpp::
     return create_character_matrix_internal(incoming, false);
 }
 
+/* Methods for the external character interface. */
+
+external_character_matrix::external_character_matrix(const Rcpp::RObject& incoming) : external_character_precursor (incoming) {}
+
+external_character_matrix::~external_character_matrix() {}
+
+Rcpp::StringVector::iterator external_character_matrix::get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
+    return reader.get_const_col(c, work, first, last);
+}
+
+const_col_indexed_info<Rcpp::StringVector> external_character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) {
+    Rcpp::IntegerVector::iterator iIt;
+    size_t nzero=this->reader.get_const_col_indexed(c, iIt, out, first, last);
+    return const_col_indexed_info<Rcpp::StringVector>(nzero, iIt, out); 
+}
+
+std::unique_ptr<character_matrix> external_character_matrix::clone() const {
+    return std::unique_ptr<character_matrix>(new external_character_matrix(*this));
+}
+
 /* Dispatch definition */
 
 std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
