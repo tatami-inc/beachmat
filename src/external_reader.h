@@ -19,7 +19,7 @@ public:
 
     T get(size_t, size_t);
     typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
-    size_t get_const_col_indexed(size_t, Rcpp::IntegerVector::iterator, typename V::iterator, size_t, size_t);
+    size_t get_const_col_indexed(size_t, Rcpp::IntegerVector::iterator&, typename V::iterator&, size_t, size_t);
 
     Rcpp::RObject yield() const;
     matrix_type get_matrix_type () const;
@@ -32,7 +32,7 @@ protected:
     T (*load) (void *, size_t, size_t);
 
     typename V::iterator (*load_const_col) (void *, size_t, typename V::iterator, size_t, size_t);
-    size_t (*load_const_col_indexed)(void *, size_t, Rcpp::IntegerVector::iterator, typename V::iterator, size_t, size_t);
+    size_t (*load_const_col_indexed)(void *, size_t, Rcpp::IntegerVector::iterator&, typename V::iterator&, size_t, size_t);
 
     void * (*clone) (void *);
     void (*destroy) (void *);
@@ -55,7 +55,7 @@ external_reader_base<T, V>::external_reader_base(const Rcpp::RObject& incoming) 
 
     load_const_col=reinterpret_cast<typename V::iterator (*)(void *, size_t, typename V::iterator, size_t, size_t)>(
             R_GetCCallable(pkg, combine_strings("load_const_col_", type).c_str()));
-    load_const_col_indexed=reinterpret_cast<size_t (*)(void *, size_t, Rcpp::IntegerVector::iterator, typename V::iterator, size_t, size_t)>(
+    load_const_col_indexed=reinterpret_cast<size_t (*)(void *, size_t, Rcpp::IntegerVector::iterator&, typename V::iterator&, size_t, size_t)>(
             R_GetCCallable(pkg, combine_strings("load_const_col_indexed_", type).c_str()));
 
     clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg, combine_strings("clone_", type).c_str()));
@@ -125,7 +125,7 @@ typename V::iterator external_reader_base<T, V>::get_const_col(size_t c, typenam
 }
 
 template<typename T, class V>
-size_t external_reader_base<T, V>::get_const_col_indexed(size_t c, Rcpp::IntegerVector::iterator iIt, typename V::iterator vIt, size_t first, size_t last) {
+size_t external_reader_base<T, V>::get_const_col_indexed(size_t c, Rcpp::IntegerVector::iterator& iIt, typename V::iterator& vIt, size_t first, size_t last) {
     this->check_colargs(c, first, last);
     return load_const_col_indexed(ptr, c, iIt, vIt, first, last);
 }
