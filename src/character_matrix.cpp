@@ -108,6 +108,7 @@ Rcpp::String HDF5_character_reader::get(size_t r, size_t c) {
 void HDF5_character_reader::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
     const size_t required=bufsize * n * (last - first);
     if (required > buffer.size()) {
+        dim_checker::check_subset(first, last, get_ncol(), "column");
         buffer.resize(required);
     }
 
@@ -122,6 +123,7 @@ void HDF5_character_reader::get_rows(Rcpp::IntegerVector::iterator it, size_t n,
 void HDF5_character_reader::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
     const size_t required=bufsize * n * (last - first);
     if (required > buffer.size()) {
+        dim_checker::check_subset(first, last, get_nrow(), "row");
         buffer.resize(required);
     }
 
