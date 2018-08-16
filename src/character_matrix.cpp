@@ -153,6 +153,8 @@ std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::R
             return std::unique_ptr<character_matrix>(new HDF5_character_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
+        } else if (has_external_support(incoming)) {
+            return std::unique_ptr<character_matrix>(new external_character_matrix(incoming));
         }
         return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));
     } 

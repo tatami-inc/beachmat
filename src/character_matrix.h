@@ -134,6 +134,10 @@ using delayed_character_matrix=general_character_matrix<delayed_character_reader
 
 using unknown_character_matrix=general_character_matrix<unknown_reader<Rcpp::String, Rcpp::StringVector> >;
 
+/* External matrix type */
+
+using external_character_matrix=general_character_matrix<external_reader<Rcpp::String, Rcpp::StringVector> >;
+
 /* Dispatcher */
 
 std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject&);
