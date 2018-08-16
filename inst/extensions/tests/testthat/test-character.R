@@ -1,9 +1,6 @@
 # Tests whether Aaron's Matrix can be successfully read by beachmat for strings.
-# library(testthat); library(morebeach); source("test-character")
-#testpkg <- system.file("testpkg", package="beachmat")
-#devtools::install(testpkg, quick=TRUE)
+# library(testthat); library(morebeach); library(beachtest); source("test-character.R")
 
-library(beachtest); library(morebeach)
 generator <- function(nr=15, nc=10) {
     AaronMatrix(matrix(sample(LETTERS, nr*nc, replace=TRUE), nr, nc))
 }
