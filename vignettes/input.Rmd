@@ -70,7 +70,7 @@ The `yield()` method returns the original R matrix that was used to create `dptr
 Rcpp::RObject original = dptr->yield();
 ```
 
-# Extracting data 
+# Basic data extraction 
 
 ## From columns 
 
@@ -148,9 +148,9 @@ If the object `in` is a `Rcpp::NumericVector::iterator` instance, matrix entries
 If it is a `Rcpp::IntegerVector::iterator` instance, matrix entries will be extracted as integers with implicit conversion from the double-precision type in `dptr`.
 It is also _possible_ to use a `Rcpp::LogicalVector::iterator`, though see the warnings [below](#type-coercion).
 
-## Fast constant access 
+# Specialized data extraction 
 
-### From dense matrices
+## From dense matrices
 
 The `get_const_col()` method returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
 The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] with `work` being equivalent to `in`.
@@ -175,7 +175,7 @@ In particular, the underlying data will be modified if `get_const_col()` is call
 This has some consequences if a process calls `get_const_col()` multiple times to obtain more than one iterators for further computation.
 In such cases, developers should ensure that each `get_const_col()` call uses a `work` pointing to a different vector. 
 
-### From sparse matrices
+## From sparse matrices
 
 The `get_const_col_indexed()` method is guaranteed to index at least all the "non-zero" entries in column `c` of the matrix.
 For numeric types, this represents non-zero values (obviously), while for character matrices, this represents non-empty strings.
@@ -204,6 +204,60 @@ For all other matrices, `get_const_col` is called^[The comments above regarding 
 
 Note that this method is _not_ guaranteed to index _only_ the non-zero entries.
 The specific representation may choose to return only the non-zero entries or all of them.     
+
+# Multiple data extraction
+
+## From columns
+
+The `get_cols()` method fills an iterator `in` to an _Rcpp_ vector with values from multiple columns of the matrix.
+The `idx` iterator should point to an array of integers of length `n`, containing the column indices to use for extraction.
+The indices should be zero-based and _strictly increasing_, i.e., no duplicates.
+
+```cpp
+dptr->get_cols(
+    idx, /* Rcpp::IntegerVector::iterator */
+    n, /* size_t */
+    in, /* Rcpp::Vector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+For each column, the range of values in `[first, last)` are extracted.
+If `first` and `last` are not specified, the range will default to `[0, nrow)`.
+Thus, there should be at least `n*(last-first)` accessible elements pointed to by `in`.
+
+This method will extract values in column-major format.
+That is, if one were to compute a submatrix containing the selected columns and the chosen row range, that submatrix would be available in column-major form in `in`.
+
+No value is returned by this method.
+
+## From rows 
+
+The `get_rows()` method fills an iterator `in` to an _Rcpp_ vector with values from multiple rows of the matrix.
+The `idx` iterator should point to an array of integers of length `n`, containing the column indices to use for extraction.
+The indices should be zero-based and _strictly increasing_, i.e., no duplicates.
+
+```cpp
+dptr->get_rows(
+    idx, /* Rcpp::IntegerVector::iterator */
+    n, /* size_t */
+    in, /* Rcpp::Vector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+For each row, the range of values in `[first, last)` are extracted.
+If `first` and `last` are not specified, the range will default to `[0, ncol)`.
+Thus, there should be at least `n*(last-first)` accessible elements pointed to by `in`.
+
+Like `get_cols()`, this method will extract values in column-major format.
+That is, if one were to compute a submatrix containing the selected columns and the chosen row range, that submatrix would be available in column-major form in `in`.
+Note that this means that contiguous elements in `in` are _not_ from the same row!
+Rather, they will be from the same column, but only from the rows specified by `idx`.
+
+No value is returned by this method.
 
 # Generalizing to other matrices
 
