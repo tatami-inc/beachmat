@@ -266,9 +266,10 @@ This is because type conversion at the C++ level will not give the same results 
 Similarly, the name of the data set is obtained via `getHDF5DumpName()`.
 Both names are recorded in the dump log via `appendDatasetCreationToHDF5DumpLog()`.
 This mimics the behaviour observed when `HDF5Matrix` instances are created at the R level.
-Similarly, the compression level and chunk dimensions will be taken from the appropriate global variables.
+Similarly, the compression level will be taken from `getHDF5DumpCompressionLevel()`.
+All of these variables can be modified in R using the appropriate setter methods in `r Biocpkg("HDF5Array")`, which will be respected by `r Biocpkg("beachmat")` in the C++ code.
 
-By default, the chunk dimensions and compression level for HDF5 output are retrieved using R functions from the `r Biocpkg("HDF5Array")` package.
+By default, the chunk dimensions and compression level for HDF5 output are retrieved using the `getHDF5DumpChunkDim()` function.
 An alternative is to directly specify the chunk dimensions using `oparam.set_chunk_dim(chunk_nr, chunk_nc)`, 
 where `chunk_nr` and `chunk_nc` are the chunk rows and columns respectively.
 Similarly, the compression level can be set using `oparam.set_compression(compress)`, where `compress` can range from 0 (contiguous) to 9 (most compression).

@@ -322,7 +322,7 @@ It is possible to directly support arbitrary user-supplied matrices, see `r Bioc
 For all other matrices, the API indirectly supports data access via a block processing mechanism.
 This involves a call to R to realize a block of the matrix (containing the requested row or column) as a dense contiguous array.
 A block is realized so that further requests to rows/columns within the same block do not involve a new call to R.
-The size of the blocks can be controlled using methods in the `r Biocpkg("DelayedArray")` package.
+The size of the blocks can be controlled using methods in the `r Biocpkg("DelayedArray")` package, see `?blockGrid` for details.
 
 **Additional notes**
 
