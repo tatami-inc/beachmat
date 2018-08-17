@@ -1,0 +1,258 @@
+---
+title: "Supporting arbitrary matrix classes"
+author: "Aaron Lun"
+package: beachmat
+output: 
+  BiocStyle::html_document:
+    toc_float: yes
+vignette: >
+  %\VignetteIndexEntry{4. Supporting arbitrary matrix classes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r, echo=FALSE, results="hide", message=FALSE}
+require(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+```
+
+# Background
+
+Ordinarily, direct support for an input matrix class would require the appropriate methods to be defined in `r Biocpkg("beachmat")` at compile time.
+This is the case for the most widely used matrix classes but is somewhat restrictive for other community-contributed matrix representations. 
+Fortunately, R provides a mechanism to link across shared libraries from different packages.
+This means that package developers who define a R matrix type can also define C++ methods for direct input support in `r Biocpkg("beachmat")`-dependent code.
+By doing so, we can improve efficiency of access to these new classes by avoiding the need for block processing via R.
+
+A functioning demonstration of this approach is available in the `extensions` test package.
+This vignette will provide an explanation of the code in `extensions`, and we suggest examining the source code at the same time:
+
+```{r}
+system.file("extensions", package="beachmat")
+```
+
+# Setting up in R
+
+Assume that we have already defined a new matrix-like S4 class (here, `AaronMatrix`).
+To notify the `r Biocpkg("beachmat")` API that direct access support is available, we need to:
+
+- define a method for the `supportCppAccess()` generic (from `r Biocpkg("beachmat")`) for this class.
+This should return `TRUE` if direct support is available (obviously).
+- define a method for the `type()` generic from the `r Biocpkg("DelayedArray")` package.
+This should return the type of the matrix, i.e., integer, logical, numeric or character.
+
+It is possible to only have direct support for particular data types of the given matrix representation.
+The example in `extensions` only directly supports integer and character `AaronMatrix` objects^[Because I was too lazy to add all of them.] and will only return `TRUE` for such types.
+
+# Setting up in C++
+
+We will use integer matrices for demonstration, though it is simple to generalize this to all types by replacing `_integer` with, e.g., `_character`^[Some understanding of C++ templates will greatly simplify the definition of the same methods for different types.].
+First, we define a `create()` function that takes a `SEXP` object and returns a `void` pointer.
+This should presumably point to some C++ class that can contain intermediate data structures for efficient access.
+
+```cpp
+void * ptr = create_integer(in /* SEXP */);
+```
+
+We define a `clone()` function that performs a deep copy of the aforementioned pointer.
+
+```cpp
+void * ptr_copy = clone_integer(ptr /* void* */);
+```
+
+We define a `destroy()` function the frees the memory pointed to by `ptr`.
+
+```cpp
+destroy_integer(ptr /* void* */);
+```
+
+We define a `get_dim()` function that records the number of rows and columns in the object pointed to by `ptr`.
+Note the references on the `size_t&` arguments. 
+
+```cpp
+get_dim_integer(
+    ptr, /* void* */
+    nrow, /* size_t& */
+    ncol /* size_t& */
+);
+```
+
+# Defining getter methods
+
+## For all types
+
+In general, the getter methods follow the same structure as that described for the `r Biocpkg("beachmat", vignette="input.html", label="input API")`.
+We expect a `load()` method to obtain a specified entry of the matrix:
+
+```cpp
+int val = load_integer(
+    ptr, /* void* */
+    r, /* size_t */
+    c /* size_t */
+);
+```
+
+The returned `val` should reflect the matrix type.
+For example, `val` should be a `Rcpp::String` for character matrices, a `double` for numeric matrices, and an `int` for logical matrices.
+
+Developers can assume that `r` and `c` are valid, i.e., within `[0, nrow)` and `[0, ncol)` respectively.
+These checks are performed by `r Biocpkg("beachmat")` and do not have to be repeated within developer-defined functions^[Obviously, the dimensions of the matrix pointed to by `ptr` should not change!].
+
+## For non-numeric types
+
+Here, we will use character matrices^[Character matrices tend to require some special attention, as character arrays need to be coerced to `Rcpp::String` objects for output.] as an example.
+We expect a `load_col()` method to obtain a column of the matrix:
+
+```cpp
+load_col_character(
+    ptr, /* void* */
+    c, /* size_t */
+    in, /* Rcpp::StringVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+... and a `load_row()` method to obtain a row of the matrix:
+
+```cpp
+load_row_character(
+    ptr, /* void* */
+    r, /* size_t */
+    in, /* Rcpp::StringVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+We expect a `load_cols()` method to obtain multiple columns:
+
+```cpp
+load_cols_character(
+    ptr, /* void* */
+    indices, /* Rcpp::IntegerVector::iterator */
+    n, /* size_t */
+    in, /* Rcpp::StringVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+... and a `load_rows()` method to obtain multiple rows:
+
+```cpp
+load_cols_character(
+    ptr, /* void* */
+    indices, /* Rcpp::IntegerVector::iterator */
+    n, /* size_t */
+    in, /* Rcpp::StringVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+In all cases, `first` and `last` can be assumed to be valid, i.e., `first <= last` and both in `[0, nrow)` or `[0, ncol)` (for column and row access, respectively).
+Indices in `indices` can also be assumed to be valid, i.e., within matrix dimensions and strictly increasing. 
+
+## Numeric types
+
+For integer, logical or numeric matrices, we need to account for type conversions.
+This is done by defining the following functions (using integer matrices as an example):
+
+- `load_col2int_integer`
+- `load_col2dbl_integer`
+- `load_row2int_integer`
+- `load_row2dbl_integer`
+- `load_cols2int_integer`
+- `load_cols2dbl_integer`
+- `load_rows2int_integer`
+- `load_rows2dbl_integer`
+
+Taking the single-column getter as an example:
+
+```cpp
+load_col2int_character(
+    ptr, /* void* */
+    c, /* size_t */
+    in, /* Rcpp::IntegerVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+
+load_col2dbl_character(
+    ptr, /* void* */
+    c, /* size_t */
+    in, /* Rcpp::NumericVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+We explicitly define conversions here as the cross-library linking framework does not support templating of `in`.
+If we only defined a `load_col()` function of the same type, we would need to perform two copies: 
+once to copy to an integer vector, and then another to copy to the output double-precision vector.
+
+# Defining special getters
+
+## Constant column access
+
+We define a `load_const_col()` function to obtain an iterator to a contiguous stretch of memory defining a column of the matrix.
+Again, `ptr` is a pointer to the location in memory containing the matrix object.
+All other arguments are as described in the `r Biocpkg("beachmat", vignette="input.html#from-dense-matrices", label="previous workflow")`.
+
+```cpp
+Rcpp::IntegerVector::iterator out = load_const_col_integer(
+    ptr, /* void* */
+    c, /* size_t */
+    in, /* Rcpp::IntegerVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+This function should only be special for representations where entire columns are stored contiguously.
+All other representations should simply copy data into `in`.
+It is unwise to try to be too smart, as the returned iterator `out` must be valid throughout the lifetime of the matrix.
+This means that, if all columns were accessed, the entire matrix would need to be stored in memory to ensure that all iterators were valid.
+Such a strategy means that any matrix representation will effectively become a dense array.
+
+Obviously, `out` and `in` should reflect the matrix type.
+For example, for `load_const_col_character()`, both of them should be `Rcpp::StringVector::iterator` objects.
+
+## Indexed column access
+
+We define a `load_const_col_indexed()` function to obtain iterators to "non-zero" elements of the matrix^[See the `r Biocpkg("beachmat", vignette="input.html#from-sparse-matrices", label="previous workflow")` to clarify the definition of non-zero.].
+Again, `ptr` is a pointer to the location in memory containing the matrix object.
+The number of indexed elements should be returned in `n`.
+
+```cpp
+size_t n = load_const_col_integer(
+    ptr, /* void* */
+    c, /* size_t */
+    index, /* Rcpp::IntegerVector::iterator& */
+    values, /* Rcpp::IntegerVector::iterator& */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+Note that both `index` and `values` are _references_ to iterator objects.
+They should be modified to point to internal data structures in `ptr`.
+The modified values will then be returned as part of the output of `get_const_col_indexed()` in the input API.
+
+This function should only be special for representations where non-zero values and their indices are stored by column (i.e., variants of column-sparse compressed matrices).
+All other representations should simply copy data into `values`, and set `index` to a sequence of integers from `[first, last)`.
+It is possible to streamline the setting of `index` by creating an increasing sequence once and storing it in `ptr` - see the example in `extensions` for more details.
+
+Obviously, `values` should reflect the matrix type.
+For example, for `load_const_col_character()`, it should be a `Rcpp::StringVector::iterator&` reference. 
+
+# Ensuring discoverability 
+
+We use the `R_RegisterCCallable()` function from the R API to register the above functions (see [here](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Linking-to-native-routines-in-other-packages) for an explanation).
+This ensures that they can be found by `r Biocpkg("beachmat")` when an `AaronMatrix` instance is encountered.
+Note that the functions must be defined with C-style linkage in order for this procedure to work properly, hence the use of `extern "C"`.
+
+Needless to say, the `NAMESPACE` should contain an appropriate `useDynLib` command. 
+This means that shared library will be loaded along with the package, allowing `r Biocpkg("beachmat")` to access the registered routines within.
+
