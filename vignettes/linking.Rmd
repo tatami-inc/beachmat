@@ -1,11 +1,12 @@
 ---
-title: "Linking to beachmat with C++ code from another package"
+title: "Linking to beachmat from another package"
 author: "Aaron Lun"
 package: beachmat
 output: 
-  BiocStyle::html_document
+  BiocStyle::html_document:
+    toc_float: yes
 vignette: >
-  %\VignetteIndexEntry{Linking to beachmat with C++ code from another package}
+  %\VignetteIndexEntry{1. Linking to beachmat from another package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
@@ -84,7 +85,7 @@ For example:
 PKG_LIBS=$(BEACHMAT_LIBS) -L/path/to/foolib -lfoo
 ```
 
-The Linux implementation embeds the location of the _beachmat_ library in the package-specific shared object via the compiler flag `-Wl,rpath,path`, where path is determined by `system.file("lib", package="beachmat")`. 
+The Linux implementation embeds the location of the _beachmat_ library in the package-specific shared object via the compiler flag `-Wl,rpath,path`, where `path` is determined by `system.file("lib", package="beachmat")`. 
 The path determined by `system.file()` is from `.libPaths()` and will resolve all symbolic links.
 This can cause problems, e.g., when the "head" node of a cluster mimicks the cluster node via a symbolic link to the directory in which _beachmat_ is installed. 
 Use the environment variable `BEACHMAT_RPATH` to resolve this by setting it to the cluster-node accessible path.
@@ -98,7 +99,7 @@ In order for the C/C++ compiler to find the _beachmat_ package headers during in
 LinkingTo: Rcpp, Rhdf5lib, beachmat
 ``` 
     
-In C or C++ code files, use standard techniques, e.g., `#include "beachmat/numeric_matrix.h"` (see below for more details). 
+In C or C++ code files, use standard techniques to include header definitions, e.g., `#include "beachmat/numeric_matrix.h"` (see `r Biocpkg("beachmat", vignette="input.html", label="here")` for more details). 
 Header files are available for perusal at the following location (enter in an R session):
 
 ```{R headers}
