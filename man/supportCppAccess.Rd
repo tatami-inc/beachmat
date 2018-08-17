@@ -6,7 +6,7 @@
 \description{Does the current matrix class support C++ access?}
 
 \usage{
-\S4method{supportCppAccess}{ANY,character}(x)
+\S4method{supportCppAccess}{ANY}(x)
 }
 
 \arguments{
