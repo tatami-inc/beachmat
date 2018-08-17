@@ -1,11 +1,12 @@
 ---
-title: "Using beachmat to read data from R matrices in C++"
+title: "Reading data from R matrices in C++"
 author: "Aaron Lun"
 package: beachmat
 output: 
-  BiocStyle::html_document
+  BiocStyle::html_document:
+    toc_float: yes
 vignette: >
-  %\VignetteIndexEntry{Using beachmat to read data from R matrices in C++}
+  %\VignetteIndexEntry{2. Reading data from R matrices in C++}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
@@ -28,14 +29,13 @@ First, we include the relevant header file:
 A double-precision matrix object `dmat` is handled in C++ by passing the `SEXP` struct from `.Call` to `create_numeric_matrix`:
 
 ```cpp
-// returns a std::unique_ptr<beachmat::numeric_matrix> object
 auto dptr = beachmat::create_numeric_matrix(dmat);
 ```
 
 This creates a unique pointer that points to an object of the `numeric_matrix` base class.
 The exact derived class that is actually instantiated depends on the type of matrix in `dmat`, though the behaviour of the user-level functions are not affected by this detail.
 
-**Additional notes:**
+**Additional notes**
 
 - The `auto` keyword just avoids the need to write the full type of the returned pointer, which is `std::unique_ptr<beachmat::numeric_matrix>`. 
 We use unique pointers to control ownership and smoothly handle destruction and memory deallocation at the end of the function.
@@ -45,40 +45,43 @@ See the error-handling mechanism in `r CRANpkg("Rcpp")` for how to deal with the
 
 # Querying matrix information
 
-The `get_nrow()` method returns the number of rows (referred to below as `nrow`) in the matrix as a `size_t`.
+The `get_nrow()` method returns the number of rows in the matrix:
 
 ```cpp
-dptr->get_nrow();
+size_t nrow = dptr->get_nrow();
 ```
 
-The `get_ncol()` method returns the number of columns (referred to below as `ncol`) in the matrix as a `size_t`.
+The `get_ncol()` method returns the number of columns in the matrix:
 
 ```cpp
-dptr->get_ncol();
+size_t ncol = dptr->get_ncol();
 ```
 
-The `get_matrix_type()` method returns a `matrix_type` value specifying the specific matrix representation that is pointed to by `dptr`.
-This is an enumeration type that can be tested against constants like `beachmat::SIMPLE` or `beachmat::SPARSE`.
+The `get_matrix_type()` method returns the type of matrix representation pointed to by `dptr`.
+This can be tested against constants like `beachmat::SIMPLE` or `beachmat::SPARSE`.
 
-```
-dptr->get_matrix_type();
+```cpp
+matrix_type mat_type = dptr->get_matrix_type();
 ```
 
-The `yield()` method returns a `Rcpp::RObject` containing the original R matrix that was used to create `dptr`.
+The `yield()` method returns the original R matrix that was used to create `dptr`.
 
+```cpp
+Rcpp::RObject original = dptr->yield();
 ```
-dptr->yield()
-````
 
 # Extracting data 
 
 ## From columns 
 
-The `get_col()` method takes an iterator `in` to a _Rcpp_ vector and fills it with values at column `c`.
+The `get_col()` method fills an iterator `in` to an _Rcpp_ vector with values from a column `c` of the matrix.
 There should be at least `nrow` accessible elements, i.e., `*in` and `*(in+nrow-1)` should be valid entries.
 
 ```cpp
-dptr->get_col(/* size_t */ c, /* Rcpp::Vector::iterator */ in);
+dptr->get_col(
+    c, /* size_t */
+    in /* Rcpp::Vector::iterator */
+);
 ```
 
 Extraction of a range of the column can be specified with the `first` and `last` arguments.
@@ -86,8 +89,12 @@ This will fill `in` with values at column `c` from row `first` to `last-1`.
 There should be at least `last-first` accessible elements, i.e., `*in` and `*(in+last-first-1)` should be valid entries.
 
 ```cpp
-dptr->get_col(/* size_t */ c, /* Rcpp::Vector::iterator */ in, 
-              /* size_t */ first, /* size_t */ last);
+dptr->get_col(
+    c, /* size_t */ 
+    in, /* Rcpp::Vector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
 ```
 
 No value is returned by either of these methods.
@@ -100,7 +107,10 @@ The `get_row()` method takes an iterator `in` to a _Rcpp_ vector and fills it wi
 There should be at least `ncol` accessible elements, i.e., `*in` and `*(in+ncol-1)` should be valid entries.
 
 ```cpp
-dptr->get_row(/* size_t */ r, /* Rcpp::Vector::iterator */ in);
+dptr->get_row(
+    r, /* size_t */
+    in /* Rcpp::Vector::iterator */
+);
 ```              
 
 Extraction of a range of the row can be specified with the `first` and `last` arguments.
@@ -108,10 +118,12 @@ This will fill `in` with values at row `r` from column `first` to `last-1`.
 There should be at least `last-first` accessible elements, i.e., `*in` and `*(in+last-first-1)` should be valid entries.
 
 ```cpp
-dptr->get_row(/* size_t */ r, 
-              /* Rcpp::Vector::iterator */ in, 
-              /* size_t */ first, 
-              /* size_t */ last);
+dptr->get_row(
+    r, /* size_t */
+    in, /* Rcpp::Vector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
 ```
 
 No value is returned by either of these methods.
@@ -124,40 +136,39 @@ The `get()` method returns a double-precision value at the matrix entry for row 
 Both `r` and `c` should be zero-indexed integers in `[0, nrow)` and `[0, ncol)` respectively. 
 
 ```cpp
-dptr->get(/* size_t */ r, 
-          /* size_t */ c)
+double val = dptr->get(
+    r, /* size_t */
+    c /* size_t */
+);
 ```
 
 ## Type conversions
 
 If the object `in` is a `Rcpp::NumericVector::iterator` instance, matrix entries will be extracted as double-precision values.
-If it is a `Rcpp::IntegerVector::iterator` instance, matrix entries will be extracted as integers with implicit conversion.
-
-It is also _possible_ to use a `Rcpp::LogicalVector::iterator`, though this will not behave as expected.
-Double-to-integer conversion is performed such that values in `(-1, 1)` are converted to integer `0`.
-This would be interpreted as a logical `FALSE`, which is incorrect for non-zero double-precision values.
+If it is a `Rcpp::IntegerVector::iterator` instance, matrix entries will be extracted as integers with implicit conversion from the double-precision type in `dptr`.
+It is also _possible_ to use a `Rcpp::LogicalVector::iterator`, though see the warnings [below](#type-coercion).
 
 ## Fast constant access 
 
 ### From dense matrices
 
 The `get_const_col()` method returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
-The arguments are the same as `get_col()` with `work` being equivalent to `in`.
-(Note that `first` and `last` do not have to be specified and will default to the entire column.)
-The type of `work` and the output iterator must correspond to the data type of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
+The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] with `work` being equivalent to `in`.
+The type of `work` and the output iterator _must_ correspond to the data type of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
 
 ```cpp
-dptr->get_const_col(/* size_t */ c, 
-                    /* Rcpp::NumericVector::iterator */ work, 
-                    /* size_t */ first, 
-                    /* size_t */ last);
+Rcpp::NumericVector::iterator it = dptr->get_const_col(
+    c, /* size_t */ 
+    work, /* Rcpp::NumericVector::iterator */
+);
 ```
+
 
 For simple/dense matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data into `work`.
 For other matrices, this function simply calls `get_col()` to copy the data into the vector starting at `work`, and then returns an iterator equal to `work`.
 Thus, for general use, `work` must point to a writeable block of memory, even if it does not get used when `dptr` points to a simple/dense matrix.
 
-**Additional notes:**
+**Additional notes**
 
 - Calling processes should consider the vector starting at `work` to be read-only after a call to `get_const_col()`.
 In particular, the underlying data will be modified if `get_const_col()` is called again with the same `work`.
@@ -166,7 +177,19 @@ In such cases, developers should ensure that each `get_const_col()` call uses a 
 
 ### From sparse matrices
 
-The `get_const_col_indexed()` method returns a `const_col_indexed_info` object, which is a tuple consisting of:
+The `get_const_col_indexed()` method is guaranteed to index at least all the "non-zero" entries in column `c` of the matrix.
+For numeric types, this represents non-zero values (obviously), while for character matrices, this represents non-empty strings.
+
+```cpp
+auto indexinfo = dptr->get_const_col_indexed(
+    c, /* size_t */
+    work, /* Rcpp::NumericVector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+It returns a `const_col_indexed_info` object, which is a tuple consisting of:
 
 1. A `size_t`, specifying the number of entries in column `c` from rows `[first, last)`.
 2. A `Rcpp::IntegerVector::iterator`, pointing to a vector containing the row index for each entry in column `c` from rows `[first, last)`.
@@ -175,20 +198,16 @@ The `get_const_col_indexed()` method returns a `const_col_indexed_info` object, 
 The data type of `work` and the output iterator in (3) must correspond to that of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
 Again, `first` and `last` do not have to be specified and will default to the entire column.
 
-```cpp
-dptr->get_const_col_indexed(/* size_t */ c, 
-                            /* Rcpp::NumericVector::iterator */ work, 
-                            /* size_t */ first, 
-                            /* size_t */ last);
-```
-
 This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the _non-zero entries only_.
 No copying is performed, and the zero values do not have to be explicitly generated as they would be in `get_col`.
 For all other matrices, `get_const_col` is called^[The comments above regarding the read-only nature of `work` also apply here.] and iterator (2) is pointed at an internal array of consecutive integers (which should be treated as read-only).
 
+Note that this method is _not_ guaranteed to index _only_ the non-zero entries.
+The specific representation may choose to return only the non-zero entries or all of them.     
+
 # Generalizing to other matrices
 
-## Other data types
+## Other data types {#type-coercion}
 
 To create logical, integer and character matrices, include the following header files:
 
@@ -215,16 +234,19 @@ auto cptr=beachmat::create_character_matrix(cmat);
 
 Equivalent methods are available for each matrix type with appropriate changes in type.
 
-For integer and logical matrices, `get` will return an integer.
-`in` can be any type previously described for `numeric_matrix` objects^[Note the caveats previously discussed for `Rcpp::LogicalVector` iterators.].
+For integer and logical matrices, `get()` will return an integer.
+`in` can be any type previously described for `numeric_matrix` objects.
 `work` should be an `iterator` to a `Rcpp::IntegerVector` for integer matrices or a `Rcpp::LogicalVector` for logical matrices.
 Similar changes apply to the iterator in the tuple from `get_const_col_indexed()`.
 
-For character matrices, all iterators should be of type `Rcpp::StringVector::iterator`, and `get` will return a `Rcpp::String`.
+For character matrices, all iterators should be of type `Rcpp::StringVector::iterator`, and `get()` will return a `Rcpp::String`.
 
-**Additional notes:**
+**Additional notes**
 
-- If `in` is a `Rcpp::LogicalVector::iterator` for `integer_matrix` instances, integer values are not coerced to `{0, 1}` when they are assigned to `*in`.
+- If `in` is a `Rcpp::LogicalVector::iterator` for non-logical matrices, the result may not behave as expected.
+For `numeric_matrix` instances, double-precision values in `(-1, 1)` are coerced to zero due to double-to-integer casting in C++.
+This is not consistent with the behaviour in R for non-zero values, which are coerced to `TRUE`.
+For `integer_matrix` instances, integer values are not coerced to `{0, 1}` when they are assigned to `*in`.
 Thus, even though the interpretation is correct, the vector produced will not be equivalent to the result of an `as.logical` call.
 As a general rule, it is unwise to use `Rcpp::LogicalVector::iterator`s for anything other than `logical_matrix` access.
 - When accessing `character_matrix` data, we do not return raw `const char*` pointers to the C-style string. 
@@ -233,22 +255,23 @@ This ensures that the string is stored in R's global cache and is suitably prote
 
 ## Alternative matrix representations
 
-The following matrix classes are supported:
+The following matrix classes are directly supported by the API:
 
-- numeric: `matrix`, `dgeMatrix`, `dgCMatrix`, `dspMatrix`, `RleMatrix`, `HDF5Matrix`, `DelayedMatrix`
-- integer: `matrix`, `RleMatrix`, `HDF5Matrix`, `DelayedMatrix`
-- logical: `matrix`, `lgeMatrix`, `lgCMatrix`, `lspMatrix`, `RleMatrix`, `HDF5Matrix`, `DelayedMatrix`
-- character: `matrix`, `RleMatrix`, `HDF5Matrix`, `DelayedMatrix`
+- numeric: `matrix`, `dgeMatrix`, `dgCMatrix`, `HDF5Matrix`
+- integer: `matrix`, `RleMatrix`, `HDF5Matrix`
+- logical: `matrix`, `lgeMatrix`, `lgCMatrix`, `HDF5Matrix`
+- character: `matrix`, `HDF5Matrix`
 
-Additional classes may be added on request.
-As a general rule, if a matrix-like object can be stored in a `SummarizedExperiment` class (from the `r Biocpkg("SummarizedExperiment")` package), the API should be able to handle it.
-Please contact the maintainers if you have a class that you would like to see supported.
+The API will also directly support `DelayedMatrix` objects using the above matrices as backends _and_ containing only subsetting or transposition operations.
+It is possible to directly support arbitrary user-supplied matrices, see `r Biocpkg("iSEE", vignette="external.html", label="here")` for more details.
 
-**Additional notes:**
+For all other matrices, the API indirectly supports data access via a block processing mechanism.
+This involves a call to R to realize a block of the matrix (containing the requested row or column) as a dense contiguous array.
+A block is realized so that further requests to rows/columns within the same block do not involve a new call to R.
+The size of the blocks can be controlled using methods in the `r Biocpkg("DelayedArray")` package.
 
-- `DelayedMatrix` objects can be directly parsed by the API if the only delayed operations involve transposition or subsetting.
-Otherwise, they are realized in a chunk-by-chunk manner, using methods in the `r Biocpkg("DelayedArray")` package.
-The granularity of the chunking is determined using the `blockGrid` function.
+**Additional notes**
+
 - For numeric matrices, _beachmat_ does not support higher-level matrix operations such as addition, multiplication or various factorizations. 
 Rather, the `yield` method can be used to obtain the original `Rcpp::RObject` for input to `r CRANpkg("RcppArmadillo")` or `r CRANpkg("RcppEigen")`.
 This functionality is generally limited to base matrices, though there is also limited support for sparse matrices in these libraries.
@@ -257,8 +280,8 @@ This functionality is generally limited to base matrices, though there is also l
 
 The `clone()` method returns a unique pointer to a `numeric_matrix` instance of the same type as that pointed to by `dptr`.
 
-```
-dptr->clone();
+```cpp
+auto dptr_copy = dptr->clone();
 ```
 
 This is useful as direct use of the `r Biocpkg("beachmat")` API is not thread-safe for simultaneous calls to the `get` methods from different threads.
