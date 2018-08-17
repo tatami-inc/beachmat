@@ -11,6 +11,7 @@
 #include "HDF5_reader.h"
 #include "delayed_reader.h"
 #include "unknown_reader.h"
+#include "external_reader.h"
 
 #endif
 

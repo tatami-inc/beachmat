@@ -2,7 +2,15 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
-\section{Version 1.1.13}{\itemize{
+\section{Version 1.3.5}{\itemize{
+\item Removed native support for RleMatrix and packed symmetric matrices.
+
+\item Added multi-row/column getters.
+
+\item Added mechanism for native support of arbitrary developer-defined matrices.
+}}
+
+\section{Version 1.2.0}{\itemize{
 \item Changed environment variable to BEACHMAT_RPATH for consistency with other packages.
 
 \item Added native support for transposition and subsetting in DelayedMatrix objects.

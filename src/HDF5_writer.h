@@ -136,7 +136,7 @@ HDF5_writer<T, RTYPE>::HDF5_writer (size_t nr, size_t nc, size_t chunk_nr, size_
     dims[1]=this->nrow; 
 
     hselect.set_dims(this->nrow, this->ncol);
-    hdata=hfile.createDataSet(dname.c_str(), default_type, hselect.mat_space, plist); 
+    hdata=hfile.createDataSet(dname.c_str(), default_type, hselect.get_mat_space(), plist); 
 
     // Setting logical attributes.
     if (RTYPE==LGLSXP) {
@@ -191,7 +191,7 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_writer<T, RTYPE>::insert_col(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
     select_col(c, first, last);
-    hdata.write(in, HDT, hselect.col_space, hselect.mat_space);
+    hdata.write(in, HDT, hselect.get_col_space(), hselect.get_mat_space());
     return;
 }
 
@@ -205,7 +205,7 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_writer<T, RTYPE>::insert_row(size_t c, const X* in, const H5::DataType& HDT, size_t first, size_t last) {
     select_row(c, first, last);
-    hdata.write(in, HDT, hselect.row_space, hselect.mat_space);
+    hdata.write(in, HDT, hselect.get_row_space(), hselect.get_mat_space());
     return;
 }
 
@@ -218,7 +218,7 @@ void HDF5_writer<T, RTYPE>::insert_row(size_t c, const T* in, size_t first, size
 template<typename T, int RTYPE>
 void HDF5_writer<T, RTYPE>::insert_one(size_t r, size_t c, T* in) {
     select_one(r, c);
-    hdata.write(in, default_type, hselect.one_space, hselect.mat_space);
+    hdata.write(in, default_type, hselect.get_one_space(), hselect.get_mat_space());
     return;
 }
 
@@ -249,13 +249,12 @@ void HDF5_writer<T, RTYPE>::insert_col_indexed(size_t c, size_t n, const int* id
         ++wsIt;
     }
 
-    auto& hspace=hselect.mat_space;
-    hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
+    hselect.select_indices(n, index_coords.data());
 
     // Performing a write operation.
     hsize_t tmp_count=n, tmp_start=0;
     index_space.selectHyperslab(H5S_SELECT_SET, &tmp_count, &tmp_start);
-    hdata.write(val, HDT, index_space, hspace);
+    hdata.write(val, HDT, index_space, hselect.get_mat_space());
     return;
 }
 
@@ -286,13 +285,12 @@ void HDF5_writer<T, RTYPE>::insert_row_indexed(size_t r, size_t n, const int* id
         ++wsIt;
     }
 
-    auto& hspace=hselect.mat_space;
-    hspace.selectElements(H5S_SELECT_SET, n, index_coords.data());
+    hselect.select_indices(n, index_coords.data());
 
     // Performing a write operation.
     hsize_t tmp_count=n, tmp_start=0;
     index_space.selectHyperslab(H5S_SELECT_SET, &tmp_count, &tmp_start);
-    hdata.write(val, HDT, index_space, hspace);
+    hdata.write(val, HDT, index_space, hselect.get_mat_space());
     return;
 }
 
@@ -303,7 +301,7 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_writer<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     select_row(r, first, last);
-    hdata.read(out, HDT, hselect.row_space, hselect.mat_space);
+    hdata.read(out, HDT, hselect.get_row_space(), hselect.get_mat_space());
     return;
 } 
 
@@ -317,7 +315,7 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_writer<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     select_col(c, first, last);
-    hdata.read(out, HDT, hselect.col_space, hselect.mat_space);
+    hdata.read(out, HDT, hselect.get_col_space(), hselect.get_mat_space());
     return;
 }
 
@@ -330,7 +328,7 @@ void HDF5_writer<T, RTYPE>::extract_col(size_t c, T* out, size_t first, size_t l
 template<typename T, int RTYPE>
 void HDF5_writer<T, RTYPE>::extract_one(size_t r, size_t c, T* out) { 
     select_one(r, c);
-    hdata.read(out, default_type, hselect.one_space, hselect.mat_space);
+    hdata.read(out, default_type, hselect.get_one_space(), hselect.get_mat_space());
     return;
 }
 

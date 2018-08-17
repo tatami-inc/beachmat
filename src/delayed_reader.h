@@ -421,15 +421,15 @@ T delayed_matrix<T, V, base_mat>::get(size_t r, size_t c) {
 
 template<typename T, class V, class base_mat>
 template<class Iter>
-void delayed_matrix<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+void delayed_matrix<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, Iter out, size_t first, size_t last) {
     check_rowargs(0, first, last);
-    check_row_indices(cIt, n);
+    check_row_indices(rIt, n);
 
     // No easy way to save memory or time, as we'd have to do a transposition if we use transformer.get_row().
     Rcpp::Environment beachenv(Rcpp::Environment::namespace_env("beachmat"));
     Rcpp::Function indexed_realizer(beachenv["realizeByIndexRange"]);
 
-    Rcpp::IntegerVector cur_indices(cIt, cIt+n);
+    Rcpp::IntegerVector cur_indices(rIt, rIt+n);
     for (auto& i : cur_indices) { ++i; }
     V tmp_store=indexed_realizer(original, cur_indices, Rcpp::IntegerVector::create(first, last-first));
     std::copy(tmp_store.begin(), tmp_store.end(), out);

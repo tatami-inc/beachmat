@@ -250,25 +250,25 @@ HDF5_lin_reader<T, RTYPE>::~HDF5_lin_reader() {}
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_col(c, &(*out), H5::PredType::NATIVE_INT32, first, last);
+    this->extract_col(c, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+    this->extract_col(c, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_row(r, &(*out), H5::PredType::NATIVE_INT32, first, last);
+    this->extract_row(r, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_row(r, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+    this->extract_row(r, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
@@ -276,26 +276,51 @@ void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator 
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_cols(it, n, &(*out), H5::PredType::NATIVE_INT32, first, last);
+    this->extract_cols(it, n, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_cols(it, n, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+    this->extract_cols(it, n, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_rows(it, n, &(*out), H5::PredType::NATIVE_INT32, first, last);
+    this->extract_rows(it, n, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
     return;
 }
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_rows(it, n, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+    this->extract_rows(it, n, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
     return;
+}
+
+/* Defining specific interface for external matrices. */
+
+template <typename T, class V>
+external_lin_matrix<T, V>::external_lin_matrix(const Rcpp::RObject& in) : external_lin_precursor<T, V>(in) {}
+
+template <typename T, class V>
+external_lin_matrix<T, V>::~external_lin_matrix() {} 
+
+template <typename T, class V>
+typename V::iterator external_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
+    return this->reader.get_const_col(c, work, first, last);
+}
+
+template <typename T, class V>
+const_col_indexed_info<V> external_lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator out, size_t first, size_t last) {
+    Rcpp::IntegerVector::iterator iIt;
+    size_t nzero=this->reader.get_const_col_indexed(c, iIt, out, first, last);
+    return const_col_indexed_info<V>(nzero, iIt, out); 
+}
+
+template <typename T, class V>
+std::unique_ptr<lin_matrix<T, V> > external_lin_matrix<T, V>::clone() const {
+    return std::unique_ptr<lin_matrix<T, V> >(new external_lin_matrix<T, V>(*this));
 }
 
 }

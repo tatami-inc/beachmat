@@ -36,6 +36,10 @@ typedef delayed_lin_matrix<int, Rcpp::LogicalVector> delayed_logical_matrix;
 
 typedef unknown_lin_matrix<int, Rcpp::LogicalVector> unknown_logical_matrix;
 
+/* External matrix */
+
+typedef external_lin_matrix<int, Rcpp::LogicalVector> external_logical_matrix;
+
 /* Dispatcher */
 
 std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject&);

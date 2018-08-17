@@ -1,11 +1,12 @@
 ---
-title: "Using beachmat to write data into R matrix objects"
+title: "Writing data into R matrix objects"
 author: "Aaron Lun"
 package: beachmat
 output: 
-  BiocStyle::html_document
+  BiocStyle::html_document:
+    toc_float: yes
 vignette: >
-  %\VignetteIndexEntry{Using beachmat to write data into R matrix objects}
+  %\VignetteIndexEntry{3. Writing data into R matrix objects}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
@@ -30,7 +31,11 @@ For example, a simple numeric output matrix with `nrow` rows and `ncol` columns 
 
 ```cpp
 // returns a std::unique_ptr<numeric_output> object
-auto odmat=beachmat::create_numeric_output(nrow, ncol, beachmat::SIMPLE_PARAM);
+auto odptr=beachmat::create_numeric_output(
+    nrow, /* size_t */ 
+    ncol, /* size_t */
+    beachmat::SIMPLE_PARAM /* beachmat::output_param */
+);
 ```
 
 A sparse matrix is similarly created by setting the last argument to `beachmat::SPARSE_PARAM`, 
@@ -45,87 +50,115 @@ For example, if data are supplied to a function in a simple matrix, it would be 
 On the other hand, if the input is a `HDF5Matrix`, it may make more sense to return a `HDF5Matrix` object.
 
 Dynamic choice of output type is performed by using the `Rcpp::Robject` object containing the input matrix to initialize the `output_param` object.
-If I have a matrix object `dmat`, the output type can be matched to the input type with:
+If we have a matrix object `dmat`, the output type can be matched to the input type with:
 
 ```cpp
-beachmat::output_param oparam(dmat, /* bool */ simplify, 
-    /* bool */ preserve_zero);
-auto odmat=beachmat::create_numeric_output(nrow, ncol, oparam);
+beachmat::output_param oparam(
+    dmat, /* Rcpp::RObject */
+    simplify, /* bool */
+    preserve_zero /* bool */
+);
+auto odptr=beachmat::create_numeric_output(nrow, ncol, oparam);
 ```
 
 A similar process can be used for a pointer `dptr` to an existing `*_matrix` instance:
 
 ```cpp
-beachmat::output_param oparam(dptr->get_matrix_type(), simplify, preserve_zero); 
+beachmat::output_param oparam(
+    dptr->get_matrix_type(), /* beachmat::matrix_type */
+    simplify, /* bool */ 
+    preserve_zero /* bool */
+); 
 ```
 
-The `simplify` argument indicates whether non-`matrix` input objects should be "simplified" to a `matrix` output object.
-If `false`, a `HDF5Matrix` output object will be returned instead.
-The `preserve_zero` argument indicates whether a `*gCMatrix` input should result in a `*gCMatrix` output when `simplify=false` (for logical or double-precision data only).
-Exact zeroes are detected and ignored when filling this matrix.
+The output matrix type is chosen according to the following rules:
+
+- If `dmat` is a simple/dense matrix, the output will always be a simple matrix.
+- Similarly, if `dmat` is a `HDF5Matrix`, the output will always be a `HDF5Matrix`.
+- If `dmat` is a sparse matrix _and_ if `preserve_zero` is `true`, the output will be a sparse matrix^[For logical and double-precision output matrices only. Exact zeroes are detected and ignored.].
+- In all other case, the output will be a simple matrix if `simplify` is `true` and a `HDF5Matrix` otherwise.
 
 # Methods to store data
 
 ## Storing data in columns
 
-- The `set_col()` method fills column `c` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
+ The `set_col()` method fills column `c` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
 `c` should be a zero-indexed integer in `[0, ncol)`, and there should be at least `nrow` accessible elements, i.e., `*out` and `*(out+nrow-1)` should be valid entries.
 
-    ```cpp
-    dptr->set_col(/* size_t */ c, /* Rcpp::Vector::iterator */ out);
-    ```
+```cpp
+odptr->set_col(
+    c, /* size_t */ 
+    out /* Rcpp::Vector::iterator */
+);
+```
     
-    `out` can be an iterator to a `Rcpp::NumericVector`, `Rcpp::LogicalVector` or `Rcpp::IntegerVector`; type conversions will occur as expected to the type of the output matrix.
-    No value is returned by this method.
+`out` can be an iterator to a `Rcpp::NumericVector`, `Rcpp::LogicalVector` or `Rcpp::IntegerVector`; type conversions will occur as expected to the type of the output matrix.
+No value is returned by this method.
 
-- `set_col()` can be used with `first` and `last` arguments.
+`set_col()` can also be used with `first` and `last` arguments.
 This will fill column `c` from rows `first` to `last-1` with the entries from `*out` to `*(out+last-first-1)`, respectively.
 Both `first` and `last` should be in `[0, nrow]` and zero-indexed, with the additional requirement that `last >= first`.
 
-    ```cpp
-    dptr->set_col(/* size_t */ c, /* Rcpp::Vector::iterator */ out,
-                  /* size_t */ first, /* size_t */ last);
-    ````
+```cpp
+odptr->set_col(
+    c, /* size_t */ 
+    out, /* Rcpp::Vector::iterator */
+    first, /* size_t */ 
+    last /* size_t */
+);
+````
 
-- The `set_col_indexed()` method fills column `c` with the vector of elements starting at iterator `val` at a vector of row indices starting at `idx`.
+The `set_col_indexed()` method fills column `c` with the vector of elements starting at iterator `val` at a vector of row indices starting at `idx`.
 Row indices can be unordered and duplicated^[But obviously they should be zero-indexed.]; later entries will override earlier ones.
 Note that no check is performed for the sanity of the row indices.
 
-    ```cpp
-    dptr->set_col_indexed(/* size_t */ c, /* size_t */ N, 
-                          /* Rcpp::IntegerVector::iterator */ idx,
-                          /* Rcpp::Vector::iterator */ val);
-    ```
+```cpp
+odptr->set_col_indexed(
+    c, /* size_t */ 
+    N, /* size_t */
+    idx, /* Rcpp::IntegerVector::iterator */
+    valm /* Rcpp::Vector::iterator */
+);
+```
 
 ## Storing data in rows
 
-- The `set_row()` method fills row `r` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
+ The `set_row()` method fills row `r` with elements pointed to by an iterator `out` to a _Rcpp_ vector.
 `r` should be a zero-indexed integer in `[0, nrow)`, and there should be at least `nrow` accessible elements, i.e., `*out` and `*(out+nrow-1)` should be valid entries.
 No value is returned.
 
-    ```cpp
-    dptr->set_row(/* size_t */ r, /* Rcpp::Vector::iterator */ out);
-    ```
+```cpp
+odptr->set_row(
+    r, /* size_t */
+    out /* Rcpp::Vector::iterator */
+);
+```
 
-- Filling of a range of the row can be achieved with the `first` and `last` arguments.
+Filling of a range of the row can be achieved with the `first` and `last` arguments.
 This will fill row `r` from columns `first` to `last-1` with entries from `*out` to `*(out+last-first-1)`, respectively.
 Both `first` and `last` should be in `[0, ncol]` and zero-indexed, with the additional requirement that `last >= first`.
 
-    ```cpp
-    dptr->set_row(/* size_t */ r, /* Rcpp::Vector::iterator */ out,
-        /* size_t */ first, /* size_t */ last);
-    ```
+```cpp
+odptr->set_row(
+    r, /* size_t */ 
+    out, /* Rcpp::Vector::iterator */
+    first, /* size_t */
+    last /* size_t */
+);
+```
 
-
-- The `set_row_indexed()` method fills row `r` with the vector of elements starting at iterator `val` at a vector of column indices starting at `idx`.
+The `set_row_indexed()` method fills row `r` with the vector of elements starting at iterator `val` at a vector of column indices starting at `idx`.
 Column indices can be unordered and duplicated^[And again, zero-indexed.]; later entries will override earlier ones.
 Note that no check is performed for the sanity of the column indices.
 
-    ```cpp
-    dptr->set_row_indexed(/* size_t */ r, /* size_t */ N, 
-                          /* Rcpp::IntegerVector::iterator */ idx,
-                          /* Rcpp::Vector::iterator */ val);
-    ```
+```cpp
+odptr->set_row_indexed(
+    r, /* size_t */ 
+    N,  /* size_t */
+    idx, /* Rcpp::IntegerVector::iterator */
+    val, /* Rcpp::Vector::iterator */
+);
+```
 
 ## Storing data in individual cells
 
@@ -134,7 +167,11 @@ Both `r` and `c` should be zero-indexed integers in `[0, nrow)` and `[0, ncol)` 
 No value is returned by this method.
 
 ```cpp
-dptr->set(/* size_t */ r, /* size_t */ c, /* double */ Y)
+odptr->set(
+    r, /* size_t */ 
+    c, /* size_t */
+    Y /* double */
+)
 ```
 
 # Returning a matrix object to R
@@ -142,7 +179,7 @@ dptr->set(/* size_t */ r, /* size_t */ c, /* double */ Y)
 The `yield()` method returns a `Rcpp::RObject` object containing a matrix to pass to R.
 
 ```cpp
-dptr->yield();
+Rcpp::RObject out = odptr->yield();
 ```
 
 This is commonly used at the end of the function to return a matrix to R:
@@ -160,11 +197,11 @@ This will almost always be the case when using `yield()` naively, as the constru
 ```cpp
 // Possible segfault:
 extern "C" SEXP dummy1 () {
-    auto odmat=beachmat::create_numeric_output(nrow, ncol, 
+    auto odptr=beachmat::create_numeric_output(nrow, ncol, 
         beachmat::SIMPLE_PARAM);
     Rcpp::RNGScope rng;
-    // Do something with random numbers and store in odmat.
-    return odmat->yield();
+    // Do something with random numbers and store in odptr.
+    return odptr->yield();
 }
 ```
 
@@ -173,25 +210,25 @@ This ensures that there are no unprotected `SEXP` objects upon destruction of th
 
 ```cpp
 extern "C" SEXP dummy2 () {
-    auto odmat=beachmat::create_numeric_output(nrow, ncol, 
+    auto odptr=beachmat::create_numeric_output(nrow, ncol, 
         beachmat::SIMPLE_PARAM);
     {
         Rcpp::RNGScope rng;
-        // Do something with random numbers and store in odmat.
+        // Do something with random numbers and store in odptr.
     }
-    return odmat->yield();
+    return odptr->yield();
 }
 ```
 
 # Methods to read data
 
-A subset of the access methods are also implemented for `numeric_output` objects:
+A subset of the access methods are also implemented for `*_output` objects:
 
 - `get_nrow()` and `get_ncol()`
 - `get_row()`, `get_col()` and `get()`
 - `get_matrix_type()` and `clone()`.
 
-These methods behave as described for `numeric_matrix` objects.
+These methods behave as described `r Biocpkg("beachmat", vignette="input.html", label="previously")` for `*_matrix` objects.
 They may be useful in situations where data are stored in an intermediate matrix and need to be queried before the matrix is fully filled.
 
 In most applications, though, it is possible to fully fill the output matrix, call `yield()` and then create a `numeric_matrix` from the resulting `Rcpp::RObject`.
@@ -213,12 +250,13 @@ auto olmat=beachmat::create_logical_output(nrow, ncol, beachmat::SIMPLE_PARAM);
 auto ocmat=beachmat::create_character_output(nrow, ncol, beachmat::SIMPLE_PARAM);
 ```
 
+For integer, logical and numeric matrices, `out` can be an iterator for any `Rcpp::NumericVector`, `Rcpp::IntegerVector` or `Rcpp::LogicalVector` objects.
 For integer and logical matrices, `Y` should be an integer.
 For character matrices, `out` should be of type `Rcpp::StringVector::iterator` and `Y` should be a `Rcpp::String` object.
 
-__Additional notes: __
+**Additional notes**
 
-- Similar to the issue discussed for data access from `numeric_matrix` objects, 
+- Similar to the issue discussed `r Biocpkg("beachmat", vignette="input.html#other-data-types", label="previously")`, 
 it is probably unwise to use anything but a `Rcpp::LogicalVector::iterator` as `out` when storing data in a `logical_output`.
 This is because type conversion at the C++ level will not give the same results as conversion at the R level.
 
@@ -234,7 +272,7 @@ By default, the chunk dimensions and compression level for HDF5 output are retri
 An alternative is to directly specify the chunk dimensions using `oparam.set_chunk_dim(chunk_nr, chunk_nc)`, 
 where `chunk_nr` and `chunk_nc` are the chunk rows and columns respectively.
 Similarly, the compression level can be set using `oparam.set_compression(compress)`, where `compress` can range from 0 (contiguous) to 9 (most compression).
-If specified, these settings will override the default behaviour, but will have no effect for non-HDF5 output.
+If specified, these settings will override the default behaviour for `HDF5Matrix` output but will have no effect for non-HDF5 output.
 
 For consecutive row and column access from a matrix with dimensions `nr`-by-`nc`, the optimal chunk dimensions can be specified with `oparam.optimize_chunk_dims(nr, nc)`.
 _beachmat_ exploits the chunk cache to store all chunks along a row or column, thus avoiding the need to reload data for the next row or column.

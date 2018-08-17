@@ -55,6 +55,8 @@ std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObje
             return std::unique_ptr<numeric_matrix>(new HDF5_numeric_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<numeric_matrix>(new delayed_numeric_matrix(incoming));
+        } else if (has_external_support(incoming)) {
+            return std::unique_ptr<numeric_matrix>(new external_numeric_matrix(incoming));
         }
         return std::unique_ptr<numeric_matrix>(new unknown_numeric_matrix(incoming));
     } 

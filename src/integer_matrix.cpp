@@ -41,6 +41,8 @@ std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObje
             return std::unique_ptr<integer_matrix>(new HDF5_integer_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") {
             return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));  
+        } else if (has_external_support(incoming)) {
+            return std::unique_ptr<integer_matrix>(new external_integer_matrix(incoming));
         }
         return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
     } 

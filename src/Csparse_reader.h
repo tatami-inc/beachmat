@@ -238,9 +238,9 @@ void Csparse_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last
 
 template<typename T, class V>
 template<class Iter>
-void Csparse_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+void Csparse_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, Iter out, size_t first, size_t last) {
     check_rowargs(0, first, last);
-    check_row_indices(cIt, n);
+    check_row_indices(rIt, n);
 
     Rcpp::IntegerVector::iterator indices;
     typename V::iterator values;
@@ -248,23 +248,23 @@ void Csparse_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator cIt, size_t n,
     for (size_t c=first; c<last; ++c) {
 		size_t nnzero=get_const_col_nonzero(c, indices, values, 0, this->nrow);
         auto endpoint=indices+nnzero;
-        auto cIt_copy=cIt;
+        auto rIt_copy=rIt;
 
-        for (size_t i=0; i<n; ++i, ++out, ++cIt_copy) {  
+        for (size_t i=0; i<n; ++i, ++out, ++rIt_copy) {  
             if (indices==endpoint) {
                 (*out)=0;
-            } else if (*cIt_copy==*indices) {
+            } else if (*rIt_copy==*indices) {
                 (*out)=*values;
                 ++indices;
                 ++values;
-            } else if (*cIt_copy < *indices) {
+            } else if (*rIt_copy < *indices) {
                 (*out)=0;
             } else {
-                auto next=std::lower_bound(indices, endpoint, *cIt_copy);
+                auto next=std::lower_bound(indices, endpoint, *rIt_copy);
                 values+=(next - indices);
                 indices=next;
                 
-                if (next!=endpoint && *next==*cIt_copy) {
+                if (next!=endpoint && *next==*rIt_copy) {
                     (*out)=*values;
                     ++indices;
                     ++values;

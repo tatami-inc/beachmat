@@ -154,7 +154,7 @@ void HDF5_reader<T, RTYPE>::extract_row(size_t r, X* out, const H5::DataType& HD
             hfile, hdata, H5F_ACC_RDONLY, rowlist, 
             onrow, oncol, largercol, rowokay);
     hselect.select_row(r, first, last);
-    hdata.read(out, HDT, hselect.row_space, hselect.mat_space);
+    hdata.read(out, HDT, hselect.get_row_space(), hselect.get_mat_space());
     return;
 }
 
@@ -166,7 +166,7 @@ void HDF5_reader<T, RTYPE>::extract_col(size_t c, X* out, const H5::DataType& HD
             hfile, hdata, H5F_ACC_RDONLY, collist, 
             oncol, onrow, largerrow, colokay);
     hselect.select_col(c, first, last);
-    hdata.read(out, HDT, hselect.col_space, hselect.mat_space);
+    hdata.read(out, HDT, hselect.get_col_space(), hselect.get_mat_space());
     return;
 }
     
@@ -175,7 +175,7 @@ template<typename X>
 void HDF5_reader<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::DataType& HDT) { 
     check_oneargs(r, c);
     hselect.select_one(r, c);
-    hdata.read(out, HDT, hselect.one_space, hselect.mat_space);
+    hdata.read(out, HDT, hselect.get_one_space(), hselect.get_mat_space());
     return;
 }
 
@@ -183,22 +183,24 @@ void HDF5_reader<T, RTYPE>::extract_one(size_t r, size_t c, X* out, const H5::Da
 
 template<typename T, int RTYPE>
 template<typename X>
-void HDF5_reader<T, RTYPE>::extract_rows(Rcpp::IntegerVector::iterator cIt, size_t n, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
+void HDF5_reader<T, RTYPE>::extract_rows(Rcpp::IntegerVector::iterator rIt, size_t n, X* out, const H5::DataType& HDT, size_t first, size_t last) { 
     check_rowargs(0, first, last);
-    check_row_indices(cIt, n);
+    check_row_indices(rIt, n);
 
     reopen_HDF5_file_by_dim(filename, dataname, 
             hfile, hdata, H5F_ACC_RDONLY, rowlist, 
             onrow, oncol, largercol, rowokay);
 
-    hselect.mat_space.selectNone();
-    for (size_t i=0; i<n; ++i, ++cIt) {
-        hselect.select_row(*cIt, first, last, H5S_SELECT_OR);
+    hselect.clear_mat_space();
+    for (size_t i=0; i<n; ++i, ++rIt) {
+        hselect.select_row(*rIt, first, last, H5S_SELECT_OR);
     }
 
-    hsize_t custom_dim=(last - first) * n;
-    H5::DataSpace custom_space(1, &custom_dim);
-    hdata.read(out, HDT, custom_space, hselect.mat_space); 
+    hsize_t custom_dim[2];
+    custom_dim[0]=last-first;
+    custom_dim[1]=n;
+    H5::DataSpace custom_space(2, custom_dim);
+    hdata.read(out, HDT, custom_space, hselect.get_mat_space()); 
     return;
 }
 
@@ -212,14 +214,16 @@ void HDF5_reader<T, RTYPE>::extract_cols(Rcpp::IntegerVector::iterator cIt, size
             hfile, hdata, H5F_ACC_RDONLY, collist, 
             oncol, onrow, largerrow, colokay);
 
-    hselect.mat_space.selectNone();
+    hselect.clear_mat_space();
     for (size_t i=0; i<n; ++i, ++cIt) {
         hselect.select_col(*cIt, first, last, H5S_SELECT_OR);
     }
 
-    hsize_t custom_dim=(last - first) * n;
-    H5::DataSpace custom_space(1, &custom_dim);
-    hdata.read(out, HDT, custom_space, hselect.mat_space); 
+    hsize_t custom_dim[2];
+    custom_dim[0]=n;
+    custom_dim[1]=last-first;
+    H5::DataSpace custom_space(2, custom_dim);
+    hdata.read(out, HDT, custom_space, hselect.get_mat_space()); 
     return;
 }
 
