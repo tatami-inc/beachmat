@@ -5,7 +5,7 @@ package: beachmat
 output: 
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{Using beachmat's helper functions in R}
+  %\VignetteIndexEntry{5. Using beachmat's helper functions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---

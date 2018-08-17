@@ -61,7 +61,7 @@ The `get_matrix_type()` method returns the type of matrix representation pointed
 This can be tested against constants like `beachmat::SIMPLE` or `beachmat::SPARSE`.
 
 ```cpp
-matrix_type mat_type = dptr->get_matrix_type();
+beachmat::matrix_type mat_type = dptr->get_matrix_type();
 ```
 
 The `yield()` method returns the original R matrix that was used to create `dptr`.
