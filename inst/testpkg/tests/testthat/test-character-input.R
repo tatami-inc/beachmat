@@ -83,8 +83,8 @@ test_that("RLE character matrix input is okay", {
 })
 
 test_that("RLE character matrix input is okay with reduced block size", {
-    old <- getOption("DelayedArray.block.size")
-    options(DelayedArray.block.size=6*8) # seems that characters use 8 byte addresses.
+    old <- getDefaultBlockSize()
+    setDefaultBlockSize(6*8)
 
     check_read_all(rFUN, mode="character")
     check_read_all(rFUN, nr=5, nc=30, mode="character")
@@ -117,8 +117,8 @@ test_that("RLE character matrix input is okay with reduced block size", {
     check_read_all(rFUN, nr=0, nc=0, mode="character")
     check_read_all(rFUN, nr=10, nc=0, mode="character")
     check_read_all(rFUN, nr=0, nc=10, mode="character")
-            
-    options(DelayedArray.block.size=old)
+
+    setDefaultBlockSize(old)
 })
 
 #######################################################

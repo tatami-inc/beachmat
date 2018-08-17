@@ -162,8 +162,8 @@ test_that("dgTMatrix (i.e., unknown) input is okay", {
 })
 
 test_that("dgTMatrix input is okay with reduced block size", {
-    old <- getOption("DelayedArray.block.size")
-    options(DelayedArray.block.size=6*8)
+    old <- getDefaultBlockSize()
+    setDefaultBlockSize(6*8)
 
     check_read_all(tsFUN, mode="numeric")
     check_read_all(tsFUN, nr=5, nc=30, mode="numeric")
@@ -197,7 +197,7 @@ test_that("dgTMatrix input is okay with reduced block size", {
     check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
     check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
              
-    options(DelayedArray.block.size=old)
+    setDefaultBlockSize(old)
 })
 
 #######################################################

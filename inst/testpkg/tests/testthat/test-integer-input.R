@@ -82,8 +82,8 @@ test_that("RLE integer matrix input (i.e., unknown) is okay", {
 })
 
 test_that("RLE integer matrix input is okay with reduced block size", {
-    old <- getOption("DelayedArray.block.size")
-    options(DelayedArray.block.size=6*4)
+    old <- getDefaultBlockSize()
+    setDefaultBlockSize(6*4)
 
     check_read_all(rFUN, mode="integer")
     check_read_all(rFUN, nr=5, nc=30, mode="integer")
@@ -117,7 +117,7 @@ test_that("RLE integer matrix input is okay with reduced block size", {
     check_read_all(rFUN, nr=10, nc=0, mode="integer")
     check_read_all(rFUN, nr=0, nc=10, mode="integer")
 
-    options(DelayedArray.block.size=old)
+    setDefaultBlockSize(old)
 })
 
 #######################################################
