@@ -10,7 +10,7 @@ void * clone_integer(void *);
 
 // Basic getters.
 
-void get_dim_integer(void*, size_t*, size_t*);
+void get_dim_integer(void*, size_t&, size_t&);
 
 int load_integer(void*, size_t, size_t);
 

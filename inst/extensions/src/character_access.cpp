@@ -23,10 +23,10 @@ void * clone_character(void * ptr) {
 
 // Basic getters
 
-void get_dim_character(void* ptr, size_t* nr, size_t* nc){ 
+void get_dim_character(void* ptr, size_t& nr, size_t& nc){ 
     AaronStrMat* thing=static_cast<AaronStrMat*>(ptr);
-    *nr=thing->get_nrow();
-    *nc=thing->get_ncol();
+    nr=thing->get_nrow();
+    nc=thing->get_ncol();
     return;
 }
 

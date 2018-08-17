@@ -23,10 +23,10 @@ void * clone_integer(void * ptr) {
 
 // Basic getters
 
-void get_dim_integer(void* ptr, size_t* nr, size_t* nc){ 
+void get_dim_integer(void* ptr, size_t& nr, size_t& nc){ 
     AaronIntMat* thing=static_cast<AaronIntMat*>(ptr);
-    *nr=thing->get_nrow();
-    *nc=thing->get_ncol();
+    nr=thing->get_nrow();
+    nc=thing->get_ncol();
     return;
 }
 

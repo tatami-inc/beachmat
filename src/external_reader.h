@@ -67,8 +67,8 @@ external_reader_base<T, V>::external_reader_base(const Rcpp::RObject& incoming) 
 
     try {
         // Getting the dimensions from the created object.
-        auto dimgetter=reinterpret_cast<void (*)(void*, size_t*, size_t*)>(R_GetCCallable(pkg, combine_strings("get_dim_", type).c_str()));
-        dimgetter(ptr, &nrow, &ncol);
+        auto dimgetter=reinterpret_cast<void (*)(void*, size_t&, size_t&)>(R_GetCCallable(pkg, combine_strings("get_dim_", type).c_str()));
+        dimgetter(ptr, nrow, ncol);
     } catch (std::exception& e) {
         destroy(ptr);
         throw;

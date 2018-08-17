@@ -10,7 +10,7 @@ void * clone_character(void *);
 
 // Basic getters.
 
-void get_dim_character(void*, size_t*, size_t*);
+void get_dim_character(void*, size_t&, size_t&);
 
 Rcpp::String load_character(void *, size_t, size_t);
 
