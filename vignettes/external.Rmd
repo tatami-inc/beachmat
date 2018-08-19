@@ -100,7 +100,7 @@ These checks are performed by `r Biocpkg("beachmat")` and do not have to be repe
 
 ## For non-numeric types
 
-Here, we will use character matrices^[Character matrices tend to require some special attention, as character arrays need to be coerced to `Rcpp::String` objects for output.] as an example.
+Here, we will use character matrices^[Character matrices tend to require some special attention, as character arrays need to be coerced to `Rcpp::String` objects to be returned in `in`.] as an example.
 We expect a `load_col()` method to obtain a column of the matrix:
 
 ```cpp
