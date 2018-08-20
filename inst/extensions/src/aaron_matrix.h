@@ -11,7 +11,7 @@
 template<typename T, class V, class M>
 class AaronMatrix {
 public:
-    AaronMatrix(const Rcpp::RObject& incoming) : mat(Rcpp::RObject(Rcpp::S4(incoming).slot("data"))) {}
+    AaronMatrix(const Rcpp::RObject& incoming) : mat(Rcpp::RObject(Rcpp::S4(incoming).slot("data"))), vec(mat) {}
 
     size_t get_nrow() const { return mat.nrow(); }
     size_t get_ncol() const { return mat.ncol(); }
@@ -36,8 +36,7 @@ public:
     
     // Special getters.
     typename V::iterator get_const_col(size_t c, size_t first, size_t last) {
-        V as_vector(mat); // costless conversion to a vector.
-        return as_vector.begin() + c * get_nrow() + first;
+        return vec.begin() + c * get_nrow() + first;
     }
 
     size_t get_const_col_indexed(size_t c, Rcpp::IntegerVector::iterator& iIt, typename V::iterator& vIt, size_t first, size_t last) {
@@ -75,6 +74,7 @@ public:
 
 private:
     M mat;
+    V vec; // costless conversion to a vector.
     Rcpp::IntegerVector indices;
 };
 
