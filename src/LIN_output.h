@@ -13,8 +13,12 @@ namespace beachmat {
 template<typename T, class V>
 class lin_output {
 public:
-    lin_output();
-    virtual ~lin_output();
+    lin_output() = default;
+    virtual ~lin_output() = default;
+    lin_output(const lin_output&) = default;
+    lin_output& operator=(const lin_output&) = default;
+    lin_output(lin_output&&) = default;
+    lin_output& operator=(lin_output&&) = default;
     
     // Getters:
     virtual size_t get_nrow() const=0;
@@ -71,7 +75,11 @@ template<typename T, class V, class WTR>
 class general_lin_output : public lin_output<T, V> {
 public:
     general_lin_output(size_t, size_t);
-    ~general_lin_output();
+    ~general_lin_output() = default;
+    general_lin_output(const general_lin_output&) = default;
+    general_lin_output& operator=(const general_lin_output&) = default;
+    general_lin_output(general_lin_output&&) = default;
+    general_lin_output& operator=(general_lin_output&&) = default;
 
     // Getters:
     size_t get_nrow() const;
@@ -119,7 +127,12 @@ template<typename T, class V>
 class simple_lin_output : public simple_lin_output_precursor<T, V> {
 public:
     simple_lin_output(size_t, size_t);
-    ~simple_lin_output();
+    ~simple_lin_output() = default;
+    simple_lin_output(const simple_lin_output&) = default;
+    simple_lin_output& operator=(const simple_lin_output&) = default;
+    simple_lin_output(simple_lin_output&&) = default;
+    simple_lin_output& operator=(simple_lin_output&&) = default;
+
     typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
     std::unique_ptr<lin_output<T, V> > clone() const;
 };
@@ -138,7 +151,11 @@ public:
             size_t=output_param::DEFAULT_CHUNKDIM, 
             size_t=output_param::DEFAULT_CHUNKDIM, 
             int=output_param::DEFAULT_COMPRESS);
-    ~HDF5_lin_output();
+    ~HDF5_lin_output() = default;
+    HDF5_lin_output(const HDF5_lin_output&) = default;
+    HDF5_lin_output& operator=(const HDF5_lin_output&) = default;
+    HDF5_lin_output(HDF5_lin_output&&) = default;
+    HDF5_lin_output& operator=(HDF5_lin_output&&) = default;
 
     // Getters:
     size_t get_nrow() const;
