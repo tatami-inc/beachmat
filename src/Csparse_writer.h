@@ -13,7 +13,11 @@ template<typename T, class V>
 class Csparse_writer : public dim_checker {
 public:
     Csparse_writer(size_t, size_t);
-    ~Csparse_writer();
+    ~Csparse_writer() = default;
+    Csparse_writer(const Csparse_writer&) = default;
+    Csparse_writer& operator=(const Csparse_writer&) = default;
+    Csparse_writer(Csparse_writer&&) = default;
+    Csparse_writer& operator=(Csparse_writer&&) = default;
 
     // Setters:
     template <class Iter>
@@ -64,9 +68,6 @@ private:
 
 template<typename T, class V>
 Csparse_writer<T, V>::Csparse_writer(size_t nr, size_t nc) : dim_checker(nr, nc), data(nc) {}
-
-template<typename T, class V>
-Csparse_writer<T, V>::~Csparse_writer() {}
 
 /*** Setter methods ***/
 
