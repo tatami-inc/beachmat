@@ -13,7 +13,11 @@ template<typename T, class V>
 class dense_reader : public dim_checker {
 public:    
     dense_reader(const Rcpp::RObject&);
-    ~dense_reader();
+    ~dense_reader() = default;
+    dense_reader(const dense_reader&) = default;
+    dense_reader& operator=(const dense_reader&) = default;
+    dense_reader(dense_reader&&) = default;
+    dense_reader& operator=(dense_reader&&) = default;
 
     T get(size_t, size_t);
 
@@ -58,9 +62,6 @@ dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incom
     }
     return;
 }
-
-template <typename T, class V>
-dense_reader<T, V>::~dense_reader() {}
 
 /*** Basic getter functions ***/
 

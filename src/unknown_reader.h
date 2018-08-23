@@ -13,7 +13,11 @@ template<typename T, class V>
 class unknown_reader : public dim_checker {
 public:    
     unknown_reader(const Rcpp::RObject&);
-    ~unknown_reader();
+    ~unknown_reader() = default;
+    unknown_reader(const unknown_reader&) = default;
+    unknown_reader& operator=(const unknown_reader&) = default;
+    unknown_reader(unknown_reader&&) = default;
+    unknown_reader& operator=(unknown_reader&&) = default;
 
     T get(size_t, size_t);
 
@@ -50,6 +54,8 @@ private:
     size_t chunk_nrow, chunk_ncol;
 };
 
+/* Constructor definition. */
+
 template<typename T, class V>
 unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in), 
         beachenv(Rcpp::Environment::namespace_env("beachmat")), realizer(beachenv["realizeByRange"]), 
@@ -70,9 +76,6 @@ unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in),
     do_transpose.vec[0]=1;
     return;
 }
-
-template<typename T, class V>
-unknown_reader<T, V>::~unknown_reader() {}
 
 /* Define storage-related methods. */
 
