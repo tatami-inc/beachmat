@@ -9,8 +9,12 @@ namespace beachmat {
 
 class character_matrix {
 public:    
-    character_matrix();
-    virtual ~character_matrix();
+    character_matrix() = default;
+    virtual ~character_matrix() = default;
+    character_matrix(const character_matrix&) = default;
+    character_matrix& operator=(const character_matrix&) = default;
+    character_matrix(character_matrix&&) = default;
+    character_matrix& operator=(character_matrix&&) = default;
     
     virtual size_t get_nrow() const=0;
     virtual size_t get_ncol() const=0;
@@ -54,7 +58,11 @@ template<class RDR>
 class general_character_matrix : public character_matrix {
 public:    
     general_character_matrix(const Rcpp::RObject& incoming) : reader(incoming) {}
-    ~general_character_matrix() {}
+    ~general_character_matrix() = default;
+    general_character_matrix(const general_character_matrix&) = default;
+    general_character_matrix& operator=(const general_character_matrix&) = default;
+    general_character_matrix(general_character_matrix&&) = default;
+    general_character_matrix& operator=(general_character_matrix&&) = default;
   
     size_t get_nrow() const { return reader.get_nrow(); }
     size_t get_ncol() const { return reader.get_ncol(); }
@@ -97,7 +105,12 @@ using simple_character_precursor=general_character_matrix<simple_reader<Rcpp::St
 class simple_character_matrix : public simple_character_precursor {
 public:
     simple_character_matrix(const Rcpp::RObject& incoming);
-    ~simple_character_matrix();
+    ~simple_character_matrix() = default;
+    simple_character_matrix(const simple_character_matrix&) = default;
+    simple_character_matrix& operator=(const simple_character_matrix&) = default;
+    simple_character_matrix(simple_character_matrix&&) = default;
+    simple_character_matrix& operator=(simple_character_matrix&&) = default;
+
     Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     std::unique_ptr<character_matrix> clone() const;
 };
@@ -107,7 +120,11 @@ public:
 class HDF5_character_reader : public HDF5_reader<Rcpp::String, STRSXP> {
 public:    
     HDF5_character_reader(const Rcpp::RObject&);
-    ~HDF5_character_reader();
+    ~HDF5_character_reader() = default;
+    HDF5_character_reader(const HDF5_character_reader&) = default;
+    HDF5_character_reader& operator=(const HDF5_character_reader&) = default;
+    HDF5_character_reader(HDF5_character_reader&&) = default;
+    HDF5_character_reader& operator=(HDF5_character_reader&&) = default;
 
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
@@ -141,7 +158,12 @@ using external_character_precursor=general_character_matrix<external_reader<Rcpp
 class external_character_matrix : public external_character_precursor {
 public:
     external_character_matrix(const Rcpp::RObject& incoming);
-    ~external_character_matrix();
+    ~external_character_matrix() = default;
+    external_character_matrix(const external_character_matrix&) = default;
+    external_character_matrix& operator=(const external_character_matrix&) = default;
+    external_character_matrix(external_character_matrix&&) = default;
+    external_character_matrix& operator=(external_character_matrix&&) = default;
+
     Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     std::unique_ptr<character_matrix> clone() const;

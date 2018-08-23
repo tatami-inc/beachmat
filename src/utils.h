@@ -52,7 +52,7 @@ using const_col_indexed_info=std::tuple<size_t, Rcpp::IntegerVector::iterator, t
 template <class V> 
 struct copyable_holder {
     copyable_holder(size_t n=0) : vec(n) {}
-    ~copyable_holder() {};
+    ~copyable_holder() = default;
     copyable_holder(const copyable_holder& other) : vec(Rcpp::clone(other.vec)) {}
     copyable_holder& operator=(const copyable_holder& other) { 
         vec=Rcpp::clone(other.vec); 

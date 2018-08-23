@@ -4,10 +4,6 @@ namespace beachmat {
 
 /* Methods for the virtual class. */
 
-character_matrix::character_matrix() {}
-
-character_matrix::~character_matrix() {}
-
 void character_matrix::get_col(size_t c, Rcpp::StringVector::iterator out) { 
     get_col(c, out, 0, get_nrow());
     return;
@@ -55,8 +51,6 @@ const_col_indexed_info<Rcpp::StringVector> character_matrix::get_const_col_index
 
 simple_character_matrix::simple_character_matrix(const Rcpp::RObject& incoming) : simple_character_precursor (incoming) {}
 
-simple_character_matrix::~simple_character_matrix() {}
-
 Rcpp::StringVector::iterator simple_character_matrix::get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
     return reader.get_const_col(c, first, last);
 }
@@ -78,8 +72,6 @@ HDF5_character_reader::HDF5_character_reader(const Rcpp::RObject& incoming) : HD
     buffer.resize(bufsize * std::max({ this->get_ncol(), this->get_nrow(), size_t(1) }));
     return;
 }
-
-HDF5_character_reader::~HDF5_character_reader() {}
 
 void HDF5_character_reader::get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
     char* ref=buffer.data();
@@ -148,8 +140,6 @@ std::unique_ptr<character_matrix> delayed_character_reader::generate_seed(Rcpp::
 
 external_character_matrix::external_character_matrix(const Rcpp::RObject& incoming) : external_character_precursor (incoming) {}
 
-external_character_matrix::~external_character_matrix() {}
-
 Rcpp::StringVector::iterator external_character_matrix::get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
     return reader.get_const_col(c, work, first, last);
 }
@@ -184,6 +174,5 @@ std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::R
 std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::RObject& incoming) { 
     return create_character_matrix_internal(incoming, true);
 }
-
 
 }

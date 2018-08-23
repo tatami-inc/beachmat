@@ -13,7 +13,11 @@ template<typename T, int RTYPE>
 class HDF5_reader : public dim_checker {
 public:
     HDF5_reader(const Rcpp::RObject&);
-    ~HDF5_reader();
+    ~HDF5_reader() = default;
+    HDF5_reader(const HDF5_reader&) = default;
+    HDF5_reader& operator=(const HDF5_reader&) = default;
+    HDF5_reader(HDF5_reader&&) = default;
+    HDF5_reader& operator=(HDF5_reader&&) = default;
 
     template<typename X>
     void extract_row(size_t, X*, const H5::DataType&, size_t, size_t);
@@ -140,9 +144,6 @@ HDF5_reader<T, RTYPE>::HDF5_reader(const Rcpp::RObject& incoming) : original(inc
             onrow, oncol, rowokay, colokay, largerrow, largercol, rowlist, collist);
     return;
 }
-
-template<typename T, int RTYPE>
-HDF5_reader<T, RTYPE>::~HDF5_reader() {}
 
 /*** Basic getter methods ***/
 

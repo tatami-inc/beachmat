@@ -13,7 +13,11 @@ template<typename T, class V>
 class simple_writer : public dim_checker {
 public:
     simple_writer(size_t, size_t);
-    ~simple_writer();
+    ~simple_writer() = default;
+    simple_writer(const simple_writer&) = default;
+    simple_writer& operator=(const simple_writer&) = default;
+    simple_writer(simple_writer&&) = default;
+    simple_writer& operator=(simple_writer&&) = default;
 
     // Setters:
     template <class Iter>
@@ -54,9 +58,6 @@ simple_writer<T, V>::simple_writer(size_t nr, size_t nc) : dim_checker(nr, nc) {
     (this->data)=V(nr*nc);
     return; 
 }
-
-template<typename T, class V>
-simple_writer<T, V>::~simple_writer() {}
 
 /*** Setter methods ***/
 

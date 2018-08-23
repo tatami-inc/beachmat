@@ -13,7 +13,11 @@ template<typename T, class V>
 class Csparse_reader : public dim_checker {
 public:    
     Csparse_reader(const Rcpp::RObject&);
-    ~Csparse_reader();
+    ~Csparse_reader() = default;
+    Csparse_reader(const Csparse_reader&) = default;
+    Csparse_reader& operator=(const Csparse_reader&) = default;
+    Csparse_reader(Csparse_reader&&) = default;
+    Csparse_reader& operator=(Csparse_reader&&) = default;
 
     T get(size_t, size_t);
 
@@ -106,9 +110,6 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
 
     return;
 }
-
-template <typename T, class V>
-Csparse_reader<T, V>::~Csparse_reader () {}
 
 /*** Basic getter functions ***/
 

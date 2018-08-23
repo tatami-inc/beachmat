@@ -17,7 +17,7 @@ namespace beachmat {
 template<typename T, class V>
 class delayed_coord_transformer {
 public:    
-    delayed_coord_transformer();
+    delayed_coord_transformer() = default;
 
     template<class M>
     delayed_coord_transformer(M);
@@ -61,11 +61,11 @@ template<typename T, class V, class base_mat>
 class delayed_matrix : public dim_checker { 
 public:
     delayed_matrix(const Rcpp::RObject&);
-    ~delayed_matrix();
+    ~delayed_matrix() = default;
     delayed_matrix(const delayed_matrix&);
     delayed_matrix& operator=(const delayed_matrix&);
-    delayed_matrix(delayed_matrix&&) = default;             // Move constructor
-    delayed_matrix& operator=(delayed_matrix&&) = default;  // Move assignment constructor
+    delayed_matrix(delayed_matrix&&) = default;
+    delayed_matrix& operator=(delayed_matrix&&) = default;
     
     T get(size_t, size_t);
 
@@ -95,9 +95,6 @@ private:
 /******************************************************************
  * Implementing methods for the 'delayed_coord_transformer' class *
  ******************************************************************/
-
-template<typename T, class V>
-delayed_coord_transformer<T, V>::delayed_coord_transformer() {}
 
 template<typename T, class V>
 template<class M>
@@ -180,6 +177,8 @@ void delayed_coord_transformer<T, V>::obtain_indices(const Rcpp::RObject& subset
     return;
 }
 
+/*** Basic getter methods ***/
+
 template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::get_nrow() const{ 
     return delayed_nrow;
@@ -189,8 +188,6 @@ template<typename T, class V>
 size_t delayed_coord_transformer<T, V>::get_ncol() const{ 
     return delayed_ncol;
 }
-
-/*** Basic getter methods ***/
 
 template<typename T, class V>
 template<class M, class Iter>
@@ -380,9 +377,6 @@ delayed_matrix<T, V, base_mat>::delayed_matrix(const Rcpp::RObject& incoming) : 
     ncol=transformer.get_ncol();
     return;
 }
-
-template<typename T, class V, class base_mat> 
-delayed_matrix<T, V, base_mat>::~delayed_matrix() {}
 
 template<typename T, class V, class base_mat> 
 delayed_matrix<T, V, base_mat>::delayed_matrix(const delayed_matrix<T, V, base_mat>& other) : original(other.original), 

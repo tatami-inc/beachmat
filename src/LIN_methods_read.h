@@ -7,12 +7,6 @@ namespace beachmat {
  * Defining the common input interface. 
  ****************************************/
 
-template<typename T, class V>
-lin_matrix<T, V>::lin_matrix() {}
-
-template<typename T, class V>
-lin_matrix<T, V>::~lin_matrix() {}
-
 // Basic getters.
 
 template<typename T, class V>
@@ -97,8 +91,7 @@ const_col_indexed_info<V> lin_matrix<T, V>::get_const_col_indexed(size_t c, type
 template<typename T, class V, class RDR>
 general_lin_matrix<T, V, RDR>::general_lin_matrix(const Rcpp::RObject& incoming) : reader(incoming) {}
 
-template<typename T, class V, class RDR>
-general_lin_matrix<T, V, RDR>::~general_lin_matrix() {}
+// Basic getters.
 
 template<typename T, class V, class RDR>
 size_t general_lin_matrix<T, V, RDR>::get_nrow() const {
@@ -109,8 +102,6 @@ template<typename T, class V, class RDR>
 size_t general_lin_matrix<T, V, RDR>::get_ncol() const {
     return reader.get_ncol();
 }
-
-// Basic getters.
 
 template<typename T, class V, class RDR>
 void general_lin_matrix<T, V, RDR>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
@@ -190,9 +181,6 @@ template <typename T, class V>
 simple_lin_matrix<T, V>::simple_lin_matrix(const Rcpp::RObject& in) : simple_lin_precursor<T, V>(in) {}
 
 template <typename T, class V>
-simple_lin_matrix<T, V>::~simple_lin_matrix() {} 
-
-template <typename T, class V>
 typename V::iterator simple_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
     return this->reader.get_const_col(c, first, last);
 }
@@ -206,9 +194,6 @@ std::unique_ptr<lin_matrix<T, V> > simple_lin_matrix<T, V>::clone() const {
 
 template <typename T, class V>
 dense_lin_matrix<T, V>::dense_lin_matrix(const Rcpp::RObject& in) : dense_lin_precursor<T, V>(in) {}
-
-template <typename T, class V>
-dense_lin_matrix<T, V>::~dense_lin_matrix() {} 
 
 template <typename T, class V>
 typename V::iterator dense_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
@@ -226,9 +211,6 @@ template <typename T, class V>
 Csparse_lin_matrix<T, V>::Csparse_lin_matrix(const Rcpp::RObject& in) : Csparse_lin_precursor<T, V>(in) {}
 
 template <typename T, class V>
-Csparse_lin_matrix<T, V>::~Csparse_lin_matrix() {} 
-
-template <typename T, class V>
 const_col_indexed_info<V> Csparse_lin_matrix<T, V>::get_const_col_indexed(size_t c, typename V::iterator out, size_t first, size_t last) {
     Rcpp::IntegerVector::iterator iIt;
     size_t nzero=this->reader.get_const_col_nonzero(c, iIt, out, first, last);
@@ -244,9 +226,6 @@ std::unique_ptr<lin_matrix<T, V> > Csparse_lin_matrix<T, V>::clone() const {
 
 template<typename T, int RTYPE>
 HDF5_lin_reader<T, RTYPE>::HDF5_lin_reader(const Rcpp::RObject& incoming) : HDF5_reader<T, RTYPE>(incoming) {}
-
-template<typename T, int RTYPE>
-HDF5_lin_reader<T, RTYPE>::~HDF5_lin_reader() {}
 
 template<typename T, int RTYPE>
 void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
@@ -302,9 +281,6 @@ void HDF5_lin_reader<T, RTYPE>::get_rows(Rcpp::IntegerVector::iterator it, size_
 
 template <typename T, class V>
 external_lin_matrix<T, V>::external_lin_matrix(const Rcpp::RObject& in) : external_lin_precursor<T, V>(in) {}
-
-template <typename T, class V>
-external_lin_matrix<T, V>::~external_lin_matrix() {} 
 
 template <typename T, class V>
 typename V::iterator external_lin_matrix<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {

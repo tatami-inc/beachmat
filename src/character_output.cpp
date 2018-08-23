@@ -4,10 +4,6 @@ namespace beachmat {
 
 /* Methods for the virtual class. */
 
-character_output::character_output() {}
-
-character_output::~character_output() {}
-
 void character_output::get_col(size_t c, Rcpp::StringVector::iterator out) { 
     get_col(c, out, 0, get_nrow());
     return;
@@ -31,8 +27,6 @@ void character_output::set_row(size_t r, Rcpp::StringVector::iterator out) {
 /* Methods for the simple character matrix. */
 
 simple_character_output::simple_character_output(size_t nr, size_t nc) : writer(nr, nc) {}
-
-simple_character_output::~simple_character_output() {}
 
 size_t simple_character_output::get_nrow() const {
     return writer.get_nrow();
@@ -110,8 +104,6 @@ Rcpp::RObject HDF5_writer<char, STRSXP>::get_firstval() {
 HDF5_character_output::HDF5_character_output(size_t nr, size_t nc, size_t strlen, size_t chunk_nr, size_t chunk_nc, int compress) :
         bufsize(strlen+1), writer(nr, nc, chunk_nr, chunk_nc, compress, bufsize), 
         buffer(bufsize * std::max({ nr, nc, size_t(1) })) {}
-
-HDF5_character_output::~HDF5_character_output() {}
 
 size_t HDF5_character_output::get_nrow() const {
     return writer.get_nrow();

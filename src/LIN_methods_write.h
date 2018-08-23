@@ -7,12 +7,6 @@ namespace beachmat {
  * Defining the common output interface. 
  ****************************************/
 
-template<typename T, class V>
-lin_output<T, V>::lin_output() {}
-
-template<typename T, class V>
-lin_output<T, V>::~lin_output() {}
-
 // Getters:
 template<typename T, class V>
 void lin_output<T, V>::get_col(size_t c, Rcpp::IntegerVector::iterator out) {
@@ -67,9 +61,6 @@ void lin_output<T, V>::set_row(size_t r, Rcpp::NumericVector::iterator out) {
 
 template<typename T, class V, class WTR>
 general_lin_output<T, V, WTR>::general_lin_output(size_t nr, size_t nc) : writer(nr, nc) {}
-
-template<typename T, class V, class WTR>
-general_lin_output<T, V, WTR>::~general_lin_output() {}
 
 // Getters:
 template<typename T, class V, class WTR>
@@ -188,9 +179,6 @@ template<typename T, class V>
 simple_lin_output<T, V>::simple_lin_output(size_t nr, size_t nc) : simple_lin_output_precursor<T, V>(nr, nc) {}
 
 template<typename T, class V>
-simple_lin_output<T, V>::~simple_lin_output() {}
-
-template<typename T, class V>
 typename V::iterator simple_lin_output<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
     return this->writer.get_const_col(c, first, last);
 }
@@ -206,9 +194,7 @@ template<typename T, class V, int RTYPE>
 HDF5_lin_output<T, V, RTYPE>::HDF5_lin_output(size_t nr, size_t nc, size_t chunk_nr, size_t chunk_nc, int compress) : 
     writer(nr, nc, chunk_nr, chunk_nc, compress) {}
 
-template<typename T, class V, int RTYPE>
-HDF5_lin_output<T, V, RTYPE>::~HDF5_lin_output() {}
-
+// Getters:
 template<typename T, class V, int RTYPE>
 size_t HDF5_lin_output<T, V, RTYPE>::get_nrow() const {
     return writer.get_nrow();
@@ -224,12 +210,6 @@ T HDF5_lin_output<T, V, RTYPE>::get(size_t r, size_t c) {
     T out;
     writer.extract_one(r, c, &out);
     return out;
-}
-
-template<typename T, class V, int RTYPE>
-void HDF5_lin_output<T, V, RTYPE>::set(size_t r, size_t c, T in) {
-    writer.insert_one(r, c, &in);
-    return;
 }
 
 template<typename T, class V, int RTYPE>
@@ -253,6 +233,13 @@ void HDF5_lin_output<T, V, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterat
 template<typename T, class V, int RTYPE>
 void HDF5_lin_output<T, V, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
     writer.extract_col(c, &(*out), H5::PredType::NATIVE_DOUBLE, first, last);
+    return;
+}
+
+// Setters:
+template<typename T, class V, int RTYPE>
+void HDF5_lin_output<T, V, RTYPE>::set(size_t r, size_t c, T in) {
+    writer.insert_one(r, c, &in);
     return;
 }
 
@@ -304,6 +291,7 @@ void HDF5_lin_output<T, V, RTYPE>::set_row_indexed(size_t r, size_t N, Rcpp::Int
     return;
 }
 
+// Other functions:
 template<typename T, class V, int RTYPE>
 Rcpp::RObject HDF5_lin_output<T, V, RTYPE>::yield() {
     return writer.yield();

@@ -10,8 +10,12 @@ namespace beachmat {
 
 class character_output {
 public:    
-    character_output();
-    virtual ~character_output();
+    character_output() = default;
+    virtual ~character_output() = default;
+    character_output(const character_output&) = default;
+    character_output& operator=(const character_output&) = default;
+    character_output(character_output&&) = default;
+    character_output& operator=(character_output&&) = default;
     
     virtual size_t get_nrow() const=0;
     virtual size_t get_ncol() const=0;
@@ -51,8 +55,12 @@ public:
 class simple_character_output : public character_output {
 public:
     simple_character_output(size_t, size_t);
-    ~simple_character_output();
-  
+    ~simple_character_output() = default;
+    simple_character_output(const simple_character_output&) = default;
+    simple_character_output& operator=(const simple_character_output&) = default;
+    simple_character_output(simple_character_output&&) = default;
+    simple_character_output& operator=(simple_character_output&&) = default;
+
     size_t get_nrow() const;
     size_t get_ncol() const;
  
@@ -82,7 +90,11 @@ public:
             size_t=output_param::DEFAULT_CHUNKDIM, 
             size_t=output_param::DEFAULT_CHUNKDIM, 
             int=output_param::DEFAULT_COMPRESS);
-    ~HDF5_character_output();
+    ~HDF5_character_output() = default;
+    HDF5_character_output(const HDF5_character_output&) = default;
+    HDF5_character_output& operator=(const HDF5_character_output&) = default;
+    HDF5_character_output(HDF5_character_output&&) = default;
+    HDF5_character_output& operator=(HDF5_character_output&&) = default;
 
     size_t get_nrow() const;
     size_t get_ncol() const;
