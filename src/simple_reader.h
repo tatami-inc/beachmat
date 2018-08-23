@@ -13,7 +13,11 @@ template<typename T, class V>
 class simple_reader : public dim_checker {
 public:    
     simple_reader(const Rcpp::RObject&);
-    ~simple_reader();
+    ~simple_reader() = default;
+    simple_reader(const simple_reader&) = default;
+    simple_reader& operator=(const simple_reader&) = default;
+    simple_reader(simple_reader&&) = default;
+    simple_reader& operator=(simple_reader&&) = default;
 
     T get(size_t, size_t);
 
@@ -57,9 +61,6 @@ simple_reader<T, V>::simple_reader(const Rcpp::RObject& incoming) : original(inc
     }
     return;
 }
-
-template<typename T, class V>
-simple_reader<T, V>::~simple_reader () {}
 
 /*** Basic getter methods ***/
 
