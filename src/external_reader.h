@@ -14,8 +14,8 @@ public:
     ~external_reader_base();
     external_reader_base(const external_reader_base&);
     external_reader_base& operator=(const external_reader_base&);
-    external_reader_base(external_reader_base&&) = default;             // Move constructor
-    external_reader_base& operator=(external_reader_base&&) = default;  // Move assignment constructor
+    external_reader_base(external_reader_base&&) = default;
+    external_reader_base& operator=(external_reader_base&&) = default;
 
     T get(size_t, size_t);
     typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
@@ -155,11 +155,11 @@ template<typename T, class V>
 class external_reader : public external_reader_base<T, V> {
 public:    
     external_reader(const Rcpp::RObject&);
-    ~external_reader();
+    ~external_reader() = default;
     external_reader(const external_reader&);
     external_reader& operator=(const external_reader&);
-    external_reader(external_reader&&) = default;             // Move constructor
-    external_reader& operator=(external_reader&&) = default;  // Move assignment constructor
+    external_reader(external_reader&&) = default;
+    external_reader& operator=(external_reader&&) = default;
 
     void get_row(size_t, Rcpp::StringVector::iterator, size_t, size_t);
     void get_col(size_t, Rcpp::StringVector::iterator, size_t, size_t);
@@ -197,9 +197,6 @@ external_reader<T, V>::external_reader(const Rcpp::RObject& incoming) : external
 }
 
 template<typename T, class V>
-external_reader<T, V>::~external_reader() {}
-
-template<typename T, class V>
 external_reader<T, V>::external_reader(const external_reader& other) : 
     external_reader_base<T, V>(other),
     load_col(other.load_col), 
@@ -210,7 +207,7 @@ external_reader<T, V>::external_reader(const external_reader& other) :
 
 template<typename T, class V>
 external_reader<T, V>& external_reader<T, V>::operator=(const external_reader& other) { 
-    external_reader<T,V>::operator=(other);
+    external_reader_base<T,V>::operator=(other);
     load_col=other.load_col; 
     load_row=other.load_row;
     load_cols=other.load_cols; 
@@ -260,7 +257,7 @@ template<typename T, class V>
 class external_lin_reader : public external_reader_base<T, V> {
 public:    
     external_lin_reader(const Rcpp::RObject&);
-    ~external_lin_reader();
+    ~external_lin_reader() = default;
     external_lin_reader(const external_lin_reader&);
     external_lin_reader& operator=(const external_lin_reader&);
     external_lin_reader(external_lin_reader&&) = default;             // Move constructor
@@ -317,9 +314,6 @@ external_lin_reader<T, V>::external_lin_reader(const Rcpp::RObject& incoming) : 
 
     return;
 }
-
-template<typename T, class V>
-external_lin_reader<T, V>::~external_lin_reader() {}
 
 template<typename T, class V>
 external_lin_reader<T, V>::external_lin_reader(const external_lin_reader& other) : 
