@@ -18,7 +18,11 @@ public:
             size_t=output_param::DEFAULT_CHUNKDIM, 
             int=output_param::DEFAULT_COMPRESS, 
             size_t=output_param::DEFAULT_STRLEN);
-    ~HDF5_writer();
+    ~HDF5_writer() = default;
+    HDF5_writer(const HDF5_writer&) = default;
+    HDF5_writer& operator=(const HDF5_writer&) = default;
+    HDF5_writer(HDF5_writer&&) = default;
+    HDF5_writer& operator=(HDF5_writer&&) = default;
 
     // Setters:    
     void insert_row(size_t, const T*, size_t, size_t);
@@ -152,9 +156,6 @@ HDF5_writer<T, RTYPE>::HDF5_writer (size_t nr, size_t nc, size_t chunk_nr, size_
             onrow, oncol, rowokay, colokay, largerrow, largercol, rowlist, collist);
     return;
 }
-
-template<typename T, int RTYPE>
-HDF5_writer<T, RTYPE>::~HDF5_writer() {}
 
 /*** Defining selections ***/
 
