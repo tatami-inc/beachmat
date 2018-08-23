@@ -317,7 +317,7 @@ The following matrix classes are directly supported by the API:
 - character: `matrix`, `HDF5Matrix`
 
 The API will also directly support `DelayedMatrix` objects using the above matrices as backends _and_ containing only subsetting or transposition operations.
-It is possible to directly support arbitrary user-supplied matrices, see `r Biocpkg("iSEE", vignette="external.html", label="here")` for more details.
+It is possible to directly support arbitrary user-supplied matrices, see `r Biocpkg("beachmat", vignette="external.html", label="here")` for more details.
 
 For all other matrices, the API indirectly supports data access via a block processing mechanism.
 This involves a call to R to realize a block of the matrix (containing the requested row or column) as a dense contiguous array.
