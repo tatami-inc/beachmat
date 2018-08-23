@@ -9,9 +9,15 @@ namespace beachmat{
 
 class dim_checker {
 public:
-    dim_checker();
+    dim_checker() = default;
     dim_checker(size_t, size_t);
-    virtual ~dim_checker();
+
+    virtual ~dim_checker() = default;
+    dim_checker(const dim_checker&) = default;
+    dim_checker& operator=(const dim_checker&) = default;
+    dim_checker(dim_checker&&) = default;
+    dim_checker& operator=(dim_checker&&) = default;
+
     size_t get_nrow() const;
     size_t get_ncol() const;
 
@@ -19,7 +25,7 @@ public:
     static void check_dimension(size_t, size_t, const char*);
     static void check_subset(size_t, size_t, size_t, const char*);
 protected:
-    size_t nrow, ncol;
+    size_t nrow=0, ncol=0;
     void fill_dims(const Rcpp::RObject&);
 
     void check_rowargs(size_t) const;

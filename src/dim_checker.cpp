@@ -2,11 +2,7 @@
 
 namespace beachmat { 
 
-dim_checker::dim_checker() : nrow(0), ncol(0) {}
-
 dim_checker::dim_checker(size_t nr, size_t nc) : nrow(nr), ncol(nc) {}
-
-dim_checker::~dim_checker() {}
 
 size_t dim_checker::get_nrow() const { return nrow; }
 
