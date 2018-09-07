@@ -83,8 +83,8 @@ test_that("RLE character matrix input is okay", {
 })
 
 test_that("RLE character matrix input is okay with reduced block size", {
-    old <- getDefaultBlockSize()
-    setDefaultBlockSize(6*8)
+    old <- getAutoBlockSize()
+    setAutoBlockSize(6*8)
 
     check_read_all(rFUN, mode="character")
     check_read_all(rFUN, nr=5, nc=30, mode="character")
@@ -118,7 +118,7 @@ test_that("RLE character matrix input is okay with reduced block size", {
     check_read_all(rFUN, nr=10, nc=0, mode="character")
     check_read_all(rFUN, nr=0, nc=10, mode="character")
 
-    setDefaultBlockSize(old)
+    setAutoBlockSize(old)
 })
 
 #######################################################

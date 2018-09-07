@@ -162,8 +162,8 @@ test_that("lgTMatrix (i.e., unknown) input is okay", {
 })
 
 test_that("lgTMatrix input is okay with reduced block size", {
-    old <- getDefaultBlockSize()
-    setDefaultBlockSize(6*4)
+    old <- getAutoBlockSize()
+    setAutoBlockSize(6*4)
 
     check_read_all(tsFUN, mode="logical")
     check_read_all(tsFUN, nr=5, nc=30, mode="logical")
@@ -197,7 +197,7 @@ test_that("lgTMatrix input is okay with reduced block size", {
     check_read_all(tsFUN, nr=10, nc=0, mode="logical")
     check_read_all(tsFUN, nr=0, nc=10, mode="logical")
 
-    setDefaultBlockSize(old)
+    setAutoBlockSize(old)
 })
 
 #######################################################
