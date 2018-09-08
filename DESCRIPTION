@@ -9,7 +9,7 @@ Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
 Maintainer: Aaron Lun <alun@wehi.edu.au>
 Depends: R (>= 3.5)
 Imports: utils, methods, Rhdf5lib (>= 1.1.4), rhdf5,
-        HDF5Array (>= 1.9.5), DelayedArray (>= 0.7.18),
+        HDF5Array (>= 1.9.5), DelayedArray (>= 0.7.38),
         Rcpp (>= 0.12.14), BiocGenerics
 Suggests: testthat, BiocStyle, knitr, rmarkdown, Matrix, devtools
 biocViews: DataRepresentation, DataImport, Infrastructure
