@@ -8,12 +8,13 @@ test_that("unknown setup methods work correctly", {
     expect_identical(out[[1]], dim(smallmat))
     expect_identical(out[[2]], dim(smallmat))
 
-	old <- getOption("DelayedArray.block.size")
-	options(DelayedArray.block.size=5*5*8)
+    library(DelayedArray)
+    old <- getAutoBlockSize()
+    setAutoBlockSize(5*5*8)
     out <- beachmat:::setupUnknownMatrix(smallmat)
     expect_identical(out[[1]], dim(smallmat))
     expect_identical(out[[2]], c(5L, 5L))
-	options(DelayedArray.block.size=old)
+    setAutoBlockSize(old)
 })
 
 library(Matrix)
