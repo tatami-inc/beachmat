@@ -112,12 +112,12 @@ void HDF5_selector::set_dims(size_t NR, size_t NC) {
 
     row_count[0]=NC;
     row_count[1]=1;
-    row_space.setExtentSimple(1, row_count);
+    row_space.setExtentSimple(2, row_count);
     row_space.selectAll();
 
     col_count[0]=1;
     col_count[1]=NR;
-    col_space.setExtentSimple(1, col_count+1);
+    col_space.setExtentSimple(2, col_count);
     col_space.selectAll();
 
     hsize_t dims[2];
@@ -127,13 +127,14 @@ void HDF5_selector::set_dims(size_t NR, size_t NC) {
     return;
 }
 
-const hsize_t HDF5_selector::zero=0;
+static const hsize_t zero_vals[]={0, 0};
+const hsize_t* HDF5_selector::zero=zero_vals;
 
 void HDF5_selector::select_row(size_t r, size_t start, size_t end, const H5S_seloper_t& op) { 
     hsize_t new_len = end - start;
     if (new_len != row_count[0]) { 
         row_count[0] = new_len;
-        row_space.selectHyperslab(op, row_count, &zero);
+        row_space.selectHyperslab(op, row_count, zero);
     }
 
     h5_start[0] = start;
@@ -146,7 +147,7 @@ void HDF5_selector::select_col(size_t c, size_t start, size_t end, const H5S_sel
     hsize_t new_len = end - start;
     if (new_len != col_count[1]) { 
         col_count[1] = new_len;
-        col_space.selectHyperslab(op, col_count+1, &zero);
+        col_space.selectHyperslab(op, col_count, zero);
     }
 
     h5_start[0] = c;

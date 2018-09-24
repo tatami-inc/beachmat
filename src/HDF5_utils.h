@@ -32,7 +32,7 @@ struct HDF5_selector {
 private:
     H5::DataSpace col_space, row_space, one_space, mat_space;
     hsize_t h5_start[2], col_count[2], row_count[2], one_count[2];
-    static const hsize_t zero;
+    static const hsize_t* zero;
 };
 
 H5::DataType set_HDF5_data_type (int, size_t);
