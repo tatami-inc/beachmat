@@ -45,7 +45,8 @@ void calc_HDF5_chunk_cache_settings (const size_t total_nrows, const size_t tota
      * Here, we computing the lowest multiple of # chunks-per-col that is greater than # chunks-per-row, plus 1.
      * This ensures that two chunks in the same row/column do not have the same hash index.
      */
-    const size_t nslots = std::ceil(double(num_chunks_per_row)/num_chunks_per_col) * num_chunks_per_col + 1; 
+//  const size_t nslots = std::ceil(double(num_chunks_per_row)/num_chunks_per_col) * num_chunks_per_col + 1; 
+    const size_t nslots = num_chunks_per_row * num_chunks_per_col; // fudge for https://forum.hdfgroup.org/t/unintended-behaviour-for-hash-values-during-chunk-caching/4869/.
 
     /* Computing the size of the cache required to store all chunks in each row or column.
      * The approach used below avoids overflow from computing eachchunk*num_Xchunks.
