@@ -111,6 +111,9 @@ void HDF5_selector::set_dims(size_t NR, size_t NC) {
     one_space.setExtentSimple(1, one_count);
     one_space.selectAll();
 
+    /* Using an 2D output space for 'row_space' and 'col_space', to match a 2D 'mat_space'.
+     * Avoid unnecessary data rearrangements when going from 2D input to 1D output space.
+     */
     row_count[0]=NC;
     row_count[1]=1;
     row_space.setExtentSimple(2, row_count);
