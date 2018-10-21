@@ -47,11 +47,16 @@ private:
     size_t storage_start_row, storage_end_row, storage_start_col, storage_end_col; 
     bool oncol;
 
-    static size_t get_upper_chunk_bound (size_t end, size_t chunk_dim);
+    Rcpp::IntegerVector row_chunk_bounds, col_chunk_bounds; // Read-only, does not need to be copyable.
+    size_t chunk_index;
 
+    static bool reload_chunk (size_t primary_value, size_t& primary_start, size_t& primary_end, 
+        size_t& primary_bound_index, const Rcpp::IntegerVector& primary_bounds, 
+        size_t secondary_val_1, size_t secondary_val_2, size_t& secondary_start, size_t& secondary_end); 
+
+    // Values to be passed to R functions for realization - entries are modifiable and so this needs to be copiable.
     copyable_holder<Rcpp::IntegerVector> indices, slices;
     copyable_holder<Rcpp::LogicalVector> do_transpose;
-    size_t chunk_nrow, chunk_ncol;
 };
 
 /* Constructor definition. */
@@ -60,8 +65,9 @@ template<typename T, class V>
 unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in), 
         beachenv(Rcpp::Environment::namespace_env("beachmat")), realizer(beachenv["realizeByRange"]), 
         storage_start_row(0), storage_end_row(0), storage_start_col(0), storage_end_col(0), 
-        oncol(false), indices(2), slices(2), do_transpose(1), 
-        chunk_nrow(0), chunk_ncol(0) {
+        oncol(false), 
+        chunk_index(0),
+        indices(2), slices(2), do_transpose(1) { 
 
     Rcpp::Function getdims(beachenv["setupUnknownMatrix"]);
     Rcpp::List dimdata=getdims(in);
@@ -69,9 +75,8 @@ unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in),
     Rcpp::IntegerVector matdims(dimdata[0]);
     this->fill_dims(matdims);
 
-    Rcpp::IntegerVector chunkdims(dimdata[1]);
-    chunk_nrow=std::max(1, chunkdims[0]);
-    chunk_ncol=std::max(1, chunkdims[1]);
+    row_chunk_bounds=Rcpp::IntegerVector(dimdata[1]);
+    col_chunk_bounds=Rcpp::IntegerVector(dimdata[2]);
 
     do_transpose.vec[0]=1;
     return;
@@ -80,58 +85,93 @@ unknown_reader<T, V>::unknown_reader(const Rcpp::RObject& in) : original(in),
 /* Define storage-related methods. */
 
 template<typename T, class V>
-size_t unknown_reader<T, V>::get_upper_chunk_bound (size_t end, size_t chunk_dim) {
-    if (end <= chunk_dim) {
-        return chunk_dim;
+bool unknown_reader<T, V>::reload_chunk (size_t primary_value, size_t& primary_start, size_t& primary_end, 
+        size_t& primary_bound_index, const Rcpp::IntegerVector& primary_bounds, 
+        size_t secondary_val_1, size_t secondary_val_2, size_t& secondary_start, size_t& secondary_end) { 
+
+    // We assume that all inputs are valid, as check_* functions are called upstream.
+    const bool is_below = (primary_value < primary_start),
+        is_above = (primary_value >= primary_end);
+    const bool reobtain_primary=(is_below || is_above);
+
+    // Determining which chunks to obtain on the primary dimension.
+    if (reobtain_primary) {
+        const int pval=primary_value;
+
+        if (is_below) { 
+            /* primary_bound_index always points at the end boundary of the current chunk.
+             * In this scope, primary_bound_index CANNOT be less than 2, 
+             * as is_below cannot be true if we're at the first chunk.
+             */
+            --primary_bound_index;
+            if (primary_bounds[primary_bound_index-1] > pval) { 
+                primary_bound_index=std::upper_bound(primary_bounds.begin() + 1, primary_bounds.begin() + primary_bound_index, pval) - primary_bounds.begin();
+            }
+            
+        } else { 
+            /* Note that the first search always ends up here as 'primary_start=primary_end=0'.
+             * This means that 'is_below' must be false while 'is_above' must be true. 
+             * We then increment primary_bound_index from 0 to 1, getting us to the first chunk.
+             */
+            ++primary_bound_index;
+            if (primary_bounds[primary_bound_index] <= pval) {
+                primary_bound_index=std::upper_bound(primary_bounds.begin() + primary_bound_index + 1, primary_bounds.end(), pval) - primary_bounds.begin();
+            }
+        }
+
+        primary_end=primary_bounds[primary_bound_index];
+        primary_start=primary_bounds[primary_bound_index-1];
+
+    } else if (secondary_val_1 >= secondary_start && secondary_val_2 <= secondary_end) {
+        // If the requested values are a subset of those already cached, there's no need to reload the chunk.
+        return false;
     }
-    return (static_cast<size_t>((end - 1)/chunk_dim) + 1) * chunk_dim; // implicit and intended floor upon division.
+
+    secondary_start=secondary_val_1;
+    secondary_end=secondary_val_2;
+    return true;
 }
 
 template<typename T, class V>
 void unknown_reader<T, V>::update_storage_by_row(size_t r, size_t first, size_t last) {
-    // We assume that all inputs are valid, as check_* functions are called elsewhere.
-    if (oncol 
-            || r < storage_start_row || r >= storage_end_row 
-            || first < storage_start_col || last > storage_end_col) { 
-
-        storage_start_row = static_cast<size_t>(r/chunk_nrow) * chunk_nrow; // implicit floor in the division.
-        storage_end_row = std::min(chunk_nrow + storage_start_row, this->nrow);
+    if (oncol) { // reset values to force 'reload_chunk' to give 'true'.
+        storage_start_row=0;
+        storage_end_row=0;
+        chunk_index=0;
+        oncol=false;
+    }
+        
+    if (reload_chunk(r, storage_start_row, storage_end_row,
+                chunk_index, row_chunk_bounds,
+                first, last, storage_start_col, storage_end_col)) {
 
         indices.vec[0] = storage_start_row; 
         indices.vec[1] = storage_end_row - storage_start_row;
-
-        storage_start_col = static_cast<size_t>(first/chunk_ncol) * chunk_ncol;
-        storage_end_col = std::min(get_upper_chunk_bound(last, chunk_ncol), this->ncol);
-
         slices.vec[0] = storage_start_col;
         slices.vec[1] = storage_end_col - storage_start_col;
-
         storage = realizer(original, indices.vec, slices.vec, do_transpose.vec); // Transposed, so storage is effectively row-major!
-        oncol=false;
     }
     return;
 }
 
 template<typename T, class V>
 void unknown_reader<T, V>::update_storage_by_col(size_t c, size_t first, size_t last) {
-    if (!oncol 
-            || c < storage_start_col || c >= storage_end_col 
-            || first < storage_start_row || last > storage_end_row) { 
-    
-        storage_start_col = static_cast<size_t>(c/chunk_ncol) * chunk_ncol; // implicit floor in the division. 
-        storage_end_col = std::min(chunk_ncol + storage_start_col, this->ncol);
+    if (!oncol) { // reset values to force 'reload_chunk' to give 'true'.
+        storage_start_col=0;
+        storage_end_col=0;
+        chunk_index=0;
+        oncol=true;
+    }
+
+    if (reload_chunk(c, storage_start_col, storage_end_col,
+                chunk_index, col_chunk_bounds, 
+                first, last, storage_start_row, storage_end_row)) {
 
         indices.vec[0] = storage_start_col;
         indices.vec[1] = storage_end_col - storage_start_col;
-
-        storage_start_row = static_cast<size_t>(first/chunk_nrow) * chunk_nrow;
-        storage_end_row = std::min(get_upper_chunk_bound(last, chunk_nrow), this->nrow);
-
         slices.vec[0] = storage_start_row; 
         slices.vec[1] = storage_end_row - storage_start_row;
-
         storage = realizer(original, slices.vec, indices.vec);
-        oncol=true;
     }
     return;
 }

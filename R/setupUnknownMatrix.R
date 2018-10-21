@@ -1,7 +1,12 @@
-#' @importFrom DelayedArray blockGrid
+#' @importFrom DelayedArray rowGrid colGrid
+#' @importFrom BiocGenerics dims
 setupUnknownMatrix <- function(mat) {
-    grid <- blockGrid(mat)
-    list(dim(mat), grid@spacings)
+    byrow <- dims(rowGrid(mat))
+    bycol <- dims(colGrid(mat))
+    list(dim(mat), 
+        c(0L, cumsum(byrow[,1])), 
+        c(0L, cumsum(bycol[,2]))
+    )
 }
 
 #' @importFrom BiocGenerics t
