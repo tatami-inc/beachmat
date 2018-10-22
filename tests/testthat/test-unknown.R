@@ -6,14 +6,16 @@ smallmat <- matrix(runif(10000), 20, 500)
 test_that("unknown setup methods work correctly", {
     out <- beachmat:::setupUnknownMatrix(smallmat)
     expect_identical(out[[1]], dim(smallmat))
-    expect_identical(out[[2]], dim(smallmat))
+    expect_identical(out[[2]], c(0L, nrow(smallmat))) # the matrix should be one big block.
+    expect_identical(out[[3]], c(0L, ncol(smallmat)))
 
     library(DelayedArray)
     old <- getAutoBlockSize()
-    setAutoBlockSize(5*5*8)
+    setAutoBlockSize(500*8) # 1 row of doubles.
     out <- beachmat:::setupUnknownMatrix(smallmat)
     expect_identical(out[[1]], dim(smallmat))
-    expect_identical(out[[2]], c(5L, 5L))
+    expect_identical(out[[2]], 0:20)
+    expect_identical(out[[3]], seq(0L, ncol(smallmat), by=25L)) # 25 columns == 1 row
     setAutoBlockSize(old)
 })
 
