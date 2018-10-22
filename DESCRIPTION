@@ -1,12 +1,11 @@
 Package: beachmat
-Version: 1.3.9
-Date: 2018-09-27
+Version: 1.3.10
+Date: 2018-10-09
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
-Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email =
-        "alun@wehi.edu.au"), person("Hervé", "Pagès", role="aut"),
+Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
+        person("Hervé", "Pagès", role="aut"),
         person("Mike", "Smith", role="aut"))
-Maintainer: Aaron Lun <alun@wehi.edu.au>
 Depends: R (>= 3.5)
 Imports: utils, methods, Rhdf5lib (>= 1.1.4), rhdf5,
         HDF5Array (>= 1.9.5), DelayedArray (>= 0.7.38),
