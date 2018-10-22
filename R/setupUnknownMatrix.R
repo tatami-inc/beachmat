@@ -1,11 +1,21 @@
 #' @importFrom DelayedArray rowGrid colGrid
 #' @importFrom BiocGenerics dims
 setupUnknownMatrix <- function(mat) {
-    byrow <- dims(rowGrid(mat))
-    bycol <- dims(colGrid(mat))
+    if (ncol(mat)) {
+        byrow <- dims(rowGrid(mat))[,1]
+    } else {
+        byrow <- nrow(mat)
+    }
+
+    if (nrow(mat)) {
+        bycol <- dims(colGrid(mat))[,2]
+    } else {
+        bycol <- ncol(mat)
+    }
+
     list(dim(mat), 
-        c(0L, cumsum(byrow[,1])), 
-        c(0L, cumsum(bycol[,2]))
+        c(0L, cumsum(byrow)), 
+        c(0L, cumsum(bycol))
     )
 }
 
