@@ -2,12 +2,14 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
-\section{Version 1.3.5}{\itemize{
+\section{Version 1.4.0}{\itemize{
 \item Removed native support for RleMatrix and packed symmetric matrices.
 
 \item Added multi-row/column getters.
 
 \item Added mechanism for native support of arbitrary developer-defined matrices.
+
+\item Switched to row/colGrid() for defining chunks in unsupported matrices.
 }}
 
 \section{Version 1.2.0}{\itemize{
