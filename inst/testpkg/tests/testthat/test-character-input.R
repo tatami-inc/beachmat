@@ -84,39 +84,42 @@ test_that("RLE character matrix input is okay", {
 
 test_that("RLE character matrix input is okay with reduced block size", {
     old <- getAutoBlockSize()
-    setAutoBlockSize(6*8)
 
-    check_read_all(rFUN, mode="character")
-    check_read_all(rFUN, nr=5, nc=30, mode="character")
-    check_read_all(rFUN, nr=30, nc=5, mode="character")
+    for (blocksize in c(100, 250, 500)) {
+        setAutoBlockSize(blocksize)
 
-    check_read_slice(rFUN, mode="character")
-    check_read_slice(rFUN, nr=5, nc=30, mode="character")
-    check_read_slice(rFUN, nr=30, nc=5, mode="character")
+        check_read_all(rFUN, mode="character")
+        check_read_all(rFUN, nr=5, nc=30, mode="character")
+        check_read_all(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_varslice(rFUN, mode="character")
-    check_read_varslice(rFUN, nr=5, nc=30, mode="character")
-    check_read_varslice(rFUN, nr=30, nc=5, mode="character")
+        check_read_slice(rFUN, mode="character")
+        check_read_slice(rFUN, nr=5, nc=30, mode="character")
+        check_read_slice(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_const(rFUN, mode="character")
-    check_read_const(rFUN, nr=5, nc=30, mode="character")
-    check_read_const(rFUN, nr=30, nc=5, mode="character")
+        check_read_varslice(rFUN, mode="character")
+        check_read_varslice(rFUN, nr=5, nc=30, mode="character")
+        check_read_varslice(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_indexed(rFUN, mode="character")
-    check_read_indexed(rFUN, nr=5, nc=30, mode="character")
-    check_read_indexed(rFUN, nr=30, nc=5, mode="character")
+        check_read_const(rFUN, mode="character")
+        check_read_const(rFUN, nr=5, nc=30, mode="character")
+        check_read_const(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_multi(rFUN, mode="character")
-    check_read_multi(rFUN, nr=5, nc=30, mode="character")
-    check_read_multi(rFUN, nr=30, nc=5, mode="character")
+        check_read_indexed(rFUN, mode="character")
+        check_read_indexed(rFUN, nr=5, nc=30, mode="character")
+        check_read_indexed(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_type(rFUN, mode="character")
-    check_read_class(rFUN(), mode="character", "unknown")
+        check_read_multi(rFUN, mode="character")
+        check_read_multi(rFUN, nr=5, nc=30, mode="character")
+        check_read_multi(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_errors(rFUN, mode="character")
-    check_read_all(rFUN, nr=0, nc=0, mode="character")
-    check_read_all(rFUN, nr=10, nc=0, mode="character")
-    check_read_all(rFUN, nr=0, nc=10, mode="character")
+        check_read_type(rFUN, mode="character")
+        check_read_class(rFUN(), mode="character", "unknown")
+
+        check_read_errors(rFUN, mode="character")
+        check_read_all(rFUN, nr=0, nc=0, mode="character")
+        check_read_all(rFUN, nr=10, nc=0, mode="character")
+        check_read_all(rFUN, nr=0, nc=10, mode="character")
+    }
 
     setAutoBlockSize(old)
 })

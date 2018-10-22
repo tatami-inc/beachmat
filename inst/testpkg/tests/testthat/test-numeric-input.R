@@ -37,7 +37,7 @@ test_that("Simple numeric matrix input is okay", {
 
     check_read_type(sFUN, mode="numeric")
     check_read_class(sFUN(), mode="numeric", "simple")
-    
+
     check_read_errors(sFUN, mode="numeric")
     check_read_all(sFUN, nr=0, nc=0, mode="numeric")
     check_read_all(sFUN, nr=10, nc=0, mode="numeric")
@@ -81,7 +81,7 @@ test_that("Dense numeric matrix input is okay", {
     check_read_all(dFUN, nr=0, nc=0, mode="numeric")
     check_read_all(dFUN, nr=10, nc=0, mode="numeric")
     check_read_all(dFUN, nr=0, nc=10, mode="numeric")
-})  
+})
 
 #######################################################
 
@@ -163,40 +163,43 @@ test_that("dgTMatrix (i.e., unknown) input is okay", {
 
 test_that("dgTMatrix input is okay with reduced block size", {
     old <- getAutoBlockSize()
-    setAutoBlockSize(6*8)
 
-    check_read_all(tsFUN, mode="numeric")
-    check_read_all(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_all(tsFUN, nr=30, nc=5, mode="numeric")
+    for (blocksize in c(100, 250, 500)) {
+        setAutoBlockSize(blocksize)
 
-    check_read_slice(tsFUN, mode="numeric")
-    check_read_slice(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_slice(tsFUN, nr=30, nc=5, mode="numeric")
+        check_read_all(tsFUN, mode="numeric")
+        check_read_all(tsFUN, nr=5, nc=30, mode="numeric")
+        check_read_all(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_varslice(tsFUN, mode="numeric")
-    check_read_varslice(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_varslice(tsFUN, nr=30, nc=5, mode="numeric")
+        check_read_slice(tsFUN, mode="numeric")
+        check_read_slice(tsFUN, nr=5, nc=30, mode="numeric")
+        check_read_slice(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_const(tsFUN, mode="numeric")
-    check_read_const(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_const(tsFUN, nr=30, nc=5, mode="numeric")
+        check_read_varslice(tsFUN, mode="numeric")
+        check_read_varslice(tsFUN, nr=5, nc=30, mode="numeric")
+        check_read_varslice(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_indexed(tsFUN, mode="numeric")
-    check_read_indexed(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_indexed(tsFUN, nr=30, nc=5, mode="numeric")
+        check_read_const(tsFUN, mode="numeric")
+        check_read_const(tsFUN, nr=5, nc=30, mode="numeric")
+        check_read_const(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_multi(tsFUN, mode="numeric")
-    check_read_multi(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_multi(tsFUN, nr=30, nc=5, mode="numeric")
+        check_read_indexed(tsFUN, mode="numeric")
+        check_read_indexed(tsFUN, nr=5, nc=30, mode="numeric")
+        check_read_indexed(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_type(tsFUN, mode="numeric")
-    check_read_class(tsFUN(), mode="numeric", "unknown")
+        check_read_multi(tsFUN, mode="numeric")
+        check_read_multi(tsFUN, nr=5, nc=30, mode="numeric")
+        check_read_multi(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_errors(tsFUN, mode="numeric")
-    check_read_all(tsFUN, nr=0, nc=0, mode="numeric")
-    check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
-    check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
-             
+        check_read_type(tsFUN, mode="numeric")
+        check_read_class(tsFUN(), mode="numeric", "unknown")
+
+        check_read_errors(tsFUN, mode="numeric")
+        check_read_all(tsFUN, nr=0, nc=0, mode="numeric")
+        check_read_all(tsFUN, nr=10, nc=0, mode="numeric")
+        check_read_all(tsFUN, nr=0, nc=10, mode="numeric")
+    }
+
     setAutoBlockSize(old)
 })
 
