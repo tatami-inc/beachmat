@@ -118,7 +118,7 @@ T Csparse_reader<T, V>::get(size_t r, size_t c) {
     check_oneargs(r, c);
     auto iend=i.begin() + p[c+1];
     auto loc=std::lower_bound(i.begin() + p[c], iend, r);
-    if (loc!=iend && *loc==r) { 
+    if (loc!=iend && static_cast<size_t>(*loc)==r) { 
         return x[loc - i.begin()];
     } else {
         return get_empty();
@@ -168,7 +168,7 @@ void Csparse_reader<T, V>::update_indices(size_t r, size_t first, size_t last) {
     } else if (r+1==currow) {
         for (size_t c=first; c<last; ++c, ++pIt) {
             int& curdex=indices[c];
-            if (curdex!=*pIt && i[curdex-1] >= r) { 
+            if (curdex!=*pIt && static_cast<size_t>(i[curdex-1]) >= r) { 
                 --curdex;
             }
         }

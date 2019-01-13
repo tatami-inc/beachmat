@@ -56,7 +56,7 @@ simple_reader<T, V>::simple_reader(const Rcpp::RObject& incoming) : original(inc
         throw_custom_error("matrix should be ", translate_type(mat.sexp_type()), "");
     }
     mat=incoming;
-    if (mat.size()!=(this->nrow)*NC) {
+    if (static_cast<size_t>(mat.size())!=(this->nrow)*NC) {
         throw std::runtime_error("length of matrix is inconsistent with its dimensions"); 
     }
     return;

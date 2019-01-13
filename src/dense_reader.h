@@ -57,7 +57,7 @@ dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incom
         throw std::runtime_error(err.str().c_str());
     }
     x=temp;
-    if (x.size()!=(this->nrow)*NC) {
+    if (static_cast<size_t>(x.size())!=(this->nrow)*NC) {
         throw_custom_error("length of 'x' in a ", ctype, " object is inconsistent with its dimensions"); 
     }
     return;

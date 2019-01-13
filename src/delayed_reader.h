@@ -150,8 +150,8 @@ void delayed_coord_transformer<T, V>::obtain_indices(const Rcpp::RObject& subset
     delayed_dim=idx.size();
     subset_out.reserve(delayed_dim);
 
-    for (const auto& i : idx) {
-        if (i < 1 || i > original_dim) {
+    for (const auto i : idx) {
+        if (i < 1 || static_cast<size_t>(i) > original_dim) {
             throw std::runtime_error("delayed subset indices are out of range");
         }
         subset_out.push_back(i-1);
