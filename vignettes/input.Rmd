@@ -330,7 +330,7 @@ The size of the blocks can be controlled using methods in the `r Biocpkg("Delaye
 Rather, the `yield` method can be used to obtain the original `Rcpp::RObject` for input to `r CRANpkg("RcppArmadillo")` or `r CRANpkg("RcppEigen")`.
 This functionality is generally limited to base matrices, though there is also limited support for sparse matrices in these libraries.
 
-# Cloning for parallelization
+# Cloning matrix instances
 
 The `clone()` method returns a unique pointer to a `numeric_matrix` instance of the same type as that pointed to by `dptr`.
 
@@ -338,7 +338,12 @@ The `clone()` method returns a unique pointer to a `numeric_matrix` instance of 
 auto dptr_copy = dptr->clone();
 ```
 
-This is useful as direct use of the `r Biocpkg("beachmat")` API is not thread-safe for simultaneous calls to the `get` methods from different threads.
+This is occasionally useful, e.g., when row and column access is simultaneously required from the same matrix.
+In such cases, row--specific settings in a single `numeric_matrix` instance (e.g., for HDF5 caching) would preclude efficient column extraction, and vice versa.
+These problems are avoided by having two separate instances for row and column access.
+
+Cloning also enables multi-threaded access to the same matrix data.
+Ordinarily, the `get*` methods in `r Biocpkg("beachmat")` are not thread safe.
 Some methods use cached class members for greater efficiency, and simultaneous calls will cause race conditions. 
 It is the responsibility of the calling function to coordinate data access across threads.
 To this end, the `clone` method can be called to generate a unique pointer to a _new_ `*_matrix` instance, which can be used concurrently in another thread.
@@ -347,7 +352,10 @@ This is fairly cheap as the underlying matrix data are not copied.
 An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look like this:
 
 ```cpp
-#pragma omp parallel
+const int nthreads=(dptr->get_matrix_type==beachmat::HDF5 ? 
+    1 : omp_get_max_threads());
+
+#pragma omp parallel num_threads(nthreads)
 {
     beachmat::numeric_matrix* rptr=NULL;
     std::unique_ptr<beachmat::numeric_matrix> uptr=nullptr;
@@ -373,6 +381,9 @@ An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look 
 The start of the parallel region uses the existing `dptr` in the master thread and clones a new matrix in the other threads.
 The parallelized `for` loop then uses `rptr` to avoid race conditions in cached variables.
 Note that a static schedule may be faster than other schedule types, as several of the matrix implementations in `r Biocpkg("beachmat")` are optimized for consecutive row/column access.
+
+**However:** the HDF5 C++ library is not thread-safe.
+One should not use C++-level multi-threading with `HDF5Matrix` input objects, hence the use of `num_threads(nthreads)` above.
 
 <!--
 Advanced comments:
