@@ -98,6 +98,8 @@ external_reader_base<T, V>::external_reader_base(const external_reader_base& oth
 
 template<typename T, class V>
 external_reader_base<T, V>& external_reader_base<T, V>::operator=(const external_reader_base& other) { 
+    destroy(ptr);
+
     original=other.original;
     ptr=other.clone(other.ptr);
 
