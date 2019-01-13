@@ -80,10 +80,6 @@ A <- as(test.mat, "HDF5Array")
 
 test_that("HDF5 matrix errors thrown", {
     wrong <- A
-    wrong@seed <- Matrix(1)
-    expect_fixed_error(check_read_class(wrong, mode="numeric", "HDF5"), "'seed' slot in a HDF5Matrix object should be a HDF5ArraySeed object")
-    
-    wrong <- A
     expect_fixed_error(storage.mode(wrong@seed@dim) <- "double")
     wrong@seed@dim <- c(10L, 5L)
     expect_fixed_error(check_read_class(wrong, mode="numeric", "HDF5"), "dimensions in HDF5 file do not equal dimensions in the HDF5Matrix object")
