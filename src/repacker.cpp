@@ -1,5 +1,12 @@
-#include "beachmat.h"
+#include "Rcpp.h"
+#include "H5Cpp.h"
+
 #include "functions.h"
+
+#include <stdexcept>
+#include <vector>
+#include <string>
+#include <cmath>
 
 /********************* A rechunking class ************************/
 

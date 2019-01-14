@@ -1,9 +1,15 @@
 #ifndef BEACHMAT_DELAYED_READER_H
 #define BEACHMAT_DELAYED_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "unknown_reader.h"
+
+#include <memory>
+#include <stdexcept>
+#include <vector>
+#include <algorithm>
 
 namespace beachmat {
 

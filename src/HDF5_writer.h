@@ -1,10 +1,17 @@
 #ifndef BEACHMAT_HDF5_WRITER_H
 #define BEACHMAT_HDF5_WRITER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+#include "H5Cpp.h"
+
 #include "dim_checker.h"
 #include "HDF5_utils.h"
 #include "output_param.h"
+
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <algorithm>
 
 namespace beachmat {
 

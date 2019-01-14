@@ -1,9 +1,13 @@
 #ifndef BEACHMAT_SIMPLE_READER_H
 #define BEACHMAT_SIMPLE_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <stdexcept>
+#include <algorithm>
 
 namespace beachmat {
 

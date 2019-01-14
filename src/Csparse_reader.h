@@ -1,9 +1,16 @@
 #ifndef BEACHMAT_CSPARSE_READER_H
 #define BEACHMAT_CSPARSE_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <string>
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <stdexcept>
 
 namespace beachmat {
 

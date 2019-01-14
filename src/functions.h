@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_FUNCTIONS_H
 #define BEACHMAT_FUNCTIONS_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
 
 extern "C" { 
 

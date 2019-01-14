@@ -1,5 +1,9 @@
 #include "HDF5_utils.h"
 
+#include <sstream>
+#include <stdexcept>
+#include <cmath>
+
 namespace beachmat {
 
 /*******************************************

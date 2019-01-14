@@ -1,7 +1,7 @@
 #ifndef BEACHMAT_DIM_CHECKER_H
 #define BEACHMAT_DIM_CHECKER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
 
 /* Virtual base class for all reader/writer classes. */
 

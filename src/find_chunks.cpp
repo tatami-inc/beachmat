@@ -1,5 +1,8 @@
-#include "beachmat.h"
+#include "Rcpp.h"
+
+#include "utils.h"
 #include "output_param.h"
+
 #include "functions.h"
 
 SEXP find_chunks (SEXP indim) {

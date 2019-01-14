@@ -1,9 +1,12 @@
 #ifndef BEACHMAT_SIMPLE_WRITER_H
 #define BEACHMAT_SIMPLE_WRITER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <algorithm>
 
 namespace beachmat {
 

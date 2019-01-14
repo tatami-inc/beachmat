@@ -1,7 +1,18 @@
 #ifndef BEACHMAT_LIN_MATRIX_H
 #define BEACHMAT_LIN_MATRIX_H
 
-#include "all_readers.h"
+#include "Rcpp.h"
+
+#include "simple_reader.h"
+#include "dense_reader.h"
+#include "Csparse_reader.h"
+#include "HDF5_reader.h"
+#include "delayed_reader.h"
+#include "unknown_reader.h"
+#include "external_reader.h"
+#include "utils.h"
+
+#include <memory>
 
 namespace beachmat { 
 

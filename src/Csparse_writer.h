@@ -1,9 +1,16 @@
 #ifndef BEACHMAT_CSPARSE_WRITER_H
 #define BEACHMAT_CSPARSE_WRITER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <utility>
+#include <vector>
+#include <deque>
+#include <algorithm>
+#include <sstream>
 
 namespace beachmat { 
 

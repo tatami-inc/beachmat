@@ -1,9 +1,15 @@
 #ifndef BEACHMAT_HDF5_READER_H
 #define BEACHMAT_HDF5_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+#include "H5Cpp.h"
+
 #include "dim_checker.h"
 #include "HDF5_utils.h"
+
+#include <string>
+#include <stdexcept>
+#include <sstream>
 
 namespace beachmat {
 

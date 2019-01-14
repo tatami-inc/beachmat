@@ -1,9 +1,15 @@
 #ifndef BEACHMAT_DENSE_READER_H
 #define BEACHMAT_DENSE_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <sstream>
+#include <string>
+#include <algorithm>
+#include <stdexcept>
 
 namespace beachmat { 
 

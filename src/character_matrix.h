@@ -1,7 +1,19 @@
 #ifndef BEACHMAT_CHARACTER_MATRIX_H
 #define BEACHMAT_CHARACTER_MATRIX_H
 
-#include "all_readers.h"
+#include "Rcpp.h"
+
+#include "simple_reader.h"
+#include "simple_reader.h"
+#include "dense_reader.h"
+#include "HDF5_reader.h"
+#include "delayed_reader.h"
+#include "unknown_reader.h"
+#include "external_reader.h"
+#include "utils.h"
+
+#include <memory>
+#include <vector>
 
 namespace beachmat { 
 

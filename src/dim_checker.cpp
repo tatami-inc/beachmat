@@ -1,4 +1,8 @@
 #include "dim_checker.h"
+#include "utils.h"
+
+#include <stdexcept>
+#include <sstream>
 
 namespace beachmat { 
 
