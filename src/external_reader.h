@@ -211,7 +211,7 @@ external_reader<T, V>::external_reader(const Rcpp::RObject& incoming) : external
     auto load_col_name=combine_strings("load_col_", type);
     load_col=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(pkg, load_col_name.c_str()));
 
-    auto load_row_name=combine_strings("load_ow_", type);
+    auto load_row_name=combine_strings("load_row_", type);
     load_row=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(pkg, load_row_name.c_str()));
 
     auto load_cols_name=combine_strings("load_cols_", type);
