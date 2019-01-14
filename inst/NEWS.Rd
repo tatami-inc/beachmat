@@ -2,6 +2,10 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 1.6.0}{\itemize{
+\item Minor API change for external native support to avoid using C++ classes with C-style linkage.
+}}
+
 \section{Version 1.4.0}{\itemize{
 \item Removed native support for RleMatrix and packed symmetric matrices.
 
