@@ -80,7 +80,7 @@ HDF5_reader<T, RTYPE>::HDF5_reader(const Rcpp::RObject& incoming) : original(inc
     if (firstval.sexp_type()!=RTYPE) { 
         std::stringstream err;
         err << "'first_val' slot in a " << get_class(h5_seed) << " object should be " << translate_type(RTYPE);
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
 
     // Checking dimensions.

@@ -77,7 +77,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
     if (temp_x.sexp_type()!=x.sexp_type()) { 
         std::stringstream err;
         err << "'x' slot in a " << get_class(incoming) << " object should be " << translate_type(x.sexp_type());
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
     x=temp_x;
 

@@ -91,7 +91,7 @@ void reopen_HDF5_file_by_dim(const std::string& filename, const std::string& dat
     } else if (!dimokay) {
         std::stringstream err;
         err << "cache size limit (" << get_cache_size_hard_limit() << ") exceeded for dim access, repack the file";
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     } else {
         hdata.close();
         hfile.close();
@@ -216,7 +216,7 @@ H5::DataType set_HDF5_data_type (int RTYPE, size_t strlen) {
     }
     std::stringstream err;
     err << "unsupported sexptype '" << RTYPE << "'";
-    throw std::runtime_error(err.str().c_str());
+    throw std::runtime_error(err.str());
 }
 
 }

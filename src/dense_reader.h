@@ -60,7 +60,7 @@ dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incom
     if (temp.sexp_type()!=x.sexp_type()) { 
         std::stringstream err;
         err << "'x' slot in a " << get_class(incoming) << " object should be " << translate_type(x.sexp_type());
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
     x=temp;
     if (static_cast<size_t>(x.size())!=(this->nrow)*NC) {

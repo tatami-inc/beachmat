@@ -276,7 +276,7 @@ Rcpp::RObject Csparse_writer<T, V>::yield() {
         default:
             std::stringstream err;
             err << "unsupported sexptype '" << RTYPE << "' for sparse output";
-            throw std::runtime_error(err.str().c_str());
+            throw std::runtime_error(err.str());
     }
     Rcpp::S4 mat(classname);
 
