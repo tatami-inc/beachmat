@@ -17,7 +17,7 @@ namespace beachmat {
  * from the underlying seed matrix in a DelayedMatrix class, while transforming
  * the extracted values to account for row/column subsetting or transposition.
  * This avoids the need to realize any subset of the matrix, as would be necessary
- * for more general delayed operations (see the 'delayed_matrix' class below).
+ * for more general delayed operations (see the 'delayed_reader' class below).
  */
 
 template<typename T, class V>
@@ -61,17 +61,17 @@ private:
     static void prepare_reallocation(size_t, size_t, size_t&, size_t&, size_t&, size_t&, const std::vector<size_t>&, const char*);
 };
 
-/* The 'delayed_matrix' class, which wraps the coord_transformer class. */
+/* The 'delayed_reader' class, which wraps the coord_transformer class. */
 
 template<typename T, class V, class base_mat>
-class delayed_matrix : public dim_checker { 
+class delayed_reader : public dim_checker { 
 public:
-    delayed_matrix(const Rcpp::RObject&);
-    ~delayed_matrix() = default;
-    delayed_matrix(const delayed_matrix&);
-    delayed_matrix& operator=(const delayed_matrix&);
-    delayed_matrix(delayed_matrix&&) = default;
-    delayed_matrix& operator=(delayed_matrix&&) = default;
+    delayed_reader(const Rcpp::RObject&);
+    ~delayed_reader() = default;
+    delayed_reader(const delayed_reader&);
+    delayed_reader& operator=(const delayed_reader&);
+    delayed_reader(delayed_reader&&) = default;
+    delayed_reader& operator=(delayed_reader&&) = default;
     
     T get(size_t, size_t);
 
@@ -351,13 +351,13 @@ void delayed_coord_transformer<T, V>::reallocate_col(M mat, size_t c, size_t fir
 }
 
 /*******************************************************
- * Implementing methods for the 'delayed_matrix' class *
+ * Implementing methods for the 'delayed_reader' class *
  *******************************************************/
 
 /*** Constructor definitions ***/
 
 template<typename T, class V, class base_mat>
-delayed_matrix<T, V, base_mat>::delayed_matrix(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
+delayed_reader<T, V, base_mat>::delayed_reader(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
     if (get_class(incoming)!="DelayedMatrix" || !incoming.isS4()) {
         throw std::runtime_error("input matrix should be a DelayedMatrix");
     }
@@ -385,11 +385,11 @@ delayed_matrix<T, V, base_mat>::delayed_matrix(const Rcpp::RObject& incoming) : 
 }
 
 template<typename T, class V, class base_mat> 
-delayed_matrix<T, V, base_mat>::delayed_matrix(const delayed_matrix<T, V, base_mat>& other) : original(other.original), 
+delayed_reader<T, V, base_mat>::delayed_reader(const delayed_reader<T, V, base_mat>& other) : original(other.original), 
         seed_ptr(other.seed_ptr->clone()), transformer(other.transformer) {}
 
 template<typename T, class V, class base_mat> 
-delayed_matrix<T, V, base_mat>& delayed_matrix<T, V, base_mat>::operator=(const delayed_matrix<T, V, base_mat>& other) {
+delayed_reader<T, V, base_mat>& delayed_reader<T, V, base_mat>::operator=(const delayed_reader<T, V, base_mat>& other) {
     original=other.original;
     seed_ptr=other.seed_ptr->clone();
     transformer=other.transformer;
@@ -400,20 +400,20 @@ delayed_matrix<T, V, base_mat>& delayed_matrix<T, V, base_mat>::operator=(const 
 
 template<typename T, class V, class base_mat>
 template<class Iter>
-void delayed_matrix<T, V, base_mat>::get_col(size_t c, Iter out, size_t first, size_t last) {
+void delayed_reader<T, V, base_mat>::get_col(size_t c, Iter out, size_t first, size_t last) {
     transformer.get_col(seed_ptr.get(), c, out, first, last);
     return;
 }
 
 template<typename T, class V, class base_mat>
 template<class Iter>
-void delayed_matrix<T, V, base_mat>::get_row(size_t r, Iter out, size_t first, size_t last) {
+void delayed_reader<T, V, base_mat>::get_row(size_t r, Iter out, size_t first, size_t last) {
     transformer.get_row(seed_ptr.get(), r, out, first, last);
     return;
 }
 
 template<typename T, class V, class base_mat>
-T delayed_matrix<T, V, base_mat>::get(size_t r, size_t c) {
+T delayed_reader<T, V, base_mat>::get(size_t r, size_t c) {
     return transformer.get(seed_ptr.get(), r, c);
 }
 
@@ -421,7 +421,7 @@ T delayed_matrix<T, V, base_mat>::get(size_t r, size_t c) {
 
 template<typename T, class V, class base_mat>
 template<class Iter>
-void delayed_matrix<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, Iter out, size_t first, size_t last) {
+void delayed_reader<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, Iter out, size_t first, size_t last) {
     check_rowargs(0, first, last);
     check_row_indices(rIt, n);
 
@@ -438,7 +438,7 @@ void delayed_matrix<T, V, base_mat>::get_rows(Rcpp::IntegerVector::iterator rIt,
 
 template<typename T, class V, class base_mat>
 template<class Iter>
-void delayed_matrix<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
+void delayed_reader<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, Iter out, size_t first, size_t last) {
     check_colargs(0, first, last);
     check_col_indices(cIt, n);
 
@@ -465,12 +465,12 @@ void delayed_matrix<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt,
 /*** Other methods ***/
 
 template<typename T, class V, class base_mat> 
-Rcpp::RObject delayed_matrix<T, V, base_mat>::yield() const {
+Rcpp::RObject delayed_reader<T, V, base_mat>::yield() const {
     return original;
 }
 
 template<typename T, class V, class base_mat>
-matrix_type delayed_matrix<T, V, base_mat>::get_matrix_type() const { 
+matrix_type delayed_reader<T, V, base_mat>::get_matrix_type() const { 
     return DELAYED;
 }
 

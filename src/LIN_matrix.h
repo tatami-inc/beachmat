@@ -212,7 +212,7 @@ using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_reader<T, RTYPE> >;
 /* DelayedMatrix of LINs */
 
 template <typename T, class V>
-using delayed_lin_reader=delayed_matrix<T, V, lin_matrix<T, V> >;
+using delayed_lin_reader=delayed_reader<T, V, lin_matrix<T, V> >;
 
 template <typename T, class V>
 using delayed_lin_matrix=general_lin_matrix<T, V, delayed_lin_reader<T, V> >;

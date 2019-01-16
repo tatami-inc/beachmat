@@ -155,7 +155,7 @@ using HDF5_character_matrix=general_character_matrix<HDF5_character_reader>;
 
 /* DelayedMatrix */
 
-typedef delayed_matrix<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
+typedef delayed_reader<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
 
 using delayed_character_matrix=general_character_matrix<delayed_character_reader>;
 
