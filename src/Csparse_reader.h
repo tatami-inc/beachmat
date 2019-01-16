@@ -82,7 +82,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
     x=temp_x;
 
     if (x.size()!=i.size()) { throw_custom_error("'x' and 'i' slots in a ", ctype, " object should have the same length"); }
-    if (NC+1!=p.size()) { throw_custom_error("length of 'p' slot in a ", ctype, " object should be equal to 'ncol+1'"); }
+    if (NC+1!=static_cast<size_t>(p.size())) { throw_custom_error("length of 'p' slot in a ", ctype, " object should be equal to 'ncol+1'"); }
     if (p[0]!=0) { throw_custom_error("first element of 'p' in a ", ctype, " object should be 0"); }
     if (p[NC]!=x.size()) { throw_custom_error("last element of 'p' in a ", ctype, " object should be 'length(x)'"); }
 
@@ -110,7 +110,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
 
     for (auto iIt=i.begin(); iIt!=i.end(); ++iIt) {
         const int& curi=*iIt;
-        if (curi<0 || curi>=NR) {
+        if (curi<0 || static_cast<size_t>(curi)>=NR) {
             throw_custom_error("'i' slot in a ", ctype, " object should contain elements in [0, nrow)");
         }
     }
@@ -168,7 +168,7 @@ void Csparse_reader<T, V>::update_indices(size_t r, size_t first, size_t last) {
         ++pIt; // points to the first-past-the-end element, at any given 'c'.
         for (size_t c=first; c<last; ++c, ++pIt) {
             int& curdex=indices[c];
-            if (curdex!=*pIt && i[curdex] < r) { 
+            if (curdex!=*pIt && static_cast<size_t>(i[curdex]) < r) { 
                 ++curdex;
             }
         }
@@ -212,7 +212,7 @@ void Csparse_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last
     auto pIt=p.begin()+first+1; // Points to first-past-the-end for each 'c'.
     for (size_t c=first; c<last; ++c, ++pIt, ++out) { 
         const int& idex=indices[c];
-        if (idex!=*pIt && i[idex]==r) { (*out)=x[idex]; }
+        if (idex!=*pIt && static_cast<size_t>(i[idex])==r) { (*out)=x[idex]; }
     } 
     return;  
 }
