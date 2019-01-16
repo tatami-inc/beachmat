@@ -385,27 +385,3 @@ Note that a static schedule may be faster than other schedule types, as several 
 One should not use C++-level multi-threading with `HDF5Matrix` input objects, hence the use of `num_threads(nthreads)` above.
 This is admittedly rather frustrating as HDF5-backed matrices are often used for large data sets that most require parallel processing.
 As a workaround, we suggest parallelizing at the R level with `r Biocpkg("BiocParallel")`.
-
-<!--
-Advanced comments:
-
-- In theory, greater efficiency could be obtained when calling `get_col` on column-major base matrices.
-Specifically, a pointer to the column could be directly returned rather than copying the data to a new `Vector` object. 
-However, other matrix classes do not store data in the same manner; if a pointer is to be returned, it would have to be to some internal storage.
-This would be dangerous as the values in the internal storage will change upon repeated calls to `get_col`.
-Filling a user-supplied array is more intuitive as it is obvious that the array will change when `get_col` is called again.
-- If any class has pointers to `SEXP` data, the data that each pointer points to should be contained within a `RObject` that is also a member of the class. 
-This ensures that the data is `PROTECT`ed for the lifetime of the class instance. 
-Otherwise, one could imagine a situation where the class is instantiated from a `RObject`; the `RObject` is destroyed; and garbage collection occurs.
-This would invalidate the pointers in the class instance.
-- The two major templated values are `T` and `V`; `T` for the return type of `get`, `V` for the Rcpp::Vector class used for internal storage and iterators.
-Any combination of template arguments is permitted where an element of `V` can be successfully converted to type `T`.
-- It would be nice to allow the get_* methods to take any random access iterator; however, virtual methods cannot be templated.
-We could add a template argument to the entire class, but this would only allow it to take either a random access iterator or a pointer (not both).
-- We have used inheritance to define the `_matrix` interface, so that run-time polymorphism is possible for different matrix classes.
-However, value extraction is executed by separate classes that are _contained_ within the interface, i.e., are data members of the user-visible `_matrix` object.
-This allows us to re-use extraction methods for different interfaces.
-In particular, the `character_matrix` interface differs from the others, so a single set of inheritance templates is not possible.
-It also allows us to template the internal (non-virtual) methods so that the virtual interface methods need only be trivial wrappers.
--->
-

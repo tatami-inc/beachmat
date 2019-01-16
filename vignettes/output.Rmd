@@ -287,7 +287,7 @@ Any attempts to fill the output matrix with strings larger than `strlen` will re
 # Handling parallelization
 
 The API is not thread-safe, due to (i) the use of cached class members and (ii) the potential for race conditions when writing to the same location on disk/memory.
-The first issue can be solved by using `clone()` to create `*_output` copies for use in each thread.
+The first issue can be solved by using `clone()` to create `*_output` copies for use in each thread^[Excepting HDF5 matrices, see comments `r Biocpkg("beachmat", "input.html#cloning-matrix-instances", "here")`.].
 However, each copy may still read from and write to the same disk/memory location.
 Furthermore, even if each copy writes to different rows or columns, they are not guaranteed to affect different parts of memory.
 (Storage of rows of a sparse matrix, for example, is dependent on the nature of previous rows.)
