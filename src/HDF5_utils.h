@@ -17,7 +17,7 @@ void calc_HDF5_chunk_cache_settings (const size_t, const size_t, const H5::DSetC
 
 void reopen_HDF5_file_by_dim(const std::string&, const std::string&, 
         H5::H5File&, H5::DataSet&, const unsigned&, const H5::FileAccPropList&,
-        bool&, const bool&, const bool&, const bool&);
+        bool&, bool&, const bool&, const bool&);
 
 struct HDF5_selector {
     void set_dims(size_t, size_t);   

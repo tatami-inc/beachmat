@@ -85,7 +85,7 @@ void calc_HDF5_chunk_cache_settings (const size_t total_nrows, const size_t tota
 
 void reopen_HDF5_file_by_dim(const std::string& filename, const std::string& dataname, 
         H5::H5File& hfile, H5::DataSet& hdata, const unsigned& openmode, const H5::FileAccPropList& dimlist,
-        bool& ondim, const bool& onother, const bool& largerother, const bool& dimokay) {
+        bool& ondim, bool& onother, const bool& largerother, const bool& dimokay) {
     if (ondim || (onother && largerother)) {
         ; // Don't do anything, it's okay.
     } else if (!dimokay) {
@@ -98,6 +98,7 @@ void reopen_HDF5_file_by_dim(const std::string& filename, const std::string& dat
         hfile.openFile(filename.c_str(), openmode, dimlist);
         hdata = hfile.openDataSet(dataname.c_str());
         ondim=true;
+        onother=false;
     }
 }
 
