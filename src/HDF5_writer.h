@@ -232,6 +232,9 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_writer<T, RTYPE>::insert_col_indexed(size_t c, size_t n, const int* idx, const X* val, const H5::DataType& HDT) {
     if (!n) { return; }
+    reopen_HDF5_file_by_dim(fname, dname,
+            hfile, hdata, H5F_ACC_RDWR, collist, 
+            oncol, onrow, largerrow, colokay);
 
     if (index_coords.size()/2 < n) {
         size_t N=std::max(n, this->nrow);
@@ -268,6 +271,9 @@ template<typename T, int RTYPE>
 template<typename X>
 void HDF5_writer<T, RTYPE>::insert_row_indexed(size_t r, size_t n, const int* idx, const X* val, const H5::DataType& HDT) {
     if (!n) { return; }
+    reopen_HDF5_file_by_dim(fname, dname, 
+            hfile, hdata, H5F_ACC_RDWR, rowlist, 
+            onrow, oncol, largercol, rowokay);
 
     if (index_coords.size()/2 < n) {
         size_t N=std::max(n, this->nrow);
