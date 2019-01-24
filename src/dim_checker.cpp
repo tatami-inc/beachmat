@@ -1,4 +1,8 @@
 #include "dim_checker.h"
+#include "utils.h"
+
+#include <stdexcept>
+#include <sstream>
 
 namespace beachmat { 
 
@@ -25,7 +29,7 @@ void dim_checker::check_dimension(size_t i, size_t dim, const char* msg) {
     if (i >= dim) {
         std::stringstream err;
         err << msg << " index out of range";
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
     return;
 }
@@ -44,11 +48,11 @@ void dim_checker::check_subset(size_t first, size_t last, size_t dim, const char
     if (last < first) {
         std::stringstream err;
         err << msg << " start index is greater than " << msg << " end index";
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     } else if (last > dim) {
         std::stringstream err;
         err << msg << " end index out of range";
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
     return;    
 }
@@ -81,7 +85,7 @@ void check_indices(Rcpp::IntegerVector::iterator it, size_t n, size_t dim, const
         if (*it <= last) {
             std::stringstream err;
             err << msg << " indices are not strictly increasing";
-            throw std::runtime_error(err.str().c_str());
+            throw std::runtime_error(err.str());
         }
     }
 

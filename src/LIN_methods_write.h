@@ -173,21 +173,6 @@ matrix_type general_lin_output<T, V, WTR>::get_matrix_type() const {
     return writer.get_matrix_type();
 }
 
-/* Defining the simple output interface. */ 
-
-template<typename T, class V>
-simple_lin_output<T, V>::simple_lin_output(size_t nr, size_t nc) : simple_lin_output_precursor<T, V>(nr, nc) {}
-
-template<typename T, class V>
-typename V::iterator simple_lin_output<T, V>::get_const_col(size_t c, typename V::iterator work, size_t first, size_t last) {
-    return this->writer.get_const_col(c, first, last);
-}
-
-template<typename T, class V>
-std::unique_ptr<lin_output<T, V> > simple_lin_output<T, V>::clone() const {
-    return std::unique_ptr<lin_output<T, V> >(new simple_lin_output<T, V>(*this));
-}
-
 /* Defining the HDF5 output interface. */
 
 template<typename T, class V, int RTYPE>

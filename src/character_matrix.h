@@ -1,7 +1,19 @@
 #ifndef BEACHMAT_CHARACTER_MATRIX_H
 #define BEACHMAT_CHARACTER_MATRIX_H
 
-#include "all_readers.h"
+#include "Rcpp.h"
+
+#include "simple_reader.h"
+#include "simple_reader.h"
+#include "dense_reader.h"
+#include "HDF5_reader.h"
+#include "delayed_reader.h"
+#include "unknown_reader.h"
+#include "external_reader.h"
+#include "utils.h"
+
+#include <memory>
+#include <vector>
 
 namespace beachmat { 
 
@@ -143,7 +155,7 @@ using HDF5_character_matrix=general_character_matrix<HDF5_character_reader>;
 
 /* DelayedMatrix */
 
-typedef delayed_matrix<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
+typedef delayed_reader<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
 
 using delayed_character_matrix=general_character_matrix<delayed_character_reader>;
 

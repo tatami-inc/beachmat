@@ -67,13 +67,13 @@ destroy_integer(ptr /* void* */);
 ```
 
 We define a `get_dim()` function that records the number of rows and columns in the object pointed to by `ptr`.
-Note the references on the `size_t&` arguments. 
+Note the pointers for `nrow` and `ncol`.
 
 ```cpp
 get_dim_integer(
     ptr, /* void* */
-    nrow, /* size_t& */
-    ncol /* size_t& */
+    nrow, /* size_t* */
+    ncol /* size_t* */
 );
 ```
 
@@ -85,15 +85,16 @@ In general, the getter methods follow the same structure as that described for t
 We expect a `load()` method to obtain a specified entry of the matrix:
 
 ```cpp
-int val = load_integer(
+load_integer(
     ptr, /* void* */
     r, /* size_t */
-    c /* size_t */
+    c, /* size_t */
+    val /* int* */
 );
 ```
 
-The returned `val` should reflect the matrix type.
-For example, `val` should be a `Rcpp::String` for character matrices, a `double` for numeric matrices, and an `int` for logical matrices.
+The `val` pointer should reflect the matrix type.
+For example, `val` should be a `Rcpp::String*` for character matrices, a `double*` for numeric matrices, and an `int*` for logical matrices.
 
 Developers can assume that `r` and `c` are valid, i.e., within `[0, nrow)` and `[0, ncol)` respectively.
 These checks are performed by `r Biocpkg("beachmat")` and do not have to be repeated within developer-defined functions^[Obviously, the dimensions of the matrix pointed to by `ptr` should not change!].
@@ -107,7 +108,7 @@ We expect a `load_col()` method to obtain a column of the matrix:
 load_col_character(
     ptr, /* void* */
     c, /* size_t */
-    in, /* Rcpp::StringVector::iterator */
+    in, /* Rcpp::StringVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
@@ -119,7 +120,7 @@ load_col_character(
 load_row_character(
     ptr, /* void* */
     r, /* size_t */
-    in, /* Rcpp::StringVector::iterator */
+    in*, /* Rcpp::StringVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
@@ -130,9 +131,9 @@ We expect a `load_cols()` method to obtain multiple columns:
 ```cpp
 load_cols_character(
     ptr, /* void* */
-    indices, /* Rcpp::IntegerVector::iterator */
+    indices, /* Rcpp::IntegerVector::iterator* */
     n, /* size_t */
-    in, /* Rcpp::StringVector::iterator */
+    in, /* Rcpp::StringVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
@@ -143,9 +144,9 @@ load_cols_character(
 ```cpp
 load_cols_character(
     ptr, /* void* */
-    indices, /* Rcpp::IntegerVector::iterator */
+    indices, /* Rcpp::IntegerVector::iterator* */
     n, /* size_t */
-    in, /* Rcpp::StringVector::iterator */
+    in, /* Rcpp::StringVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
@@ -153,6 +154,9 @@ load_cols_character(
 
 In all cases, `first` and `last` can be assumed to be valid, i.e., `first <= last` and both in `[0, nrow)` or `[0, ncol)` (for column and row access, respectively).
 Indices in `indices` can also be assumed to be valid, i.e., within matrix dimensions and strictly increasing. 
+
+We stress that the various iterator arguments are _pointers to iterators_ rather than the iterators themselves.
+This is to avoid potential issues with C++ classes when using C-style linkage via R's `R_GetCCallable()` framework.
 
 ## Numeric types
 
@@ -174,7 +178,7 @@ Taking the single-column getter as an example:
 load_col2int_character(
     ptr, /* void* */
     c, /* size_t */
-    in, /* Rcpp::IntegerVector::iterator */
+    in, /* Rcpp::IntegerVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
@@ -182,13 +186,13 @@ load_col2int_character(
 load_col2dbl_character(
     ptr, /* void* */
     c, /* size_t */
-    in, /* Rcpp::NumericVector::iterator */
+    in, /* Rcpp::NumericVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
 ```
 
-We explicitly define conversions here as the cross-library linking framework does not support templating of `in`.
+We explicitly define conversions here as the cross-library linking framework does not support templating or overloading of `in`.
 If we only defined a `load_col()` function of the same type, we would need to perform two copies: 
 once to copy to an integer vector, and then another to copy to the output double-precision vector.
 
@@ -201,12 +205,13 @@ Again, `ptr` is a pointer to the location in memory containing the matrix object
 All other arguments are as described in the `r Biocpkg("beachmat", vignette="input.html#from-dense-matrices", label="previous workflow")`.
 
 ```cpp
-Rcpp::IntegerVector::iterator out = load_const_col_integer(
+load_const_col_integer(
     ptr, /* void* */
     c, /* size_t */
-    in, /* Rcpp::IntegerVector::iterator */
+    in, /* Rcpp::IntegerVector::iterator* */
     first, /* size_t */
-    last /* size_t */
+    last, /* size_t */
+    out /* Rcpp::IntegerVector::iterator* */
 );
 ```
 
@@ -229,14 +234,14 @@ The number of indexed elements should be returned in `n`.
 size_t n = load_const_col_integer(
     ptr, /* void* */
     c, /* size_t */
-    index, /* Rcpp::IntegerVector::iterator& */
-    values, /* Rcpp::IntegerVector::iterator& */
+    index, /* Rcpp::IntegerVector::iterator* */
+    values, /* Rcpp::IntegerVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
 ```
 
-Note that both `index` and `values` are _references_ to iterator objects.
+Again, both `index` and `values` are _pointers_ to iterator objects.
 They should be modified to point to internal data structures in `ptr`.
 The modified values will then be returned as part of the output of `get_const_col_indexed()` in the input API.
 

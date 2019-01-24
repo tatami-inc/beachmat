@@ -40,7 +40,7 @@ const_col_indexed_info<Rcpp::StringVector> character_matrix::get_const_col_index
 }
 
 const_col_indexed_info<Rcpp::StringVector> character_matrix::get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
-    if (indices.size()!=this->get_nrow()) {
+    if (static_cast<size_t>(indices.size())!=this->get_nrow()) {
         indices=Rcpp::IntegerVector(this->get_nrow());
         std::iota(indices.begin(), indices.end(), 0); // populating with indices.
     }

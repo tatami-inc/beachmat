@@ -1,9 +1,16 @@
 #ifndef BEACHMAT_CSPARSE_WRITER_H
 #define BEACHMAT_CSPARSE_WRITER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <utility>
+#include <vector>
+#include <deque>
+#include <algorithm>
+#include <sstream>
 
 namespace beachmat { 
 
@@ -269,7 +276,7 @@ Rcpp::RObject Csparse_writer<T, V>::yield() {
         default:
             std::stringstream err;
             err << "unsupported sexptype '" << RTYPE << "' for sparse output";
-            throw std::runtime_error(err.str().c_str());
+            throw std::runtime_error(err.str());
     }
     Rcpp::S4 mat(classname);
 

@@ -1,8 +1,11 @@
 #ifndef BEACHMAT_HDF5_UTILS_H
 #define BEACHMAT_HDF5_UTILS_H
 
-#include "beachmat.h"
+#include "H5Cpp.h"
+
 #include "utils.h"
+
+#include <string>
 
 namespace beachmat { 
 

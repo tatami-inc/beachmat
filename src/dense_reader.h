@@ -1,9 +1,15 @@
 #ifndef BEACHMAT_DENSE_READER_H
 #define BEACHMAT_DENSE_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
 #include "utils.h"
 #include "dim_checker.h"
+
+#include <sstream>
+#include <string>
+#include <algorithm>
+#include <stdexcept>
 
 namespace beachmat { 
 
@@ -54,10 +60,10 @@ dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incom
     if (temp.sexp_type()!=x.sexp_type()) { 
         std::stringstream err;
         err << "'x' slot in a " << get_class(incoming) << " object should be " << translate_type(x.sexp_type());
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
     x=temp;
-    if (x.size()!=(this->nrow)*NC) {
+    if (static_cast<size_t>(x.size())!=(this->nrow)*NC) {
         throw_custom_error("length of 'x' in a ", ctype, " object is inconsistent with its dimensions"); 
     }
     return;

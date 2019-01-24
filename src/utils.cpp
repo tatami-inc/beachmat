@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <stdexcept>
 
 namespace beachmat {
 
@@ -15,7 +16,7 @@ std::string make_to_string(const Rcpp::RObject& str) {
 void throw_custom_error(const std::string& left, const std::string& classname, const std::string& right) {
     std::stringstream err;
     err << left << classname << right;
-    throw std::runtime_error(err.str().c_str());
+    throw std::runtime_error(err.str());
 }
 
 /* Class checks. */
@@ -43,7 +44,7 @@ Rcpp::RObject get_safe_slot(const Rcpp::RObject& incoming, const std::string& sl
     if (!incoming.hasSlot(slotname)) { 
         std::stringstream err;
         err << "no '" << slotname << "' slot in the " << get_class(incoming) << " object";
-        throw std::runtime_error(err.str().c_str()); 
+        throw std::runtime_error(err.str()); 
     }
     return incoming.slot(slotname);
 }
@@ -76,7 +77,7 @@ std::string translate_type(int sexp_type) {
         default:
             std::stringstream err;
             err << "unsupported sexptype '" << sexp_type << "'";
-            throw std::runtime_error(err.str().c_str());
+            throw std::runtime_error(err.str());
     }
     return should_be;
 }
@@ -93,7 +94,7 @@ int reverse_translate_type (const std::string& curtype) {
     }
     std::stringstream err;
     err << "unsupported type'" << curtype << "'";
-    throw std::runtime_error(err.str().c_str());
+    throw std::runtime_error(err.str());
 }
 
 int find_sexp_type (const Rcpp::RObject& incoming) {

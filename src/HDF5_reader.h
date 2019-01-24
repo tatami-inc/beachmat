@@ -1,9 +1,15 @@
 #ifndef BEACHMAT_HDF5_READER_H
 #define BEACHMAT_HDF5_READER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+#include "H5Cpp.h"
+
 #include "dim_checker.h"
 #include "HDF5_utils.h"
+
+#include <string>
+#include <stdexcept>
+#include <sstream>
 
 namespace beachmat {
 
@@ -74,7 +80,7 @@ HDF5_reader<T, RTYPE>::HDF5_reader(const Rcpp::RObject& incoming) : original(inc
     if (firstval.sexp_type()!=RTYPE) { 
         std::stringstream err;
         err << "'first_val' slot in a " << get_class(h5_seed) << " object should be " << translate_type(RTYPE);
-        throw std::runtime_error(err.str().c_str());
+        throw std::runtime_error(err.str());
     }
 
     // Checking dimensions.

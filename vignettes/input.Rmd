@@ -330,7 +330,7 @@ The size of the blocks can be controlled using methods in the `r Biocpkg("Delaye
 Rather, the `yield` method can be used to obtain the original `Rcpp::RObject` for input to `r CRANpkg("RcppArmadillo")` or `r CRANpkg("RcppEigen")`.
 This functionality is generally limited to base matrices, though there is also limited support for sparse matrices in these libraries.
 
-# Cloning for parallelization
+# Cloning matrix instances
 
 The `clone()` method returns a unique pointer to a `numeric_matrix` instance of the same type as that pointed to by `dptr`.
 
@@ -338,7 +338,12 @@ The `clone()` method returns a unique pointer to a `numeric_matrix` instance of 
 auto dptr_copy = dptr->clone();
 ```
 
-This is useful as direct use of the `r Biocpkg("beachmat")` API is not thread-safe for simultaneous calls to the `get` methods from different threads.
+This is occasionally useful, e.g., when row and column access is simultaneously required from the same matrix.
+In such cases, row--specific settings in a single `numeric_matrix` instance (e.g., for HDF5 caching) would preclude efficient column extraction, and vice versa.
+These problems are avoided by having two separate instances for row and column access.
+
+Cloning also enables multi-threaded access to the same matrix data.
+Ordinarily, the `get*` methods in `r Biocpkg("beachmat")` are not thread safe.
 Some methods use cached class members for greater efficiency, and simultaneous calls will cause race conditions. 
 It is the responsibility of the calling function to coordinate data access across threads.
 To this end, the `clone` method can be called to generate a unique pointer to a _new_ `*_matrix` instance, which can be used concurrently in another thread.
@@ -347,7 +352,10 @@ This is fairly cheap as the underlying matrix data are not copied.
 An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look like this:
 
 ```cpp
-#pragma omp parallel
+const int nthreads=(dptr->get_matrix_type()==beachmat::HDF5 ? 
+    1 : omp_get_max_threads()); // see below.
+
+#pragma omp parallel num_threads(nthreads)
 {
     beachmat::numeric_matrix* rptr=NULL;
     std::unique_ptr<beachmat::numeric_matrix> uptr=nullptr;
@@ -358,12 +366,11 @@ An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look 
         rptr=uptr.get();
     }
 
-    size_t col;
     const size_t NC=rptr->get_ncol();
     Rcpp::NumericVector output(rptr->get_nrow());
 
     #pragma omp for schedule(static)
-    for (col=0; col<NC; ++col) {
+    for (size_t col=0; col<NC; ++col) {
         // Do parallel operation here.
         rptr->get_col(col, output.begin());
     }
@@ -374,26 +381,7 @@ The start of the parallel region uses the existing `dptr` in the master thread a
 The parallelized `for` loop then uses `rptr` to avoid race conditions in cached variables.
 Note that a static schedule may be faster than other schedule types, as several of the matrix implementations in `r Biocpkg("beachmat")` are optimized for consecutive row/column access.
 
-<!--
-Advanced comments:
-
-- In theory, greater efficiency could be obtained when calling `get_col` on column-major base matrices.
-Specifically, a pointer to the column could be directly returned rather than copying the data to a new `Vector` object. 
-However, other matrix classes do not store data in the same manner; if a pointer is to be returned, it would have to be to some internal storage.
-This would be dangerous as the values in the internal storage will change upon repeated calls to `get_col`.
-Filling a user-supplied array is more intuitive as it is obvious that the array will change when `get_col` is called again.
-- If any class has pointers to `SEXP` data, the data that each pointer points to should be contained within a `RObject` that is also a member of the class. 
-This ensures that the data is `PROTECT`ed for the lifetime of the class instance. 
-Otherwise, one could imagine a situation where the class is instantiated from a `RObject`; the `RObject` is destroyed; and garbage collection occurs.
-This would invalidate the pointers in the class instance.
-- The two major templated values are `T` and `V`; `T` for the return type of `get`, `V` for the Rcpp::Vector class used for internal storage and iterators.
-Any combination of template arguments is permitted where an element of `V` can be successfully converted to type `T`.
-- It would be nice to allow the get_* methods to take any random access iterator; however, virtual methods cannot be templated.
-We could add a template argument to the entire class, but this would only allow it to take either a random access iterator or a pointer (not both).
-- We have used inheritance to define the `_matrix` interface, so that run-time polymorphism is possible for different matrix classes.
-However, value extraction is executed by separate classes that are _contained_ within the interface, i.e., are data members of the user-visible `_matrix` object.
-This allows us to re-use extraction methods for different interfaces.
-In particular, the `character_matrix` interface differs from the others, so a single set of inheritance templates is not possible.
-It also allows us to template the internal (non-virtual) methods so that the virtual interface methods need only be trivial wrappers.
--->
-
+**However:** the HDF5 C++ library is not thread-safe (assuming `r Biocpkg("Rhdf5lib")` is still on version 1.10.3).
+One should not use C++-level multi-threading with `HDF5Matrix` input objects, hence the use of `num_threads(nthreads)` above.
+This is admittedly rather frustrating as HDF5-backed matrices are often used for large data sets that most require parallel processing.
+As a workaround, we suggest parallelizing at the R level with `r Biocpkg("BiocParallel")`.

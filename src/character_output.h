@@ -1,8 +1,15 @@
 #ifndef BEACHMAT_CHARACTER_OUTPUT_H
 #define BEACHMAT_CHARACTER_OUTPUT_H
 
-#include "all_writers.h"
+#include "Rcpp.h"
+
+#include "simple_writer.h"
+#include "HDF5_writer.h"
 #include "output_param.h"
+#include "utils.h"
+
+#include <memory>
+#include <vector>
 
 namespace beachmat { 
 

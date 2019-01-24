@@ -1,8 +1,15 @@
 #ifndef BEACHMAT_LIN_OUTPUT_H
 #define BEACHMAT_LIN_OUTPUT_H
 
-#include "all_writers.h"
+#include "Rcpp.h"
+
+#include "simple_writer.h"
+#include "HDF5_writer.h"
+#include "Csparse_writer.h"
 #include "output_param.h"
+#include "utils.h"
+
+#include <memory>
 
 namespace beachmat { 
 
@@ -121,21 +128,7 @@ protected:
 /* Simple LIN output */
 
 template<typename T, class V>
-using simple_lin_output_precursor=general_lin_output<T, V, simple_writer<T, V> >;
-
-template<typename T, class V>
-class simple_lin_output : public simple_lin_output_precursor<T, V> {
-public:
-    simple_lin_output(size_t, size_t);
-    ~simple_lin_output() = default;
-    simple_lin_output(const simple_lin_output&) = default;
-    simple_lin_output& operator=(const simple_lin_output&) = default;
-    simple_lin_output(simple_lin_output&&) = default;
-    simple_lin_output& operator=(simple_lin_output&&) = default;
-
-    typename V::iterator get_const_col(size_t, typename V::iterator, size_t, size_t);
-    std::unique_ptr<lin_output<T, V> > clone() const;
-};
+using simple_lin_output=general_lin_output<T, V, simple_writer<T, V> >;
 
 /* Sparse LIN output */
 

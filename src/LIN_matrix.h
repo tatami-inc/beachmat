@@ -1,7 +1,18 @@
 #ifndef BEACHMAT_LIN_MATRIX_H
 #define BEACHMAT_LIN_MATRIX_H
 
-#include "all_readers.h"
+#include "Rcpp.h"
+
+#include "simple_reader.h"
+#include "dense_reader.h"
+#include "Csparse_reader.h"
+#include "HDF5_reader.h"
+#include "delayed_reader.h"
+#include "unknown_reader.h"
+#include "external_reader.h"
+#include "utils.h"
+
+#include <memory>
 
 namespace beachmat { 
 
@@ -201,7 +212,7 @@ using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_reader<T, RTYPE> >;
 /* DelayedMatrix of LINs */
 
 template <typename T, class V>
-using delayed_lin_reader=delayed_matrix<T, V, lin_matrix<T, V> >;
+using delayed_lin_reader=delayed_reader<T, V, lin_matrix<T, V> >;
 
 template <typename T, class V>
 using delayed_lin_matrix=general_lin_matrix<T, V, delayed_lin_reader<T, V> >;

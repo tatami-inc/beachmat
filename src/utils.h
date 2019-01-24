@@ -1,7 +1,12 @@
 #ifndef BEACHMAT_UTILS_H
 #define BEACHMAT_UTILS_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+
+#include <string>
+#include <sstream>
+#include <utility>
+#include <tuple>
 
 namespace beachmat { 
 

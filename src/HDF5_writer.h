@@ -1,10 +1,17 @@
 #ifndef BEACHMAT_HDF5_WRITER_H
 #define BEACHMAT_HDF5_WRITER_H
 
-#include "beachmat.h"
+#include "Rcpp.h"
+#include "H5Cpp.h"
+
 #include "dim_checker.h"
 #include "HDF5_utils.h"
 #include "output_param.h"
+
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <algorithm>
 
 namespace beachmat {
 
@@ -144,11 +151,12 @@ HDF5_writer<T, RTYPE>::HDF5_writer (size_t nr, size_t nc, size_t chunk_nr, size_
 
     // Setting logical attributes.
     if (RTYPE==LGLSXP) {
-        H5::StrType str_type(0, H5T_VARIABLE);
+        std::string logi_attr="logical";
+        H5::StrType str_type(0, logi_attr.size()+1);
         const hsize_t unit=1;
         H5::DataSpace att_space(1, &unit);
         H5::Attribute att = hdata.createAttribute("storage.mode", str_type, att_space);
-        att.write(str_type, std::string("logical"));
+        att.write(str_type, logi_attr);
     }
 
     // Setting the chunk cache parameters.
