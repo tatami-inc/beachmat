@@ -1,5 +1,5 @@
-#ifndef EXTERNAL_READER_H
-#define EXTERNAL_READER_H
+#ifndef BEACHMAT_EXTERNAL_H
+#define BEACHMAT_EXTERNAL_H
 
 #include "Rcpp.h"
 
@@ -11,13 +11,14 @@
 namespace beachmat {
 
 // Assistant function to define names.
-inline std::string get_external_name(const char* matclass, const char* type, const char* mode, const char* fname, const char* intype=NULL) {
-    std::stringstream fname;
-    fname << matclass << "_" << type << "_" << mode << "_" << fname;
+template<typename M, typename T> 
+std::string get_external_name(const M& matclass, const T& type, const char* mode, const char* fun, const char* intype=NULL) {
+    std::stringstream exname;
+    exname << matclass << "_" << type << "_" << mode << "_" << fun;
     if (intype) {
-        fname << "_" << intype;
+        exname << "_" << intype;
     }
-    return fname.str();
+    return exname.str();
 }
  
 // Carefully copied external pointer.
@@ -59,7 +60,7 @@ public:
         destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg, destroy_name.c_str()));
 
         auto create_name=get_external_name(matclass, type, "output", "create");
-        auto create=reinterpret_cast<void * (*)()>(R_GetCCallable(pkg, create_name.c_str()));
+        auto create=reinterpret_cast<void * (*)(size_t, size_t)>(R_GetCCallable(pkg, create_name.c_str()));
         ptr=create(nr, nc);
         return;
     }
