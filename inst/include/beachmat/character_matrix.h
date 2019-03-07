@@ -3,16 +3,16 @@
 
 #include "Rcpp.h"
 
-#include "simple_reader.h"
-#include "dense_reader.h"
-#include "delayed_reader.h"
-#include "unknown_reader.h"
-#include "external_reader.h"
+#include "input/simple_reader.h"
+#include "input/dense_reader.h"
+#include "input/delayed_reader.h"
+#include "input/unknown_reader.h"
+#include "input/external_reader.h"
 
-#include "simple_writer.h"
-#include "output_param.h"
+#include "output/simple_writer.h"
+#include "output/output_param.h"
 
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <memory>
 #include <vector>

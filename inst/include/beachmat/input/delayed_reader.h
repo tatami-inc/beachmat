@@ -3,8 +3,9 @@
 
 #include "Rcpp.h"
 
-#include "utils.h"
 #include "unknown_reader.h"
+#include "../utils/utils.h"
+#include "../utils/dim_checker.h"
 
 #include <memory>
 #include <stdexcept>

@@ -10,7 +10,7 @@
 #include "delayed_reader.h"
 #include "unknown_reader.h"
 #include "external_reader.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 #include <memory>
 
@@ -246,7 +246,7 @@ public:
 
 }
 
-#include "LIN_methods_read.h"
+#include "LIN_methods.h"
 
 #endif
 

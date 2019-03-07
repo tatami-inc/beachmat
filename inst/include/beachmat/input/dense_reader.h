@@ -3,8 +3,8 @@
 
 #include "Rcpp.h"
 
-#include "utils.h"
-#include "dim_checker.h"
+#include "../utils/utils.h"
+#include "../utils/dim_checker.h"
 
 #include <sstream>
 #include <string>

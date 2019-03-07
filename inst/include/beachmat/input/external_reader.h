@@ -1,6 +1,12 @@
 #ifndef EXTERNAL_READER_H
 #define EXTERNAL_READER_H
 
+#include "Rcpp.h"
+
+#include "../utils/dim_checker.h"
+
+#include <string>
+
 namespace beachmat {
 
 /******************************

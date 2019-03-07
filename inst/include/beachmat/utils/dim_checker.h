@@ -2,6 +2,7 @@
 #define BEACHMAT_DIM_CHECKER_H
 
 #include "Rcpp.h"
+
 #include <sstream>
 #include <stdexcept>
 

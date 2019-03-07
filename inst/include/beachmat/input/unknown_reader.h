@@ -1,6 +1,12 @@
 #ifndef UNKNOWN_READER_H
 #define UNKNOWN_READER_H
 
+#include "Rcpp.h"
+
+#include "../utils/dim_checker.h"
+
+#include <algorithm>
+
 namespace beachmat {
 
 /* The 'unknown_reader' class will realize chunks of the input RObject

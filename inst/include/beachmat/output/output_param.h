@@ -1,7 +1,9 @@
 #ifndef BEACHMAT_OUTPUT_PARAM_H
 #define BEACHMAT_OUTPUT_PARAM_H
 
-#include "utils.h"
+#include "Rcpp.h"
+
+#include "../utils/utils.h"
 
 namespace beachmat {
 

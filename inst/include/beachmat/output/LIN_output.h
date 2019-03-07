@@ -7,7 +7,7 @@
 #include "HDF5_writer.h"
 #include "Csparse_writer.h"
 #include "output_param.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 #include <memory>
 
@@ -189,7 +189,7 @@ protected:
 
 }
 
-#include "LIN_methods_write.h"
+#include "LIN_methods.h"
 
 #endif
 
