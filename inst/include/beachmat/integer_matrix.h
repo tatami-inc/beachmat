@@ -4,11 +4,18 @@
 #include "LIN_matrix.h"
 #include "LIN_output.h"
 
+#include <memory>
+#include <stdexcept>
+
 namespace beachmat {
 
-/********************************************
- * Virtual base class for integer matrices. *
- ********************************************/
+/*************
+ *** INPUT ***
+ *************/
+
+std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject&, bool);
+
+/* Virtual base class for integer matrices. */
 
 typedef lin_matrix<int, Rcpp::IntegerVector> integer_matrix;
 
@@ -16,11 +23,12 @@ typedef lin_matrix<int, Rcpp::IntegerVector> integer_matrix;
 
 typedef simple_lin_matrix<int, Rcpp::IntegerVector> simple_integer_matrix;
 
-/* HDF5Matrix */
-
-typedef HDF5_lin_matrix<int, Rcpp::IntegerVector, INTSXP> HDF5_integer_matrix;
-
 /* DelayedMatrix */
+
+template<>
+std::unique_ptr<integer_matrix> delayed_lin_reader<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
+    return create_integer_matrix_internal(incoming, false);
+}
 
 typedef delayed_lin_matrix<int, Rcpp::IntegerVector> delayed_integer_matrix;
 
@@ -34,11 +42,28 @@ typedef external_lin_matrix<int, Rcpp::IntegerVector> external_integer_matrix;
 
 /* Dispatcher */
 
-std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject&);
+inline std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject& incoming, bool delayed) {
+    if (incoming.isS4()) { 
+        std::string ctype=get_class(incoming);
+        if (delayed && ctype=="DelayedMatrix") {
+            return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));
+        } else if (has_external_support(incoming)) {
+            return std::unique_ptr<integer_matrix>(new external_integer_matrix(incoming));
+        }
+        return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
+    }
+    return std::unique_ptr<integer_matrix>(new simple_integer_matrix(incoming));
+}
 
-/***************************************************
- * Virtual base class for output integer matrices. *
- ***************************************************/
+inline std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject& incoming) {
+    return create_integer_matrix_internal(incoming, true);
+}
+
+/**************
+ *** OUTPUT ***
+ **************/
+
+/* Virtual base class for output integer matrices. */
 
 typedef lin_output<int, Rcpp::IntegerVector> integer_output;
 
@@ -46,13 +71,16 @@ typedef lin_output<int, Rcpp::IntegerVector> integer_output;
 
 typedef simple_lin_output<int, Rcpp::IntegerVector> simple_integer_output;
 
-/* HDF5 output integer matrix */
-
-typedef HDF5_lin_output<int, Rcpp::IntegerVector, INTSXP> HDF5_integer_output;
-
 /* Output dispatchers */
 
-std::unique_ptr<integer_output> create_integer_output(int, int, const output_param&);
+inline std::unique_ptr<integer_output> create_integer_output(int nrow, int ncol, const output_param& param) {
+    switch (param.get_mode()) {
+        case SIMPLE:
+            return std::unique_ptr<integer_output>(new simple_integer_output(nrow, ncol));
+        default:
+            throw std::runtime_error("unsupported output mode for integer matrices");
+    }
+}
 
 }
 

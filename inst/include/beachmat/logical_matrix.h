@@ -4,11 +4,18 @@
 #include "LIN_matrix.h"
 #include "LIN_output.h"
 
+#include <memory>
+#include <stdexcept>
+
 namespace beachmat {
 
-/********************************************
- * Virtual base class for logical matrices. *
- ********************************************/
+/*********
+ * INPUT *
+ *********/
+
+std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject&, bool); 
+
+/* Virtual base class for logical matrices. */
 
 typedef lin_matrix<int, Rcpp::LogicalVector> logical_matrix;
 
@@ -22,13 +29,17 @@ typedef dense_lin_matrix<int, Rcpp::LogicalVector> dense_logical_matrix;
 
 /* lgCMatrix */
 
+template<>
+int Csparse_reader<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+
 typedef Csparse_lin_matrix<int, Rcpp::LogicalVector> Csparse_logical_matrix;
 
-/* HDF5Matrix */
-
-typedef HDF5_lin_matrix<int, Rcpp::LogicalVector, LGLSXP> HDF5_logical_matrix;
-
 /* DelayedMatrix */
+
+template<>
+std::unique_ptr<logical_matrix> delayed_lin_reader<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
+    return create_logical_matrix_internal(incoming, false);
+}
 
 typedef delayed_lin_matrix<int, Rcpp::LogicalVector> delayed_logical_matrix;
 
@@ -42,11 +53,32 @@ typedef external_lin_matrix<int, Rcpp::LogicalVector> external_logical_matrix;
 
 /* Dispatcher */
 
-std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject&);
+inline std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
+    if (incoming.isS4()) {
+        std::string ctype=get_class(incoming);
+        if (ctype=="lgeMatrix") { 
+            return std::unique_ptr<logical_matrix>(new dense_logical_matrix(incoming));
+        } else if (ctype=="lgCMatrix") { 
+            return std::unique_ptr<logical_matrix>(new Csparse_logical_matrix(incoming));
+        } else if (delayed && ctype=="DelayedMatrix") { 
+            return std::unique_ptr<logical_matrix>(new delayed_logical_matrix(incoming));
+        } else if (has_external_support(incoming)) {
+            return std::unique_ptr<logical_matrix>(new external_logical_matrix(incoming));
+        }
+        return std::unique_ptr<logical_matrix>(new unknown_logical_matrix(incoming));
+    } 
+    return std::unique_ptr<logical_matrix>(new simple_logical_matrix(incoming));
+}
 
-/***************************************************
- * Virtual base class for output logical matrices. *
- ***************************************************/
+inline std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject& incoming) {
+    return create_logical_matrix_internal(incoming, true);
+}
+
+/**********
+ * OUTPUT *
+ **********/
+
+/* Virtual base class for output logical matrices. */
 
 typedef lin_output<int, Rcpp::LogicalVector> logical_output;
 
@@ -56,15 +88,23 @@ typedef simple_lin_output<int, Rcpp::LogicalVector> simple_logical_output;
 
 /* Sparse output logical matrix */
 
+template<>
+int Csparse_writer<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+
 typedef sparse_lin_output<int, Rcpp::LogicalVector> sparse_logical_output;
-
-/* HDF5 output logical matrix */
-
-typedef HDF5_lin_output<int, Rcpp::LogicalVector, LGLSXP> HDF5_logical_output;
 
 /* Output dispatchers */
 
-std::unique_ptr<logical_output> create_logical_output(int, int, const output_param&);
+inline std::unique_ptr<logical_output> create_logical_output(int nrow, int ncol, const output_param& param) {
+    switch (param.get_mode()) {
+        case SIMPLE:
+            return std::unique_ptr<logical_output>(new simple_logical_output(nrow, ncol));
+        case SPARSE:
+            return std::unique_ptr<logical_output>(new sparse_logical_output(nrow, ncol));
+        default:
+            throw std::runtime_error("unsupported output mode for logical matrices");
+    }
+}
 
 }
 

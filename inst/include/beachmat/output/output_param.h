@@ -7,36 +7,47 @@ namespace beachmat {
 
 class output_param {
 public:
-    output_param(matrix_type);
-    output_param(const Rcpp::RObject&, bool=false, bool=false);
-    output_param(matrix_type, bool, bool=false);
-    
-    matrix_type get_mode() const;
+    output_param (matrix_type m) : mode(m) {}
 
-    void set_chunk_dim(size_t, size_t);
-    size_t get_chunk_nrow() const;
-    size_t get_chunk_ncol() const;
-    void optimize_chunk_dims(size_t, size_t);
+    output_param (const Rcpp::RObject& in, bool simplify, bool preserve_zero) : 
+        output_param(robject_to_matrix_class(in), simplify, preserve_zero) {}
 
-    int get_compression () const;
-    void set_compression (int);
+    output_param(matrix_type m, bool simplify, bool preserve_zero=false) : output_param(m) {
+        switch (mode) {
+            case SIMPLE:
+                break;
+            case DENSE:
+                mode=SIMPLE;
+                break;
+            case SPARSE:
+                if (preserve_zero) { break; } // keeping sparse, if preserve_zero is true.
+            default:
+                mode=SIMPLE;
+        }
+        return; 
+    }
 
-    void set_strlen(size_t);
-    size_t get_strlen() const;
-
-    static const size_t DEFAULT_CHUNKDIM=0; // This will trigger use of global chunk settings.
-    static const int DEFAULT_COMPRESS=-1; // This will trigger use of global compression settings.
-    static const size_t DEFAULT_STRLEN=10;
+    matrix_type get_mode() const {
+        return mode;
+    }    
 private:
     matrix_type mode;
-    size_t chunk_nr, chunk_nc;
-    int compress;
-    size_t strlen;
-};
 
-extern const output_param SIMPLE_PARAM;
-extern const output_param HDF5_PARAM;
-extern const output_param SPARSE_PARAM;
+    static matrix_type robject_to_matrix_class(const Rcpp::RObject& in) {
+        if (in.isS4()) {
+            auto curclass=get_class(in);
+            if (curclass=="DelayedMatrix") { 
+                return DELAYED;
+            } else if (!curclass.empty() && curclass.substr(1)=="gCMatrix") {
+                return SPARSE;
+            } else if (!curclass.empty() && curclass.substr(1)=="geMatrix") {
+                return DENSE;
+            }
+            return UNKNOWN;
+        }
+        return SIMPLE;
+    }
+};
 
 }
 
