@@ -13,11 +13,11 @@ namespace beachmat {
  * INPUT *
  *********/ 
 
-std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObject&, bool); 
-
 /* Virtual base class for numeric matrices. */
 
 typedef lin_matrix<double, Rcpp::NumericVector> numeric_matrix;
+
+std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObject&, bool); 
 
 /* Simple numeric matrix */
 

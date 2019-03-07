@@ -34,19 +34,24 @@ public:
         return;
     }
 
-    static void check_dimension(size_t i, size_t dim, const char* msg) {
-        if (i >= dim) {
+    static void check_subset(size_t first, size_t last, size_t dim, const char* msg) {
+         if (last < first) {
             std::stringstream err;
-            err << msg << " index out of range";
+            err << msg << " start index is greater than " << msg << " end index";
             throw std::runtime_error(err.str());
-        }
-        return;
+         } else if (last > dim) {
+             std::stringstream err;
+             err << msg << " end index out of range";
+             throw std::runtime_error(err.str());
+         }
+         
+         return;    
     }
 
 protected:
     size_t nrow=0, ncol=0;
 
-    void fill_dims(const Rcpp::RObject&) {
+    void fill_dims(const Rcpp::RObject& dims) {
         Rcpp::IntegerVector d;
         if (dims.sexp_type()!=d.sexp_type() || (d=dims).size()!=2) {
             throw std::runtime_error("matrix dimensions should be an integer vector of length 2");

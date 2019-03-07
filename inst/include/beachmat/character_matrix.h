@@ -23,8 +23,6 @@ namespace beachmat {
  * INPUT *
  *********/
 
-std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject&, bool); 
-
 /* Virtual base class for character matrices. */
 
 class character_matrix {
@@ -102,6 +100,8 @@ public:
 private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
+
+std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject&, bool); 
 
 /* Advanced character matrix template */
 

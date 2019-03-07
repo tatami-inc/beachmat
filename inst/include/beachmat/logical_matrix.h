@@ -13,11 +13,11 @@ namespace beachmat {
  * INPUT *
  *********/
 
-std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject&, bool); 
-
 /* Virtual base class for logical matrices. */
 
 typedef lin_matrix<int, Rcpp::LogicalVector> logical_matrix;
+
+std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject&, bool); 
 
 /* Simple logical matrix */
 

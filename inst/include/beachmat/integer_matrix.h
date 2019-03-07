@@ -13,11 +13,11 @@ namespace beachmat {
  *** INPUT ***
  *************/
 
-std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject&, bool);
-
 /* Virtual base class for integer matrices. */
 
 typedef lin_matrix<int, Rcpp::IntegerVector> integer_matrix;
+
+std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject&, bool);
 
 /* Simple integer matrix */
 
