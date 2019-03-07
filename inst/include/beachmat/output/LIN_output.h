@@ -4,7 +4,6 @@
 #include "Rcpp.h"
 
 #include "simple_writer.h"
-#include "HDF5_writer.h"
 #include "Csparse_writer.h"
 #include "output_param.h"
 #include "../utils/utils.h"
@@ -134,58 +133,6 @@ using simple_lin_output=general_lin_output<T, V, simple_writer<T, V> >;
 
 template<typename T, class V>
 using sparse_lin_output=general_lin_output<T, V, Csparse_writer<T, V> >;
-
-/* HDF5 LIN output */
-
-template<typename T, class V, int RTYPE>
-class HDF5_lin_output : public lin_output<T, V> {
-public:
-    HDF5_lin_output(size_t, size_t, 
-            size_t=output_param::DEFAULT_CHUNKDIM, 
-            size_t=output_param::DEFAULT_CHUNKDIM, 
-            int=output_param::DEFAULT_COMPRESS);
-    ~HDF5_lin_output() = default;
-    HDF5_lin_output(const HDF5_lin_output&) = default;
-    HDF5_lin_output& operator=(const HDF5_lin_output&) = default;
-    HDF5_lin_output(HDF5_lin_output&&) = default;
-    HDF5_lin_output& operator=(HDF5_lin_output&&) = default;
-
-    // Getters:
-    size_t get_nrow() const;
-    size_t get_ncol() const;
-
-    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
-    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
-    T get(size_t, size_t);
-
-    // Setters:
-    void set_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void set_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
-    void set_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void set_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
-    void set(size_t, size_t, T);
-
-    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
-    void set_col_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
-
-    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::IntegerVector::iterator);
-    void set_row_indexed(size_t, size_t, Rcpp::IntegerVector::iterator, Rcpp::NumericVector::iterator);
-
-    // Other:
-    Rcpp::RObject yield();
-
-    std::unique_ptr<lin_output<T, V> > clone() const;
-
-    matrix_type get_matrix_type() const;
-protected:
-    HDF5_writer<T, RTYPE> writer;
-};
 
 }
 

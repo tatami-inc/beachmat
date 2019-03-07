@@ -222,61 +222,6 @@ std::unique_ptr<lin_matrix<T, V> > Csparse_lin_matrix<T, V>::clone() const {
     return std::unique_ptr<lin_matrix<T, V> >(new Csparse_lin_matrix<T, V>(*this));
 }
 
-/* Defining the helper class contained inside the HDF5 interface. */
-
-template<typename T, int RTYPE>
-HDF5_lin_reader<T, RTYPE>::HDF5_lin_reader(const Rcpp::RObject& incoming) : HDF5_reader<T, RTYPE>(incoming) {}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_col(c, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_col(size_t c, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_col(c, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_row(r, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_row(size_t r, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_row(r, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
-    return;
-}
-
-// Multi getters.
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_cols(it, n, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_cols(it, n, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::IntegerVector::iterator out, size_t first, size_t last) {
-    this->extract_rows(it, n, static_cast<int*>(out), H5::PredType::NATIVE_INT32, first, last);
-    return;
-}
-
-template<typename T, int RTYPE>
-void HDF5_lin_reader<T, RTYPE>::get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::NumericVector::iterator out, size_t first, size_t last) {
-    this->extract_rows(it, n, static_cast<double*>(out), H5::PredType::NATIVE_DOUBLE, first, last);
-    return;
-}
-
 /* Defining specific interface for external matrices. */
 
 template <typename T, class V>

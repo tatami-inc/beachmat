@@ -6,7 +6,6 @@
 #include "simple_reader.h"
 #include "dense_reader.h"
 #include "Csparse_reader.h"
-#include "HDF5_reader.h"
 #include "delayed_reader.h"
 #include "unknown_reader.h"
 #include "external_reader.h"
@@ -178,36 +177,6 @@ public:
 
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 };
-
-/* HDF5Matrix of LINs */
-
-template<typename T, int RTYPE>
-class HDF5_lin_reader : public HDF5_reader<T, RTYPE> {
-public:
-    HDF5_lin_reader(const Rcpp::RObject&);
-    ~HDF5_lin_reader() = default;
-    HDF5_lin_reader(const HDF5_lin_reader&) = default;
-    HDF5_lin_reader& operator=(const HDF5_lin_reader&) = default;
-    HDF5_lin_reader(HDF5_lin_reader&&) = default;
-    HDF5_lin_reader& operator=(HDF5_lin_reader&&) = default;
-    
-    T get(size_t, size_t);
-    
-    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    
-    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-
-    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-
-    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
-};
-
-template <typename T, class V, int RTYPE>
-using HDF5_lin_matrix=general_lin_matrix<T, V, HDF5_lin_reader<T, RTYPE> >;
 
 /* DelayedMatrix of LINs */
 
