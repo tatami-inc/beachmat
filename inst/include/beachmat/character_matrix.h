@@ -371,12 +371,14 @@ private:
 /* Dispatcher */
 
 inline std::unique_ptr<character_output> create_character_output(int nrow, int ncol, const output_param& param) {
-    switch (param.get_mode()) {
-        case SIMPLE:
-            return std::unique_ptr<character_output>(new simple_character_output(nrow, ncol));
-        default:
-            throw std::runtime_error("unsupported output mode for character matrices");
+    auto pkg=param.get_package();
+
+    if (pkg!="base" && param.is_external_available("character")) { 
+        return std::unique_ptr<character_output>(new external_character_output(nrow, ncol, 
+            param.c_str(), param.get_class().c_str(), "character"));
     }
+
+    return std::unique_ptr<character_output>(new simple_character_output(nrow, ncol));
 }
 
 }

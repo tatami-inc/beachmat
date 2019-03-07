@@ -93,17 +93,27 @@ double Csparse_writer<double, Rcpp::NumericVector>::get_empty() { return 0; }
 
 typedef sparse_lin_output<double, Rcpp::NumericVector> sparse_numeric_output;
 
+/* External output numeric matrix */
+
+typedef external_lin_output<double, Rcpp::NumericVector> external_numeric_output;
+
 /* Output dispatchers */
 
 inline std::unique_ptr<numeric_output> create_numeric_output(int nrow, int ncol, const output_param& param) {
-    switch (param.get_mode()) {
-        case SIMPLE:
-            return std::unique_ptr<numeric_output>(new simple_numeric_output(nrow, ncol));
-        case SPARSE:
+    auto pkg=param.get_package();
+
+    if (pkg=="Matrix") {
+        auto cls=param.get_class();
+        if (cls=="dgCMatrix" || cls=="dgRMatrix" || cls=="dgTMatrix") {
             return std::unique_ptr<numeric_output>(new sparse_numeric_output(nrow, ncol));
-        default:
-            throw std::runtime_error("unsupported output mode for numeric matrices");
+        }
+
+    } else if (pkg!="base" && param.is_external_available("numeric")) {
+        return std::unique_ptr<numeric_output>(new external_numeric_output(nrow, ncol, 
+            pkg.c_str(), param.get_class().c_str(), "numeric"));
     }
+
+    return std::unique_ptr<numeric_output>(new simple_numeric_output(nrow, ncol));
 }
 
 }

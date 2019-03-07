@@ -93,17 +93,26 @@ int Csparse_writer<int, Rcpp::LogicalVector>::get_empty() { return 0; }
 
 typedef sparse_lin_output<int, Rcpp::LogicalVector> sparse_logical_output;
 
+/* Simple output logical matrix */
+
+typedef external_lin_output<int, Rcpp::LogicalVector> external_logical_output;
+
 /* Output dispatchers */
 
 inline std::unique_ptr<logical_output> create_logical_output(int nrow, int ncol, const output_param& param) {
-    switch (param.get_mode()) {
-        case SIMPLE:
-            return std::unique_ptr<logical_output>(new simple_logical_output(nrow, ncol));
-        case SPARSE:
+    auto pkg=param.get_package();
+
+    if (pkg=="Matrix") {
+        auto cls=param.get_class();
+        if (cls=="lgCMatrix" || cls=="lgRMatrix" || cls=="lgTMatrix") {
             return std::unique_ptr<logical_output>(new sparse_logical_output(nrow, ncol));
-        default:
-            throw std::runtime_error("unsupported output mode for logical matrices");
+        }
+    } else if (pkg!="base" && param.is_external_available("logical")) {
+        return std::unique_ptr<logical_output>(new external_logical_output(nrow, ncol, 
+            pkg.c_str(), param.get_class().c_str(), "logical"));
     }
+
+    return std::unique_ptr<logical_output>(new simple_logical_output(nrow, ncol));
 }
 
 }
