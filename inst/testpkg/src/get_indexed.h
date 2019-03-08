@@ -7,10 +7,9 @@ O get_indexed_all (M ptr, Rcpp::IntegerVector ordering) {
     const size_t& nrows=ptr->get_nrow();
     O output(nrows, ordering.size());
 
-	T target(nrows);
     size_t c=0;
     for (auto o : ordering) {
-        auto info=ptr->get_const_col_indexed(o-1, target.begin());
+        auto info=ptr->get_const_col_indexed(o-1);
         size_t N=std::get<0>(info);
         auto idx=std::get<1>(info);
         auto vals=std::get<2>(info);
@@ -33,10 +32,9 @@ O get_indexed_slice (M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector ro
     const int nrows=rend-rstart;    
 
     O output(nrows, ordering.size());
-    T target(nrows);
     size_t c=0;
     for (auto o : ordering) {
-        auto info=ptr->get_const_col_indexed(o-1, target.begin(), rstart, rend);
+        auto info=ptr->get_const_col_indexed(o-1, rstart, rend);
         size_t N=std::get<0>(info);
         auto idx=std::get<1>(info);
         auto vals=std::get<2>(info);
@@ -62,12 +60,11 @@ Rcpp::List get_indexed_varslice (M ptr, Rcpp::IntegerVector ordering, Rcpp::Inte
     Rcpp::List output(ordering.size());
 
     size_t c=0;
-    T target(ptr->get_nrow());
     for (auto o : ordering) {
         auto cur_bounds=rows.row(c);
         int left=cur_bounds[0]-1, right=cur_bounds[1];
 
-        auto info=ptr->get_const_col_indexed(o-1, target.begin(), left, right);
+        auto info=ptr->get_const_col_indexed(o-1, left, right);
         size_t N=std::get<0>(info);
         auto idx=std::get<1>(info);
         auto vals=std::get<2>(info);

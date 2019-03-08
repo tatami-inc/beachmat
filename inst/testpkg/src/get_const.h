@@ -7,10 +7,9 @@ O get_const_all (M ptr, Rcpp::IntegerVector ordering) {
     const size_t nrows=ptr->get_nrow();
     O output(nrows, ordering.size());
 
-	T target(nrows);
     size_t c=0;
     for (auto o : ordering) {
-        auto it=ptr->get_const_col(o-1, target.begin());
+        auto it=ptr->get_const_col(o-1);
         auto outcol=output.column(c);
         std::copy(it, it + nrows, outcol.begin());
         ++c;
@@ -27,10 +26,9 @@ O get_const_slice (M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector rows
     const int nrows=rend-rstart;    
 
     O output(nrows, ordering.size());
-    T target(nrows);
     size_t c=0;
     for (auto o : ordering) {
-        auto it=ptr->get_const_col(o-1, target.begin(), rstart, rend);
+        auto it=ptr->get_const_col(o-1, rstart, rend);
         auto curcol=output.column(c);
         std::copy(it, it+nrows, curcol.begin());
         ++c;
@@ -50,11 +48,10 @@ Rcpp::List get_const_varslice (M ptr, Rcpp::IntegerVector ordering, Rcpp::Intege
     Rcpp::List output(ordering.size());
 
     size_t c=0;
-    T target(ptr->get_nrow());
     for (auto o : ordering) {
         auto cur_bounds=rows.row(c);
         int left=cur_bounds[0]-1, right=cur_bounds[1];
-        auto it=ptr->get_const_col(o-1, target.begin(), left, right);
+        auto it=ptr->get_const_col(o-1, left, right);
 
         T out(right-left);
         std::copy(it, it+right-left, out.begin());
@@ -64,7 +61,5 @@ Rcpp::List get_const_varslice (M ptr, Rcpp::IntegerVector ordering, Rcpp::Intege
 
     return output;
 }
-
-
 
 #endif
