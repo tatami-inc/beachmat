@@ -27,14 +27,6 @@ public:
         auto load_name=get_external_name(cls, type, "input", "get");
         load=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(pkg.c_str(), load_name.c_str()));
 
-        auto load_const_name=get_external_name(cls, type, "input", "getConstCol");
-        load_const_col=reinterpret_cast<void (*)(void *, size_t, typename V::iterator*, size_t, size_t, typename V::iterator*)>(
-            R_GetCCallable(pkg.c_str(), load_const_name.c_str()));
-
-        auto load_const_indexed_name=get_external_name(cls, type, "input", "getConstColIndexed");
-        load_const_col_indexed=reinterpret_cast<size_t (*)(void *, size_t, Rcpp::IntegerVector::iterator*, typename V::iterator*, size_t, size_t)>(
-            R_GetCCallable(pkg.c_str(), load_const_indexed_name.c_str()));
-
         ex=external_ptr(original, pkg, cls, type); // move assignment.
 
         // Getting the dimensions from the created object.
@@ -57,18 +49,6 @@ public:
         return output;
     }
 
-    typename V::iterator get_const_col(size_t c, typename V::iterator out, size_t first, size_t last) {
-        this->check_colargs(c, first, last);
-        typename V::iterator output;
-        load_const_col(ex.get(), c, &out, first, last, &output);
-        return output;
-    }
-
-    size_t get_const_col_indexed(size_t c, Rcpp::IntegerVector::iterator& iIt, typename V::iterator& vIt, size_t first, size_t last) {
-        this->check_colargs(c, first, last);
-        return load_const_col_indexed(ex.get(), c, &iIt, &vIt, first, last);
-    }
-
     Rcpp::RObject yield() const {
         return original;
     }
@@ -81,17 +61,13 @@ protected:
     Rcpp::RObject original;
     std::string cls, pkg;
 
+    external_ptr ex;
     void (*load) (void *, size_t, size_t, T*);
-    void (*load_const_col) (void *, size_t, typename V::iterator *, size_t, size_t, typename V::iterator*);
-    size_t (*load_const_col_indexed) (void *, size_t, Rcpp::IntegerVector::iterator*, typename V::iterator*, size_t, size_t);
 
     // Getting the type.
     static std::string get_type() {
         return translate_type(V(0).sexp_type());
     }
-
-protected:
-    external_ptr ex;
 };
 
 /*******************************
