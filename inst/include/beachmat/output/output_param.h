@@ -34,7 +34,7 @@ public:
         Rcpp::Environment pkgenv=Rcpp::Environment::namespace_env(pkg);
 
         std::stringstream symbolic;
-        symbolic << cls << "_" << type << "_output";
+        symbolic << "beachmat_" << cls << "_" << type << "_output";
         Rcpp::RObject out=pkgenv.get(symbolic.str());
 
         if (out.isNULL()) {
