@@ -65,28 +65,6 @@ public:
     }
     virtual void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
 
-    // Specialized getters.
-    Rcpp::StringVector::iterator get_const_col(size_t c, Rcpp::StringVector::iterator work) {
-        return get_const_col(c, work, 0, get_nrow());
-    }
-
-    virtual Rcpp::StringVector::iterator get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
-        get_col(c, work, first, last);
-        return work;
-    }
-
-    const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work) {
-        return get_const_col_indexed(c, work, 0, get_nrow());
-    }
-
-    virtual const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
-        if (static_cast<size_t>(indices.size())!=this->get_nrow()) {
-            indices=Rcpp::IntegerVector(this->get_nrow());
-            std::iota(indices.begin(), indices.end(), 0); // populating with indices.
-        }
-        return const_col_indexed_info<Rcpp::StringVector>(last - first, indices.begin() + first, get_const_col(c, work, first, last));
-    }
-
     // Other methods.
     virtual std::unique_ptr<character_matrix> clone() const=0;
 
@@ -163,7 +141,11 @@ public:
     simple_character_matrix(simple_character_matrix&&) = default;
     simple_character_matrix& operator=(simple_character_matrix&&) = default;
 
-    Rcpp::StringVector::iterator get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
+    Rcpp::StringVector::iterator get_const_col(size_t c) {
+        return get_const_col(c, 0, get_nrow());
+    }
+
+    Rcpp::StringVector::iterator get_const_col(size_t c, size_t first, size_t last) {
         return reader.get_const_col(c, first, last);
     }
 
@@ -189,31 +171,7 @@ using unknown_character_matrix=general_character_matrix<unknown_reader<Rcpp::Str
 
 /* External matrix type */
 
-using external_character_precursor=general_character_matrix<external_reader<Rcpp::String, Rcpp::StringVector> >;
-
-class external_character_matrix : public external_character_precursor {
-public:
-    external_character_matrix(const Rcpp::RObject& incoming) : external_character_precursor (incoming) {}
-    ~external_character_matrix() = default;
-    external_character_matrix(const external_character_matrix&) = default;
-    external_character_matrix& operator=(const external_character_matrix&) = default;
-    external_character_matrix(external_character_matrix&&) = default;
-    external_character_matrix& operator=(external_character_matrix&&) = default;
-
-    Rcpp::StringVector::iterator get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
-        return reader.get_const_col(c, work, first, last);
-    }
-
-    const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) {
-        Rcpp::IntegerVector::iterator iIt;
-        size_t nzero=this->reader.get_const_col_indexed(c, iIt, out, first, last);
-        return const_col_indexed_info<Rcpp::StringVector>(nzero, iIt, out); 
-    }
-
-    std::unique_ptr<character_matrix> clone() const {
-        return std::unique_ptr<character_matrix>(new external_character_matrix(*this));
-    }
-};
+using external_character_matrix=general_character_matrix<external_reader<Rcpp::String, Rcpp::StringVector> >;
 
 /* Dispatcher */
 
@@ -360,7 +318,7 @@ public:
     }
     
     std::unique_ptr<character_output> clone() const {
-        return std::unique_ptr<character_output>(new general_character_output(*this));
+        return std::unique_ptr<character_output>(new general_character_output<WTR>(*this));
     }
 
     std::string get_class() const {
@@ -391,6 +349,11 @@ public:
     external_character_output& operator=(const external_character_output&) = default;
     external_character_output(external_character_output&&) = default;
     external_character_output& operator=(external_character_output&&) = default;
+
+    std::unique_ptr<character_output> clone() const {
+        return std::unique_ptr<character_output>(new external_character_output(*this));
+    }
+
 };
 
 /* Dispatcher */
