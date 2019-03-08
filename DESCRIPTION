@@ -6,9 +6,7 @@ Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
         person("Hervé", "Pagès", role="aut"),
         person("Mike", "Smith", role="aut"))
-Imports: utils, methods, Rhdf5lib (>= 1.1.4), rhdf5,
-        HDF5Array (>= 1.9.5), DelayedArray (>= 0.7.38),
-        Rcpp (>= 0.12.14), BiocGenerics
+Imports: utils, methods, DelayedArray, Rcpp, BiocGenerics
 Suggests: testthat, BiocStyle, knitr, rmarkdown, Matrix, devtools
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for a variety of
@@ -19,4 +17,4 @@ NeedsCompilation: yes
 VignetteBuilder: knitr
 SystemRequirements: C++11
 LinkingTo: Rcpp, Rhdf5lib
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
