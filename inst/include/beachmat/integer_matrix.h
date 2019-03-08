@@ -78,10 +78,9 @@ typedef external_lin_output<int, Rcpp::IntegerVector> external_integer_output;
 /* Output dispatchers */
 
 inline std::unique_ptr<integer_output> create_integer_output(int nrow, int ncol, const output_param& param) {
-    auto pkg=param.get_package();
-    if (pkg!="base" && param.is_external_available("integer")) { 
+    if (param.is_external_available("integer")) { 
         return std::unique_ptr<integer_output>(new external_integer_output(nrow, ncol, 
-            pkg.c_str(), param.get_class().c_str(), "integer"));
+            param.get_package().c_str(), param.get_class().c_str(), "integer"));
     }
      
     return std::unique_ptr<integer_output>(new simple_integer_output(nrow, ncol));

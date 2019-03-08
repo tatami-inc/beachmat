@@ -112,12 +112,10 @@ inline std::unique_ptr<numeric_output> create_numeric_output(int nrow, int ncol,
     auto pkg=param.get_package();
 
     if (pkg=="Matrix") {
-        auto cls=param.get_class();
-        if (cls=="dgCMatrix" || cls=="dgRMatrix" || cls=="dgTMatrix") {
+        if (param.get_class()=="dgCMatrix") {
             return std::unique_ptr<numeric_output>(new sparse_numeric_output(nrow, ncol));
         }
-
-    } else if (pkg!="base" && param.is_external_available("numeric")) {
+    } else if (param.is_external_available("numeric")) {
         return std::unique_ptr<numeric_output>(new external_numeric_output(nrow, ncol, 
             pkg.c_str(), param.get_class().c_str(), "numeric"));
     }

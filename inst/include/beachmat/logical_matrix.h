@@ -112,11 +112,10 @@ inline std::unique_ptr<logical_output> create_logical_output(int nrow, int ncol,
     auto pkg=param.get_package();
 
     if (pkg=="Matrix") {
-        auto cls=param.get_class();
-        if (cls=="lgCMatrix" || cls=="lgRMatrix" || cls=="lgTMatrix") {
+        if (param.get_class()=="lgCMatrix") {
             return std::unique_ptr<logical_output>(new sparse_logical_output(nrow, ncol));
         }
-    } else if (pkg!="base" && param.is_external_available("logical")) {
+    } else if (param.is_external_available("logical")) {
         return std::unique_ptr<logical_output>(new external_logical_output(nrow, ncol, 
             pkg.c_str(), param.get_class().c_str(), "logical"));
     }
