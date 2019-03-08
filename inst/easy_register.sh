@@ -31,4 +31,8 @@ EOT
 
 cat *.cpp | egrep "(${matrices})_.*{" | sed -E "s/ ?\(.*$//g" | sed -E "s/^.* //" | sed "s/^\(.*\)$/REGISTER(\1);\n/" >> exports.cpp
 
-echo "}" >> exports.cpp
+cat << EOT >> exports.cpp
+}
+
+}
+EOT

@@ -61,3 +61,5 @@ REGISTER(AaronMatrix_integer_input_getRows_numeric);
 REGISTER(AaronMatrix_integer_input_getCols_numeric);
 
 }
+
+}
