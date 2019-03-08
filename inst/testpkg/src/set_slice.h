@@ -31,7 +31,8 @@ void set_col_slice(O in, M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVecto
     size_t c=0;
     T target(nrows);
     for (auto o : ordering) {
-        ptr->set_col(c, in->get_const_col(o-1, target.begin(), rstart, rend), rstart, rend);
+        in->get_col(o-1, target.begin(), rstart, rend);
+        ptr->set_col(c, target.begin(), rstart, rend);
         ++c;
     }
     return;
