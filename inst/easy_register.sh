@@ -11,7 +11,7 @@ extern "C" {
 
 EOT
 
-cat *.cpp | egrep "(${matrices})_.*{" | sed -E "s/ [^ ]+,/,/g" | sed -E "s/ [^ ]+\) *\{/\);/" | sed "s/;/;\n/" >> exports.h
+cat *_access.cpp *_output.cpp | egrep "(${matrices})_.*{" | sed -E "s/ [^ ]+,/,/g" | sed -E "s/ [^ ]+\) *\{/\);/" | sed "s/;/;\n/" >> exports.h
 
 echo "}" >> exports.h
 
@@ -29,7 +29,7 @@ void R_init_$pkgname(DllInfo *info) {
 
 EOT
 
-cat *.cpp | egrep "(${matrices})_.*{" | sed -E "s/ ?\(.*$//g" | sed -E "s/^.* //" | sed "s/^\(.*\)$/REGISTER(\1);\n/" >> exports.cpp
+cat *_access.cpp *_output.cpp | egrep "(${matrices})_.*{" | sed -E "s/ ?\(.*$//g" | sed -E "s/^.* //" | sed "s/^\(.*\)$/REGISTER(\1);\n/" >> exports.cpp
 
 cat << EOT >> exports.cpp
 }
