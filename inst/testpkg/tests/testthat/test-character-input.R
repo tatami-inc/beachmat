@@ -24,10 +24,6 @@ test_that("Simple character matrix input is okay", {
     check_read_const(sFUN, nr=5, nc=30, mode="character")
     check_read_const(sFUN, nr=30, nc=5, mode="character")
 
-    check_read_indexed(sFUN, mode="character")
-    check_read_indexed(sFUN, nr=5, nc=30, mode="character")
-    check_read_indexed(sFUN, nr=30, nc=5, mode="character")
-
     check_read_multi(sFUN, mode="character")
     check_read_multi(sFUN, nr=5, nc=30, mode="character")
     check_read_multi(sFUN, nr=30, nc=5, mode="character")
@@ -60,14 +56,6 @@ test_that("RLE character matrix input is okay", {
     check_read_varslice(rFUN, nr=5, nc=30, mode="character")
     check_read_varslice(rFUN, nr=30, nc=5, mode="character")
 
-    check_read_const(rFUN, mode="character")
-    check_read_const(rFUN, nr=5, nc=30, mode="character")
-    check_read_const(rFUN, nr=30, nc=5, mode="character")
-
-    check_read_indexed(rFUN, mode="character")
-    check_read_indexed(rFUN, nr=5, nc=30, mode="character")
-    check_read_indexed(rFUN, nr=30, nc=5, mode="character")
-
     check_read_multi(rFUN, mode="character")
     check_read_multi(rFUN, nr=5, nc=30, mode="character")
     check_read_multi(rFUN, nr=30, nc=5, mode="character")
@@ -98,14 +86,6 @@ test_that("RLE character matrix input is okay with reduced block size", {
         check_read_varslice(rFUN, mode="character")
         check_read_varslice(rFUN, nr=5, nc=30, mode="character")
         check_read_varslice(rFUN, nr=30, nc=5, mode="character")
-
-        check_read_const(rFUN, mode="character")
-        check_read_const(rFUN, nr=5, nc=30, mode="character")
-        check_read_const(rFUN, nr=30, nc=5, mode="character")
-
-        check_read_indexed(rFUN, mode="character")
-        check_read_indexed(rFUN, nr=5, nc=30, mode="character")
-        check_read_indexed(rFUN, nr=30, nc=5, mode="character")
 
         check_read_multi(rFUN, mode="character")
         check_read_multi(rFUN, nr=5, nc=30, mode="character")
@@ -139,10 +119,6 @@ test_that("Delayed character matrix input is okay", {
         check_read_slice(FUN, NR, NC, mode="character")
 
         check_read_varslice(FUN, NR, NC, mode="character")
-
-        check_read_const(FUN, NR, NC, mode="character")
-
-        check_read_indexed(FUN, NR, NC, mode="character")
 
         check_read_multi(FUN, NR, NC, mode="character")
 

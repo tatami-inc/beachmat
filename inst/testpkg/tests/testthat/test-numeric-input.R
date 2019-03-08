@@ -26,10 +26,6 @@ test_that("Simple numeric matrix input is okay", {
     check_read_const(sFUN, nr=5, nc=30, mode="numeric")
     check_read_const(sFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_indexed(sFUN, mode="numeric")
-    check_read_indexed(sFUN, nr=5, nc=30, mode="numeric")
-    check_read_indexed(sFUN, nr=30, nc=5, mode="numeric")
-
     check_read_multi(sFUN, mode="numeric")
     check_read_multi(sFUN, nr=5, nc=30, mode="numeric")
     check_read_multi(sFUN, nr=30, nc=5, mode="numeric")
@@ -61,14 +57,6 @@ test_that("Dense numeric matrix input is okay", {
     check_read_varslice(dFUN, nr=5, nc=30, mode="numeric")
     check_read_varslice(dFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_const(dFUN, mode="numeric")
-    check_read_const(dFUN, nr=5, nc=30, mode="numeric")
-    check_read_const(dFUN, nr=30, nc=5, mode="numeric")
-
-    check_read_indexed(dFUN, mode="numeric")
-    check_read_indexed(dFUN, nr=5, nc=30, mode="numeric")
-    check_read_indexed(dFUN, nr=30, nc=5, mode="numeric")
-
     check_read_multi(dFUN, mode="numeric")
     check_read_multi(dFUN, nr=5, nc=30, mode="numeric")
     check_read_multi(dFUN, nr=30, nc=5, mode="numeric")
@@ -99,10 +87,6 @@ test_that("Sparse numeric matrix input is okay", {
     check_read_varslice(csFUN, mode="numeric")
     check_read_varslice(csFUN, nr=5, nc=30, mode="numeric")
     check_read_varslice(csFUN, nr=30, nc=5, mode="numeric")
-
-    check_read_const(csFUN, mode="numeric")
-    check_read_const(csFUN, nr=5, nc=30, mode="numeric")
-    check_read_const(csFUN, nr=30, nc=5, mode="numeric")
 
     check_read_indexed(csFUN, mode="numeric")
     check_read_indexed(csFUN, nr=5, nc=30, mode="numeric")
@@ -139,14 +123,6 @@ test_that("dgTMatrix (i.e., unknown) input is okay", {
     check_read_varslice(tsFUN, nr=5, nc=30, mode="numeric")
     check_read_varslice(tsFUN, nr=30, nc=5, mode="numeric")
 
-    check_read_const(tsFUN, mode="numeric")
-    check_read_const(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_const(tsFUN, nr=30, nc=5, mode="numeric")
-
-    check_read_indexed(tsFUN, mode="numeric")
-    check_read_indexed(tsFUN, nr=5, nc=30, mode="numeric")
-    check_read_indexed(tsFUN, nr=30, nc=5, mode="numeric")
-
     check_read_multi(tsFUN, mode="numeric")
     check_read_multi(tsFUN, nr=5, nc=30, mode="numeric")
     check_read_multi(tsFUN, nr=30, nc=5, mode="numeric")
@@ -177,14 +153,6 @@ test_that("dgTMatrix input is okay with reduced block size", {
         check_read_varslice(tsFUN, mode="numeric")
         check_read_varslice(tsFUN, nr=5, nc=30, mode="numeric")
         check_read_varslice(tsFUN, nr=30, nc=5, mode="numeric")
-
-        check_read_const(tsFUN, mode="numeric")
-        check_read_const(tsFUN, nr=5, nc=30, mode="numeric")
-        check_read_const(tsFUN, nr=30, nc=5, mode="numeric")
-
-        check_read_indexed(tsFUN, mode="numeric")
-        check_read_indexed(tsFUN, nr=5, nc=30, mode="numeric")
-        check_read_indexed(tsFUN, nr=30, nc=5, mode="numeric")
 
         check_read_multi(tsFUN, mode="numeric")
         check_read_multi(tsFUN, nr=5, nc=30, mode="numeric")
@@ -218,10 +186,6 @@ test_that("Delayed numeric matrix input is okay", {
         check_read_slice(FUN, NR, NC, mode="numeric")
 
         check_read_varslice(FUN, NR, NC, mode="numeric")
-
-        check_read_const(FUN, NR, NC, mode="numeric")
-
-        check_read_indexed(FUN, NR, NC, mode="numeric")
 
         check_read_multi(FUN, NR, NC, mode="numeric")
 

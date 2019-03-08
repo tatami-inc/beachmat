@@ -2,7 +2,6 @@
 
 library(Matrix)
 library(DelayedArray)
-library(HDF5Array)
 
 #######################################################
 

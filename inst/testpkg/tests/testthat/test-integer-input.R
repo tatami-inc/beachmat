@@ -24,10 +24,6 @@ test_that("Simple integer matrix input is okay", {
     check_read_const(sFUN, nr=5, nc=30, mode="integer")
     check_read_const(sFUN, nr=30, nc=5, mode="integer")
 
-    check_read_indexed(sFUN, mode="integer")
-    check_read_indexed(sFUN, nr=5, nc=30, mode="integer")
-    check_read_indexed(sFUN, nr=30, nc=5, mode="integer")
-
     check_read_multi(sFUN, mode="integer")
     check_read_multi(sFUN, nr=5, nc=30, mode="integer")
     check_read_multi(sFUN, nr=30, nc=5, mode="integer")
@@ -59,14 +55,6 @@ test_that("RLE integer matrix input (i.e., unknown) is okay", {
     check_read_varslice(rFUN, nr=5, nc=30, mode="integer")
     check_read_varslice(rFUN, nr=30, nc=5, mode="integer")
 
-    check_read_const(rFUN, mode="integer")
-    check_read_const(rFUN, nr=5, nc=30, mode="integer")
-    check_read_const(rFUN, nr=30, nc=5, mode="integer")
-
-    check_read_indexed(rFUN, mode="integer")
-    check_read_indexed(rFUN, nr=5, nc=30, mode="integer")
-    check_read_indexed(rFUN, nr=30, nc=5, mode="integer")
-
     check_read_multi(rFUN, mode="integer")
     check_read_multi(rFUN, nr=5, nc=30, mode="integer")
     check_read_multi(rFUN, nr=30, nc=5, mode="integer")
@@ -97,14 +85,6 @@ test_that("RLE integer matrix input is okay with reduced block size", {
         check_read_varslice(rFUN, mode="integer")
         check_read_varslice(rFUN, nr=5, nc=30, mode="integer")
         check_read_varslice(rFUN, nr=30, nc=5, mode="integer")
-
-        check_read_const(rFUN, mode="integer")
-        check_read_const(rFUN, nr=5, nc=30, mode="integer")
-        check_read_const(rFUN, nr=30, nc=5, mode="integer")
-
-        check_read_indexed(rFUN, mode="integer")
-        check_read_indexed(rFUN, nr=5, nc=30, mode="integer")
-        check_read_indexed(rFUN, nr=30, nc=5, mode="integer")
 
         check_read_multi(rFUN, mode="integer")
         check_read_multi(rFUN, nr=5, nc=30, mode="integer")
@@ -138,10 +118,6 @@ test_that("Delayed integer matrix input is okay", {
         check_read_slice(FUN, NR, NC, mode="integer")
 
         check_read_varslice(FUN, NR, NC, mode="integer")
-
-        check_read_const(FUN, NR, NC, mode="integer")
-
-        check_read_indexed(FUN, NR, NC, mode="integer")
 
         check_read_multi(FUN, NR, NC, mode="integer")
 
