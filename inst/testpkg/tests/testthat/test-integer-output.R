@@ -3,7 +3,6 @@
 
 sFUN <- integer_sFUN
 rFUN <- integer_rFUN
-hFUN <- integer_hFUN
 
 #######################################################
 
@@ -35,49 +34,8 @@ test_that("Simple integer matrix output is okay", {
 
 #######################################################
 
-set.seed(34568)
-test_that("HDF5 integer matrix output is okay", {
-    expect_s4_class(hFUN(), "HDF5Matrix")
-
-    check_write_all(hFUN, mode="integer")
-    check_write_all(hFUN, nr=5, nc=30, mode="integer")
-    check_write_all(hFUN, nr=30, nc=5, mode="integer")
-
-    check_write_slice(hFUN, mode="integer")
-    check_write_slice(hFUN, nr=5, nc=30, mode="integer")
-    check_write_slice(hFUN, nr=30, nc=5, mode="integer")
-
-    check_write_varslice(hFUN, mode="integer")
-    check_write_varslice(hFUN, nr=5, nc=30, mode="integer")
-    check_write_varslice(hFUN, nr=30, nc=5, mode="integer")
-
-    check_write_indexed(hFUN, mode="integer")
-    check_write_indexed(hFUN, nr=5, nc=30, mode="integer")
-    check_write_indexed(hFUN, nr=30, nc=5, mode="integer")
-
-    check_write_type(hFUN, mode="integer")
-    check_write_errors(hFUN, mode="integer")
-
-    check_write_HDF5(hFUN, mode="integer")
-
-    check_write_all(hFUN, nr=0, nc=0, mode="integer")
-    check_write_all(hFUN, nr=10, nc=0, mode="integer")
-    check_write_all(hFUN, nr=0, nc=10, mode="integer")
-})
-
-#######################################################
-
 test_that("Integer matrix mode choices are okay", {
-    check_write_class(sFUN(), "simple", simplify=TRUE)
-    check_write_class(sFUN(), "simple", simplify=FALSE)
-    check_write_class(sFUN(), "simple", preserve.zeroes=FALSE)
-
-    check_write_class(hFUN(), "HDF5", simplify=TRUE) 
-    check_write_class(hFUN(), "HDF5", simplify=FALSE) 
-
-    check_write_class(rFUN(), "simple", simplify=TRUE) 
-    check_write_class(rFUN(), "HDF5", simplify=FALSE) 
-
-    check_write_class(hFUN()+1L, "simple", simplify=TRUE) 
-    check_write_class(hFUN()+1L, "HDF5", simplify=FALSE) 
+    check_write_class(sFUN(), "matrix")
+    check_write_class(rFUN(), "matrix")
+    check_write_class(rFUN()+1L, "matrix")
 })

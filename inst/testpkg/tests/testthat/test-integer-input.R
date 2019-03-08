@@ -3,7 +3,6 @@
 
 sFUN <- integer_sFUN
 rFUN <- integer_rFUN
-hFUN <- integer_hFUN
 
 #######################################################
 
@@ -34,7 +33,7 @@ test_that("Simple integer matrix input is okay", {
     check_read_multi(sFUN, nr=30, nc=5, mode="integer")
 
     check_read_type(sFUN, mode="integer")
-    check_read_class(sFUN(), mode="integer", "simple")
+    check_read_class(sFUN(), mode="integer", "matrix")
 
     check_read_errors(sFUN, mode="integer")
     check_read_all(sFUN, nr=0, nc=0, mode="integer")
@@ -73,7 +72,7 @@ test_that("RLE integer matrix input (i.e., unknown) is okay", {
     check_read_multi(rFUN, nr=30, nc=5, mode="integer")
 
     check_read_type(rFUN, mode="integer")
-    check_read_class(rFUN(), mode="integer", "unknown")
+    check_read_class(rFUN(), mode="integer", "")
 
     check_read_errors(rFUN, mode="integer")
     check_read_all(rFUN, nr=0, nc=0, mode="integer")
@@ -112,7 +111,7 @@ test_that("RLE integer matrix input is okay with reduced block size", {
         check_read_multi(rFUN, nr=30, nc=5, mode="integer")
 
         check_read_type(rFUN, mode="integer")
-        check_read_class(rFUN(), mode="integer", "unknown")
+        check_read_class(rFUN(), mode="integer", "")
 
         check_read_errors(rFUN, mode="integer")
         check_read_all(rFUN, nr=0, nc=0, mode="integer")
@@ -121,45 +120,6 @@ test_that("RLE integer matrix input is okay with reduced block size", {
     }
 
     setAutoBlockSize(old)
-})
-
-#######################################################
-
-set.seed(34567)
-test_that("HDF5 integer matrix input is okay", {
-    expect_s4_class(hFUN(), "HDF5Matrix")
-
-    check_read_all(hFUN, mode="integer")
-    check_read_all(hFUN, nr=5, nc=30, mode="integer")
-    check_read_all(hFUN, nr=30, nc=5, mode="integer")
-
-    check_read_slice(hFUN, mode="integer")
-    check_read_slice(hFUN, nr=5, nc=30, mode="integer")
-    check_read_slice(hFUN, nr=30, nc=5, mode="integer")
-
-    check_read_varslice(hFUN, mode="integer")
-    check_read_varslice(hFUN, nr=5, nc=30, mode="integer")
-    check_read_varslice(hFUN, nr=30, nc=5, mode="integer")
-
-    check_read_const(hFUN, mode="integer")
-    check_read_const(hFUN, nr=5, nc=30, mode="integer")
-    check_read_const(hFUN, nr=30, nc=5, mode="integer")
-
-    check_read_indexed(hFUN, mode="integer")
-    check_read_indexed(hFUN, nr=5, nc=30, mode="integer")
-    check_read_indexed(hFUN, nr=30, nc=5, mode="integer")
-
-    check_read_multi(hFUN, mode="integer")
-    check_read_multi(hFUN, nr=5, nc=30, mode="integer")
-    check_read_multi(hFUN, nr=30, nc=5, mode="integer")
-
-    check_read_type(hFUN, mode="integer")
-    check_read_class(hFUN(), mode="integer", "HDF5")
-
-    check_read_errors(hFUN, mode="integer")
-    check_read_all(hFUN, nr=0, nc=0, mode="integer")
-    check_read_all(hFUN, nr=10, nc=0, mode="integer")
-    check_read_all(hFUN, nr=0, nc=10, mode="integer")
 })
 
 #######################################################
@@ -186,7 +146,7 @@ test_that("Delayed integer matrix input is okay", {
         check_read_multi(FUN, NR, NC, mode="integer")
 
         check_read_type(FUN, NR, NC, mode="integer")
-        check_read_class(FUN(), mode="integer", "delayed")
+        check_read_class(FUN(), mode="integer", "DelayedMatrix")
 
         check_read_errors(FUN, NR, NC, mode="integer")
         check_read_all(FUN, nr=0, nc=0, mode="integer")
@@ -195,5 +155,5 @@ test_that("Delayed integer matrix input is okay", {
     }
 
     # Proper type check upon coercion!
-    expect_identical("double", .Call("get_type", hFUN()+1, PACKAGE="beachtest"))
+    expect_identical("double", .Call("get_type", delfuns[[1]]()+1, PACKAGE="beachtest"))
 })

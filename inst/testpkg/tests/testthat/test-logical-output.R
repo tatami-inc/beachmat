@@ -5,9 +5,6 @@ sFUN <- logical_sFUN
 dFUN <- logical_dFUN
 csFUN <- logical_csFUN
 tsFUN <- logical_tsFUN
-hFUN <- logical_hFUN
-
-#######################################################
 
 set.seed(12346)
 test_that("Simple logical matrix output is okay", {
@@ -67,58 +64,9 @@ test_that("sparse logical matrix output is okay", {
 
 #######################################################
 
-set.seed(34568)
-test_that("HDF5 logical matrix output is okay", {
-    expect_s4_class(hFUN(), "HDF5Matrix")
-
-    check_write_all(hFUN, mode="logical")
-    check_write_all(hFUN, nr=5, nc=30, mode="logical")
-    check_write_all(hFUN, nr=30, nc=5, mode="logical")
-
-    check_write_slice(hFUN, mode="logical")
-    check_write_slice(hFUN, nr=5, nc=30, mode="logical")
-    check_write_slice(hFUN, nr=30, nc=5, mode="logical")
-
-    check_write_varslice(hFUN, mode="logical")
-    check_write_varslice(hFUN, nr=5, nc=30, mode="logical")
-    check_write_varslice(hFUN, nr=30, nc=5, mode="logical")
-
-    check_write_indexed(hFUN, mode="logical")
-    check_write_indexed(hFUN, nr=5, nc=30, mode="logical")
-    check_write_indexed(hFUN, nr=30, nc=5, mode="logical")
-
-    check_write_type(hFUN, mode="logical")
-    check_write_errors(hFUN, mode="logical")
-
-    check_write_all(hFUN, nr=0, nc=0, mode="logical")
-    check_write_all(hFUN, nr=10, nc=0, mode="logical")
-    check_write_all(hFUN, nr=0, nc=10, mode="logical")
-
-    check_write_HDF5(hFUN, mode="logical")
-})
-
-#######################################################
-
 test_that("Logical matrix mode choices are okay", {
-    check_write_class(sFUN(), "simple", simplify=TRUE)
-    check_write_class(sFUN(), "simple", simplify=FALSE)
-    check_write_class(sFUN(), "simple", preserve.zeroes=FALSE)
-
-    check_write_class(dFUN(), "simple", simplify=TRUE)
-    check_write_class(dFUN(), "simple", simplify=FALSE)
-    check_write_class(dFUN(), "simple", preserve.zeroes=FALSE)
-
-    check_write_class(csFUN(), "simple", simplify=TRUE, preserve.zeroes=FALSE) 
-    check_write_class(csFUN(), "HDF5", simplify=FALSE, preserve.zeroes=FALSE) 
-    check_write_class(csFUN(), "sparse", simplify=FALSE, preserve.zeroes=TRUE) 
-    check_write_class(csFUN(), "sparse", simplify=FALSE, preserve.zeroes=TRUE) 
-
-    check_write_class(hFUN(), "HDF5", simplify=TRUE) 
-    check_write_class(hFUN(), "HDF5", simplify=FALSE) 
-
-    check_write_class(tsFUN(), "simple", simplify=TRUE) 
-    check_write_class(tsFUN(), "HDF5", simplify=FALSE) 
-
-    check_write_class(!hFUN(), "simple", simplify=TRUE) 
-    check_write_class(!hFUN(), "HDF5", simplify=FALSE) 
+    check_write_class(sFUN(), "matrix")
+    check_write_class(dFUN(), "matrix")
+    check_write_class(csFUN(), "lgCMatrix")
+    check_write_class(tsFUN(), "lgCMatrix")
 })
