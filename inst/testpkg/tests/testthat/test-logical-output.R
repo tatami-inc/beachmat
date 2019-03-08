@@ -66,7 +66,7 @@ test_that("sparse logical matrix output is okay", {
 
 test_that("Logical matrix mode choices are okay", {
     check_write_class(sFUN(), "matrix")
-    check_write_class(dFUN(), "matrix")
+    check_write_class(dFUN(), "lgeMatrix")
     check_write_class(csFUN(), "lgCMatrix")
-    check_write_class(tsFUN(), "lgCMatrix")
+    check_write_class(tsFUN(), "lgTMatrix")
 })

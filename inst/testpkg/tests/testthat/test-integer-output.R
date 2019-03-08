@@ -36,6 +36,6 @@ test_that("Simple integer matrix output is okay", {
 
 test_that("Integer matrix mode choices are okay", {
     check_write_class(sFUN(), "matrix")
-    check_write_class(rFUN(), "matrix")
-    check_write_class(rFUN()+1L, "matrix")
+    check_write_class(rFUN(), "RleMatrix")
+    check_write_class(rFUN()+1L, "DelayedMatrix")
 })

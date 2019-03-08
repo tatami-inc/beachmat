@@ -69,6 +69,6 @@ test_that("sparse numeric matrix output is okay", {
 test_that("Numeric matrix mode choices are okay", {
     check_write_class(sFUN(), "matrix")
     check_write_class(csFUN(), "dgCMatrix")
-    check_write_class(tsFUN(), "dgCMatrix")
-    check_write_class(dFUN(), "matrix")
+    check_write_class(tsFUN(), "dgTMatrix")
+    check_write_class(dFUN(), "dgeMatrix")
 })
