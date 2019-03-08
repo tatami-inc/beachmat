@@ -55,17 +55,6 @@ void AaronMatrix_integer_input_getCol_numeric(void * ptr, size_t c, Rcpp::Numeri
     return;
 }
 
-// Special getters
-
-void AaronMatrix_integer_input_getConstCol(void* ptr, size_t c, Rcpp::IntegerVector::iterator* it, size_t first, size_t last, Rcpp::IntegerVector::iterator* out) {
-    *out=static_cast<AaronIntMat*>(ptr)->get_const_col(c, first, last);
-    return;
-}
-
-size_t AaronMatrix_integer_input_getConstColIndexed(void* ptr, size_t c, Rcpp::IntegerVector::iterator* iIt, Rcpp::IntegerVector::iterator* vIt, size_t first, size_t last) {
-    return static_cast<AaronIntMat*>(ptr)->get_const_col_indexed(c, *iIt, *vIt, first, last);
-}
-
 // Multi getters
 
 void AaronMatrix_integer_input_getRows_integer(void * ptr, Rcpp::IntegerVector::iterator* r, size_t n, Rcpp::IntegerVector::iterator* out, size_t first, size_t last) {

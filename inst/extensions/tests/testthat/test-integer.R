@@ -18,14 +18,6 @@ test_that("Aaron's Matrix can be read by beachmat", {
     check_read_varslice(generator, nr=5, nc=30, mode="integer")
     check_read_varslice(generator, nr=30, nc=5, mode="integer")
 
-    check_read_const(generator, mode="integer")
-    check_read_const(generator, nr=5, nc=30, mode="integer")
-    check_read_const(generator, nr=30, nc=5, mode="integer")
-
-    check_read_indexed(generator, mode="integer")
-    check_read_indexed(generator, nr=5, nc=30, mode="integer")
-    check_read_indexed(generator, nr=30, nc=5, mode="integer")
-
     check_read_multi(generator, mode="integer")
     check_read_multi(generator, nr=5, nc=30, mode="integer")
     check_read_multi(generator, nr=30, nc=5, mode="integer")

@@ -45,17 +45,6 @@ void AaronMatrix_character_input_getCol(void * ptr, size_t c, Rcpp::StringVector
     return;
 }
 
-// Special getters
-
-void AaronMatrix_character_input_getConstCol(void* ptr, size_t c, Rcpp::StringVector::iterator* it, size_t first, size_t last, Rcpp::StringVector::iterator* out) {
-    *out=static_cast<AaronStrMat*>(ptr)->get_const_col(c, first, last);
-    return;
-}
-
-size_t AaronMatrix_character_input_getConstColIndexed(void* ptr, size_t c, Rcpp::IntegerVector::iterator* iIt, Rcpp::StringVector::iterator* vIt, size_t first, size_t last) {
-    return static_cast<AaronStrMat*>(ptr)->get_const_col_indexed(c, *iIt, *vIt, first, last);
-}
-
 // Multi getters
 
 void AaronMatrix_character_input_getRows(void * ptr, Rcpp::IntegerVector::iterator* r, size_t n, Rcpp::StringVector::iterator* out, size_t first, size_t last) {
