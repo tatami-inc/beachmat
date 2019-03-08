@@ -71,7 +71,9 @@ public:
 
     virtual std::unique_ptr<lin_output<T, V> > clone() const=0;
 
-    virtual matrix_type get_matrix_type() const=0;
+    virtual std::string get_class() const=0;
+
+    virtual std::string get_package() const=0;
 private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed.
 };
@@ -120,7 +122,9 @@ public:
 
     std::unique_ptr<lin_output<T, V> > clone() const;
 
-    matrix_type get_matrix_type() const;
+    std::string get_class() const { return writer.get_class(); }
+
+    std::string get_package() const { return writer.get_package(); }
 protected:
     general_lin_output(WTR&& w) : writer(w) {}
     WTR writer;

@@ -14,7 +14,7 @@ public:
     output_param(const std::string& m, const std::string& p) : matclass(m), pkg(p) {}
 
     output_param(Rcpp::RObject in) {
-        if (in.isS4()) {
+        if (!in.isS4()) {
             return;
         }
 

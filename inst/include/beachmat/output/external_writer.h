@@ -18,25 +18,26 @@ namespace beachmat {
 template<typename T, class V>
 class external_writer_base : public dim_checker {
 protected:
-    const char * matclass, * type;
     external_ptr ex; 
+    std::string cls, pkg;
 
     void (*store) (void *, size_t, size_t, T*)=NULL;
     void (*load) (void *, size_t, size_t, T*)=NULL;
     SEXP (*report) (void *)=NULL;
 
 public:
-    external_writer_base(size_t nr, size_t nc, const char* Pkg, const char* Class, const char* Type) : 
-            dim_checker(nr, nc), matclass(Class), type(Type), ex(nr, nc, Pkg, Class, Type) {
+    external_writer_base(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class, const std::string& type) : 
+            dim_checker(nr, nc), cls(Class), pkg(Pkg), ex(nr, nc, Pkg, Class, type) {
+
         // Define all remaining function pointers.
-        auto store_name=get_external_name(matclass, type, "output", "set");
-        store=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(Pkg, store_name.c_str()));
+        auto store_name=get_external_name(cls, type, "output", "set");
+        store=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(pkg.c_str(), store_name.c_str()));
 
-        auto load_name=get_external_name(matclass, type, "output", "get");
-        load=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(Pkg, load_name.c_str()));
+        auto load_name=get_external_name(cls, type, "output", "get");
+        load=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(pkg.c_str(), load_name.c_str()));
 
-        auto report_name=get_external_name(matclass, type, "output", "yield");
-        report=reinterpret_cast<SEXP (*)(void *)>(R_GetCCallable(Pkg, report_name.c_str()));
+        auto report_name=get_external_name(cls, type, "output", "yield");
+        report=reinterpret_cast<SEXP (*)(void *)>(R_GetCCallable(pkg.c_str(), report_name.c_str()));
         return;
     }
     ~external_writer_base() = default;
@@ -63,8 +64,12 @@ public:
         return report(ex.get());
     }
 
-    matrix_type get_matrix_type() const {
-        return EXTERNAL;
+    std::string get_class() const {
+        return cls;
+    }
+
+    std::string get_package() const {
+        return pkg;
     }
 };
 
@@ -89,27 +94,28 @@ private:
     void (*load_row) (void *, size_t, RcppValIt*, size_t, size_t);
 
 public:    
-    external_writer(size_t nr, size_t nc, const char* Pkg, const char* Class, const char* Type) : 
-        external_writer_base<T, V>(nr, nc, Pkg, Class, Type) { 
+    external_writer(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class, const std::string& Type) : 
+            external_writer_base<T, V>(nr, nc, Pkg, Class, Type) { 
+
 
         // Getting all required functions from the corresponding shared library.
         auto store_col_name=get_external_name(Class, Type, "output", "setCol");
-        store_col=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg, store_col_name.c_str()));
+        store_col=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), store_col_name.c_str()));
     
         auto store_row_name=get_external_name(Class, Type, "output", "setRow");
-        store_row=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg, store_row_name.c_str()));
+        store_row=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), store_row_name.c_str()));
 
         auto store_col_indexed_name=get_external_name(Class, Type, "output", "setColIndexed");
-        store_col_indexed=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppValIt*)>(R_GetCCallable(Pkg, store_col_indexed_name.c_str()));
+        store_col_indexed=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppValIt*)>(R_GetCCallable(Pkg.c_str(), store_col_indexed_name.c_str()));
     
         auto store_row_indexed_name=get_external_name(Class, Type, "output", "setRowIndexed");
-        store_row_indexed=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppValIt*)>(R_GetCCallable(Pkg, store_row_indexed_name.c_str()));
+        store_row_indexed=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppValIt*)>(R_GetCCallable(Pkg.c_str(), store_row_indexed_name.c_str()));
 
         auto load_col_name=get_external_name(Class, Type, "output", "getCol");
-        load_col=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg, load_col_name.c_str()));
+        load_col=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), load_col_name.c_str()));
     
         auto load_row_name=get_external_name(Class, Type, "output", "getRow");
-        load_row=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg, load_row_name.c_str()));
+        load_row=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), load_row_name.c_str()));
 
         return;
     }
@@ -184,45 +190,45 @@ private:
     void (*load_row_dbl) (void *, size_t, RcppNumIt*, size_t, size_t);
 
 public:    
-    external_lin_writer(size_t nr, size_t nc, const char* Pkg, const char* Class, const char* Type) : 
+    external_lin_writer(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class, const std::string& Type) : 
         external_writer_base<T, V>(nr, nc, Pkg, Class, Type) { 
 
         // Getting all required functions from the corresponding shared library.
         auto store_col2int_name=get_external_name(Class, Type, "output", "setCol", "integer");
-        store_col_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg, store_col2int_name.c_str()));
+        store_col_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), store_col2int_name.c_str()));
 
         auto store_row2int_name=get_external_name(Class, Type, "output", "setRow", "integer");
-        store_row_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg, store_row2int_name.c_str()));
+        store_row_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), store_row2int_name.c_str()));
 
         auto store_col2dbl_name=get_external_name(Class, Type, "output", "setCol", "numeric");
-        store_col_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg, store_col2dbl_name.c_str()));
+        store_col_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), store_col2dbl_name.c_str()));
 
         auto store_row2dbl_name=get_external_name(Class, Type, "output", "setRow", "numeric");
-        store_row_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg, store_row2dbl_name.c_str()));
+        store_row_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), store_row2dbl_name.c_str()));
 
         auto store_col2int_indexed_name=get_external_name(Class, Type, "output", "setColIndexed", "integer");
-        store_col_indexed_int=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppIntIt*)>(R_GetCCallable(Pkg, store_col2int_indexed_name.c_str()));
+        store_col_indexed_int=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppIntIt*)>(R_GetCCallable(Pkg.c_str(), store_col2int_indexed_name.c_str()));
 
         auto store_row2int_indexed_name=get_external_name(Class, Type, "output", "setRowIndexed", "integer");
-        store_row_indexed_int=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppIntIt*)>(R_GetCCallable(Pkg, store_row2int_indexed_name.c_str()));
+        store_row_indexed_int=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppIntIt*)>(R_GetCCallable(Pkg.c_str(), store_row2int_indexed_name.c_str()));
 
         auto store_col2dbl_indexed_name=get_external_name(Class, Type, "output", "setColIndexed", "numeric");
-        store_col_indexed_dbl=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppNumIt*)>(R_GetCCallable(Pkg, store_col2dbl_indexed_name.c_str()));
+        store_col_indexed_dbl=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppNumIt*)>(R_GetCCallable(Pkg.c_str(), store_col2dbl_indexed_name.c_str()));
 
         auto store_row2dbl_indexed_name=get_external_name(Class, Type, "output", "setRowIndexed", "numeric");
-        store_row_indexed_dbl=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppNumIt*)>(R_GetCCallable(Pkg, store_row2dbl_indexed_name.c_str()));
+        store_row_indexed_dbl=reinterpret_cast<void (*)(void *, size_t, size_t, RcppIntIt*, RcppNumIt*)>(R_GetCCallable(Pkg.c_str(), store_row2dbl_indexed_name.c_str()));
 
         auto load_col2int_name=get_external_name(Class, Type, "output", "getCol", "integer");
-        load_col_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg, load_col2int_name.c_str()));
+        load_col_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), load_col2int_name.c_str()));
 
         auto load_row2int_name=get_external_name(Class, Type, "output", "getRow", "integer");
-        load_row_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg, load_row2int_name.c_str()));
+        load_row_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), load_row2int_name.c_str()));
 
         auto load_col2dbl_name=get_external_name(Class, Type, "output", "getCol", "numeric");
-        load_col_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg, load_col2dbl_name.c_str()));
+        load_col_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), load_col2dbl_name.c_str()));
 
         auto load_row2dbl_name=get_external_name(Class, Type, "output", "getRow", "numeric");
-        load_row_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg, load_row2dbl_name.c_str()));
+        load_row_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(Pkg.c_str(), load_row2dbl_name.c_str()));
 
         return;
     }

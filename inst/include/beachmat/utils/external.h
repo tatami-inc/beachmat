@@ -11,16 +11,20 @@
 namespace beachmat {
 
 // Assistant function to define names.
-template<typename M, typename T> 
-std::string get_external_name(const M& matclass, const T& type, const char* mode, const char* fun, const char* intype=NULL) {
+inline std::string get_external_name(const std::string& matclass, const std::string& type, 
+        const std::string& mode, const std::string& fun, const std::string& intype) {
     std::stringstream exname;
-    exname << matclass << "_" << type << "_" << mode << "_" << fun;
-    if (intype) {
-        exname << "_" << intype;
-    }
+    exname << matclass << "_" << type << "_" << mode << "_" << fun << "_" << intype;
     return exname.str();
 }
- 
+
+inline std::string get_external_name(const std::string& matclass, const std::string& type, 
+        const std::string& mode, const std::string& fun) {
+    std::stringstream exname;
+    exname << matclass << "_" << type << "_" << mode << "_" << fun;
+    return exname.str();
+}
+  
 // Carefully copied external pointer.
 class external_ptr {
 private:
@@ -39,28 +43,28 @@ public:
         return;
     }
 
-    external_ptr(SEXP in, const char* pkg, const char* matclass, const char* type) { // input constructor
+    external_ptr(SEXP in, const std::string& pkg, const std::string& matclass, const std::string& type) { // input constructor
         auto clone_name=get_external_name(matclass, type, "input", "clone");
-        clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg, clone_name.c_str()));
+        clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg.c_str(), clone_name.c_str()));
 
         auto destroy_name=get_external_name(matclass, type, "input", "destroy");
-        destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg, destroy_name.c_str()));
+        destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg.c_str(), destroy_name.c_str()));
 
         auto create_name=get_external_name(matclass, type, "input", "create");
-        auto create=reinterpret_cast<void * (*)(SEXP)>(R_GetCCallable(pkg, create_name.c_str()));
+        auto create=reinterpret_cast<void * (*)(SEXP)>(R_GetCCallable(pkg.c_str(), create_name.c_str()));
         ptr=create(in);
         return;
     }
 
-    external_ptr(size_t nr, size_t nc, const char* pkg, const char* matclass, const char* type) { // output constructor
+    external_ptr(size_t nr, size_t nc, const std::string& pkg, const std::string& matclass, const std::string& type) { // output constructor
         auto clone_name=get_external_name(matclass, type, "output", "clone");
-        clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg, clone_name.c_str()));
+        clone=reinterpret_cast<void * (*)(void *)>(R_GetCCallable(pkg.c_str(), clone_name.c_str()));
 
         auto destroy_name=get_external_name(matclass, type, "output", "destroy");
-        destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg, destroy_name.c_str()));
+        destroy=reinterpret_cast<void (*)(void *)>(R_GetCCallable(pkg.c_str(), destroy_name.c_str()));
 
         auto create_name=get_external_name(matclass, type, "output", "create");
-        auto create=reinterpret_cast<void * (*)(size_t, size_t)>(R_GetCCallable(pkg, create_name.c_str()));
+        auto create=reinterpret_cast<void * (*)(size_t, size_t)>(R_GetCCallable(pkg.c_str(), create_name.c_str()));
         ptr=create(nr, nc);
         return;
     }

@@ -18,29 +18,28 @@ template<typename T, class V>
 class external_reader_base : public dim_checker {
 public:
     external_reader_base(const Rcpp::RObject& incoming) : original(incoming) {
-        auto data_type=get_type();
-        const char* type=data_type.c_str();
+        auto type=get_type();
         auto classinfo=get_class_package(original);
-        const char* matclass=classinfo.first.c_str();
-        const char* pkg=classinfo.second.c_str();
+        cls=classinfo.first;
+        pkg=classinfo.second;
 
         // Getting required functions from the corresponding shared library.
-        auto load_name=get_external_name(matclass, type, "input", "get");
-        load=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(pkg, load_name.c_str()));
+        auto load_name=get_external_name(cls, type, "input", "get");
+        load=reinterpret_cast<void (*)(void *, size_t, size_t, T*)>(R_GetCCallable(pkg.c_str(), load_name.c_str()));
 
-        auto load_const_name=get_external_name(matclass, type, "input", "getConstCol");
+        auto load_const_name=get_external_name(cls, type, "input", "getConstCol");
         load_const_col=reinterpret_cast<void (*)(void *, size_t, typename V::iterator*, size_t, size_t, typename V::iterator*)>(
-            R_GetCCallable(pkg, load_const_name.c_str()));
+            R_GetCCallable(pkg.c_str(), load_const_name.c_str()));
 
-        auto load_const_indexed_name=get_external_name(matclass, type, "input", "getConstColIndexed");
+        auto load_const_indexed_name=get_external_name(cls, type, "input", "getConstColIndexed");
         load_const_col_indexed=reinterpret_cast<size_t (*)(void *, size_t, Rcpp::IntegerVector::iterator*, typename V::iterator*, size_t, size_t)>(
-            R_GetCCallable(pkg, load_const_indexed_name.c_str()));
+            R_GetCCallable(pkg.c_str(), load_const_indexed_name.c_str()));
 
-        ex=external_ptr(original, pkg, matclass, type); // move assignment.
+        ex=external_ptr(original, pkg, cls, type); // move assignment.
 
         // Getting the dimensions from the created object.
-        auto get_dim_name=get_external_name(matclass, type, "input", "dim");
-        auto dimgetter=reinterpret_cast<void (*)(void*, size_t*, size_t*)>(R_GetCCallable(pkg, get_dim_name.c_str()));
+        auto get_dim_name=get_external_name(cls, type, "input", "dim");
+        auto dimgetter=reinterpret_cast<void (*)(void*, size_t*, size_t*)>(R_GetCCallable(pkg.c_str(), get_dim_name.c_str()));
         dimgetter(ex.get(), &nrow, &ncol);
         return;
     }
@@ -74,12 +73,13 @@ public:
         return original;
     }
 
-    matrix_type get_matrix_type () const {
-        return EXTERNAL;
-    }
+    std::string get_class() const { return cls; }
+
+    std::string get_package() const { return pkg; }
 
 protected:
     Rcpp::RObject original;
+    std::string cls, pkg;
 
     void (*load) (void *, size_t, size_t, T*);
     void (*load_const_col) (void *, size_t, typename V::iterator *, size_t, size_t, typename V::iterator*);
@@ -115,21 +115,20 @@ public:
     external_reader(const Rcpp::RObject& incoming) : external_reader_base<T, V>(incoming) {
         auto data_type=this->get_type();
         const char* type=data_type.c_str();
-        auto classinfo=get_class_package(this->original);
-        const char* matclass=classinfo.first.c_str();
-        const char* pkg=classinfo.second.c_str();
-    
+        const char* cls=this->cls.c_str();
+        const char* pkg=this->pkg.c_str();
+
         // Getting all required functions from the corresponding shared library.
-        auto load_col_name=get_external_name(matclass, type, "input", "getCol");
+        auto load_col_name=get_external_name(cls, type, "input", "getCol");
         load_col=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(pkg, load_col_name.c_str()));
     
-        auto load_row_name=get_external_name(matclass, type, "input", "getRow");
+        auto load_row_name=get_external_name(cls, type, "input", "getRow");
         load_row=reinterpret_cast<void (*)(void *, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(pkg, load_row_name.c_str()));
     
-        auto load_cols_name=get_external_name(matclass, type, "input", "getCols");
+        auto load_cols_name=get_external_name(cls, type, "input", "getCols");
         load_cols=reinterpret_cast<void (*)(void *, RcppIntIt*, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(pkg, load_cols_name.c_str()));
     
-        auto load_rows_name=get_external_name(matclass, type, "input", "getRows");
+        auto load_rows_name=get_external_name(cls, type, "input", "getRows");
         load_rows=reinterpret_cast<void (*)(void *, RcppIntIt*, size_t, RcppValIt*, size_t, size_t)>(R_GetCCallable(pkg, load_rows_name.c_str()));
 
         return;
@@ -190,35 +189,33 @@ private:
     void (*load_rows_dbl) (void *, RcppIntIt*, size_t, RcppNumIt*, size_t, size_t);
 public:    
     external_lin_reader(const Rcpp::RObject& incoming) : external_reader_base<T, V>(incoming) {
-        auto data_type=this->get_type();
-        const char* type=data_type.c_str();
-        auto classinfo=get_class_package(this->original);
-        const char* matclass=classinfo.first.c_str();
-        const char* pkg=classinfo.second.c_str();
+        auto type=this->get_type();
+        const std::string& cls=this->cls;
+        const char* pkg=this->pkg.c_str();
 
         // Getting all required functions from the corresponding shared library.
-        auto load_col2int_name=get_external_name(matclass, type, "input", "getCol", "integer");
+        auto load_col2int_name=get_external_name(cls, type, "input", "getCol", "integer");
         load_col_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(pkg, load_col2int_name.c_str()));
 
-        auto load_row2int_name=get_external_name(matclass, type, "input", "getRow", "integer");
+        auto load_row2int_name=get_external_name(cls, type, "input", "getRow", "integer");
         load_row_int=reinterpret_cast<void (*)(void *, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(pkg, load_row2int_name.c_str()));
 
-        auto load_col2dbl_name=get_external_name(matclass, type, "input", "getCol", "numeric");
+        auto load_col2dbl_name=get_external_name(cls, type, "input", "getCol", "numeric");
         load_col_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(pkg, load_col2dbl_name.c_str()));
 
-        auto load_row2dbl_name=get_external_name(matclass, type, "input", "getRow", "numeric");
+        auto load_row2dbl_name=get_external_name(cls, type, "input", "getRow", "numeric");
         load_row_dbl=reinterpret_cast<void (*)(void *, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(pkg, load_row2dbl_name.c_str()));
 
-        auto load_cols2int_name=get_external_name(matclass, type, "input", "getCols", "integer");
+        auto load_cols2int_name=get_external_name(cls, type, "input", "getCols", "integer");
         load_cols_int=reinterpret_cast<void (*)(void *, RcppIntIt*, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(pkg, load_cols2int_name.c_str()));
 
-        auto load_rows2int_name=get_external_name(matclass, type, "input", "getRows", "integer");
+        auto load_rows2int_name=get_external_name(cls, type, "input", "getRows", "integer");
         load_rows_int=reinterpret_cast<void (*)(void *, RcppIntIt*, size_t, RcppIntIt*, size_t, size_t)>(R_GetCCallable(pkg, load_rows2int_name.c_str()));
 
-        auto load_cols2dbl_name=get_external_name(matclass, type, "input", "getCols", "numeric");
+        auto load_cols2dbl_name=get_external_name(cls, type, "input", "getCols", "numeric");
         load_cols_dbl=reinterpret_cast<void (*)(void *, RcppIntIt*, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(pkg, load_cols2dbl_name.c_str()));
 
-        auto load_rows2dbl_name=get_external_name(matclass, type, "input", "getRows", "numeric");
+        auto load_rows2dbl_name=get_external_name(cls, type, "input", "getRows", "numeric");
         load_rows_dbl=reinterpret_cast<void (*)(void *, RcppIntIt*, size_t, RcppNumIt*, size_t, size_t)>(R_GetCCallable(pkg, load_rows2dbl_name.c_str()));
 
         return;

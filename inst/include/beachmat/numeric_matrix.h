@@ -25,19 +25,25 @@ typedef simple_lin_matrix<double, Rcpp::NumericVector> simple_numeric_matrix;
 
 /* dgeMatrix */
 
+template<>
+inline std::string dense_reader<double, Rcpp::NumericVector>::get_class() { return "dgeMatrix"; }
+
 typedef dense_lin_matrix<double, Rcpp::NumericVector> dense_numeric_matrix;
 
 /* dgCMatrix */
 
 template<>
-double Csparse_reader<double, Rcpp::NumericVector>::get_empty() { return 0; }
+inline double Csparse_reader<double, Rcpp::NumericVector>::get_empty() { return 0; }
+
+template<>
+inline std::string Csparse_reader<double, Rcpp::NumericVector>::get_class() { return "dgCMatrix"; }
 
 typedef Csparse_lin_matrix<double, Rcpp::NumericVector> Csparse_numeric_matrix;
 
 /* DelayedMatrix */
 
 template<>
-std::unique_ptr<numeric_matrix> delayed_lin_reader<double, Rcpp::NumericVector>::generate_seed(Rcpp::RObject incoming) {
+inline std::unique_ptr<numeric_matrix> delayed_lin_reader<double, Rcpp::NumericVector>::generate_seed(Rcpp::RObject incoming) {
     return create_numeric_matrix_internal(incoming, false);
 }
 
@@ -89,7 +95,10 @@ typedef simple_lin_output<double, Rcpp::NumericVector> simple_numeric_output;
 /* Sparse output numeric matrix */
 
 template<>
-double Csparse_writer<double, Rcpp::NumericVector>::get_empty() { return 0; }
+inline double Csparse_writer<double, Rcpp::NumericVector>::get_empty() { return 0; }
+
+template<>
+inline std::string Csparse_writer<double, Rcpp::NumericVector>::get_class() { return "dgCMatrix"; }
 
 typedef sparse_lin_output<double, Rcpp::NumericVector> sparse_numeric_output;
 

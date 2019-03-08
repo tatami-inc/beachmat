@@ -42,7 +42,10 @@ public:
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield() const;
-    matrix_type get_matrix_type () const;
+    
+    static std::string get_class();
+
+    static std::string get_package() { return "Matrix"; }
 protected:
     Rcpp::RObject original;
     V x;
@@ -52,14 +55,19 @@ protected:
 
 template <typename T, class V>
 dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incoming) { 
-    std::string ctype=check_Matrix_class(incoming, "geMatrix");
+    auto classinfo=get_class_package(incoming);
+    std::string ctype=classinfo.first;
+    if (ctype!=get_class() || classinfo.second!=get_package()) {
+        throw_custom_error("input should be a ", ctype, " object");
+    }
+
     this->fill_dims(incoming.attr("Dim"));
     const size_t& NC=this->ncol;
     
     Rcpp::RObject temp=get_safe_slot(incoming, "x"); 
     if (temp.sexp_type()!=x.sexp_type()) { 
         std::stringstream err;
-        err << "'x' slot in a " << get_class(incoming) << " object should be " << translate_type(x.sexp_type());
+        err << "'x' slot in a " << ctype << " object should be " << translate_type(x.sexp_type());
         throw std::runtime_error(err.str());
     }
     x=temp;
@@ -136,11 +144,6 @@ typename V::iterator dense_reader<T, V>::get_const_col(size_t c, size_t first, s
 template<typename T, class V>
 Rcpp::RObject dense_reader<T, V>::yield() const {
     return original;
-}
-
-template<typename T, class V>
-matrix_type dense_reader<T, V>::get_matrix_type() const {
-    return DENSE;
 }
 
 }

@@ -170,11 +170,6 @@ Rcpp::RObject general_lin_matrix<T, V, RDR>::yield() const {
     return reader.yield();
 }
 
-template<typename T, class V, class RDR> 
-matrix_type general_lin_matrix<T, V, RDR>::get_matrix_type() const {
-    return reader.get_matrix_type();
-}
-
 /* Defining specific interface for simple matrices. */
 
 template <typename T, class V>

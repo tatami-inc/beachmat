@@ -70,18 +70,16 @@ public:
         return get_const_col(c, work, 0, get_nrow());
     }
 
-    Rcpp::StringVector::iterator get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
+    virtual Rcpp::StringVector::iterator get_const_col(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
         get_col(c, work, first, last);
         return work;
     }
-
-    virtual Rcpp::StringVector::iterator get_const_col(size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
 
     const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work) {
         return get_const_col_indexed(c, work, 0, get_nrow());
     }
 
-    const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
+    virtual const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t c, Rcpp::StringVector::iterator work, size_t first, size_t last) {
         if (static_cast<size_t>(indices.size())!=this->get_nrow()) {
             indices=Rcpp::IntegerVector(this->get_nrow());
             std::iota(indices.begin(), indices.end(), 0); // populating with indices.
@@ -89,14 +87,14 @@ public:
         return const_col_indexed_info<Rcpp::StringVector>(last - first, indices.begin() + first, get_const_col(c, work, first, last));
     }
 
-    virtual const_col_indexed_info<Rcpp::StringVector> get_const_col_indexed(size_t, Rcpp::StringVector::iterator, size_t, size_t)=0;
-
     // Other methods.
     virtual std::unique_ptr<character_matrix> clone() const=0;
 
     virtual Rcpp::RObject yield () const=0;
-    virtual matrix_type get_matrix_type() const=0;
 
+    virtual std::string get_class() const=0;
+
+    virtual std::string get_package() const=0;
 private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
@@ -144,7 +142,10 @@ public:
     std::unique_ptr<character_matrix> clone() const { return std::unique_ptr<character_matrix>(new general_character_matrix(*this)); }
 
     Rcpp::RObject yield () const { return reader.yield(); }
-    matrix_type get_matrix_type() const { return reader.get_matrix_type(); }
+
+    std::string get_class() const { return reader.get_class(); }
+
+    std::string get_package() const { return reader.get_package(); }
 protected:
     RDR reader;
 };
@@ -176,7 +177,7 @@ public:
 typedef delayed_reader<Rcpp::String, Rcpp::StringVector, character_matrix> delayed_character_reader;
 
 template<>
-std::unique_ptr<character_matrix> delayed_character_reader::generate_seed(Rcpp::RObject incoming) {
+inline std::unique_ptr<character_matrix> delayed_character_reader::generate_seed(Rcpp::RObject incoming) {
     return create_character_matrix_internal(incoming, false);
 }
 
@@ -219,9 +220,7 @@ public:
 inline std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) { 
         std::string ctype=get_class(incoming);
-        if (ctype=="HDF5Matrix") {
-            return std::unique_ptr<character_matrix>(new HDF5_character_matrix(incoming));
-        } else if (delayed && ctype=="DelayedMatrix") { 
+        if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
         } else if (has_external_support(incoming)) {
             return std::unique_ptr<character_matrix>(new external_character_matrix(incoming));
@@ -235,9 +234,9 @@ inline std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::ROb
     return create_character_matrix_internal(incoming, true);
 }
 
-/*********
- * INPUT *
- *********/
+/**********
+ * OUTPUT *
+ **********/
 
 /* Virtual base class for character matrices. */
 
@@ -292,19 +291,22 @@ public:
 
     virtual std::unique_ptr<character_output> clone() const=0;
 
-    virtual matrix_type get_matrix_type() const=0;
+    virtual std::string get_class() const=0;
+
+    virtual std::string get_package() const=0;
 };
 
-/* Simple character matrix */
+/* General character matrix */
 
-class simple_character_output : public character_output {
+template<class WTR>
+class general_character_output : public character_output {
 public:
-    simple_character_output(size_t nr, size_t nc) : writer(nr, nc) {}
-    ~simple_character_output() = default;
-    simple_character_output(const simple_character_output&) = default;
-    simple_character_output& operator=(const simple_character_output&) = default;
-    simple_character_output(simple_character_output&&) = default;
-    simple_character_output& operator=(simple_character_output&&) = default;
+    general_character_output(size_t nr, size_t nc) : writer(nr, nc) {}
+    ~general_character_output() = default;
+    general_character_output(const general_character_output&) = default;
+    general_character_output& operator=(const general_character_output&) = default;
+    general_character_output(general_character_output&&) = default;
+    general_character_output& operator=(general_character_output&&) = default;
 
     size_t get_nrow() const {
         return writer.get_nrow();
@@ -358,14 +360,37 @@ public:
     }
     
     std::unique_ptr<character_output> clone() const {
-        return std::unique_ptr<character_output>(new simple_character_output(*this));
+        return std::unique_ptr<character_output>(new general_character_output(*this));
     }
-    
-    matrix_type get_matrix_type() const {
-        return writer.get_matrix_type();
+
+    std::string get_class() const {
+        return writer.get_class();
     }
-private:
-    simple_writer<Rcpp::String, Rcpp::StringVector> writer;
+
+    std::string get_package() const {
+        return writer.get_package();
+    }
+protected:
+    general_character_output(WTR&& w) : writer(w) {}
+    WTR writer;
+};
+
+/* Simple character matrix */
+
+typedef general_character_output<simple_writer<Rcpp::String, Rcpp::StringVector> > simple_character_output;
+
+/* External character matrix */
+
+class external_character_output : public general_character_output<external_writer<Rcpp::String, Rcpp::StringVector> > {
+public:
+    external_character_output(size_t nr, size_t nc, const std::string& pkg, const std::string& cls, const std::string& type) : 
+        general_character_output<external_writer<Rcpp::String, Rcpp::StringVector> >(
+            external_writer<Rcpp::String, Rcpp::StringVector>(nr, nc, pkg, cls, type)) {}
+    ~external_character_output() = default;
+    external_character_output(const external_character_output&) = default;
+    external_character_output& operator=(const external_character_output&) = default;
+    external_character_output(external_character_output&&) = default;
+    external_character_output& operator=(external_character_output&&) = default;
 };
 
 /* Dispatcher */
@@ -375,7 +400,7 @@ inline std::unique_ptr<character_output> create_character_output(int nrow, int n
 
     if (pkg!="base" && param.is_external_available("character")) { 
         return std::unique_ptr<character_output>(new external_character_output(nrow, ncol, 
-            param.c_str(), param.get_class().c_str(), "character"));
+            pkg.c_str(), param.get_class().c_str(), "character"));
     }
 
     return std::unique_ptr<character_output>(new simple_character_output(nrow, ncol));

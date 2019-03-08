@@ -75,7 +75,10 @@ public:
     virtual std::unique_ptr<lin_matrix<T, V> > clone() const=0;
 
     virtual Rcpp::RObject yield() const=0;
-    virtual matrix_type get_matrix_type() const=0;
+
+    virtual std::string get_class() const=0;
+
+    virtual std::string get_package() const=0;
 
 private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
@@ -113,7 +116,10 @@ public:
     std::unique_ptr<lin_matrix<T, V> > clone() const;
 
     Rcpp::RObject yield() const;
-    matrix_type get_matrix_type() const;
+
+    std::string get_class() const { return reader.get_class(); }
+
+    std::string get_package() const { return reader.get_package(); }
 protected:
     RDR reader;
 };

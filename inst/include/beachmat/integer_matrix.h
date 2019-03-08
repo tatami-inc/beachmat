@@ -26,7 +26,7 @@ typedef simple_lin_matrix<int, Rcpp::IntegerVector> simple_integer_matrix;
 /* DelayedMatrix */
 
 template<>
-std::unique_ptr<integer_matrix> delayed_lin_reader<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
+inline std::unique_ptr<integer_matrix> delayed_lin_reader<int, Rcpp::IntegerVector>::generate_seed(Rcpp::RObject incoming) {
     return create_integer_matrix_internal(incoming, false);
 }
 

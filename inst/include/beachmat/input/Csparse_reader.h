@@ -43,7 +43,9 @@ public:
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield () const;
-    matrix_type get_matrix_type () const;
+
+    static std::string get_class(); // specialized function for each realization.
+    static std::string get_package() { return "Matrix"; }
 protected:
     Rcpp::RObject original;
     Rcpp::IntegerVector i, p;
@@ -60,7 +62,12 @@ protected:
 
 template <typename T, class V>
 Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(incoming), currow(0), curstart(0), curend(this->ncol) {
-    std::string ctype=check_Matrix_class(incoming, "gCMatrix");  
+    auto classinfo=get_class_package(incoming);
+    std::string ctype=classinfo.first;
+    if (ctype!=get_class() || classinfo.second!=get_package()) {
+        throw_custom_error("input should be a ", ctype, " object");
+    }
+
     this->fill_dims(get_safe_slot(incoming, "Dim"));
     const size_t& NC=this->ncol;
     const size_t& NR=this->nrow;
@@ -76,7 +83,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
     Rcpp::RObject temp_x=get_safe_slot(incoming, "x");
     if (temp_x.sexp_type()!=x.sexp_type()) { 
         std::stringstream err;
-        err << "'x' slot in a " << get_class(incoming) << " object should be " << translate_type(x.sexp_type());
+        err << "'x' slot in a " << ctype << " object should be " << translate_type(x.sexp_type());
         throw std::runtime_error(err.str());
     }
     x=temp_x;
@@ -322,13 +329,6 @@ size_t Csparse_reader<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector
 template<typename T, class V>
 Rcpp::RObject Csparse_reader<T, V>::yield() const {
     return original;
-}
-
-/*** Other methods ***/
-
-template<typename T, class V>
-matrix_type Csparse_reader<T, V>::get_matrix_type() const {
-    return SPARSE;
 }
 
 }

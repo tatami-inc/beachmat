@@ -40,7 +40,10 @@ public:
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield() const;
-    matrix_type get_matrix_type () const;
+
+    static std::string get_class() { return "matrix"; }
+
+    static std::string get_package() { return "base"; }
 private:
     Rcpp::RObject original;
     V mat;
@@ -135,11 +138,6 @@ typename V::iterator simple_reader<T, V>::get_const_col(size_t c, size_t first, 
 template<typename T, class V>
 Rcpp::RObject simple_reader<T, V>::yield() const {
     return original;
-}
-
-template<typename T, class V>
-matrix_type simple_reader<T, V>::get_matrix_type() const {
-    return SIMPLE;
 }
 
 }

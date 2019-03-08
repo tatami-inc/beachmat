@@ -53,7 +53,9 @@ public:
     // Other:
     Rcpp::RObject yield();
 
-    matrix_type get_matrix_type() const;
+    static std::string get_class();
+
+    static std::string get_package() { return "Matrix"; }
 private:
     typedef std::pair<size_t, T> data_pair;
     std::vector<std::deque<data_pair> > data;
@@ -321,11 +323,6 @@ Rcpp::RObject Csparse_writer<T, V>::yield() {
     mat.slot("x")=x;
 
     return SEXP(mat);
-}
-
-template<typename T, class V>
-matrix_type Csparse_writer<T, V>::get_matrix_type() const {
-    return SPARSE;
 }
 
 }

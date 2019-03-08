@@ -89,7 +89,9 @@ public:
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield() const;
-    matrix_type get_matrix_type() const;
+
+    static std::string get_class() { return "DelayedMatrix"; }
+    static std::string get_package() { return "DelayedArray"; }
 private:
     Rcpp::RObject original;
     std::unique_ptr<base_mat> seed_ptr;
@@ -359,7 +361,8 @@ void delayed_coord_transformer<T, V>::reallocate_col(M mat, size_t c, size_t fir
 
 template<typename T, class V, class base_mat>
 delayed_reader<T, V, base_mat>::delayed_reader(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
-    if (get_class(incoming)!="DelayedMatrix" || !incoming.isS4()) {
+    auto classinfo=get_class_package(incoming);
+    if (classinfo.first!=get_class() || classinfo.second!=get_package()) {
         throw std::runtime_error("input matrix should be a DelayedMatrix");
     }
 
@@ -374,7 +377,7 @@ delayed_reader<T, V, base_mat>::delayed_reader(const Rcpp::RObject& incoming) : 
     }
     seed_ptr=generate_seed(parse_out[2]);
 
-    if (seed_ptr->get_matrix_type()!=UNKNOWN) {
+    if (seed_ptr->get_class()!="") { // i.e., the matrix is not unknown, and thus we can use native methods.
         transformer=delayed_coord_transformer<T, V>(parse_out[0], parse_out[1], seed_ptr.get());
     } else {
         transformer=delayed_coord_transformer<T, V>(seed_ptr.get());
@@ -443,15 +446,14 @@ void delayed_reader<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt,
     check_colargs(0, first, last);
     check_col_indices(cIt, n);
 
-    auto mattype=seed_ptr->get_matrix_type();
-    if (mattype==SIMPLE || mattype==DENSE || mattype==SPARSE) {
-        // Per column retrieval is probably faster than block realization for wholly in-memory structures.
+    if (seed_ptr->get_class()!="") { 
+        // Not unknown, so there are probably fast column access methods available.
         const size_t nrows=last - first;
         for (size_t i=0; i<n; ++i, ++cIt, out+=nrows) {
             transformer.get_col(seed_ptr.get(), *cIt, out, first, last); 
         }
     } else {
-        // Unknown or HDF5 matrices use block realization for speed (HDF5 = single call to OS for reading; unknown = single block realization).
+        // Unknown matrices use block realization for speed (single block realization).
         Rcpp::Environment beachenv(Rcpp::Environment::namespace_env("beachmat"));
         Rcpp::Function indexed_realizer(beachenv["realizeByRangeIndex"]);
 
@@ -468,11 +470,6 @@ void delayed_reader<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt,
 template<typename T, class V, class base_mat> 
 Rcpp::RObject delayed_reader<T, V, base_mat>::yield() const {
     return original;
-}
-
-template<typename T, class V, class base_mat>
-matrix_type delayed_reader<T, V, base_mat>::get_matrix_type() const { 
-    return DELAYED;
 }
 
 }

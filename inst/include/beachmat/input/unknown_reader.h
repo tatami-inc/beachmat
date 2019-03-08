@@ -40,7 +40,10 @@ public:
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     Rcpp::RObject yield() const;
-    matrix_type get_matrix_type () const;
+
+    std::string get_class() const { return ""; }
+
+    std::string get_package() const { return ""; }
 private:
     Rcpp::RObject original;
     Rcpp::Environment beachenv;
@@ -262,11 +265,6 @@ void unknown_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n,
 template<typename T, class V>
 Rcpp::RObject unknown_reader<T, V>::yield() const {
     return original;
-}
-
-template<typename t, class v>
-matrix_type unknown_reader<t, v>::get_matrix_type () const {
-    return UNKNOWN;
 }
 
 }

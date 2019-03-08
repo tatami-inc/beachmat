@@ -168,11 +168,6 @@ std::unique_ptr<lin_output<T, V> > general_lin_output<T, V, WTR>::clone() const 
     return std::unique_ptr<lin_output<T, V> >(new general_lin_output<T, V, WTR>(*this));
 }
 
-template<typename T, class V, class WTR>
-matrix_type general_lin_output<T, V, WTR>::get_matrix_type() const {
-    return writer.get_matrix_type();
-}
-
 }
 
 #endif

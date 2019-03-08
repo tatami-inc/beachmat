@@ -49,7 +49,9 @@ public:
     // Other:
     Rcpp::RObject yield();
 
-    matrix_type get_matrix_type() const;
+    static std::string get_class() { return "matrix"; }
+
+    static std::string get_package() { return "base"; }
 private:
     V data;    
 };
@@ -147,11 +149,6 @@ Rcpp::RObject simple_writer<T, V>::yield() {
     Rcpp::RObject out(SEXP(this->data));
     out.attr("dim") = Rcpp::IntegerVector::create(this->nrow, this->ncol); 
     return out;
-}
-
-template<typename T, class V>
-matrix_type simple_writer<T, V>::get_matrix_type() const {
-    return SIMPLE;
 }
 
 }

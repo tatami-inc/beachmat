@@ -25,19 +25,25 @@ typedef simple_lin_matrix<int, Rcpp::LogicalVector> simple_logical_matrix;
 
 /* lgeMatrix */
 
+template<>
+inline std::string dense_reader<int, Rcpp::LogicalVector>::get_class() { return "lgeMatrix"; }
+
 typedef dense_lin_matrix<int, Rcpp::LogicalVector> dense_logical_matrix;
 
 /* lgCMatrix */
 
 template<>
-int Csparse_reader<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+inline int Csparse_reader<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+
+template<>
+inline std::string Csparse_reader<int, Rcpp::LogicalVector>::get_class() { return "lgCMatrix"; }
 
 typedef Csparse_lin_matrix<int, Rcpp::LogicalVector> Csparse_logical_matrix;
 
 /* DelayedMatrix */
 
 template<>
-std::unique_ptr<logical_matrix> delayed_lin_reader<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
+inline std::unique_ptr<logical_matrix> delayed_lin_reader<int, Rcpp::LogicalVector>::generate_seed(Rcpp::RObject incoming) {
     return create_logical_matrix_internal(incoming, false);
 }
 
@@ -89,7 +95,10 @@ typedef simple_lin_output<int, Rcpp::LogicalVector> simple_logical_output;
 /* Sparse output logical matrix */
 
 template<>
-int Csparse_writer<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+inline int Csparse_writer<int, Rcpp::LogicalVector>::get_empty() { return 0; }
+
+template<>
+inline std::string Csparse_writer<int, Rcpp::LogicalVector>::get_class() { return "lgCMatrix"; }
 
 typedef sparse_lin_output<int, Rcpp::LogicalVector> sparse_logical_output;
 
