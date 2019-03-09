@@ -55,6 +55,9 @@ typedef unknown_lin_matrix<double, Rcpp::NumericVector> unknown_numeric_matrix;
 
 /* External matrix */
 
+template<>
+inline std::string external_reader_base<double, Rcpp::NumericVector>::get_type() { return "numeric"; }
+
 typedef external_lin_matrix<double, Rcpp::NumericVector> external_numeric_matrix;
 
 /* Dispatcher */
@@ -104,6 +107,9 @@ typedef sparse_lin_output<double, Rcpp::NumericVector> sparse_numeric_output;
 
 /* External output numeric matrix */
 
+template<>
+inline std::string external_writer_base<double, Rcpp::NumericVector>::get_type() { return "numeric"; }
+
 typedef external_lin_output<double, Rcpp::NumericVector> external_numeric_output;
 
 /* Output dispatchers */
@@ -116,8 +122,7 @@ inline std::unique_ptr<numeric_output> create_numeric_output(int nrow, int ncol,
             return std::unique_ptr<numeric_output>(new sparse_numeric_output(nrow, ncol));
         }
     } else if (param.is_external_available("numeric")) {
-        return std::unique_ptr<numeric_output>(new external_numeric_output(nrow, ncol, 
-            pkg.c_str(), param.get_class().c_str(), "numeric"));
+        return std::unique_ptr<numeric_output>(new external_numeric_output(nrow, ncol, pkg, param.get_class()));
     }
 
     return std::unique_ptr<numeric_output>(new simple_numeric_output(nrow, ncol));

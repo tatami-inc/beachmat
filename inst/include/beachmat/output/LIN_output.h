@@ -145,8 +145,8 @@ using sparse_lin_output=general_lin_output<T, V, Csparse_writer<T, V> >;
 template<typename T, class V>
 class external_lin_output : public general_lin_output<T, V, external_lin_writer<T, V> > {
 public:
-    external_lin_output(size_t nr, size_t nc, const char* pkg, const char* cls, const char* type) :
-        general_lin_output<T, V, external_lin_writer<T, V> >(external_lin_writer<T, V>(nr, nc, pkg, cls, type)) {}
+    external_lin_output(size_t nr, size_t nc, const std::string& pkg, const std::string& cls) :
+        general_lin_output<T, V, external_lin_writer<T, V> >(external_lin_writer<T, V>(nr, nc, pkg, cls)) {}
     ~external_lin_output() = default;
     external_lin_output(const external_lin_output&) = default;
     external_lin_output& operator=(const external_lin_output&) = default;

@@ -171,6 +171,9 @@ using unknown_character_matrix=general_character_matrix<unknown_reader<Rcpp::Str
 
 /* External matrix type */
 
+template<>
+inline std::string external_reader_base<Rcpp::String, Rcpp::StringVector>::get_type() { return "character"; }
+
 using external_character_matrix=general_character_matrix<external_reader<Rcpp::String, Rcpp::StringVector> >;
 
 /* Dispatcher */
@@ -339,11 +342,14 @@ typedef general_character_output<simple_writer<Rcpp::String, Rcpp::StringVector>
 
 /* External character matrix */
 
+template<>
+inline std::string external_writer_base<Rcpp::String, Rcpp::StringVector>::get_type() { return "character"; }
+
 class external_character_output : public general_character_output<external_writer<Rcpp::String, Rcpp::StringVector> > {
 public:
-    external_character_output(size_t nr, size_t nc, const std::string& pkg, const std::string& cls, const std::string& type) : 
+    external_character_output(size_t nr, size_t nc, const std::string& pkg, const std::string& cls) :
         general_character_output<external_writer<Rcpp::String, Rcpp::StringVector> >(
-            external_writer<Rcpp::String, Rcpp::StringVector>(nr, nc, pkg, cls, type)) {}
+            external_writer<Rcpp::String, Rcpp::StringVector>(nr, nc, pkg, cls)) {}
     ~external_character_output() = default;
     external_character_output(const external_character_output&) = default;
     external_character_output& operator=(const external_character_output&) = default;
@@ -360,8 +366,7 @@ public:
 
 inline std::unique_ptr<character_output> create_character_output(int nrow, int ncol, const output_param& param) {
     if (param.is_external_available("character")) { 
-        return std::unique_ptr<character_output>(new external_character_output(nrow, ncol, 
-            param.get_package().c_str(), param.get_class().c_str(), "character"));
+        return std::unique_ptr<character_output>(new external_character_output(nrow, ncol, param.get_package(), param.get_class()));
     }
 
     return std::unique_ptr<character_output>(new simple_character_output(nrow, ncol));

@@ -110,49 +110,37 @@ inline std::string translate_type(int sexp_type) {
     return should_be;
 }
 
-inline int reverse_translate_type (const std::string& curtype) {
-    if (curtype=="logical") {
-        return LGLSXP;
-    } else if (curtype=="character") {
-        return STRSXP;
-    } else if (curtype=="integer") {
-        return INTSXP;
-    } else if (curtype=="double") {
-        return REALSXP;
-    }
-    std::stringstream err;
-    err << "unsupported type'" << curtype << "'";
-    throw std::runtime_error(err.str());
-}
-
 inline int find_sexp_type (const Rcpp::RObject& incoming) {
-    if (incoming.isObject()) {
-        const auto classinfo=get_class_package(incoming);
-        const std::string& classname=classinfo.first;
-        const std::string& classpkg=classinfo.second;
-        
-        if (classpkg=="Matrix" && classname.length()==9 && classname.substr(3)=="Matrix") {
-            if (classname[0]=='d') {
-                return REALSXP;
-            } else if (classname[0]=='l') {
-                return LGLSXP;
-            }
-
-        } else if (classname=="HDF5Matrix") {
-            Rcpp::RObject h5seed=get_safe_slot(incoming, "seed");
-            Rcpp::RObject first_val=get_safe_slot(h5seed, "first_val");
-            return first_val.sexp_type();
-
-        } else {
-            Rcpp::Environment delayenv=Rcpp::Environment::namespace_env("DelayedArray");
-            Rcpp::Function typefun=delayenv["type"];
-            std::string curtype=Rcpp::as<std::string>(typefun(incoming));
-            return reverse_translate_type(curtype);
-
-        } 
-        throw_custom_error("unknown SEXP type for ", classname, " object");
+    if (!incoming.isObject()) {
+        return incoming.sexp_type();
     }
-    return incoming.sexp_type();
+
+    const auto classinfo=get_class_package(incoming);
+    const std::string& classname=classinfo.first;
+    const std::string& classpkg=classinfo.second;
+    
+    if (classpkg=="Matrix" && classname.length()==9 && classname.substr(3)=="Matrix") {
+        if (classname[0]=='d') {
+            return REALSXP;
+        } else if (classname[0]=='l') {
+            return LGLSXP;
+        }
+
+    } else {
+        Rcpp::Environment delayenv=Rcpp::Environment::namespace_env("DelayedArray");
+        Rcpp::Function typefun=delayenv["type"];
+        std::string curtype=Rcpp::as<std::string>(typefun(incoming));
+        if (curtype=="logical") {
+            return LGLSXP;
+        } else if (curtype=="character") {
+            return STRSXP;
+        } else if (curtype=="integer") {
+            return INTSXP;
+        } else if (curtype=="double") {
+            return REALSXP;
+        }
+    } 
+    throw_custom_error("unknown SEXP type for ", classname, " object");
 }
 
 /* External access checks */

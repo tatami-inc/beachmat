@@ -55,6 +55,9 @@ typedef unknown_lin_matrix<int, Rcpp::LogicalVector> unknown_logical_matrix;
 
 /* External matrix */
 
+template<>
+inline std::string external_reader_base<int, Rcpp::LogicalVector>::get_type() { return "logical"; } 
+
 typedef external_lin_matrix<int, Rcpp::LogicalVector> external_logical_matrix;
 
 /* Dispatcher */
@@ -104,6 +107,9 @@ typedef sparse_lin_output<int, Rcpp::LogicalVector> sparse_logical_output;
 
 /* Simple output logical matrix */
 
+template<>
+inline std::string external_writer_base<int, Rcpp::LogicalVector>::get_type() { return "logical"; } 
+
 typedef external_lin_output<int, Rcpp::LogicalVector> external_logical_output;
 
 /* Output dispatchers */
@@ -116,8 +122,7 @@ inline std::unique_ptr<logical_output> create_logical_output(int nrow, int ncol,
             return std::unique_ptr<logical_output>(new sparse_logical_output(nrow, ncol));
         }
     } else if (param.is_external_available("logical")) {
-        return std::unique_ptr<logical_output>(new external_logical_output(nrow, ncol, 
-            pkg.c_str(), param.get_class().c_str(), "logical"));
+        return std::unique_ptr<logical_output>(new external_logical_output(nrow, ncol, pkg, param.get_class()));
     }
 
     return std::unique_ptr<logical_output>(new simple_logical_output(nrow, ncol));

@@ -38,6 +38,9 @@ typedef unknown_lin_matrix<int, Rcpp::IntegerVector> unknown_integer_matrix;
 
 /* External matrix */
 
+template<>
+inline std::string external_reader_base<int, Rcpp::IntegerVector>::get_type() { return "integer"; }
+
 typedef external_lin_matrix<int, Rcpp::IntegerVector> external_integer_matrix;
 
 /* Dispatcher */
@@ -73,14 +76,16 @@ typedef simple_lin_output<int, Rcpp::IntegerVector> simple_integer_output;
 
 /* External output integer matrix */
 
+template<>
+inline std::string external_writer_base<int, Rcpp::IntegerVector>::get_type() { return "integer"; }
+
 typedef external_lin_output<int, Rcpp::IntegerVector> external_integer_output;
 
 /* Output dispatchers */
 
 inline std::unique_ptr<integer_output> create_integer_output(int nrow, int ncol, const output_param& param) {
     if (param.is_external_available("integer")) { 
-        return std::unique_ptr<integer_output>(new external_integer_output(nrow, ncol, 
-            param.get_package().c_str(), param.get_class().c_str(), "integer"));
+        return std::unique_ptr<integer_output>(new external_integer_output(nrow, ncol, param.get_package(), param.get_class()));
     }
      
     return std::unique_ptr<integer_output>(new simple_integer_output(nrow, ncol));

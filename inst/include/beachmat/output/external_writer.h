@@ -26,8 +26,10 @@ protected:
     SEXP (*report) (void *)=NULL;
 
 public:
-    external_writer_base(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class, const std::string& type) : 
-            dim_checker(nr, nc), cls(Class), pkg(Pkg), ex(nr, nc, Pkg, Class, type) {
+    external_writer_base(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class) :
+            dim_checker(nr, nc), cls(Class), pkg(Pkg), ex(nr, nc, Pkg, Class, get_type()) {
+
+        auto type=get_type();
 
         // Define all remaining function pointers.
         auto store_name=get_external_name(cls, type, "output", "set");
@@ -71,6 +73,8 @@ public:
     std::string get_package() const {
         return pkg;
     }
+
+    static std::string get_type();
 };
 
 /*******************************
@@ -94,9 +98,10 @@ private:
     void (*load_row) (void *, size_t, RcppValIt*, size_t, size_t);
 
 public:    
-    external_writer(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class, const std::string& Type) : 
-            external_writer_base<T, V>(nr, nc, Pkg, Class, Type) { 
+    external_writer(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class) :
+            external_writer_base<T, V>(nr, nc, Pkg, Class) { 
 
+        auto Type=this->get_type();
 
         // Getting all required functions from the corresponding shared library.
         auto store_col_name=get_external_name(Class, Type, "output", "setCol");
@@ -190,8 +195,10 @@ private:
     void (*load_row_dbl) (void *, size_t, RcppNumIt*, size_t, size_t);
 
 public:    
-    external_lin_writer(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class, const std::string& Type) : 
-        external_writer_base<T, V>(nr, nc, Pkg, Class, Type) { 
+    external_lin_writer(size_t nr, size_t nc, const std::string& Pkg, const std::string& Class) :
+            external_writer_base<T, V>(nr, nc, Pkg, Class) { 
+
+        auto Type=this->get_type();
 
         // Getting all required functions from the corresponding shared library.
         auto store_col2int_name=get_external_name(Class, Type, "output", "setCol", "integer");
