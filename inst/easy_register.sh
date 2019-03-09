@@ -2,22 +2,28 @@ pkgname=$1
 shift
 tmp="$*"
 matrices=$(echo $tmp | sed "s/ /|/g")
+src=$(ls *.cpp | grep -v "exports.cpp")
 
 # Creating the export header.
 cat << EOT > exports.h
+#ifndef EXPORTS_H
+#define EXPORTS_H
 #include "Rcpp.h"
 
 extern "C" {
 
 EOT
 
-cat *_access.cpp *_output.cpp | egrep "(${matrices})_.*{" | sed -E "s/ [^ ]+,/,/g" | sed -E "s/ [^ ]+\) *\{/\);/" | sed "s/;/;\n/" >> exports.h
+cat ${src} | egrep "(${matrices})_[^_]+_(input|output)_.*{" | sed -E "s/ [^ ]+,/,/g" | sed -E "s/ [^ ]+\) *\{/\);/" | sed "s/;/;\n/" >> exports.h
 
-echo "}" >> exports.h
+cat << EOT >> exports.h
+}
+
+#endif
+EOT
 
 # Creating the export file.
 cat << EOT > exports.cpp
-#include "Rcpp.h"
 #include "exports.h"
 #include "R_ext/Rdynload.h"
 
@@ -29,7 +35,7 @@ void R_init_$pkgname(DllInfo *info) {
 
 EOT
 
-cat *_access.cpp *_output.cpp | egrep "(${matrices})_.*{" | sed -E "s/ ?\(.*$//g" | sed -E "s/^.* //" | sed "s/^\(.*\)$/REGISTER(\1);\n/" >> exports.cpp
+cat ${src} | egrep "(${matrices})_[^_]+_(input|output)_.*{" | sed -E "s/ ?\(.*$//g" | sed -E "s/^.* //" | sed "s/^\(.*\)$/REGISTER(\1);\n/" >> exports.cpp
 
 cat << EOT >> exports.cpp
 }

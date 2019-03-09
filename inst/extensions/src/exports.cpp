@@ -1,4 +1,3 @@
-#include "Rcpp.h"
 #include "exports.h"
 #include "R_ext/Rdynload.h"
 
@@ -26,6 +25,30 @@ REGISTER(AaronMatrix_character_input_getRows);
 
 REGISTER(AaronMatrix_character_input_getCols);
 
+REGISTER(AaronMatrix_character_output_create);
+
+REGISTER(AaronMatrix_character_output_destroy);
+
+REGISTER(AaronMatrix_character_output_clone);
+
+REGISTER(AaronMatrix_character_output_yield);
+
+REGISTER(AaronMatrix_character_output_get);
+
+REGISTER(AaronMatrix_character_output_getRow);
+
+REGISTER(AaronMatrix_character_output_getCol);
+
+REGISTER(AaronMatrix_character_output_set);
+
+REGISTER(AaronMatrix_character_output_setRow);
+
+REGISTER(AaronMatrix_character_output_setCol);
+
+REGISTER(AaronMatrix_character_output_setRowIndexed);
+
+REGISTER(AaronMatrix_character_output_setColIndexed);
+
 REGISTER(AaronMatrix_integer_input_create);
 
 REGISTER(AaronMatrix_integer_input_destroy);
@@ -51,30 +74,6 @@ REGISTER(AaronMatrix_integer_input_getCols_integer);
 REGISTER(AaronMatrix_integer_input_getRows_numeric);
 
 REGISTER(AaronMatrix_integer_input_getCols_numeric);
-
-REGISTER(AaronMatrix_character_output_create);
-
-REGISTER(AaronMatrix_character_output_destroy);
-
-REGISTER(AaronMatrix_character_output_clone);
-
-REGISTER(AaronMatrix_character_output_yield);
-
-REGISTER(AaronMatrix_character_output_get);
-
-REGISTER(AaronMatrix_character_output_getRow);
-
-REGISTER(AaronMatrix_character_output_getCol);
-
-REGISTER(AaronMatrix_character_output_set);
-
-REGISTER(AaronMatrix_character_output_setRow);
-
-REGISTER(AaronMatrix_character_output_setCol);
-
-REGISTER(AaronMatrix_character_output_setRowIndexed);
-
-REGISTER(AaronMatrix_character_output_setColIndexed);
 
 REGISTER(AaronMatrix_integer_output_create);
 
