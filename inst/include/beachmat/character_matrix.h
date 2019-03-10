@@ -183,7 +183,7 @@ inline std::unique_ptr<character_matrix> create_character_matrix_internal(const 
         std::string ctype=get_class(incoming);
         if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
-        } else if (has_external_support(incoming)) {
+        } else if (has_external_support("character", incoming)) {
             return std::unique_ptr<character_matrix>(new external_character_matrix(incoming));
         }
         return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));

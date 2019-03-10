@@ -50,7 +50,7 @@ inline std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp
         std::string ctype=get_class(incoming);
         if (delayed && ctype=="DelayedMatrix") {
             return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));
-        } else if (has_external_support(incoming)) {
+        } else if (has_external_support("integer", incoming)) {
             return std::unique_ptr<integer_matrix>(new external_integer_matrix(incoming));
         }
         return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));

@@ -143,18 +143,6 @@ inline int find_sexp_type (const Rcpp::RObject& incoming) {
     throw_custom_error("unknown SEXP type for ", classname, " object");
 }
 
-/* External access checks */
-
-inline bool has_external_support (const Rcpp::RObject& incoming) {
-    Rcpp::Environment beachenv=Rcpp::Environment::namespace_env("beachmat");
-    Rcpp::Function supfun=beachenv["supportCppAccess"];
-    Rcpp::LogicalVector supported=supfun(incoming);
-    if (supported.size()!=1) {
-        throw std::runtime_error("'supportCppAccess' should return a logical scalar");
-    }
-    return supported[0];
-}
-
 }
 
 #endif

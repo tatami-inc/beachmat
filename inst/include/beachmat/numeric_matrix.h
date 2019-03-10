@@ -71,7 +71,7 @@ inline std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp
             return std::unique_ptr<numeric_matrix>(new Csparse_numeric_matrix(incoming));
         } else if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<numeric_matrix>(new delayed_numeric_matrix(incoming));
-        } else if (has_external_support(incoming)) {
+        } else if (has_external_support("numeric", incoming)) {
             return std::unique_ptr<numeric_matrix>(new external_numeric_matrix(incoming));
         }
         return std::unique_ptr<numeric_matrix>(new unknown_numeric_matrix(incoming));

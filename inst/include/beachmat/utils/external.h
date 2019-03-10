@@ -97,6 +97,31 @@ public:
     void* get() const { return ptr; }
 };
 
+inline bool has_external_support (const std::string& type, const std::string& cls, const std::string& pkg, const std::string& mode) {
+	Rcpp::Environment pkgenv=Rcpp::Environment::namespace_env(pkg);
+
+	std::stringstream symbolic;
+	symbolic << "beachmat_" << cls << "_" << type << "_" << mode;
+	Rcpp::RObject out=pkgenv.get(symbolic.str());
+	if (out.isNULL()) {
+		return false;
+	}
+
+	Rcpp::LogicalVector flag(out);
+	if (flag.size()!=1) {
+		std::stringstream msg;
+		msg << "invalid specifier for " << symbolic.str();
+		throw std::runtime_error(msg.str());
+	}
+
+	return flag[0];
+}
+
+inline bool has_external_support (const std::string& type, Rcpp::RObject incoming) {
+    auto classinfo=get_class_package(incoming);
+    return has_external_support(type, classinfo.first, classinfo.second, "input");
+}
+
 }
 
 #endif
