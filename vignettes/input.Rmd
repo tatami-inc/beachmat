@@ -57,11 +57,11 @@ The `get_ncol()` method returns the number of columns in the matrix:
 size_t ncol = dptr->get_ncol();
 ```
 
-The `get_matrix_type()` method returns the type of matrix representation pointed to by `dptr`.
-This can be tested against constants like `beachmat::SIMPLE` or `beachmat::SPARSE`.
+The `get_class()` method returns the class of the matrix representation pointed to by `dptr`,
+while the `get_package()` method returns the package in which that class is defined^[In case two packages define the same class name.].
 
 ```cpp
-beachmat::matrix_type mat_type = dptr->get_matrix_type();
+std::string mat_type = dptr->get_class();
 ```
 
 The `yield()` method returns the original R matrix that was used to create `dptr`.
@@ -147,63 +147,6 @@ double val = dptr->get(
 If the object `in` is a `Rcpp::NumericVector::iterator` instance, matrix entries will be extracted as double-precision values.
 If it is a `Rcpp::IntegerVector::iterator` instance, matrix entries will be extracted as integers with implicit conversion from the double-precision type in `dptr`.
 It is also _possible_ to use a `Rcpp::LogicalVector::iterator`, though see the warnings [below](#type-coercion).
-
-# Specialized data extraction 
-
-## From dense matrices
-
-The `get_const_col()` method returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
-The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] with `work` being equivalent to `in`.
-The type of `work` and the output iterator _must_ correspond to the data type of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
-
-```cpp
-Rcpp::NumericVector::iterator it = dptr->get_const_col(
-    c, /* size_t */ 
-    work, /* Rcpp::NumericVector::iterator */
-);
-```
-
-
-For simple/dense matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data into `work`.
-For other matrices, this function simply calls `get_col()` to copy the data into the vector starting at `work`, and then returns an iterator equal to `work`.
-Thus, for general use, `work` must point to a writeable block of memory, even if it does not get used when `dptr` points to a simple/dense matrix.
-
-**Additional notes**
-
-- Calling processes should consider the vector starting at `work` to be read-only after a call to `get_const_col()`.
-In particular, the underlying data will be modified if `get_const_col()` is called again with the same `work`.
-This has some consequences if a process calls `get_const_col()` multiple times to obtain more than one iterators for further computation.
-In such cases, developers should ensure that each `get_const_col()` call uses a `work` pointing to a different vector. 
-
-## From sparse matrices
-
-The `get_const_col_indexed()` method is guaranteed to index at least all the "non-zero" entries in column `c` of the matrix.
-For numeric types, this represents non-zero values (obviously), while for character matrices, this represents non-empty strings.
-
-```cpp
-auto indexinfo = dptr->get_const_col_indexed(
-    c, /* size_t */
-    work, /* Rcpp::NumericVector::iterator */
-    first, /* size_t */
-    last /* size_t */
-);
-```
-
-It returns a `const_col_indexed_info` object, which is a tuple consisting of:
-
-1. A `size_t`, specifying the number of entries in column `c` from rows `[first, last)`.
-2. A `Rcpp::IntegerVector::iterator`, pointing to a vector containing the row index for each entry in column `c` from rows `[first, last)`.
-3. A `Rcpp::NumericVector::iterator`, pointing to a vector containing the value of each entry in column `c` from rows `[first, last)`.
-
-The data type of `work` and the output iterator in (3) must correspond to that of the matrix - in this case, both should be `Rcpp::NumericVector::iterator` objects.
-Again, `first` and `last` do not have to be specified and will default to the entire column.
-
-This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the _non-zero entries only_.
-No copying is performed, and the zero values do not have to be explicitly generated as they would be in `get_col`.
-For all other matrices, `get_const_col` is called^[The comments above regarding the read-only nature of `work` also apply here.] and iterator (2) is pointed at an internal array of consecutive integers (which should be treated as read-only).
-
-Note that this method is _not_ guaranteed to index _only_ the non-zero entries.
-The specific representation may choose to return only the non-zero entries or all of them.     
 
 # Multiple data extraction
 
@@ -309,15 +252,15 @@ This ensures that the string is stored in R's global cache and is suitably prote
 
 ## Alternative matrix representations
 
-The following matrix classes are directly supported by the API:
+The following matrix classes are natively supported by the API:
 
-- numeric: `matrix`, `dgeMatrix`, `dgCMatrix`, `HDF5Matrix`
-- integer: `matrix`, `RleMatrix`, `HDF5Matrix`
-- logical: `matrix`, `lgeMatrix`, `lgCMatrix`, `HDF5Matrix`
-- character: `matrix`, `HDF5Matrix`
+- numeric: `matrix`, `dgeMatrix`, `dgCMatrix`
+- integer: `matrix`
+- logical: `matrix`, `lgeMatrix`, `lgCMatrix`
+- character: `matrix`
 
-The API will also directly support `DelayedMatrix` objects using the above matrices as backends _and_ containing only subsetting or transposition operations.
-It is possible to directly support arbitrary user-supplied matrices, see `r Biocpkg("beachmat", vignette="external.html", label="here")` for more details.
+The API will also natively support `DelayedMatrix` objects using the above matrices as backends _and_ containing only subsetting or transposition operations.
+It is possible to natively support arbitrary user-supplied matrices, see `r Biocpkg("beachmat", vignette="external.html", label="here")` for more details and `r Biocpkg("HDF5Array")` for an example.
 
 For all other matrices, the API indirectly supports data access via a block processing mechanism.
 This involves a call to R to realize a block of the matrix (containing the requested row or column) as a dense contiguous array.
@@ -330,6 +273,53 @@ The size of the blocks can be controlled using methods in the `r Biocpkg("Delaye
 Rather, the `yield` method can be used to obtain the original `Rcpp::RObject` for input to `r CRANpkg("RcppArmadillo")` or `r CRANpkg("RcppEigen")`.
 This functionality is generally limited to base matrices, though there is also limited support for sparse matrices in these libraries.
 
+# Specialized data extraction 
+
+## Overview
+
+For specific matrix representations, special methods are available that can improve the efficiency of data access.
+However, these methods are not representation-agnostic, thus requiring specialization to a specific subclass.
+Their use is only recommended for performance-critical applications as the surrounding code is likely to be representation-specific as well.
+
+## From ordinary matrices
+
+Ordinary R matrices containing double-precision numbers can be used to construct a `simple_numeric_matrix`, which provides a `get_const_col()` method.
+This returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
+The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] except for the absence of an `iterator` argument.
+
+```cpp
+Rcpp::NumericVector::iterator it = dptr->get_const_col(c, /* size_t */);
+```
+
+For ordinary matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data into `work`.
+The same method is also available for logical, integer and character inputs with the corresponding `simple_*_matrix` class. 
+However, calling processes should consider the iterator to be read-only, otherwise the data will be modified at the R-level.
+
+## From sparse matrices
+
+Column-sparse compressed matrices from `r CRANpkg("Matrix")` can be used to construct a `Csparse_*_matrix` class.
+This has the `get_const_col_indexed()` method, which is guaranteed to index all of the non-zero entries in column `c` of the matrix.
+For numeric types, this represents non-zero values (obviously), while for character matrices, this represents non-empty strings.
+
+```cpp
+auto indexinfo = dptr->get_const_col_indexed(
+    c, /* size_t */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+It returns a `const_col_indexed_info` object, which is a tuple consisting of:
+
+1. A `size_t`, specifying the number of entries in column `c` from rows `[first, last)`.
+2. A `Rcpp::IntegerVector::iterator`, pointing to a vector containing the row index for each entry in column `c` from rows `[first, last)`.
+3. A `Rcpp::NumericVector::iterator`, pointing to a vector containing the value of each entry in column `c` from rows `[first, last)`.
+
+Again, `first` and `last` do not have to be specified and will default to the entire column.
+
+This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the _non-zero entries only_.
+Again, the iterators should be treated as read-only.
+
 # Cloning matrix instances
 
 The `clone()` method returns a unique pointer to a `numeric_matrix` instance of the same type as that pointed to by `dptr`.
@@ -339,7 +329,7 @@ auto dptr_copy = dptr->clone();
 ```
 
 This is occasionally useful, e.g., when row and column access is simultaneously required from the same matrix.
-In such cases, row--specific settings in a single `numeric_matrix` instance (e.g., for HDF5 caching) would preclude efficient column extraction, and vice versa.
+In such cases, row-specific settings in a single `numeric_matrix` instance (e.g., for HDF5 caching) would preclude efficient column extraction, and vice versa.
 These problems are avoided by having two separate instances for row and column access.
 
 Cloning also enables multi-threaded access to the same matrix data.
@@ -352,9 +342,6 @@ This is fairly cheap as the underlying matrix data are not copied.
 An example of parallelized `r Biocpkg("beachmat")` code using OpenMP might look like this:
 
 ```cpp
-const int nthreads=(dptr->get_matrix_type()==beachmat::HDF5 ? 
-    1 : omp_get_max_threads()); // see below.
-
 #pragma omp parallel num_threads(nthreads)
 {
     beachmat::numeric_matrix* rptr=NULL;
@@ -381,7 +368,10 @@ The start of the parallel region uses the existing `dptr` in the master thread a
 The parallelized `for` loop then uses `rptr` to avoid race conditions in cached variables.
 Note that a static schedule may be faster than other schedule types, as several of the matrix implementations in `r Biocpkg("beachmat")` are optimized for consecutive row/column access.
 
-**However:** the HDF5 C++ library is not thread-safe (assuming `r Biocpkg("Rhdf5lib")` is still on version 1.10.3).
-One should not use C++-level multi-threading with `HDF5Matrix` input objects, hence the use of `num_threads(nthreads)` above.
+**Additional notes**
+
+- For community-defined matrices, `r Biocpkg("beachmat")` may use external linkage to natively access data.
+Developers of the corresponding shared libraries should ensure that their routines depend on thread-safe libraries.
+For example, the HDF5 library is not thread safe, so `r Biocpkg("HDF5Array")` inputs will likely break OpenMP code.
 This is admittedly rather frustrating as HDF5-backed matrices are often used for large data sets that most require parallel processing.
 As a workaround, we suggest parallelizing at the R level with `r Biocpkg("BiocParallel")`.

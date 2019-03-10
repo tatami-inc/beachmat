@@ -34,49 +34,42 @@ For example, a simple numeric output matrix with `nrow` rows and `ncol` columns 
 auto odptr=beachmat::create_numeric_output(
     nrow, /* size_t */ 
     ncol, /* size_t */
-    beachmat::SIMPLE_PARAM /* beachmat::output_param */
+    oparam /* beachmat::output_param */
 );
 ```
 
-A sparse matrix is similarly created by setting the last argument to `beachmat::SPARSE_PARAM`, 
-while a `HDF5Matrix` is constructed by setting `beachmat::HDF5_PARAM`.
-These constants are instances of the `output_param` class that specify the type and parameters of the output matrix to be constructed.
+The `beachmat::output_param` class specifies the output matrix representation.
+It is simply constructed by passing the class and package names:
+
+```cpp
+beachmat::output_param simple_param; 
+beachmat::output_param simple_param2("matrix", "base"); /* default */
+beachmat::output_param sparse_param("dgCMatrix", "Matrix"); 
+```
+
+Other class/package combinations can be handled by external linkage if available.
+Otherwise, the `output_param` constructor will default to an ordinary matrix.
 
 # Dynamic choice of output type
 
 Another option is to allow the function to dynamically choose the output type to match that of an existing matrix.
 This is useful for automatically choosing an output format that reflects the choice of input format.
 For example, if data are supplied to a function in a simple matrix, it would be reasonable to expect that the output is similarly small enough to be stored as a simple matrix.
-On the other hand, if the input is a `HDF5Matrix`, it may make more sense to return a `HDF5Matrix` object.
+On the other hand, if the input is file-backed, it suggests that the output may also be very large and thus require file-backed storage.
 
 Dynamic choice of output type is performed by using the `Rcpp::Robject` object containing the input matrix to initialize the `output_param` object.
 If we have a matrix object `dmat`, the output type can be matched to the input type with:
 
 ```cpp
-beachmat::output_param oparam(
-    dmat, /* Rcpp::RObject */
-    simplify, /* bool */
-    preserve_zero /* bool */
-);
+beachmat::output_param oparam(dmat /* Rcpp::RObject */);
 auto odptr=beachmat::create_numeric_output(nrow, ncol, oparam);
 ```
 
 A similar process can be used for a pointer `dptr` to an existing `*_matrix` instance:
 
 ```cpp
-beachmat::output_param oparam(
-    dptr->get_matrix_type(), /* beachmat::matrix_type */
-    simplify, /* bool */ 
-    preserve_zero /* bool */
-); 
+beachmat::output_param oparam(dptr->get_class(), dptr->get_package());
 ```
-
-The output matrix type is chosen according to the following rules:
-
-- If `dmat` is a simple/dense matrix, the output will always be a simple matrix.
-- Similarly, if `dmat` is a `HDF5Matrix`, the output will always be a `HDF5Matrix`.
-- If `dmat` is a sparse matrix _and_ if `preserve_zero` is `true`, the output will be a sparse matrix^[For logical and double-precision output matrices only. Exact zeroes are detected and ignored.].
-- In all other case, the output will be a simple matrix if `simplify` is `true` and a `HDF5Matrix` otherwise.
 
 # Methods to store data
 
@@ -190,7 +183,6 @@ return dptr->yield();
 
 Note that this operation may involve an R-level memory allocation, which may subsequently trigger garbage collection.
 This is usually not a concern as `r CRANpkg("Rcpp")` is excellent at protecting against unintended collection of objects.
-
 However, one exception is that of random number generation, where the destruction of the `Rcpp::RNGScope` may trigger a collection of unprotected `SEXP`s.
 This will almost always be the case when using `yield()` naively, as the construction of the matrix `SEXP` is done at the end of the function:
 
@@ -198,7 +190,7 @@ This will almost always be the case when using `yield()` naively, as the constru
 // Possible segfault:
 extern "C" SEXP dummy1 () {
     auto odptr=beachmat::create_numeric_output(nrow, ncol, 
-        beachmat::SIMPLE_PARAM);
+        beachmat::output_param());
     Rcpp::RNGScope rng;
     // Do something with random numbers and store in odptr.
     return odptr->yield();
@@ -211,7 +203,7 @@ This ensures that there are no unprotected `SEXP` objects upon destruction of th
 ```cpp
 extern "C" SEXP dummy2 () {
     auto odptr=beachmat::create_numeric_output(nrow, ncol, 
-        beachmat::SIMPLE_PARAM);
+        beachmat::output_param());
     {
         Rcpp::RNGScope rng;
         // Do something with random numbers and store in odptr.
@@ -226,7 +218,7 @@ A subset of the access methods are also implemented for `*_output` objects:
 
 - `get_nrow()` and `get_ncol()`
 - `get_row()`, `get_col()` and `get()`
-- `get_matrix_type()` and `clone()`.
+- `get_class()`, `get_package()` and `clone()`.
 
 These methods behave as described `r Biocpkg("beachmat", vignette="input.html", label="previously")` for `*_matrix` objects.
 They may be useful in situations where data are stored in an intermediate matrix and need to be queried before the matrix is fully filled.
@@ -241,13 +233,13 @@ Logical, integer and character output matrices are supported by changing the typ
 
 ```cpp
 // returns a std::unique_ptr<integer_output> 
-auto oimat=beachmat::create_integer_output(nrow, ncol, beachmat::SIMPLE_PARAM);
+auto oimat=beachmat::create_integer_output(nrow, ncol, beachmat::output_param());
 
 // returns a std::unique_ptr<logical_output> 
-auto olmat=beachmat::create_logical_output(nrow, ncol, beachmat::SIMPLE_PARAM);
+auto olmat=beachmat::create_logical_output(nrow, ncol, beachmat::output_param());
 
 // returns a std::unique_ptr<character_output> 
-auto ocmat=beachmat::create_character_output(nrow, ncol, beachmat::SIMPLE_PARAM);
+auto ocmat=beachmat::create_character_output(nrow, ncol, beachmat::output_param());
 ```
 
 For integer, logical and numeric matrices, `out` can be an iterator for any `Rcpp::NumericVector`, `Rcpp::IntegerVector` or `Rcpp::LogicalVector` objects.
@@ -259,30 +251,6 @@ For character matrices, `out` should be of type `Rcpp::StringVector::iterator` a
 - Similar to the issue discussed `r Biocpkg("beachmat", vignette="input.html#other-data-types", label="previously")`, 
 it is probably unwise to use anything but a `Rcpp::LogicalVector::iterator` as `out` when storing data in a `logical_output`.
 This is because type conversion at the C++ level will not give the same results as conversion at the R level.
-
-# HDF5-related details
-
- Creation of a `HDF5Matrix` will perform a new `getHDF5DumpFile()` call with `for.use=TRUE` to obtain a new file name for storing the HDF5 output.
-Similarly, the name of the data set is obtained via `getHDF5DumpName()`.
-Both names are recorded in the dump log via `appendDatasetCreationToHDF5DumpLog()`.
-This mimics the behaviour observed when `HDF5Matrix` instances are created at the R level.
-Similarly, the compression level will be taken from `getHDF5DumpCompressionLevel()`.
-All of these variables can be modified in R using the appropriate setter methods in `r Biocpkg("HDF5Array")`, which will be respected by `r Biocpkg("beachmat")` in the C++ code.
-
-By default, the chunk dimensions and compression level for HDF5 output are retrieved using the `getHDF5DumpChunkDim()` function.
-An alternative is to directly specify the chunk dimensions using `oparam.set_chunk_dim(chunk_nr, chunk_nc)`, 
-where `chunk_nr` and `chunk_nc` are the chunk rows and columns respectively.
-Similarly, the compression level can be set using `oparam.set_compression(compress)`, where `compress` can range from 0 (contiguous) to 9 (most compression).
-If specified, these settings will override the default behaviour for `HDF5Matrix` output but will have no effect for non-HDF5 output.
-
-For consecutive row and column access from a matrix with dimensions `nr`-by-`nc`, the optimal chunk dimensions can be specified with `oparam.optimize_chunk_dims(nr, nc)`.
-_beachmat_ exploits the chunk cache to store all chunks along a row or column, thus avoiding the need to reload data for the next row or column.
-These chunk settings are designed to minimize the chunk cache size while also reducing the number of disk reads.
-
-HDF5 character output is stored as fixed-width character arrays.
-As such, the API must know the maximum string length during construction of a `character_output` instance.
-This can be set using `oparam.set_strlen(strlen)` where `strlen` is the length of a C-style string, _not including the null-terminating character_.
-Any attempts to fill the output matrix with strings larger than `strlen` will result in silent truncation.
 
 # Handling parallelization
 
