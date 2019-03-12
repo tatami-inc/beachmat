@@ -35,7 +35,7 @@ You need to tell the build system to use C++11, by modifying the `SystemRequirem
         SystemRequirements: C++11
 
 -  `r CRANpkg("Rcpp")` should be installed.
-You also need to ensure that `r CRANpkg("Rcpp")` is initialized when your package is loaded.
+You also need to ensure that `r CRANpkg("Rcpp")` is loaded when your package is loaded.
 This requires addition of `Rcpp` to the `Imports` field of the `DESCRIPTION` file:
 
         Imports: Rcpp
