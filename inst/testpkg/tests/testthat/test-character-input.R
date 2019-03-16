@@ -56,6 +56,10 @@ test_that("RLE character matrix input is okay", {
     check_read_varslice(rFUN, nr=5, nc=30, mode="character")
     check_read_varslice(rFUN, nr=30, nc=5, mode="character")
 
+    check_read_const(rFUN, mode="character")
+    check_read_const(rFUN, nr=5, nc=30, mode="character")
+    check_read_const(rFUN, nr=30, nc=5, mode="character")
+
     check_read_multi(rFUN, mode="character")
     check_read_multi(rFUN, nr=5, nc=30, mode="character")
     check_read_multi(rFUN, nr=30, nc=5, mode="character")
@@ -86,6 +90,10 @@ test_that("RLE character matrix input is okay with reduced block size", {
         check_read_varslice(rFUN, mode="character")
         check_read_varslice(rFUN, nr=5, nc=30, mode="character")
         check_read_varslice(rFUN, nr=30, nc=5, mode="character")
+
+        check_read_const(rFUN, mode="character")
+        check_read_const(rFUN, nr=5, nc=30, mode="character")
+        check_read_const(rFUN, nr=30, nc=5, mode="character")
 
         check_read_multi(rFUN, mode="character")
         check_read_multi(rFUN, nr=5, nc=30, mode="character")
@@ -119,7 +127,9 @@ test_that("Delayed character matrix input is okay", {
         check_read_slice(FUN, NR, NC, mode="character")
 
         check_read_varslice(FUN, NR, NC, mode="character")
-
+   
+        check_read_const(FUN, NR, NC, mode="character")
+    
         check_read_multi(FUN, NR, NC, mode="character")
 
         check_read_type(FUN, NR, NC, mode="character")

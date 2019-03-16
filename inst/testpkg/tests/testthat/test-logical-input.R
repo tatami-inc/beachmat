@@ -26,6 +26,10 @@ test_that("Simple logical matrix input is okay", {
     check_read_const(sFUN, nr=5, nc=30, mode="logical")
     check_read_const(sFUN, nr=30, nc=5, mode="logical")
 
+    check_read_indexed(sFUN, mode="logical")
+    check_read_indexed(sFUN, nr=5, nc=30, mode="logical")
+    check_read_indexed(sFUN, nr=30, nc=5, mode="logical")
+
     check_read_multi(sFUN, mode="logical")
     check_read_multi(sFUN, nr=5, nc=30, mode="logical")
     check_read_multi(sFUN, nr=30, nc=5, mode="logical")
@@ -57,6 +61,14 @@ test_that("Dense logical matrix input is okay", {
     check_read_varslice(dFUN, nr=5, nc=30, mode="logical")
     check_read_varslice(dFUN, nr=30, nc=5, mode="logical")
 
+    check_read_const(dFUN, mode="logical")
+    check_read_const(dFUN, nr=5, nc=30, mode="logical")
+    check_read_const(dFUN, nr=30, nc=5, mode="logical")
+
+    check_read_indexed(dFUN, mode="logical")
+    check_read_indexed(dFUN, nr=5, nc=30, mode="logical")
+    check_read_indexed(dFUN, nr=30, nc=5, mode="logical")
+
     check_read_multi(dFUN, mode="logical")
     check_read_multi(dFUN, nr=5, nc=30, mode="logical")
     check_read_multi(dFUN, nr=30, nc=5, mode="logical")
@@ -87,6 +99,10 @@ test_that("Sparse logical matrix input is okay", {
     check_read_varslice(csFUN, mode="logical")
     check_read_varslice(csFUN, nr=5, nc=30, mode="logical")
     check_read_varslice(csFUN, nr=30, nc=5, mode="logical")
+
+    check_read_const(csFUN, mode="logical")
+    check_read_const(csFUN, nr=5, nc=30, mode="logical")
+    check_read_const(csFUN, nr=30, nc=5, mode="logical")
 
     check_read_indexed(csFUN, mode="logical")
     check_read_indexed(csFUN, nr=5, nc=30, mode="logical")
@@ -123,6 +139,14 @@ test_that("lgTMatrix (i.e., unknown) input is okay", {
     check_read_varslice(tsFUN, nr=5, nc=30, mode="logical")
     check_read_varslice(tsFUN, nr=30, nc=5, mode="logical")
 
+    check_read_const(tsFUN, mode="logical")
+    check_read_const(tsFUN, nr=5, nc=30, mode="logical")
+    check_read_const(tsFUN, nr=30, nc=5, mode="logical")
+
+    check_read_indexed(tsFUN, mode="logical")
+    check_read_indexed(tsFUN, nr=5, nc=30, mode="logical")
+    check_read_indexed(tsFUN, nr=30, nc=5, mode="logical")
+
     check_read_multi(tsFUN, mode="logical")
     check_read_multi(tsFUN, nr=5, nc=30, mode="logical")
     check_read_multi(tsFUN, nr=30, nc=5, mode="logical")
@@ -153,6 +177,14 @@ test_that("lgTMatrix input is okay with reduced block size", {
         check_read_varslice(tsFUN, mode="logical")
         check_read_varslice(tsFUN, nr=5, nc=30, mode="logical")
         check_read_varslice(tsFUN, nr=30, nc=5, mode="logical")
+
+        check_read_const(tsFUN, mode="logical")
+        check_read_const(tsFUN, nr=5, nc=30, mode="logical")
+        check_read_const(tsFUN, nr=30, nc=5, mode="logical")
+
+        check_read_indexed(tsFUN, mode="logical")
+        check_read_indexed(tsFUN, nr=5, nc=30, mode="logical")
+        check_read_indexed(tsFUN, nr=30, nc=5, mode="logical")
 
         check_read_multi(tsFUN, mode="logical")
         check_read_multi(tsFUN, nr=5, nc=30, mode="logical")
@@ -186,6 +218,10 @@ test_that("Delayed logical matrix input is okay", {
         check_read_slice(FUN, NR, NC, mode="logical")
 
         check_read_varslice(FUN, NR, NC, mode="logical")
+
+        check_read_const(FUN, NR, NC, mode="logical")
+
+        check_read_indexed(FUN, NR, NC, mode="logical")
 
         check_read_multi(FUN, NR, NC, mode="logical")
 
