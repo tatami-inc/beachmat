@@ -233,8 +233,6 @@ Equivalent methods are available for each matrix type with appropriate changes i
 
 For integer and logical matrices, `get()` will return an integer.
 `in` can be any type previously described for `numeric_matrix` objects.
-`work` should be an `iterator` to a `Rcpp::IntegerVector` for integer matrices or a `Rcpp::LogicalVector` for logical matrices.
-Similar changes apply to the iterator in the tuple from `get_const_col_indexed()`.
 
 For character matrices, all iterators should be of type `Rcpp::StringVector::iterator`, and `get()` will return a `Rcpp::String`.
 
@@ -277,53 +275,92 @@ This functionality is generally limited to base matrices, though there is also l
 
 ## Overview
 
-For specific matrix representations, special methods are available that can improve the efficiency of data access.
+For specific matrix representations, special `get_row_raw()` and `get_col_raw()` methods are available that can improve the efficiency of data access.
 However, these methods are not representation-agnostic, thus requiring specialization to a specific subclass.
 Their use is only recommended for performance-critical applications as the surrounding code is likely to be representation-specific as well.
 
-## From ordinary matrices
-
-Ordinary R matrices containing double-precision numbers can be used to construct a `simple_numeric_matrix`, which provides a `get_const_col()` method.
-This returns an iterator to a _Rcpp_ vector pointing to `first` row of column `c`.
-The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] except for the absence of an `iterator` argument.
+Given a matrix instance, users can check for the availability of these methods for row or column access:
 
 ```cpp
-Rcpp::NumericVector::iterator it = dptr->get_const_col(c, /* size_t */);
+std::string c_out=dptr->col_raw_type();
+std::string r_out=dptr->row_raw_type();
 ```
 
-For ordinary matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data into `work`.
-The same method is also available for logical, integer and character inputs with the corresponding `simple_*_matrix` class. 
+The available raw types are `"none"`, `"dense"` or `"sparse"`, which are discussed in more detail below.
+However, note that if `"none"` is returned, the matrix representation is not obligated to return _anything_ from the specialized getters.
+
+For complex representations, a single iterator may not be sufficient to represent the raw structure.
+Instead, a specialized `raw_structure` class is used that can hold both the values in the matrix and structural integer values^[Such as indices or runs.].
+The raw data structure can be set up with:
+
+```cpp
+// Returns a beachmat::raw_structure<Rcpp::NumericVector>
+auto raws=dptr->set_up_raw();
+```
+
+Obviously, matrices of other types will return a `raw_structure` with different template arguments.
+For example, a logical matrix would return a `beachmat::raw_structure<Rcpp::LogicalVector>`.
+
+**Additional notes**
+
+- We recommend using the `set_up_raw()` method to generate these objects rather than manually constructing them.
+This is because a given matrix representation may need to allocate memory within the `raw_structure` to represent its internal structure.
+- Effective use of these methods often requires conditional execution:
+
+    ```cpp
+    if (dptr->col_raw_type()=="sparse") {
+        // Do something special.
+    } else {
+        // Do something normal.
+    }
+    ```
+  
+    This is because the algorithm itself can often be improved given a particular raw structure.
+    Sparsity is particularly notable in this respect, as processing of a large number of zero values can be skipped.
+
+## Dense raw access
+
+If the underlying matrix is held as a dense array, it is possible to access the columns (if column-major) or rows (if row-major) without copying by returning an iterator to the start of each column/row.
+To demonstrate, consider ordinary R matrices or their dense counterparts from `r CRANpkg("Matrix")`.
+These will return `"dense"` from `col_raw_type()` as they are stored in column-major format.
+In such cases, the `get_col_raw()` will overwrite the `values_start` iterator in the `raw_structure` with the iterator to the requested column:
+
+```cpp
+dptr->get_col_raw(c, raws /* raw_structure& */);
+auto it=raws.get_values_start(); // Rcpp::NumericVector::iterator
+```
+
+The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] except that the iterator argument has been replaced with a `raw_structure` reference.
+For ordinary matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data.
+The same method is also available for logical, integer and character inputs with a change to the iterator type.
 However, calling processes should consider the iterator to be read-only, otherwise the data will be modified at the R-level.
 
 ## From sparse matrices
 
-Column-sparse compressed matrices from `r CRANpkg("Matrix")` can be used to construct a `Csparse_*_matrix` class.
-This has the `get_const_col_indexed()` method, which is guaranteed to index all of the non-zero entries in column `c` of the matrix.
-For numeric types, this represents non-zero values (obviously), while for character matrices, this represents non-empty strings.
+If the underlying matrix is held as a sparse array, it is possible to access the sparse values directly without copying.
+Column-sparse compressed matrices from `r CRANpkg("Matrix")` implement a specialized `get_col_raw()` method that
+
+1. Overwrites the `values_start` iterator with an iterator to the first non-zero entry in a column.
+2. Overwrites the `structures_start` iterator with an iterator to the row index of the first non-zero entry in a column.
+3. Ovewrites the `n` integer with the number of non-zero entries in the column.
+
+The structural integers represent row indices for each non-zero entry in the matrix.
+We demonstrate its usage below^[Again, `first` and `last` do not have to be specified and will default to the entire column.]:
 
 ```cpp
-auto indexinfo = dptr->get_const_col_indexed(
-    c, /* size_t */
-    first, /* size_t */
-    last /* size_t */
-);
+dptr->get_col_raw(c, /* size_t */, raws);
+auto n=raws.get_n();
+auto idx=raws.get_structure_start(); // Rcpp::IntegerVector::iterator
+auto vals=raws.get_values_start(); // Rcpp::NumericVector::iterator
 ```
 
-It returns a `const_col_indexed_info` object, which is a tuple consisting of:
-
-1. A `size_t`, specifying the number of entries in column `c` from rows `[first, last)`.
-2. A `Rcpp::IntegerVector::iterator`, pointing to a vector containing the row index for each entry in column `c` from rows `[first, last)`.
-3. A `Rcpp::NumericVector::iterator`, pointing to a vector containing the value of each entry in column `c` from rows `[first, last)`.
-
-Again, `first` and `last` do not have to be specified and will default to the entire column.
-
 This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the _non-zero entries only_.
-Again, the iterators should be treated as read-only.
+The same method is also available for `lgCMatrix` objects with an appropriate change to the iterator type.
+Obviously, the iterators should be treated as read-only.
 
 # Cloning matrix instances
 
 The `clone()` method returns a unique pointer to a `numeric_matrix` instance of the same type as that pointed to by `dptr`.
-
 ```cpp
 auto dptr_copy = dptr->clone();
 ```
