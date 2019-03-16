@@ -6,7 +6,6 @@
 #include "../utils/utils.h"
 #include "../utils/dim_checker.h"
 
-#include <sstream>
 #include <string>
 #include <algorithm>
 #include <stdexcept>
@@ -58,7 +57,7 @@ dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incom
     auto classinfo=get_class_package(incoming);
     std::string ctype=classinfo.first;
     if (ctype!=get_class() || classinfo.second!=get_package()) {
-        throw_custom_error("input should be a ", ctype, " object");
+        throw std::runtime_error(std::string("input should be a ") + ctype + " object");
     }
 
     this->fill_dims(incoming.attr("Dim"));
@@ -66,13 +65,11 @@ dense_reader<T, V>::dense_reader(const Rcpp::RObject& incoming) : original(incom
     
     Rcpp::RObject temp=get_safe_slot(incoming, "x"); 
     if (temp.sexp_type()!=x.sexp_type()) { 
-        std::stringstream err;
-        err << "'x' slot in a " << ctype << " object should be " << translate_type(x.sexp_type());
-        throw std::runtime_error(err.str());
+        throw std::runtime_error(std::string("'x' slot in a ") + ctype + " object should be " + translate_type(x.sexp_type()));
     }
     x=temp;
     if (static_cast<size_t>(x.size())!=(this->nrow)*NC) {
-        throw_custom_error("length of 'x' in a ", ctype, " object is inconsistent with its dimensions"); 
+        throw std::runtime_error(std::string("length of 'x' in a ") + ctype + " object is inconsistent with its dimensions"); 
     }
     return;
 }

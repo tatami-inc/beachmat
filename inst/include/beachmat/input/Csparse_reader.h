@@ -8,7 +8,6 @@
 
 #include <string>
 #include <vector>
-#include <sstream>
 #include <algorithm>
 #include <stdexcept>
 
@@ -65,7 +64,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
     auto classinfo=get_class_package(incoming);
     std::string ctype=classinfo.first;
     if (ctype!=get_class() || classinfo.second!=get_package()) {
-        throw_custom_error("input should be a ", ctype, " object");
+        throw std::runtime_error(std::string("input should be a ") + ctype + " object");
     }
 
     this->fill_dims(get_safe_slot(incoming, "Dim"));
@@ -73,32 +72,46 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
     const size_t& NR=this->nrow;
 
     Rcpp::RObject temp_i=get_safe_slot(incoming, "i");
-    if (temp_i.sexp_type()!=INTSXP) { throw_custom_error("'i' slot in a ", ctype, " object should be integer"); }
+    if (temp_i.sexp_type()!=INTSXP) { 
+        throw std::runtime_error(std::string("'i' slot in a ") + ctype + " object should be integer"); 
+    }
     i=temp_i;
 
     Rcpp::RObject temp_p=get_safe_slot(incoming, "p");
-    if (temp_p.sexp_type()!=INTSXP) { throw_custom_error("'p' slot in a ", ctype, " object should be integer"); }
+    if (temp_p.sexp_type()!=INTSXP) { 
+        throw std::runtime_error(std::string("'p' slot in a ") + ctype + " object should be integer");
+    }
     p=temp_p;
 
     Rcpp::RObject temp_x=get_safe_slot(incoming, "x");
     if (temp_x.sexp_type()!=x.sexp_type()) { 
-        std::stringstream err;
-        err << "'x' slot in a " << ctype << " object should be " << translate_type(x.sexp_type());
-        throw std::runtime_error(err.str());
+        throw std::runtime_error(std::string("'x' slot in a ") + ctype + " object should be " + translate_type(x.sexp_type()));
     }
     x=temp_x;
 
-    if (x.size()!=i.size()) { throw_custom_error("'x' and 'i' slots in a ", ctype, " object should have the same length"); }
-    if (NC+1!=static_cast<size_t>(p.size())) { throw_custom_error("length of 'p' slot in a ", ctype, " object should be equal to 'ncol+1'"); }
-    if (p[0]!=0) { throw_custom_error("first element of 'p' in a ", ctype, " object should be 0"); }
-    if (p[NC]!=x.size()) { throw_custom_error("last element of 'p' in a ", ctype, " object should be 'length(x)'"); }
+    if (x.size()!=i.size()) { 
+        throw std::runtime_error(std::string("'x' and 'i' slots in a ") + ctype + " object should have the same length"); 
+    }
+    if (NC+1!=static_cast<size_t>(p.size())) { 
+        throw std::runtime_error(std::string("length of 'p' slot in a ") + ctype + " object should be equal to 'ncol+1'"); 
+    }
+    if (p[0]!=0) { 
+        throw std::runtime_error(std::string("first element of 'p' in a ") + ctype + " object should be 0"); 
+    }
+    if (p[NC]!=x.size()) { 
+        throw std::runtime_error(std::string("last element of 'p' in a ") + ctype + " object should be 'length(x)'"); 
+    }
 
     // Checking all the indices.
     auto pIt=p.begin();
     for (size_t px=0; px<NC; ++px) {
         const int& current=*pIt;
-        if (current < 0) { throw_custom_error("'p' slot in a ", ctype, " object should contain non-negative values"); }
-        if (current > *(++pIt)) { throw_custom_error("'p' slot in a ", ctype, " object should be sorted"); }
+        if (current < 0) { 
+            throw std::runtime_error(std::string("'p' slot in a ") + ctype + " object should contain non-negative values"); 
+        }
+        if (current > *(++pIt)) { 
+            throw std::runtime_error(std::string("'p' slot in a ") + ctype + " object should be sorted"); 
+        }
     }
 
     pIt=p.begin();
@@ -110,7 +123,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
         for (int ix=left; ix<right; ++ix) {
             const int& current=*iIt;
             if (current > *(++iIt)) {
-                throw_custom_error("'i' in each column of a ", ctype, " object should be sorted");
+                throw std::runtime_error(std::string("'i' in each column of a ") + ctype + " object should be sorted");
             }
         }
     }
@@ -118,7 +131,7 @@ Csparse_reader<T, V>::Csparse_reader(const Rcpp::RObject& incoming) : original(i
     for (auto iIt=i.begin(); iIt!=i.end(); ++iIt) {
         const int& curi=*iIt;
         if (curi<0 || static_cast<size_t>(curi)>=NR) {
-            throw_custom_error("'i' slot in a ", ctype, " object should contain elements in [0, nrow)");
+            throw std::runtime_error(std::string("'i' slot in a ") + ctype + " object should contain elements in [0, nrow)");
         }
     }
 

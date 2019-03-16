@@ -60,7 +60,7 @@ simple_reader<T, V>::simple_reader(const Rcpp::RObject& incoming) : original(inc
     const size_t& NC=this->ncol; 
 
     if (incoming.sexp_type()!=mat.sexp_type()) { 
-        throw_custom_error("matrix should be ", translate_type(mat.sexp_type()), "");
+        throw std::runtime_error(std::string("matrix should be ") + translate_type(mat.sexp_type()));
     }
     mat=incoming;
     if (static_cast<size_t>(mat.size())!=(this->nrow)*NC) {

@@ -11,8 +11,6 @@
 
 namespace beachmat { 
 
-// Typedef for the indexing tuple.
-
 template<class V>
 using const_col_indexed_info=std::tuple<size_t, Rcpp::IntegerVector::iterator, typename V::iterator>;
 
@@ -24,19 +22,6 @@ inline std::string make_to_string(const Rcpp::RObject& str) {
         throw std::runtime_error("input RObject should contain a single string");
     }
     return Rcpp::as<std::string>(as_str[0]);
-}
-
-template <class L, class R>
-std::string combine_strings(const L& left, const R& right) {
-    std::stringstream err;
-    err << left << right;
-    return err.str();    
-}
-
-inline void throw_custom_error(const std::string& left, const std::string& classname, const std::string& right) {
-    std::stringstream err;
-    err << left << classname << right;
-    throw std::runtime_error(err.str());
 }
 
 /* Class checks. */
@@ -62,9 +47,7 @@ inline std::pair<std::string, std::string> get_class_package(const Rcpp::RObject
 
 inline Rcpp::RObject get_safe_slot(const Rcpp::RObject& incoming, const std::string& slotname) {
     if (!incoming.hasSlot(slotname)) { 
-        std::stringstream err;
-        err << "no '" << slotname << "' slot in the " << get_class(incoming) << " object";
-        throw std::runtime_error(err.str()); 
+        throw std::runtime_error(std::string("no '") + slotname + "' slot in the " + get_class(incoming) + " object");
     }
     return incoming.slot(slotname);
 }
@@ -124,7 +107,7 @@ inline int find_sexp_type (const Rcpp::RObject& incoming) {
             return REALSXP;
         }
     } 
-    throw_custom_error("unknown SEXP type for ", classname, " object");
+    throw std::runtime_error(std::string("unknown SEXP type for ") + classname + " object");
 }
 
 }

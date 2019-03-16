@@ -10,7 +10,6 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
-#include <sstream>
 
 namespace beachmat { 
 
@@ -267,30 +266,18 @@ T Csparse_writer<T, V>::get(size_t r, size_t c) {
 template<typename T, class V>
 Rcpp::RObject Csparse_writer<T, V>::yield() {
     const int RTYPE=V().sexp_type();
-    std::string classname;
-    switch (RTYPE) { 
-        case LGLSXP:
-            classname="lgCMatrix";
-            break;
-        case REALSXP:
-            classname="dgCMatrix";
-            break;
-        default:
-            std::stringstream err;
-            err << "unsupported sexptype '" << RTYPE << "' for sparse output";
-            throw std::runtime_error(err.str());
-    }
+    std::string classname=get_class();
     Rcpp::S4 mat(classname);
 
     // Setting dimensions.
     if (!mat.hasSlot("Dim")) {
-        throw_custom_error("missing 'Dim' slot in ", classname, " object");
+        throw std::runtime_error(std::string("missing 'Dim' slot in ") + classname + " object");
     }
     mat.slot("Dim") = Rcpp::IntegerVector::create(this->nrow, this->ncol);
 
     // Setting 'p'.
     if (!mat.hasSlot("p")) {
-        throw_custom_error("missing 'p' slot in ", classname, " object");
+        throw std::runtime_error(std::string("missing 'p' slot in ") + classname + " object");
     }
     Rcpp::IntegerVector p(this->ncol+1, 0);
     auto pIt=p.begin()+1;
@@ -305,10 +292,10 @@ Rcpp::RObject Csparse_writer<T, V>::yield() {
     Rcpp::IntegerVector i(total_size);
     V x(total_size);
     if (!mat.hasSlot("i")) {
-        throw_custom_error("missing 'i' slot in ", classname, " object");
+        throw std::runtime_error(std::string("missing 'i' slot in ") + classname + " object");
     }
     if (!mat.hasSlot("x")) {
-        throw_custom_error("missing 'x' slot in ", classname, " object");
+        throw std::runtime_error(std::string("missing 'x' slot in ") + classname + " object");
     }
     auto xIt=x.begin();
     auto iIt=i.begin();
