@@ -7,12 +7,14 @@ O get_indexed_all (M ptr, Rcpp::IntegerVector ordering) {
     const size_t& nrows=ptr->get_nrow();
     O output(nrows, ordering.size());
 
+    auto raws=ptr->set_up_raw();
     size_t c=0;
+
     for (auto o : ordering) {
-        auto info=ptr->get_const_col_indexed(o-1);
-        size_t N=std::get<0>(info);
-        auto idx=std::get<1>(info);
-        auto vals=std::get<2>(info);
+        ptr->get_col_raw(o-1, raws);
+        size_t N=raws.get_n();
+        auto idx=raws.get_structure_start();
+        auto vals=raws.get_values_start();
 
         auto outcol=output.column(c);
         for (size_t i=0; i<N; ++i) {
@@ -31,13 +33,15 @@ O get_indexed_slice (M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector ro
     const int rstart=rows[0]-1, rend=rows[1];
     const int nrows=rend-rstart;    
 
+    auto raws=ptr->set_up_raw();
     O output(nrows, ordering.size());
     size_t c=0;
+
     for (auto o : ordering) {
-        auto info=ptr->get_const_col_indexed(o-1, rstart, rend);
-        size_t N=std::get<0>(info);
-        auto idx=std::get<1>(info);
-        auto vals=std::get<2>(info);
+        ptr->get_col_raw(o-1, raws, rstart, rend);
+        size_t N=raws.get_n();
+        auto idx=raws.get_structure_start();
+        auto vals=raws.get_values_start();
 
         auto curcol=output.column(c);
         for (size_t i=0; i<N; ++i) {
@@ -57,17 +61,19 @@ Rcpp::List get_indexed_varslice (M ptr, Rcpp::IntegerVector ordering, Rcpp::Inte
     if (rows.nrow()!=ordering.size()) {
         throw std::runtime_error("'nrow(rows)' should be equal to 'length(ordering)'");
     }
-    Rcpp::List output(ordering.size());
 
+    Rcpp::List output(ordering.size());
+    auto raws=ptr->set_up_raw();
     size_t c=0;
+
     for (auto o : ordering) {
         auto cur_bounds=rows.row(c);
         int left=cur_bounds[0]-1, right=cur_bounds[1];
 
-        auto info=ptr->get_const_col_indexed(o-1, left, right);
-        size_t N=std::get<0>(info);
-        auto idx=std::get<1>(info);
-        auto vals=std::get<2>(info);
+        ptr->get_col_raw(o-1, raws, left, right);
+        size_t N=raws.get_n();
+        auto idx=raws.get_structure_start();
+        auto vals=raws.get_values_start();
 
         T out(right-left);
         for (size_t i=0; i<N; ++i) {
