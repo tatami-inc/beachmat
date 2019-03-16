@@ -6,7 +6,7 @@ Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
         person("Hervé", "Pagès", role="aut"),
         person("Mike", "Smith", role="aut"))
-Imports: utils, methods, DelayedArray, Rcpp, BiocGenerics
+Imports: methods, DelayedArray, BiocGenerics
 Suggests: testthat, BiocStyle, knitr, rmarkdown, Matrix, devtools
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for reading
@@ -19,5 +19,4 @@ License: GPL-3
 NeedsCompilation: yes
 VignetteBuilder: knitr
 SystemRequirements: C++11
-LinkingTo: Rcpp, Rhdf5lib
 RoxygenNote: 6.1.1
