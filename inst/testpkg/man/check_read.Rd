@@ -57,8 +57,10 @@ It will also check access to subsets of multiple rows (e.g., \code{x[i1:i2, a:b]
 \item \code{check_read_type} will check the integer/double conversion upon single row/column access in integer, logical or numeric matrices.
 Nothing is done if \code{x} is a character matrix.
 \item \code{check_read_class} will check that the class of \code{x} is correctly identified.
-\item \code{check_read_const} will check for constant copy-free access to columns of an ordinary matrix only.
-\item \code{check_read_indexed} will check for constant copy-free access to row indices and values for columns of a \linkS4class{dgCMatrix} only.
+\item \code{check_read_const} will check for constant copy-free access to columns of an ordinary matrix.
+For all other matrices, it checks for with-copy column access.
+\item \code{check_read_indexed} will check for constant copy-free access to row indices and values for columns of a \linkS4class{dgCMatrix}.
+For all other matrices, it checks for with-copy column access.
 \item \code{check_read_errors} will check that error conditions are correctly raised for invalid access requests to \code{x}.
 }
 }
