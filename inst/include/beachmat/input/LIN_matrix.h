@@ -9,7 +9,9 @@
 #include "delayed_reader.h"
 #include "unknown_reader.h"
 #include "external_reader.h"
+
 #include "../utils/utils.h"
+#include "../utils/raw_structure.h"
 
 #include <memory>
 
@@ -50,6 +52,23 @@ public:
     virtual void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t)=0;
 
     virtual T get(size_t, size_t)=0;
+   
+    // Specialized getters.
+    virtual raw_structure<V> set_up_raw() const=0;
+  
+    void get_col_raw(size_t c, raw_structure<V>& in) {
+        get_col_raw(c, in, 0, get_nrow());
+        return;
+    }
+
+    virtual void get_col_raw(size_t, raw_structure<V>&, size_t, size_t)=0;
+
+    void get_row_raw(size_t r, raw_structure<V>& in) {
+        get_row_raw(r, in, 0, get_ncol());
+        return;
+    }
+
+    virtual void get_row_raw(size_t, raw_structure<V>&, size_t, size_t)=0;
 
     // Multi-row/column getters.
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator);
@@ -89,17 +108,40 @@ public:
     size_t get_nrow() const;
     size_t get_ncol() const;
 
-    void get_col(size_t,  Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_col(size_t,  Rcpp::NumericVector::iterator, size_t, size_t);
+    // Basic getters.
+    using lin_matrix<T, V>::get_col;
+    void get_col(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_col(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
-    void get_row(size_t,  Rcpp::IntegerVector::iterator, size_t, size_t);
-    void get_row(size_t,  Rcpp::NumericVector::iterator, size_t, size_t);
+    using lin_matrix<T, V>::get_row;
+    void get_row(size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
+    void get_row(size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
     T get(size_t, size_t);
 
+    // Specialized getters (these do nothing by default, see specializations below).
+    raw_structure<V> set_up_raw() const {
+        return reader.set_up_raw();
+    }
+
+    using lin_matrix<T, V>::get_col_raw;
+    void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        reader.get_col_raw(c, in, first, last);
+        return;
+    }
+    
+    using lin_matrix<T, V>::get_row_raw;
+    void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        reader.get_row_raw(r, in, first, last);
+        return;
+    }
+ 
+    // Multigetters.
+    using lin_matrix<T, V>::get_rows;
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
+    using lin_matrix<T, V>::get_cols;
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Rcpp::NumericVector::iterator, size_t, size_t);
 
@@ -117,90 +159,17 @@ protected:
 /* Realization of the general flavour for a simple matrix */
 
 template <typename T, class V>
-using simple_lin_precursor=general_lin_matrix<T, V, simple_reader<T, V> >;
-
-template <typename T, class V>
-class simple_lin_matrix : public simple_lin_precursor<T, V> {
-public:
-    simple_lin_matrix(const Rcpp::RObject& in) : simple_lin_precursor<T, V>(in) {}
-    ~simple_lin_matrix() = default;
-    simple_lin_matrix(const simple_lin_matrix&) = default;
-    simple_lin_matrix& operator=(const simple_lin_matrix&) = default;
-    simple_lin_matrix(simple_lin_matrix&&) = default;
-    simple_lin_matrix& operator=(simple_lin_matrix&&) = default;
-
-    // Specialist getters.
-    typename V::iterator get_const_col(size_t c, size_t first, size_t last) {
-        return this->reader.get_const_col(c, first, last);
-    }
-    typename V::iterator get_const_col(size_t c) {
-        return this->get_const_col(c, 0, this->get_nrow());        
-    }
-
-    std::unique_ptr<lin_matrix<T, V> > clone() const {
-        return std::unique_ptr<lin_matrix<T, V> >(new simple_lin_matrix<T, V>(*this));
-    }
-};
+using simple_lin_matrix=general_lin_matrix<T, V, simple_reader<T, V> >;
 
 /* Realization of the general flavour for a dense matrix */
 
 template <typename T, class V>
-using dense_lin_precursor=general_lin_matrix<T, V, dense_reader<T, V> >;
-
-template <typename T, class V>
-class dense_lin_matrix : public dense_lin_precursor<T, V> {
-public:
-    dense_lin_matrix(const Rcpp::RObject& in) : dense_lin_precursor<T, V>(in) {}
-    ~dense_lin_matrix() = default;
-    dense_lin_matrix(const dense_lin_matrix&) = default;
-    dense_lin_matrix& operator=(const dense_lin_matrix&) = default;
-    dense_lin_matrix(dense_lin_matrix&&) = default;
-    dense_lin_matrix& operator=(dense_lin_matrix&&) = default;
-
-    // Specialist getters.
-    typename V::iterator get_const_col(size_t c, size_t first, size_t last) {
-        return this->reader.get_const_col(c, first, last);
-    }
-    typename V::iterator get_const_col(size_t c) {
-        return this->get_const_col(c, 0, this->nrow);        
-    }
-
-    std::unique_ptr<lin_matrix<T, V> > clone() const {
-        return std::unique_ptr<lin_matrix<T, V> >(new dense_lin_matrix<T, V>(*this));
-    }
-};
+using dense_lin_matrix=general_lin_matrix<T, V, dense_reader<T, V> >;
 
 /* Realization of the general flavour for a C-sparse matrix */
 
 template <typename T, class V>
-using Csparse_lin_precursor=general_lin_matrix<T, V, Csparse_reader<T, V> >;
-
-template <typename T, class V>
-class Csparse_lin_matrix : public Csparse_lin_precursor<T, V> {
-public:
-    Csparse_lin_matrix(const Rcpp::RObject& in) : Csparse_lin_precursor<T, V>(in) {}
-    ~Csparse_lin_matrix() = default;
-    Csparse_lin_matrix(const Csparse_lin_matrix&) = default;
-    Csparse_lin_matrix& operator=(const Csparse_lin_matrix&) = default;
-    Csparse_lin_matrix(Csparse_lin_matrix&&) = default;
-    Csparse_lin_matrix& operator=(Csparse_lin_matrix&&) = default;
-
-    // Specialist getters.
-    const_col_indexed_info<V> get_const_col_indexed(size_t c, size_t first, size_t last) {
-        Rcpp::IntegerVector::iterator iIt;
-        typename V::iterator out;
-        size_t nzero=this->reader.get_const_col_nonzero(c, iIt, out, first, last);
-        return const_col_indexed_info<V>(nzero, iIt, out); 
-    }
-
-    const_col_indexed_info<V> get_const_col_indexed(size_t c) {
-        return this->get_const_col_indexed(c, 0, this->get_nrow());
-    }
-
-    std::unique_ptr<lin_matrix<T, V> > clone() const {
-        return std::unique_ptr<lin_matrix<T, V> >(new Csparse_lin_matrix<T, V>(*this));
-    }
-};
+using Csparse_lin_matrix=general_lin_matrix<T, V, Csparse_reader<T, V> >;
 
 /* DelayedMatrix of LINs */
 

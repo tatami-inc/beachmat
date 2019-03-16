@@ -52,6 +52,21 @@ public:
 
     virtual Rcpp::String get(size_t, size_t)=0;
 
+    // Specialized getters.
+    virtual raw_structure<Rcpp::StringVector> set_up_raw () const=0;
+
+    void get_col_raw(size_t c, raw_structure<Rcpp::StringVector>& in) {
+        get_col_raw(c, in, 0, get_nrow());
+        return;
+    }
+    virtual void get_col_raw(size_t, raw_structure<Rcpp::StringVector>&, size_t, size_t)=0;
+
+    void get_row_raw(size_t r, raw_structure<Rcpp::StringVector>& in) {
+        get_row_raw(r, in, 0, get_ncol());
+        return;
+    }
+    virtual void get_row_raw(size_t, raw_structure<Rcpp::StringVector>&, size_t, size_t)=0;
+
     // Multi getters.
     void get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out) {
         get_cols(it, n, out, 0, get_nrow());
@@ -73,8 +88,6 @@ public:
     virtual std::string get_class() const=0;
 
     virtual std::string get_package() const=0;
-private:
-    Rcpp::IntegerVector indices; // needed for get_const_col_indexed for non-sparse matrices.
 };
 
 std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject&, bool); 
@@ -95,10 +108,13 @@ public:
     size_t get_ncol() const { return reader.get_ncol(); }
 
     // Basic getters.
+    using character_matrix::get_row;
     void get_row(size_t r, Rcpp::StringVector::iterator out, size_t first, size_t last) {
         reader.get_row(r, out, first, last);
         return;
     }
+
+    using character_matrix::get_col;
     void get_col(size_t c, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
         reader.get_col(c, out, first, last); 
         return;
@@ -106,11 +122,31 @@ public:
 
     Rcpp::String get(size_t r, size_t c) { return reader.get(r, c); }
 
+    // Specialized getters.
+    raw_structure<Rcpp::StringVector> set_up_raw() const {
+        return reader.set_up_raw();
+    }
+
+    using character_matrix::get_col_raw;
+    void get_col_raw(size_t c, raw_structure<Rcpp::StringVector>& in, size_t first, size_t last) {
+        reader.get_col_raw(c, in, first, last);
+        return;
+    }
+    
+    using character_matrix::get_row_raw;
+    void get_row_raw(size_t r, raw_structure<Rcpp::StringVector>& in, size_t first, size_t last) {
+        reader.get_row_raw(r, in, first, last);
+        return;
+    }
+
     // Multi getters.
+    using character_matrix::get_rows;
     void get_rows(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) { 
         reader.get_rows(it, n, out, first, last);
         return;
     }
+
+    using character_matrix::get_cols;
     void get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out, size_t first, size_t last) {
         reader.get_cols(it, n, out, first, last);
         return;
@@ -130,29 +166,7 @@ protected:
 
 /* Simple character matrix */
 
-using simple_character_precursor=general_character_matrix<simple_reader<Rcpp::String, Rcpp::StringVector> >;
-
-class simple_character_matrix : public simple_character_precursor {
-public:
-    simple_character_matrix(const Rcpp::RObject& incoming) : simple_character_precursor (incoming) {}
-    ~simple_character_matrix() = default;
-    simple_character_matrix(const simple_character_matrix&) = default;
-    simple_character_matrix& operator=(const simple_character_matrix&) = default;
-    simple_character_matrix(simple_character_matrix&&) = default;
-    simple_character_matrix& operator=(simple_character_matrix&&) = default;
-
-    Rcpp::StringVector::iterator get_const_col(size_t c) {
-        return get_const_col(c, 0, get_nrow());
-    }
-
-    Rcpp::StringVector::iterator get_const_col(size_t c, size_t first, size_t last) {
-        return reader.get_const_col(c, first, last);
-    }
-
-    std::unique_ptr<character_matrix> clone() const {
-        return std::unique_ptr<character_matrix>(new simple_character_matrix(*this));
-    }
-};
+using simple_character_matrix=general_character_matrix<simple_reader<Rcpp::String, Rcpp::StringVector> >;
 
 /* DelayedMatrix */
 

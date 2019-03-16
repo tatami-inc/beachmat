@@ -5,6 +5,7 @@
 
 #include "../utils/dim_checker.h"
 #include "../utils/copyable_vector.h"
+#include "../utils/raw_structure.h"
 
 #include <algorithm>
 
@@ -33,6 +34,21 @@ public:
 
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
+
+    // Specialized getters.
+    raw_structure<V> set_up_raw () const {
+        return raw_structure<V>();
+    }
+
+    void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        return;
+    }
+
+    void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        return;
+    }
+
+    // Multi getters.
 
     template <class Iter>
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);

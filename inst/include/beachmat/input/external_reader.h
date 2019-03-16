@@ -5,6 +5,7 @@
 
 #include "../utils/dim_checker.h"
 #include "../utils/external.h"
+#include "../utils/raw_structure.h"
 
 #include <string>
 
@@ -49,6 +50,20 @@ public:
         return output;
     }
 
+    // Specialized getters.
+    raw_structure<V> set_up_raw () const {
+        return raw_structure<V>();
+    }
+
+    void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        return;
+    }
+
+    void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        return;
+    }
+
+    // Miscellaneous.
     Rcpp::RObject yield() const {
         return original;
     }

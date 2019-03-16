@@ -5,6 +5,7 @@
 
 #include "../utils/utils.h"
 #include "../utils/dim_checker.h"
+#include "../utils/raw_structure.h"
 
 #include <stdexcept>
 #include <algorithm>
@@ -23,6 +24,7 @@ public:
     simple_reader(simple_reader&&) = default;
     simple_reader& operator=(simple_reader&&) = default;
 
+    // Basic getters.
     T get(size_t, size_t);
 
     template <class Iter>
@@ -31,15 +33,30 @@ public:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
-    typename V::iterator get_const_col(size_t, size_t, size_t);
+    // Specialized getters.
+    raw_structure<V> set_up_raw () const {
+        return raw_structure<V>();
+    }
 
+    void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        check_colargs(c, first, last);
+        in.get_values_start()=get_const_col(c, first);
+        return;
+    }
+
+    void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        check_rowargs(r, first, last);
+        return;
+    }
+
+    // Multi getters.
     template <class Iter>
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     template <class Iter>
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
-    Rcpp::RObject yield() const;
+    Rcpp::RObject yield() const { return original; }
 
     static std::string get_class() { return "matrix"; }
 
@@ -47,6 +64,10 @@ public:
 private:
     Rcpp::RObject original;
     V mat;
+
+    typename V::iterator get_const_col(size_t c, size_t first) {
+        return mat.begin() + first + c*(this->nrow);
+    }
 };
 
 /*** Constructor definitions ***/
@@ -74,7 +95,7 @@ simple_reader<T, V>::simple_reader(const Rcpp::RObject& incoming) : original(inc
 template<typename T, class V>
 T simple_reader<T, V>::get(size_t r, size_t c) { 
     check_oneargs(r, c);
-    return mat[r + c*(this->nrow)]; 
+    return mat[c*(this->nrow)+r]; // do NOT use get_const_col(c, r), as it fails for Strings.
 }
 
 template<typename T, class V>
@@ -82,7 +103,7 @@ template<class Iter>
 void simple_reader<T, V>::get_row(size_t r, Iter out, size_t first, size_t last) {
     check_rowargs(r, first, last);
     const size_t& NR=this->nrow;
-    auto src=mat.begin()+first*NR+r;
+    auto src=get_const_col(first, r);
     for (size_t col=first; col<last; ++col, src+=NR, ++out) { (*out)=(*src); }
     return;
 }
@@ -91,7 +112,7 @@ template<typename T, class V>
 template<class Iter>
 void simple_reader<T, V>::get_col(size_t c, Iter out, size_t first, size_t last) {
     check_colargs(c, first, last);
-    auto src=mat.begin() + c*(this->nrow);
+    auto src=get_const_col(c, 0);
     std::copy(src+first, src+last, out);
     return;
 }
@@ -105,7 +126,7 @@ void simple_reader<T, V>::get_rows(Rcpp::IntegerVector::iterator rIt, size_t n, 
     check_row_indices(rIt, n);
 
     for (size_t c=first; c<last; ++c) {
-        auto it=get_const_col(c, 0, this->nrow);
+        auto it=get_const_col(c, 0);
         auto rIt_copy=rIt;
         for (size_t i=0; i<n; ++i, ++out, ++rIt_copy) {  
             (*out)=*(it + *rIt_copy);
@@ -124,20 +145,6 @@ void simple_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n, 
         get_col(*cIt, out, first, last);
     }
     return;
-}
-
-/*** Specialized getter methods ***/
-
-template<typename T, class V>
-typename V::iterator simple_reader<T, V>::get_const_col(size_t c, size_t first, size_t last) {
-    return mat.begin() + first + c*(this->nrow);
-}
-
-/*** Other methods ***/
-
-template<typename T, class V>
-Rcpp::RObject simple_reader<T, V>::yield() const {
-    return original;
 }
 
 }

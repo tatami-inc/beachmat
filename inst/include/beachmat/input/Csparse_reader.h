@@ -5,6 +5,7 @@
 
 #include "../utils/utils.h"
 #include "../utils/dim_checker.h"
+#include "../utils/raw_structure.h"
 
 #include <string>
 #include <vector>
@@ -25,6 +26,7 @@ public:
     Csparse_reader(Csparse_reader&&) = default;
     Csparse_reader& operator=(Csparse_reader&&) = default;
 
+    // Basic getters.
     T get(size_t, size_t);
 
     template <class Iter>
@@ -33,8 +35,23 @@ public:
     template <class Iter>
     void get_col(size_t, Iter, size_t, size_t);
 
-    size_t get_const_col_nonzero(size_t, Rcpp::IntegerVector::iterator&, typename V::iterator&, size_t, size_t);
+    // Specialized getters.
+    raw_structure<V> set_up_raw () const {
+        return raw_structure<V>();
+    }
 
+    void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        check_colargs(c, first, last);
+        in.get_n()=get_const_col_nonzero(c, in.get_structure_start(), in.get_values_start(), first, last);
+        return;
+    }
+
+    void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        check_rowargs(r, first, last);
+        return;
+    }
+
+    // Multi getters.
     template <class Iter>
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
     
@@ -55,6 +72,26 @@ protected:
     void update_indices(size_t, size_t, size_t);
 
     static T get_empty(); // Specialized function for each realization (easy to extend for non-int/double).
+
+    size_t get_const_col_nonzero(size_t c, Rcpp::IntegerVector::iterator& index, typename V::iterator& val, size_t first, size_t last) {
+        check_colargs(c, first, last);
+
+        const int& pstart=p[c]; 
+        index=i.begin()+pstart;
+        auto endex=i.begin()+p[c+1]; 
+        val=x.begin()+pstart;
+
+        if (first) { // Jumping ahead if non-zero.
+            auto new_index=std::lower_bound(index, endex, first);
+            val+=(new_index-index);
+            index=new_index;
+        } 
+        if (last!=(this->nrow)) { // Jumping to last element.
+            endex=std::lower_bound(index, endex, last);
+        }
+
+        return endex-index;
+    }
 };
 
 /*** Constructor definition ***/
@@ -315,28 +352,6 @@ void Csparse_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n,
         get_col(*cIt, out, first, last);
     }
     return;
-}
-
-/*** Specialized getter functions ***/
-
-template <typename T, class V>
-size_t Csparse_reader<T, V>::get_const_col_nonzero(size_t c, Rcpp::IntegerVector::iterator& index, typename V::iterator& val, size_t first, size_t last) {
-    check_colargs(c, first, last);
-    const int& pstart=p[c]; 
-    index=i.begin()+pstart;
-    auto endex=i.begin()+p[c+1]; 
-    val=x.begin()+pstart;
-
-    if (first) { // Jumping ahead if non-zero.
-        auto new_index=std::lower_bound(index, endex, first);
-        val+=(new_index-index);
-        index=new_index;
-    } 
-    if (last!=(this->nrow)) { // Jumping to last element.
-        endex=std::lower_bound(index, endex, last);
-    }
-
-    return endex - index;
 }
 
 template<typename T, class V>
