@@ -90,12 +90,18 @@ public:
     }
 
     void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        check_colargs(c, first, last);
         return;
     }
 
     void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        check_rowargs(r, first, last);
         return;
     }
+
+    static std::string col_raw_type () { return "none"; }
+
+    static std::string row_raw_type () { return "none"; }
 
     // Multi getters.
     template<class Iter>
@@ -104,9 +110,11 @@ public:
     template<class Iter>
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
-    Rcpp::RObject yield() const;
+    // Miscellaneous.
+    Rcpp::RObject yield() const { return original; }
 
     static std::string get_class() { return "DelayedMatrix"; }
+
     static std::string get_package() { return "DelayedArray"; }
 private:
     Rcpp::RObject original;
@@ -479,13 +487,6 @@ void delayed_reader<T, V, base_mat>::get_cols(Rcpp::IntegerVector::iterator cIt,
         std::copy(tmp_store.begin(), tmp_store.end(), out);
     }
     return;
-}
-
-/*** Other methods ***/
-
-template<typename T, class V, class base_mat> 
-Rcpp::RObject delayed_reader<T, V, base_mat>::yield() const {
-    return original;
 }
 
 }

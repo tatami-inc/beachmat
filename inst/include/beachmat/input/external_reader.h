@@ -56,17 +56,21 @@ public:
     }
 
     void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        check_colargs(c, first, last);
         return;
     }
 
     void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        check_rowargs(r, first, last);
         return;
     }
 
+    static std::string col_raw_type () { return "none"; }
+
+    static std::string row_raw_type () { return "none"; }
+
     // Miscellaneous.
-    Rcpp::RObject yield() const {
-        return original;
-    }
+    Rcpp::RObject yield() const { return original; }
 
     std::string get_class() const { return cls; }
 

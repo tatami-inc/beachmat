@@ -49,6 +49,10 @@ public:
         return;
     }
 
+    static std::string col_raw_type () { return "dense"; }
+
+    static std::string row_raw_type () { return "none"; }
+
     // Multi getters.
     template <class Iter>
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
@@ -56,6 +60,7 @@ public:
     template <class Iter>
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
+    // Miscellaneous.
     Rcpp::RObject yield() const { return original; }
 
     static std::string get_class() { return "matrix"; }

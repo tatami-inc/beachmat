@@ -70,6 +70,10 @@ public:
 
     virtual void get_row_raw(size_t, raw_structure<V>&, size_t, size_t)=0;
 
+    virtual std::string col_raw_type() const = 0;
+
+    virtual std::string row_raw_type() const = 0;
+
     // Multi-row/column getters.
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator);
     void get_rows(Rcpp::IntegerVector::iterator ,size_t, Rcpp::NumericVector::iterator);
@@ -136,6 +140,14 @@ public:
         return;
     }
  
+    virtual std::string col_raw_type() const {
+        return reader.col_raw_type();
+    }
+
+    virtual std::string row_raw_type() const {
+        return reader.row_raw_type();
+    }
+
     // Multigetters.
     using lin_matrix<T, V>::get_rows;
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Rcpp::IntegerVector::iterator, size_t, size_t);

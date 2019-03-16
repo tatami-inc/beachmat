@@ -67,6 +67,10 @@ public:
     }
     virtual void get_row_raw(size_t, raw_structure<Rcpp::StringVector>&, size_t, size_t)=0;
 
+    virtual std::string col_raw_type() const = 0;
+
+    virtual std::string row_raw_type() const = 0;
+
     // Multi getters.
     void get_cols(Rcpp::IntegerVector::iterator it, size_t n, Rcpp::StringVector::iterator out) {
         get_cols(it, n, out, 0, get_nrow());
@@ -137,6 +141,14 @@ public:
     void get_row_raw(size_t r, raw_structure<Rcpp::StringVector>& in, size_t first, size_t last) {
         reader.get_row_raw(r, in, first, last);
         return;
+    }
+
+    virtual std::string col_raw_type() const {
+        return reader.col_raw_type();
+    }
+
+    virtual std::string row_raw_type() const {
+        return reader.row_raw_type();
     }
 
     // Multi getters.

@@ -41,22 +41,28 @@ public:
     }
 
     void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
+        check_colargs(c, first, last);
         return;
     }
 
     void get_row_raw(size_t r, raw_structure<V>& in, size_t first, size_t last) {
+        check_rowargs(r, first, last);
         return;
     }
 
-    // Multi getters.
+    static std::string col_raw_type () { return "none"; }
 
+    static std::string row_raw_type () { return "none"; }
+
+    // Multi getters.
     template <class Iter>
     void get_rows(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
     template <class Iter>
     void get_cols(Rcpp::IntegerVector::iterator, size_t, Iter, size_t, size_t);
 
-    Rcpp::RObject yield() const;
+    // Miscellaneous.
+    Rcpp::RObject yield() const { return original; }
 
     std::string get_class() const { return ""; }
 
@@ -275,13 +281,6 @@ void unknown_reader<T, V>::get_cols(Rcpp::IntegerVector::iterator cIt, size_t n,
     V tmp_store=indexed_realizer(original, slices.vec, cur_indices);
     std::copy(tmp_store.begin(), tmp_store.end(), out);
     return;
-}
-
-/*** Other methods ***/
-
-template<typename T, class V>
-Rcpp::RObject unknown_reader<T, V>::yield() const {
-    return original;
 }
 
 }
