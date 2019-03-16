@@ -8,12 +8,11 @@ delayed_ord <- DelayedArray(matrix(runif(10000), 20, 500))
 library(Matrix)
 delayed_sparse <- DelayedArray(rsparsematrix(100, 20, density=0.1))
 
-library(HDF5Array)
-full_hdf5 <- as(matrix(rnorm(900), 90, 10), "HDF5Array")
-delayed_hdf5 <- full_hdf5[1:20,]
-
 full_rle <- as(matrix(rpois(2000, lambda=0.5), 40, 50), "RleArray")
 delayed_rle <- full_rle[, 20:11]
+
+full_rle2 <- as(matrix(rpois(900, lambda=0.5), 90, 10), "RleArray")
+delayed_rle2 <- full_rle2[1:20,]
 
 test_that("delayed operations parsing works correctly", {
     # Checking out all transposing and subsetting.
@@ -84,18 +83,6 @@ test_that("delayed operations parsing works correctly", {
     expect_identical(parsed$mat, xmod)
 
     # Checking out what happens with the seeds.
-    parsed <- beachmat:::setupDelayedMatrix(delayed_hdf5)
-    expect_identical(parsed$sub, list(1:20, NULL))
-    expect_identical(parsed$trans, FALSE)
-    expect_identical(parsed$mat, full_hdf5)
-    expect_s4_class(parsed$mat, "HDF5Matrix")
-
-    parsed <- beachmat:::setupDelayedMatrix(t(full_hdf5))
-    expect_identical(parsed$sub, list(NULL, NULL))
-    expect_identical(parsed$trans, TRUE)
-    expect_identical(parsed$mat, full_hdf5)
-    expect_s4_class(parsed$mat, "HDF5Matrix")
-
     parsed <- beachmat:::setupDelayedMatrix(delayed_rle)
     expect_identical(parsed$sub, list(NULL, 20:11))
     expect_identical(parsed$trans, FALSE)
@@ -106,6 +93,18 @@ test_that("delayed operations parsing works correctly", {
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, full_rle)
+    expect_s4_class(parsed$mat, "RleMatrix")
+
+    parsed <- beachmat:::setupDelayedMatrix(delayed_rle2)
+    expect_identical(parsed$sub, list(1:20, NULL))
+    expect_identical(parsed$trans, FALSE)
+    expect_identical(parsed$mat, full_rle2)
+    expect_s4_class(parsed$mat, "RleMatrix")
+
+    parsed <- beachmat:::setupDelayedMatrix(t(full_rle2))
+    expect_identical(parsed$sub, list(NULL, NULL))
+    expect_identical(parsed$trans, TRUE)
+    expect_identical(parsed$mat, full_rle2)
     expect_s4_class(parsed$mat, "RleMatrix")
 
     # Checking that sparse entities are not evaluated.
