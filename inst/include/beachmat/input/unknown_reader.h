@@ -4,6 +4,7 @@
 #include "Rcpp.h"
 
 #include "../utils/dim_checker.h"
+#include "../utils/copyable_vector.h"
 
 #include <algorithm>
 

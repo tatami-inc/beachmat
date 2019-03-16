@@ -6,6 +6,7 @@
 #include "unknown_reader.h"
 #include "../utils/utils.h"
 #include "../utils/dim_checker.h"
+#include "../utils/copyable_vector.h"
 
 #include <memory>
 #include <stdexcept>
