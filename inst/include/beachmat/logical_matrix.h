@@ -3,9 +3,10 @@
 
 #include "input/LIN_matrix.h"
 #include "output/LIN_output.h"
+#include "utils/dispatch.h"
 
 #include <memory>
-#include <stdexcept>
+#include <string>
 
 namespace beachmat {
 
@@ -83,6 +84,11 @@ inline std::unique_ptr<logical_matrix> create_logical_matrix(const Rcpp::RObject
     return create_logical_matrix_internal(incoming, true);
 }
 
+template<>
+inline std::unique_ptr<logical_matrix> create_matrix<logical_matrix>(const Rcpp::RObject& incoming) {
+    return create_logical_matrix(incoming);
+}
+
 /**********
  * OUTPUT *
  **********/
@@ -126,6 +132,11 @@ inline std::unique_ptr<logical_output> create_logical_output(int nrow, int ncol,
     }
 
     return std::unique_ptr<logical_output>(new simple_logical_output(nrow, ncol));
+}
+
+template<>
+inline std::unique_ptr<logical_output> create_output<logical_output>(int nrow, int ncol, const output_param& param) {
+    return create_logical_output(nrow, ncol, param);
 }
 
 }

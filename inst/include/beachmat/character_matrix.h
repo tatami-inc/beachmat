@@ -221,6 +221,11 @@ inline std::unique_ptr<character_matrix> create_character_matrix(const Rcpp::ROb
     return create_character_matrix_internal(incoming, true);
 }
 
+template<>
+inline std::unique_ptr<character_matrix> create_matrix<character_matrix>(const Rcpp::RObject& incoming) {
+    return create_character_matrix(incoming);
+}
+
 /**********
  * OUTPUT *
  **********/
@@ -396,6 +401,11 @@ inline std::unique_ptr<character_output> create_character_output(int nrow, int n
     }
 
     return std::unique_ptr<character_output>(new simple_character_output(nrow, ncol));
+}
+
+template<>
+inline std::unique_ptr<character_output> create_output<character_output>(int nrow, int ncol, const output_param& param) {
+    return create_character_output(nrow, ncol, param);
 }
 
 }

@@ -3,9 +3,10 @@
 
 #include "input/LIN_matrix.h"
 #include "output/LIN_output.h"
+#include "utils/dispatch.h"
 
 #include <memory>
-#include <stdexcept>
+#include <string>
 
 namespace beachmat {
 
@@ -62,6 +63,11 @@ inline std::unique_ptr<integer_matrix> create_integer_matrix(const Rcpp::RObject
     return create_integer_matrix_internal(incoming, true);
 }
 
+template<>
+inline std::unique_ptr<integer_matrix> create_matrix<integer_matrix>(const Rcpp::RObject& incoming) {
+    return create_integer_matrix(incoming);
+}
+
 /**************
  *** OUTPUT ***
  **************/
@@ -89,6 +95,11 @@ inline std::unique_ptr<integer_output> create_integer_output(int nrow, int ncol,
     }
      
     return std::unique_ptr<integer_output>(new simple_integer_output(nrow, ncol));
+}
+
+template<>
+inline std::unique_ptr<integer_output> create_output<integer_output>(int nrow, int ncol, const output_param& param) {
+    return create_integer_output(nrow, ncol, param);
 }
 
 }
