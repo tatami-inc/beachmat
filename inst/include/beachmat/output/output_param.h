@@ -23,6 +23,9 @@ public:
         return;
     }
 
+    template<class M>
+    explicit output_param(M mat) : output_param(mat->get_class(), mat->get_package()) {}
+
     bool is_external_available(const std::string& type) const {
         // Skipping packages that we know won't support this.
         if (pkg=="" || pkg=="Matrix" || pkg=="base" || pkg=="DelayedArray") { return false; }
