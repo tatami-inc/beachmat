@@ -95,6 +95,11 @@ public:
     virtual std::string get_class() const=0;
 
     virtual std::string get_package() const=0;
+
+    // Useful typedefs.
+    typedef V vector;
+
+    typedef T type;
 };
 
 /* A general flavour for a LIN matrix */

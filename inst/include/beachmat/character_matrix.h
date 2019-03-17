@@ -92,6 +92,11 @@ public:
     virtual std::string get_class() const=0;
 
     virtual std::string get_package() const=0;
+
+    // Useful typedefs
+    typedef Rcpp::StringVector vector;
+
+    typedef Rcpp::String type;
 };
 
 std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject&, bool); 
@@ -286,6 +291,11 @@ public:
     virtual std::string get_class() const=0;
 
     virtual std::string get_package() const=0;
+
+    // Useful typedefs
+    typedef Rcpp::StringVector vector;
+
+    typedef Rcpp::String type;
 };
 
 /* General character matrix */

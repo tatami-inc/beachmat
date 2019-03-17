@@ -74,6 +74,11 @@ public:
     virtual std::string get_class() const=0;
 
     virtual std::string get_package() const=0;
+
+    // Useful typedefs
+    typedef V vector;
+
+    typedef T type;
 private:
     Rcpp::IntegerVector indices; // needed for get_const_col_indexed.
 };
