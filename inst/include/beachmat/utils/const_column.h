@@ -67,7 +67,7 @@ public:
 private:
     M* ptr;
     raw_structure<typename M::vector> raws;
-    const bool Is_dense, Is_sparse;
+    bool Is_dense, Is_sparse;
 
     // Use a vector of vectors, to hold onto previous indexing vectors.
     // This avoids invalidating existing iterators if there are multiple 'mat's in play.
