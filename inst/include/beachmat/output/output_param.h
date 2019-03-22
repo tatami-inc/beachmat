@@ -23,6 +23,8 @@ public:
         return;
     }
 
+    output_param(SEXP in) : output_param(Rcpp::RObject(in)) {}
+
     template<class M>
     explicit output_param(M mat) : output_param(mat->get_class(), mat->get_package()) {}
 
