@@ -25,24 +25,18 @@ public:
     size_t get_ncol() const { return ncol; }
 
     // Helper functions that might be useful elsewhere.
-    static void check_dimension(size_t i, size_t dim, const char* msg) {
+    static void check_dimension(size_t i, size_t dim, const std::string& msg) {
         if (i >= dim) {
-            std::stringstream err;
-            err << msg << " index out of range";
-            throw std::runtime_error(err.str());
+            throw std::runtime_error(msg + " index out of range");
         }
         return;
     }
 
-    static void check_subset(size_t first, size_t last, size_t dim, const char* msg) {
+    static void check_subset(size_t first, size_t last, size_t dim, const std::string& msg) {
          if (last < first) {
-            std::stringstream err;
-            err << msg << " start index is greater than " << msg << " end index";
-            throw std::runtime_error(err.str());
+            throw std::runtime_error(msg + " start index is greater than " + msg + " end index");
          } else if (last > dim) {
-             std::stringstream err;
-             err << msg << " end index out of range";
-             throw std::runtime_error(err.str());
+             throw std::runtime_error(msg + " end index out of range");
          }
          
          return;    
@@ -92,16 +86,14 @@ protected:
         return;
     }
 
-    static void check_indices(Rcpp::IntegerVector::iterator it, size_t n, size_t dim, const char * msg) {
+    static void check_indices(Rcpp::IntegerVector::iterator it, size_t n, size_t dim, const std::string& msg) {
         if (n==0) { return; }
 
         int last=*(it++);
         for (size_t i=1; i<n; ++i, ++it) {
             dim_checker::check_dimension(*it, dim, msg);
             if (*it <= last) {
-                std::stringstream err;
-                err << msg << " indices are not strictly increasing";
-                throw std::runtime_error(err.str());
+                throw std::runtime_error(msg + " indices are not strictly increasing");
             }
         }
 

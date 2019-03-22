@@ -101,20 +101,19 @@ inline bool has_external_support (const std::string& type, const std::string& cl
 	Rcpp::Environment pkgenv=Rcpp::Environment::namespace_env(pkg);
 
 	std::stringstream symbolic;
-	symbolic << "beachmat_" << cls << "_" << type << "_" << mode;
-	Rcpp::RObject out=pkgenv.get(symbolic.str());
-	if (out.isNULL()) {
-		return false;
-	}
+    symbolic << "beachmat_" << cls << "_" << type << "_" << mode;
+    auto symbol=symbolic.str();
+    Rcpp::RObject out=pkgenv.get(symbol);
+    if (out.isNULL()) {
+        return false;
+    }
 
-	Rcpp::LogicalVector flag(out);
-	if (flag.size()!=1) {
-		std::stringstream msg;
-		msg << "invalid specifier for " << symbolic.str();
-		throw std::runtime_error(msg.str());
-	}
+    Rcpp::LogicalVector flag(out);
+    if (flag.size()!=1) {
+        throw std::runtime_error(std::string("invalid specifier for ") + symbol);
+    }
 
-	return flag[0];
+    return flag[0];
 }
 
 inline bool has_external_support (const std::string& type, Rcpp::RObject incoming) {
