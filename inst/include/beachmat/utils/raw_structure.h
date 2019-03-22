@@ -9,23 +9,28 @@ namespace beachmat {
 template<class V>
 class raw_structure {
 public:
-    raw_structure(size_t nv=0, size_t ns=0) : values(nv), structure(ns), 
+    raw_structure(bool ownval=false, bool ownstruct=false, size_t nv=0, size_t ns=0) : 
+        own_structure(ownstruct), own_values(ownval), structure(ns), values(nv),
         values_start(values.vec.begin()), structure_start(structure.vec.begin()) {}
 
+    // Rule of 5 for iterator copying.
     ~raw_structure()=default;
     
-    raw_structure(const raw_structure& in) : n(in.n), 
-        use_own(in.use_own), structure(in.structure), values(in.values) 
+    raw_structure(const raw_structure& in) : 
+        own_structure(in.own_structure), own_values(in.own_values),
+        structure(in.structure), values(in.values),
+        n(in.n)
     {
         initialize_iterators(in);
         return;
     }
 
     raw_structure& operator=(const raw_structure& in) {
-        n=in.n; 
-        use_own=in.use_own;
+        own_structure=in.own_structure;
+        own_values=in.own_values;
         structure=in.structure;
         values=in.values;
+        n=in.n; 
         initialize_iterators(in);
     }
 
@@ -46,7 +51,7 @@ public:
     Rcpp::IntegerVector& get_structure() { return structure.vec; }
     V& get_values() { return values.vec; }
 private:
-    bool use_own=true;
+    bool own_structure=false, own_values=false;
     copyable_holder<Rcpp::IntegerVector> structure;
     copyable_holder<V> values;
 
@@ -55,11 +60,15 @@ private:
     typename V::iterator values_start;
 
     void initialize_iterators(const raw_structure& in) {
-        if (use_own) {
+        if (own_structure) {
             structure_start=structure.vec.begin();
-            values_start=values.vec.begin();
         } else {
             structure_start=in.structure_start;
+        }
+
+        if (own_values) {
+            values_start=values.vec.begin();
+        } else {
             values_start=in.values_start;
         }
     }
