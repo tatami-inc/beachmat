@@ -13,7 +13,7 @@ O get_indexed_all (M* ptr, Rcpp::IntegerVector ordering) {
     size_t c=0;
 
     for (auto o : ordering) {
-        col_holder.fill(o-1);
+        col_holder.fill(ptr, o-1);
         auto N=col_holder.get_n();
         auto idx=col_holder.get_indices();
         auto vals=col_holder.get_values();
@@ -39,7 +39,7 @@ O get_indexed_slice (M* ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector r
     size_t c=0;
 
     for (auto o : ordering) {
-        col_holder.fill(o-1, rstart, rend);
+        col_holder.fill(ptr, o-1, rstart, rend);
         auto N=col_holder.get_n();
         auto idx=col_holder.get_indices();
         auto vals=col_holder.get_values();
@@ -71,7 +71,7 @@ Rcpp::List get_indexed_varslice (M* ptr, Rcpp::IntegerVector ordering, Rcpp::Int
         auto cur_bounds=rows.row(c);
         int left=cur_bounds[0]-1, right=cur_bounds[1];
 
-        col_holder.fill(o-1, left, right);
+        col_holder.fill(ptr, o-1, left, right);
         auto N=col_holder.get_n();
         auto idx=col_holder.get_indices();
         auto vals=col_holder.get_values();
