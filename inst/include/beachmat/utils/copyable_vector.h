@@ -21,12 +21,9 @@ struct copyable_holder {
         return *this;
     }
 
-    // Using the copy constructor explicitly.
-    copyable_holder(copyable_holder&& other) : vec(other.vec) {}
-    copyable_holder& operator=(copyable_holder&& other) {
-        vec=other.vec;
-        return *this;
-    }
+    // Assume that Rcpp's copy constructor is okay.
+    copyable_holder(copyable_holder&&) = default;
+    copyable_holder& operator=(copyable_holder&&) = default;
 };
 
 }
