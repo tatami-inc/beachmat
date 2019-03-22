@@ -9,69 +9,71 @@ namespace beachmat {
 template<class V>
 class raw_structure {
 public:
-    raw_structure(bool ownval=false, bool ownstruct=false, size_t nv=0, size_t ns=0) : 
-        own_structure(ownstruct), own_values(ownval), structure(ns), values(nv),
-        values_start(values.vec.begin()), structure_start(structure.vec.begin()) {}
-
-    // Rule of 5 for iterator copying.
-    ~raw_structure()=default;
-    
-    raw_structure(const raw_structure& in) : 
-        own_structure(in.own_structure), own_values(in.own_values),
-        structure(in.structure), values(in.values),
-        n(in.n)
-    {
-        initialize_iterators(in);
-        return;
-    }
-
-    raw_structure& operator=(const raw_structure& in) {
-        own_structure=in.own_structure;
-        own_values=in.own_values;
-        structure=in.structure;
-        values=in.values;
-        n=in.n; 
-        initialize_iterators(in);
-    }
-
-    raw_structure(raw_structure&&)=default;
-    raw_structure& operator=(raw_structure&&)=default;
+    raw_structure(size_t nv=0, bool ownval=false, size_t ns=0, bool ownstruct=false) :
+        values(nv, ownval), structure(ns, ownstruct) {}
 
     size_t get_n() const { return n; }
-    Rcpp::IntegerVector::iterator get_structure_start() const { return structure_start; }
-    typename V::iterator get_values_start() const { return values_start; }
+    Rcpp::IntegerVector::iterator get_structure_start() const { return structure.start; }
+    typename V::iterator get_values_start() const { return values.start; }
 
     size_t& get_n() { return n; }
-    Rcpp::IntegerVector::iterator& get_structure_start() { return structure_start; }
-    typename V::iterator& get_values_start() { return values_start; }
+    Rcpp::IntegerVector::iterator& get_structure_start() { return structure.start; }
+    typename V::iterator& get_values_start() { return values.start; }
 
     // Not for external use. If the vector ends up being reassigned 
     // (unlikely; you should prefer to use the constructor for choosing the size),
     // it is imporant that the iterators are re-initialized!
-    Rcpp::IntegerVector& get_structure() { return structure.vec; }
-    V& get_values() { return values.vec; }
+    Rcpp::IntegerVector& get_structure() { return structure.holder.vec; }
+    V& get_values() { return values.holder.vec; }
 private:
-    bool own_structure=false, own_values=false;
-    copyable_holder<Rcpp::IntegerVector> structure;
-    copyable_holder<V> values;
-
     size_t n=0;
-    Rcpp::IntegerVector::iterator structure_start;
-    typename V::iterator values_start;
 
-    void initialize_iterators(const raw_structure& in) {
-        if (own_structure) {
-            structure_start=structure.vec.begin();
-        } else {
-            structure_start=in.structure_start;
+    // Internal class for easier copying and moving.
+    template<typename T>
+    struct internal_vector {
+        copyable_holder<T> holder;
+        typename T::iterator start;
+        bool use_own;
+
+        internal_vector(size_t n, bool u) : holder(n), start(holder.vec.begin()), use_own(u) {}
+        ~internal_vector()=default;
+
+        // Either copying the iterator directly, if we don't use our own structure;
+        // or resetting it to an appropriate position in our own structure.
+        internal_vector(const internal_vector& in) : holder(in.holder), use_own(in.use_own) {
+            initialize_iterator(in);
+            return;
+        }
+        internal_vector& operator=(const internal_vector& in) {
+            holder=in.holder;
+            use_own=in.use_own;
+            initialize_iterator(in);
+            return *this;
+        }
+        void initialize_iterator(const internal_vector& in) {
+            if (use_own) {
+                start=holder.vec.begin(); //+ (in.start - in.holder.vec.begin());
+            } else {
+                start=in.start;
+            }
+            return;
         }
 
-        if (own_values) {
-            values_start=values.vec.begin();
-        } else {
-            values_start=in.values_start;
+        // Copying the iterator in the move operator; 
+        // do not use the automatically generated move, this is not correct.
+        internal_vector(internal_vector&& in) : holder(std::move(in.holder)), use_own(std::move(in.use_own)) {
+            initialize_iterator(in);
         }
-    }
+        internal_vector& operator=(internal_vector&& in) {
+            holder=std::move(in.holder);
+            use_own=std::move(in.use_own);
+            initialize_iterator(in);
+            return *this;
+        } 
+    }; 
+
+    internal_vector<V> values;
+    internal_vector<Rcpp::IntegerVector> structure;
 };
 
 }

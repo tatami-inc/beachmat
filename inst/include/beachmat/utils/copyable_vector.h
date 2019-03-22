@@ -9,16 +9,24 @@ namespace beachmat {
 
 template <class V> 
 struct copyable_holder {
+    V vec;
+
     copyable_holder(size_t n=0) : vec(n) {}
     ~copyable_holder() = default;
+    
+    // Ensuring that the copy generates a deep clone.
     copyable_holder(const copyable_holder& other) : vec(Rcpp::clone(other.vec)) {}
     copyable_holder& operator=(const copyable_holder& other) { 
         vec=Rcpp::clone(other.vec); 
         return *this;
     }
-    copyable_holder(copyable_holder&&) = default;
-    copyable_holder& operator=(copyable_holder&&) = default;
-    V vec;
+
+    // Using the copy constructor explicitly.
+    copyable_holder(copyable_holder&& other) : vec(other.vec) {}
+    copyable_holder& operator=(copyable_holder&& other) {
+        vec=other.vec;
+        return *this;
+    }
 };
 
 }
