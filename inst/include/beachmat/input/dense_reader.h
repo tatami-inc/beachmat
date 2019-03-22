@@ -40,7 +40,7 @@ public:
 
     void get_col_raw(size_t c, raw_structure<V>& in, size_t first, size_t last) {
         check_colargs(c, first, last);
-        in.get_values_start()=get_const_col(c, first);
+        in.values_start=get_const_col(c, first);
         return;
     }
 

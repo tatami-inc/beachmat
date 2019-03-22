@@ -19,8 +19,11 @@ public:
         nrows(mat->get_nrow()), prev_start(0)
     {
         if (!Is_dense && !Is_sparse) {
+            Rprintf("making a copy!\n");
+            Rprintf("values length was %i\n", raws.values.vec.size());
             // repurposing the raw structure to hold some values.
-            raws=raw_structure<typename M::vector>(true, false, mat->get_nrow(), 0); 
+            raws=raw_structure<typename M::vector>(mat->get_nrow()); 
+            Rprintf("values length is %i\n", raws.values.vec.size());
         }
         return;
     }
@@ -33,10 +36,10 @@ public:
         if (Is_dense || Is_sparse) {
             mat->get_col_raw(c, raws, first, last);
         } else {
-            mat->get_col(c, raws.get_values_start(), first, last);
+            mat->get_col(c, raws.values.vec.begin(), first, last);
         }
         if (!Is_sparse) {
-            raws.get_n()=last - first;
+            raws.n=last - first;
             prev_start=first;
         }
         return;
@@ -48,16 +51,21 @@ public:
     }
 
     size_t get_n () const {
-        return raws.get_n();
+        return raws.n;
     }
 
-    typename M::vector::iterator get_values() const {
-        return raws.get_values_start();
+    // Not const, as Rcpp iterator conversions are problematic.
+    typename M::vector::iterator get_values() {
+        if (!Is_dense && !Is_sparse) {
+            return raws.values.vec.begin();
+        } else {
+            return raws.values_start;
+        }
     }
 
     Rcpp::IntegerVector::iterator get_indices() {
         if (Is_sparse) {
-            return raws.get_structure_start();
+            return raws.structure_start;
         }
         if (nrows > indices.size()) {
             indices=Rcpp::IntegerVector(nrows);
