@@ -275,88 +275,96 @@ This functionality is generally limited to base matrices, though there is also l
 
 ## Overview
 
-For specific matrix representations, special `get_row_raw()` and `get_col_raw()` methods are available that can improve the efficiency of data access.
-However, these methods are not representation-agnostic, thus requiring specialization to a specific subclass.
-Their use is only recommended for performance-critical applications as the surrounding code is likely to be representation-specific as well.
+For specific matrix representations, special methods are available that can improve the efficiency of column-level data access.
 
-Given a matrix instance, users can check for the availability of these methods for row or column access:
+- Ordinary matrices or `dgeMatrix` instances are stored as dense arrays, so it is possible to access the columns without copying by returning an iterator to the start of each column.
+- If the underlying matrix is a `dgCMatrix`, the column-sparse format allows us to access the non-zero values (and their row indices) directly for each column without copying.
 
-```cpp
-std::string c_out=dptr->col_raw_type();
-std::string r_out=dptr->row_raw_type();
-```
-
-The available raw types are `"none"`, `"dense"` or `"sparse"`, which are discussed in more detail below.
-However, note that if `"none"` is returned, the matrix representation is not obligated to return _anything_ from the specialized getters.
-
-For complex representations, a single iterator may not be sufficient to represent the raw structure.
-Instead, a specialized `raw_structure` class is used that can hold both the values in the matrix and structural integer values^[Such as indices or runs.].
-The raw data structure can be set up with:
+The `const_column` class provides a convenient wrapper to exploit these optimizations where possible.
 
 ```cpp
-// Returns a beachmat::raw_structure<Rcpp::NumericVector>
-auto raws=dptr->set_up_raw();
+#include "beachmat/utils/const_column.h"
+
+// Need a get() as unique_ptr's are not copyable.
+beachmat::const_column<beachmat::numeric_matrix> col_holder(dptr.get());
 ```
 
-Obviously, matrices of other types will return a `raw_structure` with different template arguments.
-For example, a logical matrix would return a `beachmat::raw_structure<Rcpp::LogicalVector>`.
+The `fill` method will instruct the `const_column` object to obtain the relevant column,
+taking advantage of no-copy methods if supported by the representation.
+For other matrices, it simply calls `get_col()` to perform a copy to its internal storage.
+
+```cpp
+col_holder.fill(dptr.get(),
+    c /* size_t */, 
+    first /* size_t */, 
+    last /* size_t */
+);
+```
+
+The `first` and `last` arguments are optional and behave as previously described.
 
 **Additional notes**
 
-- We recommend using the `set_up_raw()` method to generate these objects rather than manually constructing them.
-This is because a given matrix representation may need to allocate memory within the `raw_structure` to represent its internal structure.
-- Effective use of these methods often requires conditional execution:
+- The lifetime of the `const_column` instance should not exceed that of the `*_matrix` with which it was constructed. 
+The former keeps iterators to the underlying R-managed data, which may be invalidated in some contrived scenarios.
 
-    ```cpp
-    if (dptr->col_raw_type()=="sparse") {
-        // Do something special.
-    } else {
-        // Do something normal.
-    }
-    ```
-  
-    This is because the algorithm itself can often be improved given a particular raw structure.
-    Sparsity is particularly notable in this respect, as processing of a large number of zero values can be skipped.
+## Interpreting the iterators
 
-## Dense raw access
-
-If the underlying matrix is held as a dense array, it is possible to access the columns (if column-major) or rows (if row-major) without copying by returning an iterator to the start of each column/row.
-To demonstrate, consider ordinary R matrices or their dense counterparts from `r CRANpkg("Matrix")`.
-These will return `"dense"` from `col_raw_type()` as they are stored in column-major format.
-In such cases, the `get_col_raw()` will overwrite the `values_start` iterator in the `raw_structure` with the iterator to the requested column:
+An iterator to the values of the column is obtained with `get_values`:
 
 ```cpp
-dptr->get_col_raw(c, raws /* raw_structure& */);
-auto it=raws.get_values_start(); // Rcpp::NumericVector::iterator
+Rcpp::NumericVector::iterator val=col_holder.get_values(); 
 ```
 
-The arguments are the same as `get_col()`^[Users can also specify `first` and `last`, though we will not do so here for simplicity.] except that the iterator argument has been replaced with a `raw_structure` reference.
-For ordinary matrices, this method is more efficient than `get_col()` as it returns the iterator without needing to copy data.
-The same method is also available for logical, integer and character inputs with a change to the iterator type.
-However, calling processes should consider the iterator to be read-only, otherwise the data will be modified at the R-level.
-
-## From sparse matrices
-
-If the underlying matrix is held as a sparse array, it is possible to access the sparse values directly without copying.
-Column-sparse compressed matrices from `r CRANpkg("Matrix")` implement a specialized `get_col_raw()` method that
-
-1. Overwrites the `values_start` iterator with an iterator to the first non-zero entry in a column.
-2. Overwrites the `structures_start` iterator with an iterator to the row index of the first non-zero entry in a column.
-3. Ovewrites the `n` integer with the number of non-zero entries in the column.
-
-The structural integers represent row indices for each non-zero entry in the matrix.
-We demonstrate its usage below^[Again, `first` and `last` do not have to be specified and will default to the entire column.]:
+An iterator to the row index of each value is obtained with `get_indices`:
 
 ```cpp
-dptr->get_col_raw(c, /* size_t */, raws);
-auto n=raws.get_n();
-auto idx=raws.get_structure_start(); // Rcpp::IntegerVector::iterator
-auto vals=raws.get_values_start(); // Rcpp::NumericVector::iterator
+Rcpp::IntegerVector::iterator idx=col_holder.get_indices();
 ```
 
-This method is quite efficient for `dgCMatrix` objects, as it will directly return iterators to the indices and values of the _non-zero entries only_.
-The same method is also available for `lgCMatrix` objects with an appropriate change to the iterator type.
-Obviously, the iterators should be treated as read-only.
+The number of values pointed to by the iterator is obtained with `get_n`:
+
+```cpp
+size_t n=col_holder.get_n(); 
+```
+
+Obviously, sparse matrices will not store any zeroes in the array of values pointed to by `get_values()`,
+nor will the row indices for zeroes be present in the array pointed to by `get_indices()`.
+This may or may not require some custom code to take maximum advantage of sparsity:
+
+```cpp
+if (col_holder.is_sparse()) {
+    // Do something fast with non-zero elements.
+} else {
+    // Do something with all elements.
+}
+```
+
+## Further options 
+
+Some applications require representation of all elements including zeroes, e.g., when the subsequent array needs to be accessed by row index.
+We can ensure that we obtain an iterator to a dense array by constructing the `const_column` with the `allow_sparsity` argument turned off:
+
+```cpp
+beachmat::const_column<beachmat::numeric_matrix> col_holder(
+    dptr.get(), false);
+```
+
+Doing so will force `const_column` to use `get_col()` for accessing sparse matrices, instead of obtaining iterators to the raw structure.
+However, no-copy optimizations for dense matrices will still be active.
+
+For non-sparse matrices, calling `get_indices()` will cause an internal array to be populated with consecutive iterators.
+One can share this array across many `const_column` instances by calling `get_indices()` prior to construction of copies:
+
+```cpp
+beachmat::const_column<beachmat::numeric_matrix> col_holder(dptr.get());
+col_holder.get_indices(); // Effectively 'static' indices.
+
+// Make any number of copies without re-generating the indices.
+auto holder_copy=col_holder;
+```
+
+This can save some memory if many `const_column` objects are to be created.
 
 # Cloning matrix instances
 
