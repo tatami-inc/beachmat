@@ -1,7 +1,8 @@
 #ifndef BEACHMAT_CONST_COLUMN_H
 #define BEACHMAT_CONST_COLUMN_H
 
-#include "Rcpp.h."
+#include "Rcpp.h"
+#include "raw_structure.h"
 #include <algorithm>
 
 namespace beachmat {
@@ -53,7 +54,7 @@ public:
     }
 
     void fill_indices() {
-        if (indices.empty()) {
+        if (!indices.size()) {
             indices=Rcpp::IntegerVector(ptr->get_nrow());
             std::iota(indices.begin(), indices.end(), 0);
         }
