@@ -19,11 +19,8 @@ public:
         nrows(mat->get_nrow()), prev_start(0)
     {
         if (!Is_dense && !Is_sparse) {
-            Rprintf("making a copy!\n");
-            Rprintf("values length was %i\n", raws.values.vec.size());
             // repurposing the raw structure to hold some values.
             raws=raw_structure<typename M::vector>(mat->get_nrow()); 
-            Rprintf("values length is %i\n", raws.values.vec.size());
         }
         return;
     }
