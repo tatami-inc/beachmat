@@ -12,7 +12,7 @@ O get_const_all (M* ptr, Rcpp::IntegerVector ordering) {
     size_t c=0;
 
     for (auto o : ordering) {
-        col_holder.fill(ptr, o-1);
+        col_holder.fill(o-1);
         auto val=col_holder.get_values();
         auto outcol=output.column(c);
         std::copy(val, val + nrows, outcol.begin());
@@ -33,7 +33,7 @@ O get_const_slice (M* ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector row
     size_t c=0;
 
     for (auto o : ordering) {
-        col_holder.fill(ptr, o-1, rstart, rend);
+        col_holder.fill(o-1, rstart, rend);
         auto val=col_holder.get_values();
         auto outcol=output.column(c);
         std::copy(val, val + nrows, outcol.begin());
@@ -58,7 +58,7 @@ Rcpp::List get_const_varslice (M* ptr, Rcpp::IntegerVector ordering, Rcpp::Integ
     for (auto o : ordering) {
         auto cur_bounds=rows.row(c);
         int left=cur_bounds[0]-1, right=cur_bounds[1];
-        col_holder.fill(ptr, o-1, left, right);
+        col_holder.fill(o-1, left, right);
         auto val=col_holder.get_values();
 
         typename M::vector out(right-left);

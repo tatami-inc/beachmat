@@ -294,7 +294,7 @@ taking advantage of no-copy methods if supported by the representation.
 For other matrices, it simply calls `get_col()` to perform a copy to its internal storage.
 
 ```cpp
-col_holder.fill(dptr.get(),
+col_holder.fill(
     c /* size_t */, 
     first /* size_t */, 
     last /* size_t */
@@ -305,8 +305,9 @@ The `first` and `last` arguments are optional and behave as previously described
 
 **Additional notes**
 
-- The lifetime of the `const_column` instance should not exceed that of the `*_matrix` with which it was constructed. 
-The former keeps iterators to the underlying R-managed data, which may be invalidated in some contrived scenarios.
+- The lifetime of the `const_column` instance should not exceed that of the `numeric_matrix` with which it was constructed. 
+This is because the former holds a pointer to the latter, which would no longer be valid upon destruction.
+The `const_column` also keeps iterators to the underlying R-managed data, which could be invalidated upon `numeric_matrix` destruction in some contrived scenarios.
 
 ## Interpreting the iterators
 

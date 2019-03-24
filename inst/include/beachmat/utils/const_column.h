@@ -14,9 +14,8 @@ namespace beachmat {
 template<class M>
 class const_column {
 public:
-    const_column(M* mat, bool allow_sparse=true) : raws(mat->set_up_raw()), 
-        Is_dense(mat->col_raw_type()=="dense"), Is_sparse(allow_sparse && mat->col_raw_type()=="sparse"),
-        nrows(mat->get_nrow()), prev_start(0)
+    const_column(M* mat, bool allow_sparse=true) : ref(mat), raws(mat->set_up_raw()), 
+        Is_dense(mat->col_raw_type()=="dense"), Is_sparse(allow_sparse && mat->col_raw_type()=="sparse")
     {
         if (!Is_dense && !Is_sparse) {
             // repurposing the raw structure to hold some values.
@@ -29,11 +28,11 @@ public:
 
     bool is_dense () const { return Is_dense; }
 
-    void fill(M* mat, size_t c, size_t first, size_t last) {
+    void fill(size_t c, size_t first, size_t last) {
         if (Is_dense || Is_sparse) {
-            mat->get_col_raw(c, raws, first, last);
+            ref->get_col_raw(c, raws, first, last);
         } else {
-            mat->get_col(c, raws.values.vec.begin(), first, last);
+            ref->get_col(c, raws.values.vec.begin(), first, last);
         }
         if (!Is_sparse) {
             raws.n=last - first;
@@ -42,8 +41,8 @@ public:
         return;
     }
 
-    void fill(M* mat, size_t c) {
-        fill(mat, c, 0, mat->get_nrow());
+    void fill(size_t c) {
+        fill(c, 0, ref->get_nrow());
         return;
     }
 
@@ -51,7 +50,7 @@ public:
         return raws.n;
     }
 
-    // Not const, as Rcpp iterator conversions are problematic.
+    // Not const, as Rcpp iterator conversions are problerefic.
     typename M::vector::iterator get_values() {
         if (!Is_dense && !Is_sparse) {
             return raws.values.vec.begin();
@@ -64,19 +63,19 @@ public:
         if (Is_sparse) {
             return raws.structure_start;
         }
-        if (nrows > indices.size()) {
-            indices=Rcpp::IntegerVector(nrows);
+        if (ref->get_nrow() > indices.size()) {
+            indices=Rcpp::IntegerVector(ref->get_nrow());
             std::iota(indices.begin(), indices.end(), 0);
         }
         return indices.begin()+prev_start;
     }
 private:
+    M* ref;
     raw_structure<typename M::vector> raws;
     bool Is_dense, Is_sparse;
 
     Rcpp::IntegerVector indices; // deliberately copyable; values won't change, and reassignment won't matter.
-    size_t nrows;
-    size_t prev_start;
+    size_t prev_start=0;
 };
 
 }
