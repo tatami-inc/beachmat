@@ -41,12 +41,6 @@ setMethod("[", "AaronMatrix", function(x, i, j, ..., drop = TRUE) {
 })
 
 #' @export
-#' @importFrom beachmat supportCppAccess
-setMethod("supportCppAccess", "AaronMatrix", function(x) {
-    return(type(x) %in% c("character", "integer")) # only for supported types.
-})
-
-#' @export
 #' @importFrom DelayedArray type
 setMethod("type", "AaronMatrix", function(x) typeof(x@data))
 

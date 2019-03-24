@@ -2,7 +2,9 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
-\section{Version 1.6.0}{\itemize{
+\section{Version 2.0.0}{\itemize{
+\item Converted beachmat into a header-only library to simplify linking, avoid ABI incompatibilities.
+
 \item Minor API change for external native support to avoid using C++ classes with C-style linkage.
 }}
 

@@ -1,49 +1,52 @@
 #ifndef BEACHTEST_GET_INDEXED_H
 #define BEACHTEST_GET_INDEXED_H
-#include "beachtest.h"
 
-template <class T, class O, class M>  // M is automatically deduced.
-O get_indexed_all (M ptr, Rcpp::IntegerVector ordering) {
+#include "beachtest.h"
+#include "beachmat/utils/const_column.h"
+#include <algorithm>
+
+template <class O, class M>  // M is automatically deduced.
+O get_indexed_all (M* ptr, Rcpp::IntegerVector ordering) {
     const size_t& nrows=ptr->get_nrow();
     O output(nrows, ordering.size());
-
-	T target(nrows);
+    beachmat::const_column<M> col_holder(ptr);
     size_t c=0;
+
     for (auto o : ordering) {
-        auto info=ptr->get_const_col_indexed(o-1, target.begin());
-        size_t N=std::get<0>(info);
-        auto idx=std::get<1>(info);
-        auto vals=std::get<2>(info);
+        col_holder.fill(o-1);
+        auto N=col_holder.get_n();
+        auto idx=col_holder.get_indices();
+        auto vals=col_holder.get_values();
 
         auto outcol=output.column(c);
-        for (size_t i=0; i<N; ++i) {
-            outcol[*(idx+i)] = *(vals+i);
+        for (size_t i=0; i<N; ++i, ++idx, ++vals) {
+            outcol[*idx] = *vals;
         }
         ++c;
     }
     return output;
 }
 
-template <class T, class O, class M>  
-O get_indexed_slice (M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector rows) {
+template <class O, class M>  
+O get_indexed_slice (M* ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector rows) {
     if (rows.size()!=2) { 
         throw std::runtime_error("'rows' should be an integer vector of length 2"); 
     }
     const int rstart=rows[0]-1, rend=rows[1];
-    const int nrows=rend-rstart;    
-
-    O output(nrows, ordering.size());
-    T target(nrows);
+    const int out_nrows=rend-rstart;
+    O output(out_nrows, ordering.size());
+    beachmat::const_column<M> col_holder(ptr);
     size_t c=0;
+
     for (auto o : ordering) {
-        auto info=ptr->get_const_col_indexed(o-1, target.begin(), rstart, rend);
-        size_t N=std::get<0>(info);
-        auto idx=std::get<1>(info);
-        auto vals=std::get<2>(info);
+        col_holder.fill(o-1, rstart, rend);
+        auto N=col_holder.get_n();
+        auto idx=col_holder.get_indices();
+        auto vals=col_holder.get_values();
 
         auto curcol=output.column(c);
-        for (size_t i=0; i<N; ++i) {
-            curcol[*(idx + i) - rstart] = *(vals+i);
+        for (size_t i=0; i<N; ++i, ++idx, ++vals) {
+            curcol[*idx - rstart] = *vals;
         }
         ++c;
     }
@@ -51,8 +54,8 @@ O get_indexed_slice (M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerVector ro
     return output;
 }
 
-template <class T, class M>  
-Rcpp::List get_indexed_varslice (M ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerMatrix rows) {
+template <class M>  
+Rcpp::List get_indexed_varslice (M* ptr, Rcpp::IntegerVector ordering, Rcpp::IntegerMatrix rows) {
     if (rows.ncol()!=2) { 
         throw std::runtime_error("'rows' should be an integer matrix with two columns"); 
     }
@@ -60,21 +63,22 @@ Rcpp::List get_indexed_varslice (M ptr, Rcpp::IntegerVector ordering, Rcpp::Inte
         throw std::runtime_error("'nrow(rows)' should be equal to 'length(ordering)'");
     }
     Rcpp::List output(ordering.size());
-
+    const size_t nrows=ptr->get_nrow();
+    beachmat::const_column<M> col_holder(ptr);
     size_t c=0;
-    T target(ptr->get_nrow());
+
     for (auto o : ordering) {
         auto cur_bounds=rows.row(c);
         int left=cur_bounds[0]-1, right=cur_bounds[1];
 
-        auto info=ptr->get_const_col_indexed(o-1, target.begin(), left, right);
-        size_t N=std::get<0>(info);
-        auto idx=std::get<1>(info);
-        auto vals=std::get<2>(info);
+        col_holder.fill(o-1, left, right);
+        auto N=col_holder.get_n();
+        auto idx=col_holder.get_indices();
+        auto vals=col_holder.get_values();
 
-        T out(right-left);
-        for (size_t i=0; i<N; ++i) {
-            out[*(idx + i) - left] = *(vals+i);
+        typename M::vector out(right-left);
+        for (size_t i=0; i<N; ++i, ++idx, ++vals) {
+            out[*idx - left] = *vals;
         }
         output[c]=out;
         ++c;

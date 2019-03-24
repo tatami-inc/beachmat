@@ -9,7 +9,7 @@ SEXP set_row_varslice_numeric (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
     
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_row_varslice<Rcpp::NumericVector>(ptr.get(), optr.get(), order, subset);
@@ -21,7 +21,7 @@ SEXP set_row_varslice_integer (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_row_varslice<Rcpp::IntegerVector>(ptr.get(), optr.get(), order, subset);
@@ -33,7 +33,7 @@ SEXP set_row_varslice_logical (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_row_varslice<Rcpp::LogicalVector>(ptr.get(), optr.get(), order, subset);
@@ -45,8 +45,7 @@ SEXP set_row_varslice_character (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_character_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
-    op.set_strlen(10);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_character_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_row_varslice<Rcpp::CharacterVector>(ptr.get(), optr.get(), order, subset);
@@ -60,7 +59,7 @@ SEXP set_col_varslice_numeric (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_numeric_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_numeric_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_col_varslice<Rcpp::NumericVector>(ptr.get(), optr.get(), order, subset);
@@ -72,7 +71,7 @@ SEXP set_col_varslice_integer (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_integer_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_integer_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_col_varslice<Rcpp::IntegerVector>(ptr.get(), optr.get(), order, subset);
@@ -84,7 +83,7 @@ SEXP set_col_varslice_logical (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_logical_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_logical_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_col_varslice<Rcpp::LogicalVector>(ptr.get(), optr.get(), order, subset);
@@ -96,8 +95,7 @@ SEXP set_col_varslice_character (SEXP in, SEXP order, SEXP subset) {
     BEGIN_RCPP
     auto ptr=beachmat::create_character_matrix(in);
 
-    beachmat::output_param op(ptr->get_matrix_type(), true, true);
-    op.set_strlen(10);
+    beachmat::output_param op(ptr->get_class(), ptr->get_package());
     auto optr=beachmat::create_character_output(ptr->get_nrow(), ptr->get_ncol(), op);
 
     set_col_varslice<Rcpp::CharacterVector>(ptr.get(), optr.get(), order, subset);

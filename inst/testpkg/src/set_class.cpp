@@ -2,10 +2,10 @@
 
 extern "C" {
 
-SEXP set_class_by_sexp(SEXP incoming, SEXP simplify, SEXP preserve_zero) {
+SEXP set_class_by_sexp(SEXP incoming) {
     BEGIN_RCPP
-    beachmat::output_param op(incoming, Rf_asLogical(simplify), Rf_asLogical(preserve_zero));
-    return translate_class(op.get_mode());
+    beachmat::output_param op(incoming);
+    return Rcpp::StringVector::create(op.get_class());
     END_RCPP
 }
 

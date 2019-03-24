@@ -18,10 +18,10 @@ opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 
 # Background
 
-Ordinarily, direct support for an input matrix class would require the appropriate methods to be defined in `r Biocpkg("beachmat")` at compile time.
+Ordinarily, direct support for a matrix representation would require the appropriate methods to be defined in `r Biocpkg("beachmat")` at compile time.
 This is the case for the most widely used matrix classes but is somewhat restrictive for other community-contributed matrix representations. 
 Fortunately, R provides a mechanism to link across shared libraries from different packages.
-This means that package developers who define a R matrix type can also define C++ methods for direct input support in `r Biocpkg("beachmat")`-dependent code.
+This means that package developers who define a R matrix representation can also define C++ methods for native read/write support in `r Biocpkg("beachmat")`-dependent code.
 By doing so, we can improve efficiency of access to these new classes by avoiding the need for block processing via R.
 
 A functioning demonstration of this approach is available in the `extensions` test package.
@@ -31,10 +31,12 @@ This vignette will provide an explanation of the code in `extensions`, and we su
 system.file("extensions", package="beachmat")
 ```
 
-# Setting up in R
+# External linkage for input
+
+## Setting up in R
 
 Assume that we have already defined a new matrix-like S4 class (here, `AaronMatrix`).
-To notify the `r Biocpkg("beachmat")` API that direct access support is available, we need to:
+To notify the `r Biocpkg("beachmat")` API that direct input support is available, we need to:
 
 - define a method for the `supportCppAccess()` generic (from `r Biocpkg("beachmat")`) for this class.
 This should return `TRUE` if direct support is available (obviously).
@@ -44,48 +46,55 @@ This should return the type of the matrix, i.e., integer, logical, numeric or ch
 It is possible to only have direct support for particular data types of the given matrix representation.
 The example in `extensions` only directly supports integer and character `AaronMatrix` objects^[Because I was too lazy to add all of them.] and will only return `TRUE` for such types.
 
-# Setting up in C++
+## Setting up in C++
 
 We will use integer matrices for demonstration, though it is simple to generalize this to all types by replacing `_integer` with, e.g., `_character`^[Some understanding of C++ templates will greatly simplify the definition of the same methods for different types.].
 First, we define a `create()` function that takes a `SEXP` object and returns a `void` pointer.
 This should presumably point to some C++ class that can contain intermediate data structures for efficient access.
 
 ```cpp
-void * ptr = create_integer(in /* SEXP */);
+void * ptr = AaronMatrix_integer_input_create(in /* SEXP */);
 ```
 
 We define a `clone()` function that performs a deep copy of the aforementioned pointer.
 
 ```cpp
-void * ptr_copy = clone_integer(ptr /* void* */);
+void * ptr_copy = AaronMatrix_integer_input_clone(ptr /* void* */);
 ```
 
-We define a `destroy()` function the frees the memory pointed to by `ptr`.
+We define a `destroy()` function that frees the memory pointed to by `ptr`.
 
 ```cpp
-destroy_integer(ptr /* void* */);
+AaronMatrix_integer_input_destroy(ptr /* void* */);
 ```
 
 We define a `get_dim()` function that records the number of rows and columns in the object pointed to by `ptr`.
 Note the pointers for `nrow` and `ncol`.
 
 ```cpp
-get_dim_integer(
+AaronMatrix_integer_input_dim(
     ptr, /* void* */
     nrow, /* size_t* */
     ncol /* size_t* */
 );
 ```
 
-# Defining getter methods
+A systematic naming scheme is used for all functions, consisting of:
 
-## For all types
+- The name of the matrix representation, i.e., `AaronMatrix`.
+- The data type, i.e., `integer`.
+- Whether it is an `input` or `output` class.
+- The purpose of the function, e.g., `destroy`.
 
-In general, the getter methods follow the same structure as that described for the `r Biocpkg("beachmat", vignette="input.html", label="input API")`.
-We expect a `load()` method to obtain a specified entry of the matrix:
+## Defining getter methods
+
+### For all types
+
+In general, the getter functions follow the same structure as that described for the `r Biocpkg("beachmat", vignette="input.html", label="input API")`.
+We expect a `get` function to obtain a specified entry of the matrix:
 
 ```cpp
-load_integer(
+AaronMatrix_integer_intput_get(
     ptr, /* void* */
     r, /* size_t */
     c, /* size_t */
@@ -93,19 +102,19 @@ load_integer(
 );
 ```
 
-The `val` pointer should reflect the matrix type.
+Note that `val` is a **pointer** to the matrix type.
 For example, `val` should be a `Rcpp::String*` for character matrices, a `double*` for numeric matrices, and an `int*` for logical matrices.
 
 Developers can assume that `r` and `c` are valid, i.e., within `[0, nrow)` and `[0, ncol)` respectively.
 These checks are performed by `r Biocpkg("beachmat")` and do not have to be repeated within developer-defined functions^[Obviously, the dimensions of the matrix pointed to by `ptr` should not change!].
 
-## For non-numeric types
+### For non-numeric types
 
 Here, we will use character matrices^[Character matrices tend to require some special attention, as character arrays need to be coerced to `Rcpp::String` objects to be returned in `in`.] as an example.
-We expect a `load_col()` method to obtain a column of the matrix:
+We expect a `getCol` function to obtain a column of the matrix:
 
 ```cpp
-load_col_character(
+AaronMatrix_character_input_getCol(
     ptr, /* void* */
     c, /* size_t */
     in, /* Rcpp::StringVector::iterator* */
@@ -114,10 +123,10 @@ load_col_character(
 );
 ```
 
-... and a `load_row()` method to obtain a row of the matrix:
+... and another `getRow` function to obtain a row of the matrix:
 
 ```cpp
-load_row_character(
+AaronMatrix_character_input_getRow(
     ptr, /* void* */
     r, /* size_t */
     in*, /* Rcpp::StringVector::iterator* */
@@ -126,11 +135,13 @@ load_row_character(
 );
 ```
 
-We expect a `load_cols()` method to obtain multiple columns:
+These are in camelcase to simplify parsing of the function names.
+We further expect a `getCols` function to obtain multiple columns:
 
 ```cpp
-load_cols_character(
+AaronMatrix_character_input_getCols(
     ptr, /* void* */
+    c, /* size_t */
     indices, /* Rcpp::IntegerVector::iterator* */
     n, /* size_t */
     in, /* Rcpp::StringVector::iterator* */
@@ -139,11 +150,12 @@ load_cols_character(
 );
 ```
 
-... and a `load_rows()` method to obtain multiple rows:
+... and a `getRows` function to obtain multiple rows:
 
 ```cpp
-load_cols_character(
+AaronMatrix_character_input_getRows(
     ptr, /* void* */
+    r, /* size_t */
     indices, /* Rcpp::IntegerVector::iterator* */
     n, /* size_t */
     in, /* Rcpp::StringVector::iterator* */
@@ -158,24 +170,24 @@ Indices in `indices` can also be assumed to be valid, i.e., within matrix dimens
 We stress that the various iterator arguments are _pointers to iterators_ rather than the iterators themselves.
 This is to avoid potential issues with C++ classes when using C-style linkage via R's `R_GetCCallable()` framework.
 
-## Numeric types
+### Numeric types
 
 For integer, logical or numeric matrices, we need to account for type conversions.
 This is done by defining the following functions (using integer matrices as an example):
 
-- `load_col2int_integer`
-- `load_col2dbl_integer`
-- `load_row2int_integer`
-- `load_row2dbl_integer`
-- `load_cols2int_integer`
-- `load_cols2dbl_integer`
-- `load_rows2int_integer`
-- `load_rows2dbl_integer`
+- `AaronMatrix_integer_input_getCol_integer`, for getting a single column's values as integers.
+- `AaronMatrix_integer_input_getCol_numeric`, for getting a single column's values as double-precision values.
+- `AaronMatrix_integer_input_getRow_integer`, for getting a single row's values as integers.
+- `AaronMatrix_integer_input_getRow_numeric`, for getting a single row's values as double-precision values.
+- `AaronMatrix_integer_input_getCols_integer`, for getting multiple columns' values as integers.
+- `AaronMatrix_integer_input_getCols_numeric`, for getting multiple columns' values as double-precision values.
+- `AaronMatrix_integer_input_getRows_integer`, for getting multiple rows' values as integers.
+- `AaronMatrix_integer_input_getRows_numeric`, for getting multiple rows' values as double-precision values.
 
 Taking the single-column getter as an example:
 
 ```cpp
-load_col2int_character(
+AaronMatrix_integer_input_getCol_integer(
     ptr, /* void* */
     c, /* size_t */
     in, /* Rcpp::IntegerVector::iterator* */
@@ -183,7 +195,7 @@ load_col2int_character(
     last /* size_t */
 );
 
-load_col2dbl_character(
+AaronMatrix_integer_input_getCol_numeric(
     ptr, /* void* */
     c, /* size_t */
     in, /* Rcpp::NumericVector::iterator* */
@@ -192,72 +204,197 @@ load_col2dbl_character(
 );
 ```
 
+The function name now has an additional suffix to denote the destination type.
 We explicitly define conversions here as the cross-library linking framework does not support templating or overloading of `in`.
-If we only defined a `load_col()` function of the same type, we would need to perform two copies: 
-once to copy to an integer vector, and then another to copy to the output double-precision vector.
 
-# Defining special getters
+# External linkage for output
 
-## Constant column access
+## Setting up in R
 
-We define a `load_const_col()` function to obtain an iterator to a contiguous stretch of memory defining a column of the matrix.
-Again, `ptr` is a pointer to the location in memory containing the matrix object.
-All other arguments are as described in the `r Biocpkg("beachmat", vignette="input.html#from-dense-matrices", label="previous workflow")`.
+To notify the `r Biocpkg("beachmat")` API that direct output support is available, 
+we need to define flags in our package's namespace.
+
+```{r}
+beachmat_AaronMatrix_integer_output <- TRUE
+beachmat_AaronMatrix_character_output <- TRUE
+```
+
+This indicates that support is available for `AaronMatrix` integer and character outputs.
+Missing or `FALSE` flags indicate that no support is available, in which case `r Biocpkg("beachmat")` will write to an ordinary matrix by default.
+
+## Setting up in C++
+
+Again, we will use integer matrices for demonstration.
+The required functions are mostly similar to the input case.
+For creation, we expect to have the number of rows `nr` and columns `nc`:
 
 ```cpp
-load_const_col_integer(
-    ptr, /* void* */
-    c, /* size_t */
-    in, /* Rcpp::IntegerVector::iterator* */
-    first, /* size_t */
-    last, /* size_t */
-    out /* Rcpp::IntegerVector::iterator* */
+void * ptr = AaronMatrix_integer_output_create(
+   nr /* size_t */,
+   nc /* size_t */
 );
 ```
 
-This function should only be special for representations where entire columns are stored contiguously.
-All other representations should simply copy data into `in`.
-It is unwise to try to be too smart, as the returned iterator `out` must be valid throughout the lifetime of the matrix.
-This means that, if all columns were accessed, the entire matrix would need to be stored in memory to ensure that all iterators were valid.
-Such a strategy means that any matrix representation will effectively become a dense array.
-
-Obviously, `out` and `in` should reflect the matrix type.
-For example, for `load_const_col_character()`, both of them should be `Rcpp::StringVector::iterator` objects.
-
-## Indexed column access
-
-We define a `load_const_col_indexed()` function to obtain iterators to "non-zero" elements of the matrix^[See the `r Biocpkg("beachmat", vignette="input.html#from-sparse-matrices", label="previous workflow")` to clarify the definition of non-zero.].
-Again, `ptr` is a pointer to the location in memory containing the matrix object.
-The number of indexed elements should be returned in `n`.
+We define a `clone()` function to perform a deep copy:
 
 ```cpp
-size_t n = load_const_col_integer(
+void * ptr_copy = AaronMatrix_integer_output_clone(ptr /* void* */);
+```
+
+We also define a `destroy()` function to free memory:
+
+```cpp
+AaronMatrix_integer_output_destroy(ptr /* void* */);
+```
+
+In all cases, we use `_output_` to indicate that we are dealing with an output matrix class.
+
+## Defining setter methods
+
+### For all types
+
+In general, the setter functions follow the same structure as that described for the `r Biocpkg("beachmat", vignette="output.html", label="out API")`.
+We expect a `set` function to obtain a specified entry of the matrix:
+
+```cpp
+AaronMatrix_integer_intput_set(
+    ptr, /* void* */
+    r, /* size_t */
+    c, /* size_t */
+    val /* int* */
+);
+```
+
+Again, note that `val` is a **pointer** to the matrix type.
+
+### For non-numeric types
+
+Here, we will use character matrices^[Character matrices tend to require some special attention, as character arrays need to be coerced to `Rcpp::String` objects to be returned in `in`.] as an example.
+We expect a `setCol` function to obtain a column of the matrix:
+
+```cpp
+AaronMatrix_character_output_setCol(
     ptr, /* void* */
     c, /* size_t */
-    index, /* Rcpp::IntegerVector::iterator* */
-    values, /* Rcpp::IntegerVector::iterator* */
+    in, /* Rcpp::StringVector::iterator* */
     first, /* size_t */
     last /* size_t */
 );
 ```
 
-Again, both `index` and `values` are _pointers_ to iterator objects.
-They should be modified to point to internal data structures in `ptr`.
-The modified values will then be returned as part of the output of `get_const_col_indexed()` in the input API.
+... and another `setRow` function to obtain a row of the matrix:
 
-This function should only be special for representations where non-zero values and their indices are stored by column (i.e., variants of column-sparse compressed matrices).
-All other representations should simply copy data into `values`, and set `index` to a sequence of integers from `[first, last)`.
-It is possible to streamline the setting of `index` by creating an increasing sequence once and storing it in `ptr` - see the example in `extensions` for more details.
+```cpp
+AaronMatrix_character_output_setRow(
+    ptr, /* void* */
+    r, /* size_t */
+    in*, /* Rcpp::StringVector::iterator* */
+    first, /* size_t */
+    last /* size_t */
+);
+```
 
-Obviously, `values` should reflect the matrix type.
-For example, for `load_const_col_character()`, it should be a `Rcpp::StringVector::iterator&` reference. 
+These are in camelcase to simplify parsing of the function names.
+We further expect a `setColIndexed` function to set specific elements of a column:
+
+```cpp
+AaronMatrix_character_output_setColIndexed(
+    ptr, /* void */
+    c, /* size_t */
+    n, /* size_t */
+    idx, /* Rcpp::IntegerVector::iterator */
+    in /* Rcpp::StringVector::iterator */
+)
+```
+
+... where `idx` points to an array of `n` zero-indexed row indices and `val` points to an array of values.
+The function should assign each value to the corresponding row at column `c` of the output matrix.
+
+Similarly, we expect a `setRowIndexed` function to set specific elements of a row:
+
+```cpp
+AaronMatrix_character_output_setRowIndexed(
+    ptr, /* void */
+    r, /* size_t */
+    n, /* size_t */
+    idx, /* Rcpp::IntegerVector::iterator */
+    in /* Rcpp::StringVector::iterator */
+)
+```
+
+... where `idx` now contains column indices.
+
+### Numeric types
+
+For integer, logical or numeric matrices, we need to account for type conversions.
+This is done by defining the following functions (using integer matrices as an example):
+
+- `AaronMatrix_integer_output_setCol_integer`, for setting a single column's values from integers.
+- `AaronMatrix_integer_output_setCol_numeric`, for setting a single column's values from double-precision values.
+- `AaronMatrix_integer_output_setRow_integer`, for setting a single row's values from integers.
+- `AaronMatrix_integer_output_setRow_numeric`, for setting a single row's values from double-precision values.
+- `AaronMatrix_integer_output_setColIndexed_integer`, for indexed setting of a single column's values from integers.
+- `AaronMatrix_integer_output_setColIndexed_numeric`, for indexed setting of a single column's values from double-precision values.
+- `AaronMatrix_integer_output_setRowIndexed_integer`, for indexed setting of a single row's values from integers.
+- `AaronMatrix_integer_output_setRowIndexed_numeric`, for indexed setting of a single row's values from double-precision values 
+
+Taking the single-column setter as an example:
+
+```cpp
+AaronMatrix_integer_output_setCol_integer(
+    ptr, /* void* */
+    c, /* size_t */
+    in, /* Rcpp::IntegerVector::iterator* */
+    first, /* size_t */
+    last /* size_t */
+);
+
+AaronMatrix_integer_output_setCol_numeric(
+    ptr, /* void* */
+    c, /* size_t */
+    in, /* Rcpp::NumericVector::iterator* */
+    first, /* size_t */
+    last /* size_t */
+);
+```
+
+## Defining getter methods
+
+All single-element and single-row/column getters should be supported:
+
+- `AaronMatrix_character_output_get`
+- `AaronMatrix_character_output_getRow`
+- `AaronMatrix_character_output_getCol`
+
+For numeric types, convertible getters should also be supported:
+
+- `AaronMatrix_character_output_get`
+- `AaronMatrix_character_output_getRow_integer`
+- `AaronMatrix_character_output_getRow_numeric`
+- `AaronMatrix_character_output_getCol_integer`
+- `AaronMatrix_character_output_getCol_numeric`
 
 # Ensuring discoverability 
 
 We use the `R_RegisterCCallable()` function from the R API to register the above functions (see [here](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Linking-to-native-routines-in-other-packages) for an explanation).
 This ensures that they can be found by `r Biocpkg("beachmat")` when an `AaronMatrix` instance is encountered.
-Note that the functions must be defined with C-style linkage in order for this procedure to work properly, hence the use of `extern "C"`.
+Note that the functions must be defined with C-style linkage in order for this procedure to work properly, hence the use of `extern "C"` in the `extensions` test package.
 
 Needless to say, the `NAMESPACE` should contain an appropriate `useDynLib` command. 
 This means that shared library will be loaded along with the package, allowing `r Biocpkg("beachmat")` to access the registered routines within.
+However, the `supportCppAccess` method and output flags do not need to be exported, as these will be directly recovered from the package's namespace. 
+
+# Testing
+
+We suggest using the `r Rpackage("beachtest")` package to test correct input and output via external linkage to a custom matrix representation.
+When using the `r CRANpkg("testthat")` framework, this can be added to `setup.R`:
+
+```{r, eval=FALSE}
+testpkg <- system.file("testpkg", package="beachmat")
+devtools::install(testpkg, quick=TRUE)
+library(beachtest)
+```
+
+It is simple to write test scripts using functions like `check_read_all` and `check_write_all` to quickly verify that linkage works correctly.
+Developers are again referred to the `extensions` test package for a working example.
 

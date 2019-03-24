@@ -17,7 +17,6 @@ public:
     size_t get_ncol() const { return mat.ncol(); }
 
     // Basic getters.
-
     T get(size_t r, size_t c) { return mat(r, c); }
 
     template<class Iter>
@@ -34,21 +33,6 @@ public:
         return;
     }
     
-    // Special getters.
-    typename V::iterator get_const_col(size_t c, size_t first, size_t last) {
-        return vec.begin() + c * get_nrow() + first;
-    }
-
-    size_t get_const_col_indexed(size_t c, Rcpp::IntegerVector::iterator& iIt, typename V::iterator& vIt, size_t first, size_t last) {
-        if (indices.size()!=get_nrow()) {
-            indices=Rcpp::IntegerVector(get_nrow());
-            std::iota(indices.begin(), indices.end(), 0); // populating with indices.
-        }
-        iIt=indices.begin() + first;
-        vIt=get_const_col(c, first, last);
-        return last - first;        
-    }
-
     // Multi getters.
     template<class Iter>
     void get_rows(Rcpp::IntegerVector::iterator r, size_t n, Iter out, size_t first, size_t last) {

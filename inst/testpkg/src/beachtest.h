@@ -7,6 +7,4 @@
 #include "beachmat/logical_matrix.h"
 #include "beachmat/character_matrix.h"
 
-Rcpp::StringVector translate_class(beachmat::matrix_type);
-
 #endif

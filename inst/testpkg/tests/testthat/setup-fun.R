@@ -2,7 +2,6 @@
 
 library(Matrix)
 library(DelayedArray)
-library(HDF5Array)
 
 #######################################################
 
@@ -14,10 +13,6 @@ integer_rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
     x <- integer_sFUN(nr, nc, lambda=lambda)
     rle <- Rle(x)
     RleArray(rle, dim(x))
-}
-
-integer_hFUN <- function(nr=15, nc=10) {
-    as(integer_sFUN(nr, nc), "HDF5Array")
 }
 
 #######################################################
@@ -38,10 +33,6 @@ logical_tsFUN <- function(...) {
 	as(logical_csFUN(...), 'lgTMatrix')
 }
 
-logical_hFUN <- function(nr=15, nc=10) {
-    as(logical_sFUN(nr, nc), "HDF5Array")
-}
-
 #######################################################
 
 numeric_sFUN <- function(nr=15, nc=10) {
@@ -60,10 +51,6 @@ numeric_tsFUN <- function(...) {
 	as(numeric_csFUN(...), 'dgTMatrix')
 }
 
-numeric_hFUN <- function(nr=15, nc=10) {
-    as(numeric_sFUN(nr, nc), "HDF5Array")
-}
-
 #######################################################
 
 genwords <- function(n = 5000) {
@@ -80,8 +67,4 @@ character_rFUN <- function(nr=15, nc=10, lambda=1, chunk.ncols=NULL) {
     x <- matrix(sample(LETTERS[1:4], nr*nc, replace=TRUE), nr, nc)
     rle <- Rle(x)
     RleArray(rle, dim(x))
-}
-
-character_hFUN <- function(nr=15, nc=10) {
-    as(character_sFUN(nr, nc), "HDF5Array")
 }
