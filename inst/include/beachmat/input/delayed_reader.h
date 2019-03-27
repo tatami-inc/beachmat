@@ -404,6 +404,8 @@ delayed_reader<T, V, base_mat>::delayed_reader(const Rcpp::RObject& incoming) : 
     if (seed_ptr->get_class()!="") { // i.e., the matrix is not unknown, and thus we can use native methods.
         transformer=delayed_coord_transformer<T, V>(parse_out[0], parse_out[1], seed_ptr.get());
     } else {
+        // need to regenerate, otherwise we lose delayed ops for an unknown matrix.
+        seed_ptr=generate_seed(incoming);
         transformer=delayed_coord_transformer<T, V>(seed_ptr.get());
     }
 
