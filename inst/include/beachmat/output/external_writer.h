@@ -18,8 +18,8 @@ namespace beachmat {
 template<typename T, class V>
 class external_writer_base : public dim_checker {
 protected:
-    external_ptr ex; 
     std::string cls, pkg;
+    external_ptr ex; 
 
     void (*store) (void *, size_t, size_t, T*)=NULL;
     void (*load) (void *, size_t, size_t, T*)=NULL;
