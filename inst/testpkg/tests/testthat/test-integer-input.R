@@ -114,7 +114,10 @@ test_that("RLE integer matrix input is okay with reduced block size", {
 
 set.seed(981347)
 test_that("Delayed integer matrix input is okay", {
-    delfuns <- delayed_funs(sFUN, DELAYED_FUN=function(x) { x + sample(nrow(x)) })
+    delfuns <- c(
+         delayed_funs(sFUN, DELAYED_FUN=function(x) { x + sample(nrow(x)) }), # known seed
+         delayed_funs(rFUN, DELAYED_FUN=function(x) { x + sample(nrow(x)) })  # unknown seed
+    )
 
     for (FUN in delfuns) {
         NR <- 10 + sample(10, 1)

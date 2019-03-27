@@ -115,7 +115,10 @@ test_that("RLE character matrix input is okay with reduced block size", {
 
 set.seed(981347)
 test_that("Delayed character matrix input is okay", {
-    delfuns <- delayed_funs(sFUN, DELAYED_FUN=DelayedArray::tolower)
+    delfuns <- c(
+        delayed_funs(sFUN, DELAYED_FUN=DelayedArray::tolower), # known seed
+        delayed_funs(rFUN, DELAYED_FUN=DelayedArray::tolower)  # unknown seed
+    )
 
     for (FUN in delfuns) {
         NR <- 10 + sample(10, 1)

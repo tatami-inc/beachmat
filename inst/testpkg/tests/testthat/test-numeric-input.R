@@ -206,7 +206,10 @@ test_that("dgTMatrix input is okay with reduced block size", {
 
 set.seed(981347)
 test_that("Delayed numeric matrix input is okay", {
-    delfuns <- delayed_funs(sFUN, DELAYED_FUN=function(x) { x + runif(nrow(x)) })
+    delfuns <- c(
+        delayed_funs(sFUN, DELAYED_FUN=function(x) { x + runif(nrow(x)) }), # known seed
+        delayed_funs(tsFUN, DELAYED_FUN=function(x) { x + runif(nrow(x)) }) # unknown seed
+    )
 
     for (FUN in delfuns) {
         NR <- 10 + sample(10, 1)
