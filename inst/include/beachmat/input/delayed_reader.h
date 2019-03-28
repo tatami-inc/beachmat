@@ -69,10 +69,58 @@ private:
 template<typename T, class V, class base_mat>
 class delayed_reader : public dim_checker { 
 public:
-    delayed_reader(const Rcpp::RObject&);
+    delayed_reader(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
+        auto classinfo=get_class_package(incoming);
+        if (classinfo.first!=get_class() || classinfo.second!=get_package()) {
+            throw std::runtime_error("input matrix should be a DelayedMatrix");
+        }
+
+        // Parsing the delayed operation structure.
+        const Rcpp::Environment beachenv=Rcpp::Environment::namespace_env("beachmat");
+        Rcpp::Function parser(beachenv["setupDelayedMatrix"]);
+        Rcpp::List parse_out=parser(incoming);
+        if (parse_out.size()!=3) {
+            throw std::runtime_error("output of beachmat:::setupDelayedMatrix should be a list of length 3");
+        }
+
+        /* Checking the matrix does not have value-operating delayed operations, 
+         * and thus we can use native methods for extraction. Otherwise,
+         * parsed_mat would be a DelayedMatrix (note that generate_seed
+         * will simply default to an unknown matrix in such cases, rather 
+         * than infinitely recursing through the delayed_matrix constructors).
+         */
+        Rcpp::RObject parsed_mat=parse_out[2];
+        seed_ptr=generate_seed(parsed_mat);
+
+        bool direct_extract=true;
+        if (parsed_mat.isS4()) {
+            auto parsedcls=get_class_package(parsed_mat);
+            direct_extract=(parsedcls.first!=get_class() || parsedcls.second!=get_package());
+        }
+
+        if (direct_extract) { 
+           transformer=delayed_coord_transformer<T, V>(parse_out[0], parse_out[1], seed_ptr.get());
+        } else {
+            // otherwise, treat it as an unknown matrix.
+            transformer=delayed_coord_transformer<T, V>(seed_ptr.get());
+        }
+
+        nrow=transformer.get_nrow();
+        ncol=transformer.get_ncol();
+        return;
+    }
+
+    delayed_reader(const delayed_reader& other) : original(other.original), 
+            seed_ptr(other.seed_ptr->clone()), transformer(other.transformer) {}
+
+    delayed_reader& operator=(const delayed_reader& other) {
+        original=other.original;
+        seed_ptr=other.seed_ptr->clone();
+        transformer=other.transformer;
+        return *this;
+    }
+
     ~delayed_reader() = default;
-    delayed_reader(const delayed_reader&);
-    delayed_reader& operator=(const delayed_reader&);
     delayed_reader(delayed_reader&&) = default;
     delayed_reader& operator=(delayed_reader&&) = default;
     
@@ -382,49 +430,6 @@ void delayed_coord_transformer<T, V>::reallocate_col(M mat, size_t c, size_t fir
  *******************************************************/
 
 /*** Constructor definitions ***/
-
-template<typename T, class V, class base_mat>
-delayed_reader<T, V, base_mat>::delayed_reader(const Rcpp::RObject& incoming) : original(incoming), seed_ptr(nullptr) {
-    auto classinfo=get_class_package(incoming);
-    if (classinfo.first!=get_class() || classinfo.second!=get_package()) {
-        throw std::runtime_error("input matrix should be a DelayedMatrix");
-    }
-
-    // Parsing the delayed operation structure.
-    const Rcpp::Environment beachenv=Rcpp::Environment::namespace_env("beachmat");
-    Rcpp::Function parser(beachenv["setupDelayedMatrix"]);
-    Rcpp::List parse_out=parser(incoming);
-
-    // Figuring if we can make use of the net subsetting/transposition state.
-    if (parse_out.size()!=3) {
-        throw std::runtime_error("output of beachmat:::setupDelayedMatrix should be a list of length 3");
-    }
-    seed_ptr=generate_seed(parse_out[2]);
-
-    if (seed_ptr->get_class()!="") { // i.e., the matrix is not unknown, and thus we can use native methods.
-        transformer=delayed_coord_transformer<T, V>(parse_out[0], parse_out[1], seed_ptr.get());
-    } else {
-        // need to regenerate, otherwise we lose delayed ops for an unknown matrix.
-        seed_ptr=generate_seed(incoming);
-        transformer=delayed_coord_transformer<T, V>(seed_ptr.get());
-    }
-
-    nrow=transformer.get_nrow();
-    ncol=transformer.get_ncol();
-    return;
-}
-
-template<typename T, class V, class base_mat> 
-delayed_reader<T, V, base_mat>::delayed_reader(const delayed_reader<T, V, base_mat>& other) : original(other.original), 
-        seed_ptr(other.seed_ptr->clone()), transformer(other.transformer) {}
-
-template<typename T, class V, class base_mat> 
-delayed_reader<T, V, base_mat>& delayed_reader<T, V, base_mat>::operator=(const delayed_reader<T, V, base_mat>& other) {
-    original=other.original;
-    seed_ptr=other.seed_ptr->clone();
-    transformer=other.transformer;
-    return *this;
-}
 
 /*** Basic getter methods ***/
 
