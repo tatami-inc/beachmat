@@ -265,7 +265,6 @@ T Csparse_writer<T, V>::get(size_t r, size_t c) {
 
 template<typename T, class V>
 Rcpp::RObject Csparse_writer<T, V>::yield() {
-    const int RTYPE=V().sexp_type();
     std::string classname=get_class();
     Rcpp::S4 mat(classname);
 
