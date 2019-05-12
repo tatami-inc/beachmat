@@ -19,7 +19,7 @@ setupUnknownMatrix <- function(mat) {
     )
 }
 
-#' @importFrom BiocGenerics t
+#' @importFrom Matrix t
 realizeByRange <- function(mat, i, j, transpose=FALSE) 
 # The first element is assumed to encode the start position, 
 # while the second element is presumed to encode the length.
