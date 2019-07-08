@@ -94,7 +94,7 @@ inline int find_sexp_type (const Rcpp::RObject& incoming) {
         }
 
     } else {
-        Rcpp::Environment delayenv=Rcpp::Environment::namespace_env("DelayedArray");
+        Rcpp::Environment delayenv=Rcpp::Environment::namespace_env("BiocGenerics");
         Rcpp::Function typefun=delayenv["type"];
         std::string curtype=Rcpp::as<std::string>(typefun(incoming));
         if (curtype=="logical") {
