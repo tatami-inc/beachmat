@@ -11,4 +11,4 @@ License: GPL-3
 NeedsCompilation: yes
 SystemRequirements: C++11
 LinkingTo: Rcpp
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.0
