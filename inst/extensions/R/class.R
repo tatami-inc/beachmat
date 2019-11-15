@@ -17,6 +17,7 @@ setMethod("show", "AaronMatrix", function(object) {
 setMethod("as.matrix", "AaronMatrix", function(x) x@data)
 
 #' @export
+#' @method as.matrix AaronMatrix
 as.matrix.AaronMatrix <- function(x) {
     x@data
 }
