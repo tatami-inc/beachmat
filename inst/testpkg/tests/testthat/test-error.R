@@ -1,5 +1,5 @@
 # This tests the error-generating machinery throughout the package.
-# library(testthat); source("test-error.R")
+# library(beachtest); library(testthat); source("test-error.R")
 
 expect_fixed_error <- function(...) { expect_error(..., fixed=TRUE) }
 
@@ -86,6 +86,8 @@ test_that("Numeric errors thrown", {
     B <- rsparsematrix(10, 20, 0.5)
     storage.mode(B@x) <- "integer"
     expect_fixed_error(check_read_class(B, mode="numeric", "sparse"), "'x' slot in a dgCMatrix object should be double")
+
+    expect_fixed_error(check_read_class(data.frame(1:5), mode="numeric", "simple"), "data.frames")
 })
 
 # Logical checks
@@ -103,6 +105,8 @@ test_that("Logical errors thrown", {
     
     B <- as(rsparsematrix(10, 20, 0.5)!=0, "lgTMatrix")
     expect_fixed_error(storage.mode(B@x) <- "integer")
+
+    expect_fixed_error(check_read_class(data.frame(1:5), mode="logical", "simple"), "data.frames")
 })
 
 # Integer checks
@@ -110,4 +114,15 @@ test_that("Logical errors thrown", {
 test_that("Integer errors thrown", {
     B <- matrix(1, 10, 10)
     expect_fixed_error(check_read_class(B, mode="integer", "simple"), "matrix should be integer")
+
+    expect_fixed_error(check_read_class(data.frame(B), mode="integer", "simple"), "data.frames")
+})
+
+# Character checks
+
+test_that("Character errors thrown", {
+    B <- matrix(1, 10, 10)
+    expect_fixed_error(check_read_class(B, mode="character", "simple"), "matrix should be character")
+
+    expect_fixed_error(check_read_class(data.frame(B), mode="character", "simple"), "data.frames")
 })
