@@ -65,7 +65,7 @@ typedef external_lin_matrix<double, Rcpp::NumericVector> external_numeric_matrix
 
 inline std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) {
-        std::string ctype=get_class(incoming);
+        std::string ctype=get_class_name(incoming);
         if (ctype=="dgeMatrix") { 
             return std::unique_ptr<numeric_matrix>(new dense_numeric_matrix(incoming));
         } else if (ctype=="dgCMatrix") { 
@@ -77,6 +77,7 @@ inline std::unique_ptr<numeric_matrix> create_numeric_matrix_internal(const Rcpp
         }
         return std::unique_ptr<numeric_matrix>(new unknown_numeric_matrix(incoming));
     } 
+    quit_on_df(incoming);
     return std::unique_ptr<numeric_matrix>(new simple_numeric_matrix(incoming));
 }
 

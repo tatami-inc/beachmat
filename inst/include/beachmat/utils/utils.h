@@ -33,23 +33,41 @@ inline Rcpp::RObject get_class_object(const Rcpp::RObject& incoming) {
     return incoming.attr("class");
 }
 
-inline std::string get_class(const Rcpp::RObject& incoming) {
+inline std::string get_class_name(const Rcpp::RObject& incoming) {
     return make_to_string(get_class_object(incoming));
+}
+
+inline std::string extract_class_package(const Rcpp::RObject& classname) {
+    if (!classname.hasAttribute("package")) {
+        throw std::runtime_error("class name has no 'package' attribute");
+    }
+    return make_to_string(classname.attr("package"));
 }
 
 inline std::pair<std::string, std::string> get_class_package(const Rcpp::RObject& incoming) {
     Rcpp::RObject classname=get_class_object(incoming);
-    if (!classname.hasAttribute("package")) {
-        throw std::runtime_error("class name has no 'package' attribute");
-    }
-    return std::make_pair(make_to_string(classname), make_to_string(classname.attr("package")));
+    return std::make_pair(make_to_string(classname), extract_class_package(classname));
 }
 
 inline Rcpp::RObject get_safe_slot(const Rcpp::RObject& incoming, const std::string& slotname) {
     if (!incoming.hasSlot(slotname)) { 
-        throw std::runtime_error(std::string("no '") + slotname + "' slot in the " + get_class(incoming) + " object");
+        throw std::runtime_error(std::string("no '") + slotname + "' slot in the " + get_class_name(incoming) + " object");
     }
     return incoming.slot(slotname);
+}
+
+inline void quit_on_df (const std::string& classname) {
+    if (classname=="data.frame") {
+        throw std::runtime_error("data.frames should be converted to matrices");
+    }
+    return;
+}
+
+inline void quit_on_df (const Rcpp::RObject& incoming) {
+    if (incoming.isObject()) {
+        quit_on_df(get_class_name(incoming));
+    }
+    return;
 }
 
 /* Type checks */
@@ -81,12 +99,12 @@ inline int find_sexp_type (const Rcpp::RObject& incoming) {
     if (!incoming.isObject()) {
         return incoming.sexp_type();
     }
-
-    const auto classinfo=get_class_package(incoming);
-    const std::string& classname=classinfo.first;
-    const std::string& classpkg=classinfo.second;
     
-    if (classpkg=="Matrix" && classname.length()==9 && classname.substr(3)=="Matrix") {
+    const auto classinfo=get_class_object(incoming);
+    const std::string classname=make_to_string(classinfo);
+    quit_on_df(classname);
+
+    if (extract_class_package(classinfo)=="Matrix" && classname.length()==9 && classname.substr(3)=="Matrix") {
         if (classname[0]=='d') {
             return REALSXP;
         } else if (classname[0]=='l') {

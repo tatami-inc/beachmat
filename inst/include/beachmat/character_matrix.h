@@ -211,7 +211,7 @@ using external_character_matrix=general_character_matrix<external_reader<Rcpp::S
 
 inline std::unique_ptr<character_matrix> create_character_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) { 
-        std::string ctype=get_class(incoming);
+        std::string ctype=get_class_name(incoming);
         if (delayed && ctype=="DelayedMatrix") { 
             return std::unique_ptr<character_matrix>(new delayed_character_matrix(incoming));
         } else if (has_external_support("character", incoming)) {
@@ -219,6 +219,7 @@ inline std::unique_ptr<character_matrix> create_character_matrix_internal(const 
         }
         return std::unique_ptr<character_matrix>(new unknown_character_matrix(incoming));
     } 
+    quit_on_df(incoming);
     return std::unique_ptr<character_matrix>(new simple_character_matrix(incoming));
 }
 
