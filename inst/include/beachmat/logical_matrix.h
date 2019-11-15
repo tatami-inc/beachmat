@@ -65,7 +65,7 @@ typedef external_lin_matrix<int, Rcpp::LogicalVector> external_logical_matrix;
 
 inline std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp::RObject& incoming, bool delayed) { 
     if (incoming.isS4()) {
-        std::string ctype=get_class(incoming);
+        std::string ctype=get_class_name(incoming);
         if (ctype=="lgeMatrix") { 
             return std::unique_ptr<logical_matrix>(new dense_logical_matrix(incoming));
         } else if (ctype=="lgCMatrix") { 
@@ -77,6 +77,7 @@ inline std::unique_ptr<logical_matrix> create_logical_matrix_internal(const Rcpp
         }
         return std::unique_ptr<logical_matrix>(new unknown_logical_matrix(incoming));
     } 
+    quit_on_df(incoming);
     return std::unique_ptr<logical_matrix>(new simple_logical_matrix(incoming));
 }
 

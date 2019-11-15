@@ -48,7 +48,7 @@ typedef external_lin_matrix<int, Rcpp::IntegerVector> external_integer_matrix;
 
 inline std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp::RObject& incoming, bool delayed) {
     if (incoming.isS4()) { 
-        std::string ctype=get_class(incoming);
+        std::string ctype=get_class_name(incoming);
         if (delayed && ctype=="DelayedMatrix") {
             return std::unique_ptr<integer_matrix>(new delayed_integer_matrix(incoming));
         } else if (has_external_support("integer", incoming)) {
@@ -56,6 +56,7 @@ inline std::unique_ptr<integer_matrix> create_integer_matrix_internal(const Rcpp
         }
         return std::unique_ptr<integer_matrix>(new unknown_integer_matrix(incoming));
     }
+    quit_on_df(incoming);
     return std::unique_ptr<integer_matrix>(new simple_integer_matrix(incoming));
 }
 
