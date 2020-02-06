@@ -23,7 +23,7 @@ setupDelayedMatrix <- function(mat) {
             # that constitutes the full matrix. Otherwise, if the wrapped version is
             # just a DelayedMatrix, the seed was a full matrix in the first place.
             wrapped <- DelayedArray(cur.seed)
-            if (class(wrapped)=="DelayedMatrix") {
+            if (class(wrapped)[1]=="DelayedMatrix") {
                 mat <- cur.seed
             } else {
                 mat <- wrapped

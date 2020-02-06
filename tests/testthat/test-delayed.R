@@ -20,35 +20,35 @@ test_that("delayed operations parsing works correctly", {
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, seed(delayed_ord))
-    expect_identical(class(parsed$mat), "matrix")
+    expect_true(is.matrix(parsed$mat))
 
     mod1 <- t(delayed_ord)
     parsed <- beachmat:::setupDelayedMatrix(mod1)
     expect_identical(parsed$sub, list(NULL, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_ord))
-    expect_identical(class(parsed$mat), "matrix")
+    expect_true(is.matrix(parsed$mat))
 
     mod2 <- delayed_ord[20:1,]
     parsed <- beachmat:::setupDelayedMatrix(mod2)
     expect_identical(parsed$sub, list(20:1, NULL))
     expect_identical(parsed$trans, FALSE)
     expect_identical(parsed$mat, seed(delayed_ord))
-    expect_identical(class(parsed$mat), "matrix")
+    expect_true(is.matrix(parsed$mat))
 
     mod3 <- t(mod2)
     parsed <- beachmat:::setupDelayedMatrix(mod3)
     expect_identical(parsed$sub, list(20:1, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_ord))
-    expect_identical(class(parsed$mat), "matrix")
+    expect_true(is.matrix(parsed$mat))
 
     mod4 <- mod1[,20:1]
     parsed <- beachmat:::setupDelayedMatrix(mod4)
     expect_identical(parsed$sub, list(20:1, NULL))
     expect_identical(parsed$trans, TRUE)
     expect_identical(parsed$mat, seed(delayed_ord))
-    expect_identical(class(parsed$mat), "matrix")
+    expect_true(is.matrix(parsed$mat))
 
     # Checking out an actual opertion.
     xmod <- delayed_ord + 1
