@@ -1,14 +1,14 @@
-#' @importFrom DelayedArray rowGrid colGrid
+#' @importFrom DelayedArray rowAutoGrid colAutoGrid
 #' @importFrom BiocGenerics dims
 setupUnknownMatrix <- function(mat) {
     if (ncol(mat)) {
-        byrow <- dims(rowGrid(mat))[,1]
+        byrow <- dims(rowAutoGrid(mat))[,1]
     } else {
         byrow <- nrow(mat)
     }
 
     if (nrow(mat)) {
-        bycol <- dims(colGrid(mat))[,2]
+        bycol <- dims(colAutoGrid(mat))[,2]
     } else {
         bycol <- ncol(mat)
     }

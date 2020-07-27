@@ -2,11 +2,11 @@
 
 importFrom(BiocGenerics,dims)
 importFrom(DelayedArray,DelayedArray)
-importFrom(DelayedArray,colGrid)
+importFrom(DelayedArray,colAutoGrid)
 importFrom(DelayedArray,contentIsPristine)
 importFrom(DelayedArray,netSubsetAndAperm)
 importFrom(DelayedArray,nseed)
-importFrom(DelayedArray,rowGrid)
+importFrom(DelayedArray,rowAutoGrid)
 importFrom(DelayedArray,seed)
 importFrom(Matrix,t)
 importFrom(methods,is)
