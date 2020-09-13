@@ -6,7 +6,7 @@
 
 namespace beachmat {
 
-template <class T>
+template <typename T>
 class any_matrix {
 public:
     any_matrix() {}
@@ -62,24 +62,24 @@ protected:
     }
 
     void check_rowargs(size_t r) const {
-        dim_checker::check_dimension(r, nrow, "row");
+        any_matrix<T>::check_dimension(r, nrow, "row");
         return;
     }
 
     void check_rowargs(size_t r, size_t first, size_t last) const {
         check_rowargs(r);
-        dim_checker::check_subset(first, last, ncol, "column");
+        any_matrix<T>::check_subset(first, last, ncol, "column");
         return;
     }
 
     void check_colargs(size_t c) const {
-        dim_checker::check_dimension(c, ncol, "column");
+        any_matrix<T>::check_dimension(c, ncol, "column");
         return;
     }
 
     void check_colargs(size_t c, size_t first, size_t last) const {
         check_colargs(c);
-        dim_checker::check_subset(first, last, nrow, "row");
+        any_matrix<T>::check_subset(first, last, nrow, "row");
         return;
     }
 };

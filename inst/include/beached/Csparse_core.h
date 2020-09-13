@@ -18,16 +18,18 @@ struct sparse_index {
 template <typename T, typename I, typename P>
 class Csparse_core {
 public:
-    Csparse_core();
+    Csparse_core() {};
     Csparse_core(const size_t _n, const T* _x, const I* _i, const size_t _nr, const size_t _nc, const P* _p) : 
         n(_n), nr(_nr), nc(_nc), x(_x), i(_i), p(_p), currow(0), curstart(0), curend(nc) {}
     
-    sparse_index get_col(size_t c, size_t first, size_t last) {
-        check_colargs(c, first, last);
+    sparse_index<T, I> get_col(size_t c, size_t first, size_t last) {
+        any_matrix<T>::check_dimension(c, nc, "column");
+        any_matrix<T>::check_subset(first, last, nr, "row");
+        
         const auto pstart=p[c]; 
-        auto iIt=i.begin()+pstart, 
-             eIt=i.begin()+p[c+1]; 
-        auto xIt=x.begin()+pstart;
+        auto iIt = i + pstart, 
+             eIt = i + p[c+1]; 
+        auto xIt = x + pstart;
 
         if (first) { // Jumping ahead if non-zero.
             auto new_iIt=std::lower_bound(iIt, eIt, first);
@@ -42,10 +44,12 @@ public:
         return sparse_index<T, I>(eIt - iIt, xIt, iIt); 
     }
 
-    void get_row(size_t r, T* work, size_t first, size_t last) {
-        check_rowargs(r, first, last);
+    void get_row(size_t r, T* work, size_t first, size_t last, T empty) {
+        any_matrix<T>::check_dimension(r, nr, "row");
+        any_matrix<T>::check_subset(first, last, nc, "column");
         update_indices(r, first, last);
-        std::fill(work, work + last - first, static_cast<T>(0));
+
+        std::fill(work, work + last - first, empty);
 
         auto pIt = p + first + 1; // Points to first-past-the-end for each 'c'.
         for (size_t c = first; c < last; ++c, ++pIt, ++work) { 
@@ -57,28 +61,29 @@ public:
         return;  
     }
 
-    void get_row(size_t r, sparse_index& work, size_t first, size_t last) {
-        check_rowargs(r, first, last);
+    sparse_index<T, I> get_row(size_t r, T* work_x, I* work_i, size_t first, size_t last) {
+        any_matrix<T>::check_dimension(r, nr, "row");
+        any_matrix<T>::check_subset(first, last, nc, "column");
         update_indices(r, first, last);
 
         auto pIt = p + first + 1; // Points to first-past-the-end for each 'c'.
-        auto& counter = (work.n = 0);
+        size_t counter = 0;
 
-        for (size_t c = first; c < last; ++c, ++pIt, ++work) { 
+        for (size_t c = first; c < last; ++c, ++pIt) { 
             const int& idex = indices[c];
             if (idex != *pIt && static_cast<size_t>(i[idex]) == r) { 
-                work.i[counter] = i[idex];
-                work.x[counter] = x[idex];
+                work_i[counter] = i[idex];
+                work_x[counter] = x[idex];
                 ++counter;
             }
         }
-        return;  
+        return sparse_index<T, I>(counter, work_x, work_i);
     }
 private:
-    const size_t n, nr, nc;
-    typename const T* x;
-    typename const I* i;
-    typename const P* p;
+    size_t n, nr, nc;
+    const T* x;
+    const I* i;
+    const P* p;
 
     size_t currow, curstart, curend;
     std::vector<P> indices; 
@@ -88,7 +93,7 @@ private:
          * This avoids using up space for the indices if we never do row access.
          */
         if (indices.size() != nr) {
-            indices = std::vector<int>(p, p + nc);
+            indices = std::vector<P>(p, p + nc);
         }
 
         /* If left/right slice are not equal to what is stored, we reset the indices,
@@ -129,7 +134,7 @@ private:
             if (r > currow) {
                 ++pIt; // points to the first-past-the-end element, at any given 'c'.
                 for (size_t c = first; c < last; ++c, ++pIt) { 
-                    indices[c] = std::lower_bound(i + curdex, i + *pIt, r) - i;
+                    indices[c] = std::lower_bound(i + indices[c], i + *pIt, r) - i;
                 }
             } else { 
                 for (size_t c = first; c < last; ++c, ++pIt) {

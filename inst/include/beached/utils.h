@@ -82,7 +82,6 @@ inline int find_sexp_type (const Rcpp::RObject& incoming) {
     
     const auto classinfo=get_class_object(incoming);
     const std::string classname=make_to_string(classinfo);
-    quit_on_df(classname);
 
     if (extract_class_package(classinfo)=="Matrix" && classname.length()==9 && classname.substr(3)=="Matrix") {
         if (classname[0]=='d') {

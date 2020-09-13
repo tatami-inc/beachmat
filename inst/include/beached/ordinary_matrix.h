@@ -2,18 +2,19 @@
 #define BEACHMAT_ORDINARY_MATRIX_H
 
 #include "Rcpp.h"
+#include "any_matrix.h"
 #include "utils.h"
 
 namespace beachmat {
 
-template <typename T, class V>
-class ordinary_matrix : any_matrix<T> {
+template <class V, typename T = typename V::stored_type>
+class ordinary_matrix : public any_matrix<T> {
 public:
-    virtual ~original_matrix() = default;
-    original_matrix(const original_matrix&) = default;
-    original_matrix& operator=(const original_matrix&) = default;
-    original_matrix(original_matrix&&) = default;
-    original_matrix& operator=(original_matrix&&) = default;
+    virtual ~ordinary_matrix() = default;
+    ordinary_matrix(const ordinary_matrix&) = default;
+    ordinary_matrix& operator=(const ordinary_matrix&) = default;
+    ordinary_matrix(ordinary_matrix&&) = default;
+    ordinary_matrix& operator=(ordinary_matrix&&) = default;
 
     ordinary_matrix(Rcpp::RObject input) {
         if (!input.hasAttribute("dim")) { 
@@ -32,14 +33,13 @@ public:
         return;
     }
 
-    typename V::type T;
     T* get_col(size_t c, T* work, size_t first, size_t last) {
-        check_colargs(c, first, last);
+        this->check_colargs(c, first, last);
         return mat.begin() + (c * this->nrow) + first;
     }
 
     T* get_row(size_t r, T* work, size_t first, size_t last) {
-        check_rowargs(r, first, last);
+        this->check_rowargs(r, first, last);
         auto src=mat.begin() + first * (this->nrow) + r;
         auto copy=work;
         for (size_t col=first; col<last; ++col, src+=(this->nrow), ++work) { (*work)=(*src); }
