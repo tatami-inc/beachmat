@@ -1,22 +1,22 @@
-#ifndef BEACHMAT_ORDINARY_MATRIX_H
-#define BEACHMAT_ORDINARY_MATRIX_H
+#ifndef BEACHMAT_ORDINARY_READER_H
+#define BEACHMAT_ORDINARY_READER_H
 
 #include "Rcpp.h"
-#include "any_matrix.h"
+#include "dim_checker.h"
 #include "utils.h"
 
 namespace beachmat {
 
-template <class V, typename T = typename V::stored_type>
-class ordinary_matrix : public any_matrix<T> {
+template <class V>
+class ordinary_reader : public dim_checker {
 public:
-    virtual ~ordinary_matrix() = default;
-    ordinary_matrix(const ordinary_matrix&) = default;
-    ordinary_matrix& operator=(const ordinary_matrix&) = default;
-    ordinary_matrix(ordinary_matrix&&) = default;
-    ordinary_matrix& operator=(ordinary_matrix&&) = default;
+    ~ordinary_reader() = default;
+    ordinary_reader(const ordinary_reader&) = default;
+    ordinary_reader& operator=(const ordinary_reader&) = default;
+    ordinary_reader(ordinary_reader&&) = default;
+    ordinary_reader& operator=(ordinary_reader&&) = default;
 
-    ordinary_matrix(Rcpp::RObject input) {
+    ordinary_reader(Rcpp::RObject input) {
         if (!input.hasAttribute("dim")) { 
             throw std::runtime_error("matrix object should have 'dim' attribute"); 
         }
@@ -33,17 +33,17 @@ public:
         return;
     }
 
-    T* get_col(size_t c, T* work, size_t first, size_t last) {
+    typename V::const_iterator get_col(size_t c, size_t first, size_t last) {
         this->check_colargs(c, first, last);
         return mat.begin() + (c * this->nrow) + first;
     }
 
-    T* get_row(size_t r, T* work, size_t first, size_t last) {
+    template <class Iter>
+    void get_row(size_t r, Iter work, size_t first, size_t last) {
         this->check_rowargs(r, first, last);
         auto src=mat.begin() + first * (this->nrow) + r;
-        auto copy=work;
         for (size_t col=first; col<last; ++col, src+=(this->nrow), ++work) { (*work)=(*src); }
-        return copy;
+        return;
     }
 private:
     V mat;

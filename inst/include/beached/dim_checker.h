@@ -1,32 +1,20 @@
-#ifndef BEACHMAT_ANY_MATRIX_H
-#define BEACHMAT_ANY_MATRIX_H
+#ifndef BEACHMAT_DIM_CHECKER_H
+#define BEACHMAT_DIM_CHECKER_H
 
 #include "Rcpp.h"
 #include <stdexcept>
 
 namespace beachmat {
 
-template <typename T>
-class any_matrix {
+class dim_checker {
 public:
-    any_matrix() {}
+    dim_checker() {}
 
-    virtual ~any_matrix() = default;
-    any_matrix(const any_matrix&) = default;
-    any_matrix& operator=(const any_matrix&) = default;
-    any_matrix(any_matrix&&) = default;
-    any_matrix& operator=(any_matrix&&) = default;
-
-    virtual T* get_col(size_t, T*, size_t, size_t);
-    virtual T* get_row(size_t, T*, size_t, size_t);
-
-    T* get_col(size_t r, T* work) {
-        return get_col(r, work, 0, this->nrow);
-    }
-
-    T* get_row(size_t c, T* work) {
-        return get_row(c, work, 0, this->ncol);        
-    }
+    virtual ~dim_checker() = default;
+    dim_checker(const dim_checker&) = default;
+    dim_checker& operator=(const dim_checker&) = default;
+    dim_checker(dim_checker&&) = default;
+    dim_checker& operator=(dim_checker&&) = default;
 
     // Helper functions that might be useful elsewhere.
     static void check_dimension(size_t i, size_t dim, const std::string& msg) {
@@ -45,14 +33,23 @@ public:
          
          return;    
     }
+
+    size_t get_nrow() const { return nrow; }
+
+    size_t get_ncol() const { return ncol; }
 protected:
     size_t nrow=0, ncol=0;
 
-    void fill_dims(const Rcpp::RObject& dims) {
-        Rcpp::IntegerVector d;
-        if (dims.sexp_type()!=d.sexp_type() || (d=dims).size()!=2) {
-            throw std::runtime_error("matrix dimensions should be an integer vector of length 2");
+    void fill_dims(Rcpp::RObject dims) {
+        if (dims.sexp_type()!=INTSXP) {
+            throw std::runtime_error("matrix dimensions should be an integer vector");
         }
+
+        Rcpp::IntegerVector d(dims);
+        if (d.size()!=2) {
+            throw std::runtime_error("matrix dimensions should be of length 2");
+        }
+
         if (d[0]<0 || d[1]<0) {
             throw std::runtime_error("dimensions should be non-negative");
         }
@@ -62,24 +59,24 @@ protected:
     }
 
     void check_rowargs(size_t r) const {
-        any_matrix<T>::check_dimension(r, nrow, "row");
+        dim_checker::check_dimension(r, nrow, "row");
         return;
     }
 
     void check_rowargs(size_t r, size_t first, size_t last) const {
         check_rowargs(r);
-        any_matrix<T>::check_subset(first, last, ncol, "column");
+        dim_checker::check_subset(first, last, ncol, "column");
         return;
     }
 
     void check_colargs(size_t c) const {
-        any_matrix<T>::check_dimension(c, ncol, "column");
+        dim_checker::check_dimension(c, ncol, "column");
         return;
     }
 
     void check_colargs(size_t c, size_t first, size_t last) const {
         check_colargs(c);
-        any_matrix<T>::check_subset(first, last, nrow, "row");
+        dim_checker::check_subset(first, last, nrow, "row");
         return;
     }
 };
