@@ -161,8 +161,18 @@ public:
      * Is the matrix sparse?
      */
     virtual bool is_sparse() const { return false; }
+
+    /**
+     * Clone the current object, returning a pointer to a copy.
+     */
+    std::unique_ptr<lin_matrix> clone() const {
+        return std::unique_ptr<lin_matrix>(this->clone_internal());
+    }
+
 protected:
     size_t nrow=0, ncol=0;
+
+    virtual lin_matrix* clone_internal() const = 0;
 };
 
 /**
@@ -319,6 +329,15 @@ public:
     }
 
     bool is_sparse() const { return true; }
+
+    /**
+     * Clone the current object, returning a pointer to a copy.
+     */
+    std::unique_ptr<sparse_lin_matrix> clone() const {
+        return std::unique_ptr<sparse_lin_matrix>(this->clone_internal());
+    }
+protected:
+    sparse_lin_matrix* clone_internal() const = 0;
 };
 
 /**
@@ -361,6 +380,10 @@ public:
     }
 private:
     ordinary_reader<V> reader;
+
+    ordinary_matrix<V>* clone_internal() const {
+        return new ordinary_matrix<V>(*this);
+    }
 };
 
 using ordinary_integer_matrix = ordinary_matrix<Rcpp::IntegerVector>;
@@ -410,7 +433,7 @@ const double* ordinary_double_matrix::get_col(size_t c, double* work, size_t fir
  *
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
  */
-template <class V>
+template <class V, typename TIT>
 class gCMatrix : public sparse_lin_matrix {
 public:
     /**
@@ -462,7 +485,11 @@ public:
         return reader.template get_row<const double*>(r, work_x, work_i, first, last);
     }
 private:
-    gCMatrix_reader<V, typename V::iterator> reader;
+    gCMatrix_reader<V, TIT> reader;
+
+    gCMatrix<V, TIT>* clone_internal() const {
+        return new gCMatrix<V, TIT>(*this);
+    }
 };
 
 using lgCMatrix = gCMatrix<Rcpp::LogicalVector, const int*>;
@@ -494,7 +521,7 @@ sparse_index<const double*, int> dgCMatrix::get_col(size_t c, double* work_x, in
  *
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
  */
-template <class V>
+template <class V, typename TIT>
 class lin_SparseArraySeed : public sparse_lin_matrix {
 public:
     /**
@@ -547,6 +574,10 @@ public:
     }
 private:
     SparseArraySeed_reader<V, TIT> reader;
+
+    lin_SparseArraySeed<V, TIT>* clone_internal() const {
+        return new lin_SparseArraySeed<V, TIT>(*this);
+    }
 };
 
 using integer_SparseArraySeed = lin_SparseArraySeed<Rcpp::IntegerVector, const int*>;
