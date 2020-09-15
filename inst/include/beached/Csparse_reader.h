@@ -1,6 +1,12 @@
 #ifndef BEACHMAT_CSPARSE_MATRIX_H
 #define BEACHMAT_CSPARSE_MATRIX_H
 
+/**
+ * @file Csparse_reader.h
+ *
+ * Internal utilities and class definitions for processing compressed sparse column matrix representations.
+ */
+
 #include "Rcpp.h"
 
 #include "dim_checker.h"
@@ -13,14 +19,64 @@
 
 namespace beachmat {
 
+/**
+ * Sparse index container, holding the number of non-zero elements extracted from a single row/column 
+ * along with pointers to their indices and values.
+ * For extracted rows, the indices refer to column positions, and vice versa for extracted columns.
+ * 
+ * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
+ * @tparam I The integer type of the index.
+ */
 template <typename TIT, typename I>
 struct sparse_index {
+    /**
+     * Constructor for the `sparse_index`, setting its data members directly to the supplied values without too much fuss.
+     *
+     * @param _n See `n`.
+     * @param _x See `x`.
+     * @param _i See `i`.
+     */
     sparse_index(size_t _n, TIT _x, const I* _i) : n(_n), x(_x), i(_i) {}
-    size_t n;
+
+    /**
+     * Number of non-zero elements.
+     */
+    size_t n; 
+
+    /**
+     * Iterator pointing to the set of non-zero values.
+     * This should be incrementable up to `n`.
+     */
     TIT x;
+
+    /**  
+     * Pointer to the set of indices of the non-zero values.
+     * This should be incrementable up to `n`.
+     */
     const I* i;
 };
 
+/**
+ * @internal
+ *
+ * Transplant indices and values into their respective workspaces 
+ * and use them to construct a new `sparse_index` object.
+ * This is necessary for type conversions between the native value type and the expected value type.
+ *
+ * @tparam OUT Iterator to be stored in the new `sparse_index`.
+ * This should be the `const`-type counterpart to `ALT`.
+ * @tparam TIT `const` iterator of native type, i.e., equal to the original data values in the matrix.
+ * @tparam ALT Non-`const` iterator to the workspace of the desired type.
+ * @tparam I Integer type of the index.
+ *
+ * @param ref `sparse_index` containing pointers from a column (usually) of a sparse representation.
+ * @param work_x Pointer to the workspace for the data values, usually of a different type to that of the native representation.
+ * This should have space for at least `ref.n` values.
+ * @param work_i Pointeger to the workspace for the indices of the non-zero values.
+ * This should have space for at least `ref.n` values.
+ * 
+ * @return A `sparse_index` containing iterators for `work_x` and `work_i`.
+ */
 template<typename OUT, typename TIT, typename ALT, typename I>
 inline sparse_index<OUT, int> transplant(sparse_index<TIT, I> ref, ALT work_x, I* work_i) {
     std::copy(ref.x, ref.x + ref.n, work_x);
@@ -28,15 +84,51 @@ inline sparse_index<OUT, int> transplant(sparse_index<TIT, I> ref, ALT work_x, I
     return sparse_index<OUT, int>(ref.n, work_x, work_i);
 }
 
-/*** Core column-sparse handler ***/
-
+/**
+ * @internal
+ *
+ * Core handler for compressed sparse column (CSC) matrices,
+ * controlling extraction of elements from the columns and rows for use by other classes.
+ *
+ * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
+ * @tparam I The integer type of the index.
+ * @tparam P The integer type of the column pointers.
+ */
 template <typename TIT, typename I, typename P>
 class Csparse_core {
 public:
+    /** 
+     * Trivial constructor.
+     */
     Csparse_core() {};
+
+    /**
+     * Constructor where arguments are copied directly into their corresponding data members.
+     *
+     * @param _n Number of non-zero elements.
+     * @param _x Iterator to the non-zero data values in the matrix.
+     * This should have at least `n` addressable elements.
+     * @param _i Pointer to the row indices of the non-zero data values in the matrix.
+     * This should have at least `n` addressable elements.
+     * @param _nr Number of rows in the CSC matrix.
+     * @param _nc Number of columns in the CSC matrix.
+     * @param _p Pointer to the array of column pointers, 
+     * specifying the starting index of each column in `_x` and `_i`.
+     * This should have at least `nc + 1` addressable elements.
+     */
     Csparse_core(const size_t _n, TIT _x, const I* _i, const size_t _nr, const size_t _nc, const P* _p) : 
         n(_n), nr(_nr), nc(_nc), x(_x), i(_i), p(_p), currow(0), curstart(0), curend(nc) {}
-    
+   
+    /**
+     * Get all non-zero elements from a column. 
+     *
+     * @param c The index of the column to extract.
+     * @param first The index of the first row of interest.
+     * @param last The index of the first row that is _not_ of interest.
+     *
+     * @return A `sparse_index` containing pointers to the first non-zero element in `c` with row index no less than `first`.
+     * The number of non-zero elements is set to all those in `[first, last)`. 
+     */
     sparse_index<TIT, I> get_col(size_t c, size_t first, size_t last) {
         const auto pstart=p[c]; 
         auto iIt = i + pstart, 
@@ -56,8 +148,26 @@ public:
         return sparse_index<TIT, I>(eIt - iIt, xIt, iIt); 
     }
 
+    /**
+     * The type of the values pointed to by `TIT`. 
+     */
     typedef decltype(*std::declval<TIT>()) T;
 
+    /**
+     * Get all elements from a column, explicitly filling in the zeroes.
+     *
+     * @tparam ALT Iterator class for the workspace.
+     *
+     * @param c The index of the column to extract.
+     * @param work A pointer or iterator to the workspace in which the column values are to be stored.
+     * This should have at least `last - first` addressable elements.
+     * @param first The index of the first row of interest.
+     * @param last The index of the first row that is _not_ of interest.
+     * @param empty Value corresponding to zero, almost always `0`.
+     *
+     * @return `work` is filled in with the contents of column `c` from rows `[first, last)`.
+     * If no non-zero element exists, the corresponding entry of `work` is set to `empty`.
+     */
     template <typename ALT = TIT>
     void get_col(size_t c, ALT work, size_t first, size_t last, T empty) {
         auto out = this->get_col(c, first, last);
@@ -68,6 +178,21 @@ public:
         return;       
     }
 
+    /**
+     * Get all elements from a row, explicitly filling in the zeroes.
+     *
+     * @tparam ALT Iterator class for the workspace.
+     *
+     * @param r The index of the row to extract.
+     * @param work A pointer or iterator to the workspace in which the row values are to be stored.
+     * This should have at least `last - first` addressable elements.
+     * @param first The index of the first column of interest.
+     * @param last The index of the first column that is _not_ of interest.
+     * @param empty Value corresponding to zero, almost always `0`.
+     *
+     * @return `work` is filled in with the contents of row `r` from columns `[first, last)`.
+     * If no non-zero element exists, the corresponding entry of `work` is set to `empty`.
+     */
     template <typename ALT = TIT>
     void get_row(size_t r, ALT work, size_t first, size_t last, T empty) {
         update_indices(r, first, last);
@@ -83,6 +208,25 @@ public:
         return;  
     }
 
+    /**
+     * Get all non-zero elements from a row.
+     *
+     * @tparam OUT Iterator class for the data values in the output `sparse_index`,
+     * expected to correspond to a `const`-type counterpart to `ALT`.
+     * @tparam ALT Iterator class for the workspace.
+     *
+     * @param r The index of the row to extract.
+     * @param work_x A pointer or iterator to the workspace in which the non-zero row values are to be stored.
+     * This should have at least `last - first` addressable elements.
+     * @param work_i A pointer or iterator to the workspace in which the non-zero column indices are to be stored.
+     * This should have at least `last - first` addressable elements.
+     * @param first The index of the first column of interest.
+     * @param last The index of the first column that is _not_ of interest.
+     * @param empty Value corresponding to zero, almost usually `0`.
+     *
+     * @return A `sparse_index` containing pointers to the workspaces.
+     * The number of non-zero elements is set to all those in `[first, last)`. 
+     */
     template <typename OUT, typename ALT = TIT>
     sparse_index<OUT, I> get_row(size_t r, ALT work_x, I* work_i, size_t first, size_t last) {
         update_indices(r, first, last);
@@ -103,6 +247,7 @@ public:
     }
 private:
     size_t n, nr, nc;
+
     TIT x;
     const I* i;
     const P* p;
@@ -110,6 +255,19 @@ private:
     size_t currow, curstart, curend;
     std::vector<P> indices; 
 
+    /**
+     * Update the index to the last requested non-zero element in each column.
+     * This is used to accelerate consecutive row queries by avoiding the need for a new binary search.
+     * After one row extraction, we hold the index of the lower-bounded non-zero element for each column;
+     * on the next request for a row, we check whether it can be satisfied by the next non-zero element in that column.
+     *
+     * @param r The requested row.
+     * @param first The first column of interest.
+     * @param last The first column that is not of interest.
+     * 
+     * @return `indices` is updated.
+     * 
+     */
     void update_indices(size_t r, size_t first, size_t last) {
         /* Initializing the indices upon the first request, assuming currow=0 based on initialization above.
          * This avoids using up space for the indices if we never do row access.
@@ -170,8 +328,14 @@ private:
     }
 };
 
-/*** gCMatrix reader ***/
-
+/**
+ * @internal
+ *
+ * Reader for `dgCMatrix` and `lgCMatrix` R objects.
+ *
+ * @tparam V The type of the `Rcpp::Vector` containing the data values.
+ * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
+ */
 template <class V, typename TIT = typename V::iterator>
 class gCMatrix_reader : public dim_checker {
 public:
@@ -181,6 +345,12 @@ public:
     gCMatrix_reader(gCMatrix_reader&&) = default;
     gCMatrix_reader& operator=(gCMatrix_reader&&) = default;
 
+    /**
+     * Constructor from an R object containing a `*gCMatrix` instance.
+     * This implements a series of checks for the validity of the slots for the compressed column-sparse format.
+     *
+     * @param mat An R object containing a `*gCMatrix` instance.
+     */
     gCMatrix_reader(Rcpp::RObject mat) { 
         this->fill_dims(get_safe_slot(mat, "Dim"));
         const size_t& NC=this->ncol;
@@ -265,17 +435,26 @@ public:
         return;                
     }
 
+    /**
+     * @copydoc Csparse_core::get_col(size_t, size_t, size_t)
+     */
     sparse_index<TIT, int> get_col(size_t c, size_t first, size_t last) {
         this->check_colargs(c, first, last);
         return core.get_col(c, first, last);
     }
 
+    /**
+     * @copydoc Csparse_core::get_row(size_t, ALT, I*, size_t, size_t)
+     */
     template <typename OUT, typename ALT = TIT>
     sparse_index<OUT, int> get_row(size_t r, ALT work_x, int* work_i, size_t first, size_t last) {
         this->check_rowargs(r, first, last);
         return core.template get_row<OUT>(r, work_x, work_i, first, last);
     }
 
+    /**
+     * @copydoc Csparse_core::get_row(size_t, ALT, size_t, size_t, T)
+     */
     template <typename ALT = TIT>
     ALT get_row(size_t r, ALT work, size_t first, size_t last) {
         this->check_rowargs(r, first, last);
@@ -283,6 +462,9 @@ public:
         return work;
     }
 
+    /**
+     * @copydoc Csparse_core::get_col(size_t, ALT, size_t, size_t, T)
+     */
     template <typename ALT = TIT>
     ALT get_col(size_t c, ALT work, size_t first, size_t last) {
         this->check_colargs(c, first, last);
@@ -295,17 +477,23 @@ private:
     Csparse_core<TIT, int, int> core;
 };
 
-/*** SparseArraySeed reader ***/
-
-struct sparse_triplet {
-    sparse_triplet(int _i, int _j, size_t _ptr) : i(_i), j(_j), ptr(_ptr) {}
-    int i;
-    int j;
-    size_t ptr;
-};
-
+/**
+ * @internal
+ *
+ * Reader for `SparseArraySeed` R objects.
+ *
+ * @tparam V The type of the `Rcpp::Vector` containing the data values.
+ * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
+ */
 template <class V, typename TIT = typename V::iterator>
 class SparseArraySeed_reader : public dim_checker {
+private:
+    struct sparse_triplet {
+        sparse_triplet(int _i, int _j, size_t _ptr) : i(_i), j(_j), ptr(_ptr) {}
+        int i;
+        int j;
+        size_t ptr;
+    };
 public:
     ~SparseArraySeed_reader() = default;
     SparseArraySeed_reader(const SparseArraySeed_reader&) = default;
@@ -313,6 +501,14 @@ public:
     SparseArraySeed_reader(SparseArraySeed_reader&&) = default;
     SparseArraySeed_reader& operator=(SparseArraySeed_reader&&) = default;
 
+    /**
+     * Constructor from an R object containing a `SparseArraySeed` instance.
+     * This implements a series of checks for the consistency of the slots.
+     * It will copy the row and column indices to make them zero-based,
+     * and if necessary, sort them to create a compressed sparse column format.
+     *
+     * @param mat An R object containing a `SparseArraySeed` instance.
+     */
     SparseArraySeed_reader(Rcpp::RObject seed) {
         this->fill_dims(get_safe_slot(seed, "dim"));
         const size_t& NC=this->ncol;
@@ -433,17 +629,26 @@ public:
         return;
     }
 
+    /**
+     * @copydoc Csparse_core::get_col(size_t, size_t, size_t)
+     */
     sparse_index<TIT, int> get_col(size_t c, size_t first, size_t last) {
         this->check_colargs(c, first, last);
         return core.get_col(c, first, last);
     }
 
+    /**
+     * @copydoc Csparse_core::get_row(size_t, ALT, I*, size_t, size_t)
+     */
     template <typename OUT, typename ALT = TIT>
     sparse_index<OUT, int> get_row(size_t r, ALT work_x, int* work_i, size_t first, size_t last) {
         this->check_rowargs(r, first, last);
         return core.template get_row<OUT>(r, work_x, work_i, first, last);
     }
 
+    /**
+     * @copydoc Csparse_core::get_row(size_t, ALT, size_t, size_t, T)
+     */
     template <typename ALT = TIT>
     ALT get_row(size_t r, ALT work, size_t first, size_t last) {
         this->check_rowargs(r, first, last);
@@ -451,6 +656,9 @@ public:
         return work;
     }
 
+    /**
+     * @copydoc Csparse_core::get_col(size_t, ALT, size_t, size_t, T)
+     */
     template <typename ALT = TIT>
     ALT get_col(size_t c, ALT work, size_t first, size_t last) {
         this->check_colargs(c, first, last);
