@@ -100,8 +100,8 @@ public:
      * This may or may not involve populating `work` with values copied from the underlying matrix;
      * a copy will have been performed if the return value compares equal to `work`.
      */
-    const int* get_col(size_t r, int* work) {
-        return get_col(r, work, 0, nrow);
+    const int* get_col(size_t c, int* work) {
+        return get_col(c, work, 0, nrow);
     }
 
     /**
@@ -197,7 +197,7 @@ public:
      * containing non-zero elements in `r` with column indices in `[first, last)`.
      * A copy of non-zero values and their indices is always performed into the workspace.
      */
-    virtual sparse_index<const int*, int> get_row(size_t, int*, int*, size_t, size_t) = 0;
+    virtual sparse_index<const int*, int> get_row(size_t r, int* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
      * Extract all non-zero elements in a column, storing values as integers.
@@ -214,7 +214,7 @@ public:
      * This may or may not involve populating `work` with values copied from the underlying matrix;
      * a copy will have been performed if the return value's pointers compare equal to `work_x` and `work_i`.
      */
-    virtual sparse_index<const int*, int> get_col(size_t, int*, int*, size_t, size_t) = 0;
+    virtual sparse_index<const int*, int> get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
      * Extract all non-zero elements in a row, storing values as doubles.
@@ -231,7 +231,7 @@ public:
      * containing non-zero elements in `r` with column indices in `[first, last)`.
      * A copy of non-zero values and their indices is always performed into the workspace.
      */
-    virtual sparse_index<const double*, int> get_row(size_t, double*, int*, size_t, size_t) = 0;
+    virtual sparse_index<const double*, int> get_row(size_t r, double* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
      * Extract all non-zero elements in a column, storing values as doubles.
@@ -248,7 +248,7 @@ public:
      * This may or may not involve populating `work` with values copied from the underlying matrix;
      * a copy will have been performed if the return value's pointers compare equal to `work_x` and `work_i`.
      */
-    virtual sparse_index<const double*, int> get_col(size_t, double*, int*, size_t, size_t) = 0;
+    virtual sparse_index<const double*, int> get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
      * Extract all non-zero elements in a column, storing values as integers.
@@ -321,11 +321,19 @@ public:
     bool is_sparse() const { return true; }
 };
 
-/*** Ordinary matrix ***/
-
+/**
+ * @brief Logical, integer or numeric matrices in the "ordinary" R format, i.e., column-major dense arrays.
+ *
+ * @tparam V The class of the `Rcpp::Vector` holding the R-level data.
+ */
 template <class V>
 class ordinary_matrix : public lin_matrix {
 public:
+    /**
+     * Constructor from an ordinary R-level matrix.
+     *
+     * @param mat An ordinary R matrix.
+     */
     ordinary_matrix(Rcpp::RObject mat) : reader(mat) {
         this->nrow = reader.get_nrow();
         this->ncol = reader.get_ncol();
@@ -397,11 +405,19 @@ const double* ordinary_double_matrix::get_col(size_t c, double* work, size_t fir
     return reader.get_col(c, first, last);
 }
 
-/*** gCMatrix ***/
-
-template <class V, typename TIT = typename V::iterator>
+/**
+ * @brief Sparse logical or numeric matrices in the `lgCMatrix` or `dgCMatrix` format, respectively, from the **Matrix** package.
+ *
+ * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
+ */
+template <class V>
 class gCMatrix : public sparse_lin_matrix {
 public:
+    /**
+     * Constructor from a `*gCMatrix`.
+     *
+     * @param mat A S4 object of the `dgCMatrix` or `lgCMatrix` class.
+     */
     gCMatrix(Rcpp::RObject mat) : reader(mat) {
         this->nrow = reader.get_nrow();
         this->ncol = reader.get_ncol();
@@ -446,7 +462,7 @@ public:
         return reader.template get_row<const double*>(r, work_x, work_i, first, last);
     }
 private:
-    gCMatrix_reader<V, TIT> reader;
+    gCMatrix_reader<V, typename V::iterator> reader;
 };
 
 using lgCMatrix = gCMatrix<Rcpp::LogicalVector, const int*>;
@@ -473,11 +489,19 @@ sparse_index<const double*, int> dgCMatrix::get_col(size_t c, double* work_x, in
     return reader.get_col(c, first, last);
 }
 
-/*** SparseArraySeed ***/
-
-template <class V, typename TIT = typename V::iterator>
+/**
+ * @brief Sparse integer, logical or numeric matrices in the `SparseArraySeed` format from the **DelayedArray** package.
+ *
+ * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
+ */
+template <class V>
 class lin_SparseArraySeed : public sparse_lin_matrix {
 public:
+    /**
+     * Constructor from a `SparseArraySeed`.
+     *
+     * @param mat A S4 object of the `SparseArraySeed` class.
+     */
     lin_SparseArraySeed(Rcpp::RObject mat) : reader(mat) {
         this->nrow = reader.get_nrow();
         this->ncol = reader.get_ncol();
