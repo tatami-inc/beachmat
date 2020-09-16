@@ -19,7 +19,7 @@ namespace beachmat {
  * @internal
  *
  * Read a sparse logical, integer or numeric block into an instance of a `M` class.
- * `M` should most typically be either a `lin_matrix` or `sparse_lin_matrix`.
+ * `M` should most typically be either a `lin_matrix` or `lin_sparse_matrix`.
  *
  * @param block An R object containing a `dgCMatrix`, `lgCMatrix` or `SparseArraySeed`.
  *
@@ -70,11 +70,11 @@ inline std::unique_ptr<lin_matrix> read_lin_block(Rcpp::RObject block) {
     } else {
         auto sexptype = block.sexp_type();
         if (sexptype == INTSXP) {
-            return std::unique_ptr<lin_matrix>(new ordinary_integer_matrix(block));
+            return std::unique_ptr<lin_matrix>(new integer_ordinary_matrix(block));
         } else if (sexptype == REALSXP) {
-            return std::unique_ptr<lin_matrix>(new ordinary_double_matrix(block));
+            return std::unique_ptr<lin_matrix>(new double_ordinary_matrix(block));
         } else if (sexptype == LGLSXP) {
-            return std::unique_ptr<lin_matrix>(new ordinary_logical_matrix(block));
+            return std::unique_ptr<lin_matrix>(new logical_ordinary_matrix(block));
         }
     }
 
@@ -82,17 +82,17 @@ inline std::unique_ptr<lin_matrix> read_lin_block(Rcpp::RObject block) {
 }
 
 /**
- * Read a sparse logical, integer or numeric block into an instance of a `sparse_lin_matrix` subclass.
+ * Read a sparse logical, integer or numeric block into an instance of a `lin_sparse_matrix` subclass.
  * This can then be used to perform class- and type-agnostic extraction of row/column vectors and their non-zero values.
  *
  * @param block An R object containing a `dgCMatrix`, `lgCMatrix` or `SparseArraySeed`.
  *
- * @return A pointer to a `sparse_lin_matrix` instance.
+ * @return A pointer to a `lin_sparse_matrix` instance.
  * This function will automatically choose the most appropriate subclass or throw an error if none are available.
  */
-inline std::unique_ptr<sparse_lin_matrix> read_sparse_lin_block(Rcpp::RObject block) {
+inline std::unique_ptr<lin_sparse_matrix> read_sparse_lin_block(Rcpp::RObject block) {
     if (block.isS4()) {
-        auto ptr = read_sparse_lin_block_raw<sparse_lin_matrix>(block);
+        auto ptr = read_sparse_lin_block_raw<lin_sparse_matrix>(block);
         if (ptr) {
             return ptr;
         }

@@ -179,18 +179,18 @@ protected:
  * @brief Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix,
  * providing methods to extract rows or columns in dense or sparse form.
  */
-class sparse_lin_matrix : public lin_matrix {
+class lin_sparse_matrix : public lin_matrix {
 public:
     /**
      * Trivial constructor.
      */
-    sparse_lin_matrix() {}
+    lin_sparse_matrix() {}
 
-    ~sparse_lin_matrix() = default;
-    sparse_lin_matrix(const sparse_lin_matrix&) = default;
-    sparse_lin_matrix& operator=(const sparse_lin_matrix&) = default;
-    sparse_lin_matrix(sparse_lin_matrix&&) = default;
-    sparse_lin_matrix& operator=(sparse_lin_matrix&&) = default;
+    ~lin_sparse_matrix() = default;
+    lin_sparse_matrix(const lin_sparse_matrix&) = default;
+    lin_sparse_matrix& operator=(const lin_sparse_matrix&) = default;
+    lin_sparse_matrix(lin_sparse_matrix&&) = default;
+    lin_sparse_matrix& operator=(lin_sparse_matrix&&) = default;
 
     /**
      * Extract all non-zero elements in a row, storing values as integers.
@@ -333,11 +333,11 @@ public:
     /**
      * Clone the current object, returning a pointer to a copy.
      */
-    std::unique_ptr<sparse_lin_matrix> clone() const {
-        return std::unique_ptr<sparse_lin_matrix>(this->clone_internal());
+    std::unique_ptr<lin_sparse_matrix> clone() const {
+        return std::unique_ptr<lin_sparse_matrix>(this->clone_internal());
     }
 protected:
-    sparse_lin_matrix* clone_internal() const = 0;
+    lin_sparse_matrix* clone_internal() const = 0;
 };
 
 /**
@@ -346,24 +346,24 @@ protected:
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data.
  */
 template <class V>
-class ordinary_matrix : public lin_matrix {
+class lin_ordinary_matrix : public lin_matrix {
 public:
     /**
      * Constructor from an ordinary R-level matrix.
      *
      * @param mat An ordinary R matrix.
      */
-    ordinary_matrix(Rcpp::RObject mat) : reader(mat) {
+    lin_ordinary_matrix(Rcpp::RObject mat) : reader(mat) {
         this->nrow = reader.get_nrow();
         this->ncol = reader.get_ncol();
         return;
     }
 
-    ~ordinary_matrix() = default;
-    ordinary_matrix(const ordinary_matrix&) = default;
-    ordinary_matrix& operator=(const ordinary_matrix&) = default;
-    ordinary_matrix(ordinary_matrix&&) = default;
-    ordinary_matrix& operator=(ordinary_matrix&&) = default;
+    ~lin_ordinary_matrix() = default;
+    lin_ordinary_matrix(const lin_ordinary_matrix&) = default;
+    lin_ordinary_matrix& operator=(const lin_ordinary_matrix&) = default;
+    lin_ordinary_matrix(lin_ordinary_matrix&&) = default;
+    lin_ordinary_matrix& operator=(lin_ordinary_matrix&&) = default;
 
     const int* get_col(size_t c, int* work, size_t first, size_t last);
 
@@ -381,50 +381,50 @@ public:
 private:
     ordinary_reader<V> reader;
 
-    ordinary_matrix<V>* clone_internal() const {
-        return new ordinary_matrix<V>(*this);
+    lin_ordinary_matrix<V>* clone_internal() const {
+        return new lin_ordinary_matrix<V>(*this);
     }
 };
 
-using ordinary_integer_matrix = ordinary_matrix<Rcpp::IntegerVector>;
+using integer_ordinary_matrix = lin_ordinary_matrix<Rcpp::IntegerVector>;
 
 template <>
-const int* ordinary_integer_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
+const int* integer_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-const double* ordinary_integer_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
+const double* integer_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
     auto out = reader.get_col(c, first, last);
     std::copy(out, out + last - first, work);
     return work;
 }
 
-using ordinary_logical_matrix = ordinary_matrix<Rcpp::LogicalVector>;
+using logical_ordinary_matrix = lin_ordinary_matrix<Rcpp::LogicalVector>;
 
 template <>
-const int* ordinary_logical_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
+const int* logical_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-const double* ordinary_logical_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
+const double* logical_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
     auto out = reader.get_col(c, first, last);
     std::copy(out, out + last - first, work);
     return work;
 }
 
-using ordinary_double_matrix = ordinary_matrix<Rcpp::NumericVector>;
+using double_ordinary_matrix = lin_ordinary_matrix<Rcpp::NumericVector>;
 
 template <>
-const int* ordinary_double_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
+const int* double_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
     auto out = reader.get_col(c, first, last);
     std::copy(out, out + last - first, work);
     return work;
 }
 
 template <>
-const double* ordinary_double_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
+const double* double_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
@@ -434,7 +434,7 @@ const double* ordinary_double_matrix::get_col(size_t c, double* work, size_t fir
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
  */
 template <class V, typename TIT>
-class gCMatrix : public sparse_lin_matrix {
+class gCMatrix : public lin_sparse_matrix {
 public:
     /**
      * Constructor from a `*gCMatrix`.
@@ -522,7 +522,7 @@ sparse_index<const double*, int> dgCMatrix::get_col(size_t c, double* work_x, in
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
  */
 template <class V, typename TIT>
-class lin_SparseArraySeed : public sparse_lin_matrix {
+class lin_SparseArraySeed : public lin_sparse_matrix {
 public:
     /**
      * Constructor from a `SparseArraySeed`.
