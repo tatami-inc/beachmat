@@ -331,6 +331,11 @@ public:
     bool is_sparse() const { return true; }
 
     /**
+     * Get the number of non-zero elements in the matrix.
+     */
+    virtual size_t get_nnzero() const = 0;
+
+    /**
      * Clone the current object, returning a pointer to a copy.
      */
     std::unique_ptr<lin_sparse_matrix> clone() const {
@@ -389,12 +394,12 @@ private:
 using integer_ordinary_matrix = lin_ordinary_matrix<Rcpp::IntegerVector>;
 
 template <>
-const int* integer_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
+inline const int* integer_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-const double* integer_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
+inline const double* integer_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
     auto out = reader.get_col(c, first, last);
     std::copy(out, out + last - first, work);
     return work;
@@ -403,12 +408,12 @@ const double* integer_ordinary_matrix::get_col(size_t c, double* work, size_t fi
 using logical_ordinary_matrix = lin_ordinary_matrix<Rcpp::LogicalVector>;
 
 template <>
-const int* logical_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
+inline const int* logical_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-const double* logical_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
+inline const double* logical_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
     auto out = reader.get_col(c, first, last);
     std::copy(out, out + last - first, work);
     return work;
@@ -417,14 +422,14 @@ const double* logical_ordinary_matrix::get_col(size_t c, double* work, size_t fi
 using double_ordinary_matrix = lin_ordinary_matrix<Rcpp::NumericVector>;
 
 template <>
-const int* double_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
+inline const int* double_ordinary_matrix::get_col(size_t c, int* work, size_t first, size_t last) {
     auto out = reader.get_col(c, first, last);
     std::copy(out, out + last - first, work);
     return work;
 }
 
 template <>
-const double* double_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
+inline const double* double_ordinary_matrix::get_col(size_t c, double* work, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
@@ -484,6 +489,10 @@ public:
     sparse_index<const double*, int> get_row(size_t r, double* work_x, int* work_i, size_t first, size_t last) {
         return reader.template get_row<const double*>(r, work_x, work_i, first, last);
     }
+
+    size_t get_nnzero () const {
+        return reader.get_nnzero();
+    }
 private:
     gCMatrix_reader<V, TIT> reader;
 
@@ -495,24 +504,24 @@ private:
 using lgCMatrix = gCMatrix<Rcpp::LogicalVector, const int*>;
 
 template <>
-sparse_index<const int*, int> lgCMatrix::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const int*, int> lgCMatrix::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-sparse_index<const double*, int> lgCMatrix::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const double*, int> lgCMatrix::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last) {
     return transplant<const double*>(reader.get_col(c, first, last), work_x, work_i);
 }
 
 using dgCMatrix = gCMatrix<Rcpp::NumericVector, const double*>;
 
 template <>
-sparse_index<const int*, int> dgCMatrix::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const int*, int> dgCMatrix::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
     return transplant<const int*>(reader.get_col(c, first, last), work_x, work_i);
 }
 
 template <>
-sparse_index<const double*, int> dgCMatrix::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const double*, int> dgCMatrix::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
@@ -572,6 +581,10 @@ public:
     sparse_index<const double*, int> get_row(size_t r, double* work_x, int* work_i, size_t first, size_t last) {
         return reader.template get_row<const double*>(r, work_x, work_i, first, last);
     }
+
+    size_t get_nnzero () const {
+        return reader.get_nnzero();
+    }
 private:
     SparseArraySeed_reader<V, TIT> reader;
 
@@ -583,12 +596,12 @@ private:
 using integer_SparseArraySeed = lin_SparseArraySeed<Rcpp::IntegerVector, const int*>;
 
 template <>
-sparse_index<const int*, int> integer_SparseArraySeed::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const int*, int> integer_SparseArraySeed::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-sparse_index<const double*, int> integer_SparseArraySeed::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last)
+inline sparse_index<const double*, int> integer_SparseArraySeed::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last)
 {
     return transplant<const double*>(reader.get_col(c, first, last), work_x, work_i);
 }
@@ -596,12 +609,12 @@ sparse_index<const double*, int> integer_SparseArraySeed::get_col(size_t c, doub
 using logical_SparseArraySeed = lin_SparseArraySeed<Rcpp::LogicalVector, const int*>;
 
 template <>
-sparse_index<const int*, int> logical_SparseArraySeed::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const int*, int> logical_SparseArraySeed::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
     return reader.get_col(c, first, last);
 }
 
 template <>
-sparse_index<const double*, int> logical_SparseArraySeed::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last)
+inline sparse_index<const double*, int> logical_SparseArraySeed::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last)
 {
     return transplant<const double*>(reader.get_col(c, first, last), work_x, work_i);
 }
@@ -609,12 +622,12 @@ sparse_index<const double*, int> logical_SparseArraySeed::get_col(size_t c, doub
 using double_SparseArraySeed = lin_SparseArraySeed<Rcpp::NumericVector, const double*>;
 
 template <>
-sparse_index<const int*, int> double_SparseArraySeed::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
+inline sparse_index<const int*, int> double_SparseArraySeed::get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) {
     return transplant<const int*>(reader.get_col(c, first, last), work_x, work_i);
 }
 
 template <>
-sparse_index<const double*, int> double_SparseArraySeed::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last)
+inline sparse_index<const double*, int> double_SparseArraySeed::get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last)
 {
     return reader.get_col(c, first, last);
 }

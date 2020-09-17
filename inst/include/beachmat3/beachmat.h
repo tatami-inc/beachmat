@@ -9,7 +9,7 @@
  */
 
 #include "Rcpp.h"
-#include "lin_matrix.h"
+#include "read_lin_block.h"
 #include "as_gCMatrix.h"
 #include <stdexcept>
 #include <memory>

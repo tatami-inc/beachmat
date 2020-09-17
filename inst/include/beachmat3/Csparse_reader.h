@@ -471,6 +471,12 @@ public:
         core.get_col(c, work, first, last, 0);
         return work;
     }
+
+    /**
+     * Get the number of non-zero elements in the object.
+     */
+    size_t get_nnzero () const { return x.size(); }
+
 private:
     Rcpp::IntegerVector i, p;
     V x;
@@ -571,8 +577,11 @@ public:
 
                 auto colIt = col_indices.begin();
                 auto colStart = colIt;
-                for (int c = 0; c <= static_cast<int>(NC); ++c) {
-                    while (colIt != col_indices.end() && *colIt <= c + 1) {
+                for (int c = 1; c <= static_cast<int>(NC); ++c) {
+                    // Technically it should be *colIt <= c+1 to get to 1-based
+                    // indices, but this cancels out with a -1 because we want
+                    // everything up to the _last_ column.
+                    while (colIt != col_indices.end() && *colIt <= c) { 
                         ++colIt;
                     }
                     p[c] = colIt - colStart;
@@ -616,8 +625,8 @@ public:
 
                 auto eIt = everything.begin();
                 auto eStart = eIt;
-                for (int c = 0; c <= static_cast<int>(NC); ++c) {
-                    while (eIt != everything.end() && eIt->j <= c + 1) {
+                for (int c = 1; c <= static_cast<int>(NC); ++c) {
+                    while (eIt != everything.end() && eIt->j <= c) { // see above comments.
                         ++eIt;
                     }
                     p[c] = eIt - eStart;
@@ -665,6 +674,12 @@ public:
         core.get_col(c, work, first, last, 0);
         return work;
     }
+
+    /**
+     * Get the number of non-zero elements in the object.
+     */
+    size_t get_nnzero () const { return x.size(); }
+
 private:
     Rcpp::IntegerVector i;
     V x;

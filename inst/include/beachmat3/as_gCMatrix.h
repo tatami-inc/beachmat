@@ -64,11 +64,13 @@ inline Rcpp::RObject as_gCMatrix (int nr, int nc, const std::map<std::pair<int, 
     Rcpp::IntegerVector p(nc + 1, 0);
 
     auto hIt = holder.begin();
-    for (int c = 0; c <= nc; ++c) {
+    int counter = 0;
+    for (int c = 1; c <= nc; ++c) {
         while (hIt != holder.end() && (hIt->first).first <= c) {
             ++hIt;
+            ++counter;
         }
-        p[c] = (hIt - holder.begin());
+        p[c] = counter;
     }
     mat.slot("p")=p;
 
