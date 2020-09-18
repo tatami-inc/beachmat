@@ -545,7 +545,7 @@ public:
             throw std::runtime_error(std::string("incompatible 'nzindex' and 'nzdata' lengths in a ") + ctype + " object"); 
         }
 
-        if (!nnz) {
+        if (nnz) {
             auto row_indices=temp_i2.column(0);
             auto col_indices=temp_i2.column(1);
             bool okay=true;
