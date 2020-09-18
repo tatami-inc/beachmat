@@ -272,8 +272,9 @@ private:
         /* Initializing the indices upon the first request, assuming currow=0 based on initialization above.
          * This avoids using up space for the indices if we never do row access.
          */
-        if (indices.size() != nr) {
+        if (indices.size() != nc) {
             indices = std::vector<P>(p, p + nc);
+            currow=0;
         }
 
         /* If left/right slice are not equal to what is stored, we reset the indices,
@@ -324,6 +325,8 @@ private:
         }
 
         currow=r;
+        curstart=first;
+        curend=last;
         return;
     }
 };
