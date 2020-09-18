@@ -41,15 +41,20 @@ Rcpp::RObject get_sparse_column0(Rcpp::RObject mat, Rcpp::IntegerVector order) {
 
     V store(ptr->get_nnzero());
     auto sIt = store.begin();
+    Rcpp::IntegerVector newi(ptr->get_nnzero());
+    auto iIt = newi.begin();
 
     for (auto o : order) {
         auto stuff = ptr->get_col(o, work_x.data(), work_i.data());
-        for (size_t j = 0; j < stuff.n; ++j, ++sIt) {
+        for (size_t j = 0; j < stuff.n; ++j, ++sIt, ++iIt) {
+            *iIt = stuff.i[j];
             *sIt = stuff.x[j];
         }
     }
 
-    return beachmat::as_gCMatrix<V>(mat, store);
+    Rcpp::RObject output = beachmat::as_gCMatrix<V>(mat, store);
+    output.slot("i") = newi;
+    return output;
 }
 
 // [[Rcpp::export(rng=false)]]
