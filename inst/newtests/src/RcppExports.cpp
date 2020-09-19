@@ -5,6 +5,27 @@
 
 using namespace Rcpp;
 
+// test_sparse_writer1
+Rcpp::RObject test_sparse_writer1(int type);
+RcppExport SEXP _morebeachtests_test_sparse_writer1(SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_sparse_writer1(type));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_sparse_writer2
+Rcpp::RObject test_sparse_writer2(Rcpp::RObject mat, Rcpp::NumericVector replacement);
+RcppExport SEXP _morebeachtests_test_sparse_writer2(SEXP matSEXP, SEXP replacementSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type replacement(replacementSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_sparse_writer2(mat, replacement));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_column_slice
 Rcpp::RObject get_column_slice(Rcpp::RObject mat, Rcpp::IntegerVector order, Rcpp::IntegerVector starts, Rcpp::IntegerVector ends, int mode);
 RcppExport SEXP _morebeachtests_get_column_slice(SEXP matSEXP, SEXP orderSEXP, SEXP startsSEXP, SEXP endsSEXP, SEXP modeSEXP) {
@@ -111,6 +132,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_morebeachtests_test_sparse_writer1", (DL_FUNC) &_morebeachtests_test_sparse_writer1, 1},
+    {"_morebeachtests_test_sparse_writer2", (DL_FUNC) &_morebeachtests_test_sparse_writer2, 2},
     {"_morebeachtests_get_column_slice", (DL_FUNC) &_morebeachtests_get_column_slice, 5},
     {"_morebeachtests_get_column", (DL_FUNC) &_morebeachtests_get_column, 3},
     {"_morebeachtests_get_row_slice", (DL_FUNC) &_morebeachtests_get_row_slice, 5},

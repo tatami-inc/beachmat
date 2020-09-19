@@ -10,10 +10,11 @@ Rcpp::RObject get_column_slice0(Rcpp::RObject mat, Rcpp::IntegerVector order,
     M output(ptr->get_nrow(), ptr->get_ncol());
 
     for (auto o : order) {
-        auto curout = output.column(o);
         int curstart = starts[o];
         int curend = ends[o];
         auto vec = ptr->get_col(o, tmp.data(), curstart, curend);
+
+        auto curout = output.column(o);
         std::copy(vec, vec + curend - curstart, curout.begin() + curstart);
     }
 
@@ -40,8 +41,8 @@ Rcpp::RObject get_column0(Rcpp::RObject mat, Rcpp::IntegerVector order) {
     M output(ptr->get_nrow(), ptr->get_ncol());
 
     for (auto o : order) {
-        auto curout = output.column(o);
         auto vec = ptr->get_col(o, tmp.data());
+        auto curout = output.column(o);
         std::copy(vec, vec + ptr->get_nrow(), curout.begin());
     }
 

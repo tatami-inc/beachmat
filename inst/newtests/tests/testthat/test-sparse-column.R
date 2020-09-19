@@ -64,3 +64,21 @@ test_that("sparse matrix column reads are done correctly with slices", {
         }
     }
 })
+
+test_that("sparse matrix column reads are correctly bounded", {
+    mats <- SPAWN(100, 20, mode=2)
+
+    for (M in mats[-1]) {
+        expect_error(morebeachtests:::get_sparse_column(M, 1000L, mode=2L),
+            "column index out of range")
+
+        expect_error(morebeachtests:::get_sparse_column_slice(M, 1000L, 0, 1, mode=2L),
+            "column index out of range")
+
+        expect_error(morebeachtests:::get_sparse_column_slice(M, 0L, -1, 1, mode=2L),
+            "row start index is greater than row end index")
+
+        expect_error(morebeachtests:::get_sparse_column_slice(M, 0L, 0, 1000, mode=2L),
+            "row end index out of range")
+    }
+})
