@@ -1,5 +1,6 @@
 SPAWN <- function(nr, nc, mode) {
     mat <- Matrix::rsparsematrix(nr, nc, density=0.3)
+
     if (mode!=1L) {
         if (mode==0L) mat <- mat != 0
         list(
@@ -8,11 +9,13 @@ SPAWN <- function(nr, nc, mode) {
             as(mat, "SparseArraySeed")
         )
     } else {
-        mat <- round(mat)
+        mat <- as.matrix(round(mat)) # necessary to ignore zeroes in SparseArraySeed coercion.
+
         output <- list(
-            as.matrix(mat),
+            mat,
             as(mat, "SparseArraySeed")
         )
+
         storage.mode(output[[1]]) <- "integer"
         storage.mode(output[[2]]@nzdata) <- "integer"
         output
@@ -38,4 +41,35 @@ CHECK_IDENTITY <- function(ref, mat, mode) {
         mat <- !!mat # due to the fact that logicals are integers, so non-1 values behave weirdly.
     }
     expect_identical(ref, mat)
+}
+
+CHECK_SPARSE_IDENTITY <- function(ref, mat, mode) {
+    ref <- CONVERT(ref, mode) 
+    if (mode==0L) { 
+        ref <- as(ref, "lgCMatrix")
+
+        expect_s4_class(mat, "lgCMatrix")
+        mat <- as(!!as.matrix(mat), "lgCMatrix") # for much the same reasons as above.
+    } else {
+        ref <- as(ref, "dgCMatrix")
+    }
+    expect_identical(ref, mat)
+}
+
+SLICE_COLUMNS <- function(x, order, starts, ends) {
+    for (o in order) {
+        y <- x[starts[o]:ends[o],o]
+        x[,o] <- vector(typeof(y), 1L)
+        x[starts[o]:ends[o],o] <- y
+    }
+    x
+}
+
+SLICE_ROWS <- function(x, order, starts, ends) {
+    for (o in order) {
+        y <- x[o,starts[o]:ends[o]]
+        x[o,] <- vector(typeof(y), 1L)
+        x[o,starts[o]:ends[o]] <- y 
+    }
+    x
 }

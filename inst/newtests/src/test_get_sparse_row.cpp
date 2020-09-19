@@ -15,7 +15,7 @@ Rcpp::RObject get_sparse_row_slice0(Rcpp::RObject mat, Rcpp::IntegerVector order
 
         auto stuff = ptr->get_row(o, work_x.data(), work_i.data(), curstart, curend);
         for (size_t j = 0; j < stuff.n; ++j) {
-            store[std::make_pair(o, stuff.i[j])] = stuff.x[j];
+            store[std::make_pair(stuff.i[j], o)] = stuff.x[j];
         }
     }
 
@@ -38,23 +38,16 @@ Rcpp::RObject get_sparse_row0(Rcpp::RObject mat, Rcpp::IntegerVector order) {
     auto ptr = beachmat::read_lin_sparse_block(mat);
     std::vector<int> work_i(ptr->get_ncol());
     std::vector<T> work_x(ptr->get_ncol());
-
-    V store(ptr->get_nnzero());
-    auto sIt = store.begin();
-    Rcpp::IntegerVector newi(ptr->get_nnzero());
-    auto iIt = newi.begin();
+    std::map<std::pair<int, int>, T> store;
 
     for (auto o : order) {
         auto stuff = ptr->get_row(o, work_x.data(), work_i.data());
-        for (size_t j = 0; j < stuff.n; ++j, ++sIt, ++iIt) {
-            *iIt = stuff.i[j];
-            *sIt = stuff.x[j];
+        for (size_t j = 0; j < stuff.n; ++j) {
+            store[std::make_pair(stuff.i[j], o)] = stuff.x[j];
         }
     }
 
-    Rcpp::RObject output = beachmat::as_gCMatrix<V>(mat, store);
-    output.slot("i") = newi;
-    return output;
+    return beachmat::as_gCMatrix<V>(ptr->get_nrow(), ptr->get_ncol(), store); 
 }
 
 // [[Rcpp::export(rng=false)]]

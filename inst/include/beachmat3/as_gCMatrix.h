@@ -27,6 +27,7 @@ namespace beachmat {
 template <class V>
 inline Rcpp::S4 generate_gCMatrix () { // could also use = delete here.
     static_assert(sizeof(V)==0, "unsupported specialization of generate_gCMatrix");
+    return Rcpp::S4("lgCMatrix");
 }
 
 template <>
@@ -66,7 +67,7 @@ inline Rcpp::RObject as_gCMatrix (int nr, int nc, const std::map<std::pair<int, 
     auto hIt = holder.begin();
     int counter = 0;
     for (int c = 1; c <= nc; ++c) {
-        while (hIt != holder.end() && (hIt->first).first <= c) {
+        while (hIt != holder.end() && (hIt->first).first < c) {
             ++hIt;
             ++counter;
         }

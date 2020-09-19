@@ -36,25 +36,18 @@ Rcpp::RObject get_sparse_column_slice(Rcpp::RObject mat, Rcpp::IntegerVector ord
 template <class V, typename T = typename V::stored_type>
 Rcpp::RObject get_sparse_column0(Rcpp::RObject mat, Rcpp::IntegerVector order) {
     auto ptr = beachmat::read_lin_sparse_block(mat);
+    std::map<std::pair<int, int>, T> store;
     std::vector<int> work_i(ptr->get_nrow());
     std::vector<T> work_x(ptr->get_nrow());
 
-    V store(ptr->get_nnzero());
-    auto sIt = store.begin();
-    Rcpp::IntegerVector newi(ptr->get_nnzero());
-    auto iIt = newi.begin();
-
     for (auto o : order) {
         auto stuff = ptr->get_col(o, work_x.data(), work_i.data());
-        for (size_t j = 0; j < stuff.n; ++j, ++sIt, ++iIt) {
-            *iIt = stuff.i[j];
-            *sIt = stuff.x[j];
+        for (size_t j = 0; j < stuff.n; ++j) {
+            store[std::make_pair(o, stuff.i[j])] = stuff.x[j];
         }
     }
 
-    Rcpp::RObject output = beachmat::as_gCMatrix<V>(mat, store);
-    output.slot("i") = newi;
-    return output;
+    return beachmat::as_gCMatrix<V>(ptr->get_nrow(), ptr->get_ncol(), store); 
 }
 
 // [[Rcpp::export(rng=false)]]

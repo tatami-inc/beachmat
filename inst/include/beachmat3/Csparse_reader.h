@@ -237,7 +237,7 @@ public:
         for (size_t c = first; c < last; ++c, ++pIt) { 
             const int& idex = indices[c];
             if (idex != *pIt && static_cast<size_t>(i[idex]) == r) { 
-                work_i[counter] = i[idex];
+                work_i[counter] = c;
                 *(work_x + counter) = *(x + idex);
                 ++counter;
             }
