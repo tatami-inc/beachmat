@@ -61,32 +61,41 @@ inline Rcpp::RObject as_gCMatrix (int nr, int nc, const std::map<std::pair<int, 
     auto mat = generate_gCMatrix<V>();
     mat.slot("Dim") = Rcpp::IntegerVector::create(nr, nc);
 
-    // Setting the 'p' vector.
+    size_t total_size = holder.size();
+    Rcpp::IntegerVector i(total_size);
+    V x(total_size);
     Rcpp::IntegerVector p(nc + 1, 0);
 
+    auto xIt=x.begin();
+    auto iIt=i.begin();
     auto hIt = holder.begin();
+
     int counter = 0;
     for (int c = 1; c <= nc; ++c) {
         while (hIt != holder.end() && (hIt->first).first < c) {
+            (*xIt) = (hIt->second);
+            (*iIt) = (hIt->first).second;
+
+            if (*iIt >= nr || *iIt < 0) {
+                throw std::runtime_error("entries in 'holder' refer to out-of-range rows");
+            }
+            if ((hIt->first).first < 0) {
+                throw std::runtime_error("entries in 'holder' refer to out-of-range columns");
+            }
+
+            ++xIt;
+            ++iIt;
             ++hIt;
             ++counter;
         }
         p[c] = counter;
     }
-    mat.slot("p")=p;
-
-    // Setting 'i' and 'x'.
-    size_t total_size = holder.size();
-    Rcpp::IntegerVector i(total_size);
-    V x(total_size);
-
-    auto xIt=x.begin();
-    auto iIt=i.begin();
-    for (auto hIt = holder.begin(); hIt != holder.end(); ++hIt, ++xIt, ++iIt) {
-        (*xIt) = (hIt->second);
-        (*iIt) = (hIt->first).second;
+    
+    if (static_cast<size_t>(counter) != holder.size()) {
+        throw std::runtime_error("entries in 'holder' refer to out-of-range columns");
     }
 
+    mat.slot("p")=p;
     mat.slot("i")=i;
     mat.slot("x")=x;
 
@@ -110,12 +119,20 @@ inline Rcpp::RObject as_gCMatrix (int nr, int nc, const std::map<std::pair<int, 
  */
 template <class V>
 inline Rcpp::RObject as_gCMatrix (Rcpp::RObject old, V x) {
+    // Needs to be regenerated from scratch in case of a type conversion.
     auto mat = generate_gCMatrix<V>();
 
-    mat.slot("Dim") = get_safe_slot(old, "Dim");
-    mat.slot("p") = get_safe_slot(old, "p");
-    mat.slot("i") = get_safe_slot(old, "i");
+    mat.slot("Dim") = old.slot("Dim");
+    mat.slot("p") = old.slot("p");
+    Rcpp::IntegerVector oldi = old.slot("i");
+    mat.slot("i") = oldi;
+
+    if (x.size() != oldi.size()) {
+        throw std::runtime_error("inconsistent number of non-zero entries");
+    }
     mat.slot("x") = x;
+
+
     return SEXP(mat);
 }
 

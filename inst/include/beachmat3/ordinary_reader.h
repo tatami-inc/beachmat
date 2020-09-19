@@ -16,20 +16,8 @@ public:
     ordinary_reader(ordinary_reader&&) = default;
     ordinary_reader& operator=(ordinary_reader&&) = default;
 
-    ordinary_reader(Rcpp::RObject input) {
-        if (!input.hasAttribute("dim")) { 
-            throw std::runtime_error("matrix object should have 'dim' attribute"); 
-        }
-        this->fill_dims(input.attr("dim"));
-        const size_t& NC=this->ncol; 
-
-        if (input.sexp_type()!=mat.sexp_type()) { 
-            throw std::runtime_error(std::string("matrix should be ") + translate_type(mat.sexp_type()));
-        }
-        mat=input;
-        if (static_cast<size_t>(mat.size())!=(this->nrow)*NC) {
-            throw std::runtime_error("length of matrix is inconsistent with its dimensions"); 
-        }
+    ordinary_reader(Rcpp::RObject input) : mat(input) {
+        this->fill_dims(input.attr("dim")); // consistency between 'dim' and mat.size() is guaranteed by R.
         return;
     }
 

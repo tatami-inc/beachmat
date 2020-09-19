@@ -29,7 +29,7 @@ std::unique_ptr<M> read_lin_sparse_block_raw (Rcpp::RObject block) {
     std::string ctype=get_class_name(block);
 
     if (ctype == "SparseArraySeed") {
-        Rcpp::RObject nzdata=get_safe_slot(block, "nzdata");
+        Rcpp::RObject nzdata=block.slot("nzdata");
         auto sexptype = nzdata.sexp_type();
         
         if (sexptype == INTSXP) {

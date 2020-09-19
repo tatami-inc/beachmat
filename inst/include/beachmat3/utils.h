@@ -95,23 +95,6 @@ inline std::pair<std::string, std::string> get_class_package(const Rcpp::RObject
     return std::make_pair(make_to_string(classname), extract_class_package(classname));
 }
 
-/** 
- * @internal
- *
- * Safely extract the contents of a slot from a class, throwing a sensible error if that slot is not available.
- *
- * @param incoming An R object, expected to be an instance of an S4 class.
- * @param slotname The name of the slot to extract.
- *
- * @return An R object corresponding to the contents of the slot.
- */
-inline Rcpp::RObject get_safe_slot(const Rcpp::RObject& incoming, const std::string& slotname) {
-    if (!incoming.hasSlot(slotname)) { 
-        throw std::runtime_error(std::string("no '") + slotname + "' slot in the " + get_class_name(incoming) + " object");
-    }
-    return incoming.slot(slotname);
-}
-
 /**
  * @internal
  * 
