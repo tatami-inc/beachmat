@@ -2,8 +2,11 @@ SPAWN <- function(nr, nc, mode) {
     mat <- Matrix::rsparsematrix(nr, nc, density=0.3)
 
     if (mode!=1L) {
-        if (mode==0L) mat <- mat != 0
-        list(
+        if (mode==0L) {
+            mat <- mat != 0
+        }
+
+        output <- list(
             as.matrix(mat),
             mat,
             as(mat, "SparseArraySeed")
@@ -18,8 +21,18 @@ SPAWN <- function(nr, nc, mode) {
 
         storage.mode(output[[1]]) <- "integer"
         storage.mode(output[[2]]@nzdata) <- "integer"
-        output
     }
+
+    # Testing a scrambled version of the SparseArraySeed.
+    n <- length(output)
+    sas <- output[[n]]
+    shuffle <- sample(length(sas@nzdata))
+    sas@nzdata <- sas@nzdata[shuffle]
+    sas@nzindex <- sas@nzindex[shuffle,,drop=FALSE]
+    output[[n + 1L]] <- sas
+
+    output
+
 }
 
 CONVERT <- function(x, mode) {
