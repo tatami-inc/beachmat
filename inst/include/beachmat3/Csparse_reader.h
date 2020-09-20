@@ -406,9 +406,11 @@ public:
                 }
             }
 
-            if (*iIt < 0 || static_cast<size_t>(*iIt) >= NR) {
-                auto ctype = get_class_name(mat);
-                throw std::runtime_error(std::string("'i' slot in a ") + ctype + " object should have entries in [0, nrow)");
+            if (right >= left) {
+                if (*iIt < 0 || static_cast<size_t>(*iIt) >= NR) {
+                    auto ctype = get_class_name(mat);
+                    throw std::runtime_error(std::string("'i' slot in a ") + ctype + " object should have entries in [0, nrow)");
+                }
             }
         }
 
