@@ -16,7 +16,10 @@ jobs:
     - name: Merging with master
       run: |
         git fetch --all
-        git merge master
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git merge origin/master
+        git push
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@v1.1.0
       with:
