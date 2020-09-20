@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 2.5.2
-Date: 2020-09-11
+Version: 2.5.3
+Date: 2020-09-19
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
@@ -16,7 +16,8 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
-    devtools
+    devtools,
+    BiocParallel
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for reading from and 
         writing data to a variety of commonly used matrix types. Ordinary 
