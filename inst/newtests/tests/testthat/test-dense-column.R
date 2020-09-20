@@ -1,7 +1,6 @@
 # This tests the LIN block reader.
 # library(testthat); library(morebeachtests); source("setup.R"); source("test-dense-column.R")
 
-library(DelayedArray)
 set.seed(10000)
 
 test_that("dense matrix column reads are done correctly", {

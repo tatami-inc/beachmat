@@ -1,3 +1,6 @@
+library(DelayedArray)
+library(Matrix)
+
 SPAWN <- function(nr, nc, mode) {
     mat <- Matrix::rsparsematrix(nr, nc, density=0.3)
 

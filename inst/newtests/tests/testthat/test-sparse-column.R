@@ -1,8 +1,6 @@
 # This tests the LIN block reader.
 # library(testthat); library(morebeachtests); source("setup.R"); source("test-sparse-column.R")
 
-library(DelayedArray)
-library(Matrix)
 set.seed(10000)
 
 test_that("sparse matrix column reads are done correctly", {
