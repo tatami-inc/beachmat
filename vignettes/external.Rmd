@@ -6,7 +6,7 @@ output:
   BiocStyle::html_document:
     toc_float: yes
 vignette: >
-  %\VignetteIndexEntry{4. Supporting arbitrary matrix classes}
+  %\VignetteIndexEntry{4. Supporting arbitrary matrix classes (v2)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
@@ -17,6 +17,10 @@ opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 ```
 
 # Background
+
+**Note: this document refers to version 2 of the `r Biocpkg("beachmat")` API,
+which is still supported but no longer under active development.
+Developers writing new code are encouraged to use version 3, which is much more streamlined.**
 
 Ordinarily, direct support for a matrix representation would require the appropriate methods to be defined in `r Biocpkg("beachmat")` at compile time.
 This is the case for the most widely used matrix classes but is somewhat restrictive for other community-contributed matrix representations. 

@@ -6,7 +6,7 @@ output:
   BiocStyle::html_document:
     toc_float: yes
 vignette: >
-  %\VignetteIndexEntry{2. Reading data from R matrices in C++}
+  %\VignetteIndexEntry{2. Reading data from R matrices in C++ (v2)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
@@ -17,6 +17,10 @@ opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 ```
 
 # Overview of the input API
+
+**Note: this document refers to version 2 of the `r Biocpkg("beachmat")` API,
+which is still supported but no longer under active development.
+Developers writing new code are encouraged to use version 3, which is much more streamlined.**
 
 This document describes the use of the `r Biocpkg("beachmat")` API for accessing data in R matrices.
 We will demonstrate the API on numeric matrices, though same semantics are used for matrices of other types (e.g., logical, integer, character).
