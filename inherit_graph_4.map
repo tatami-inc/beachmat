@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classbeachmat_1_1lin__matrix.html" title="Virtual base class for a logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="5,46,145,73"/>
+<area shape="rect" id="node2" href="$classbeachmat_1_1lin__ordinary__matrix.html" title="Logical, integer or numeric matrices in the &quot;ordinary&quot; R format, i.e., column&#45;major dense arrays." alt="" coords="193,5,344,47"/>
+<area shape="rect" id="node3" href="$classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="197,71,341,112"/>
+<area shape="rect" id="node4" href="$classbeachmat_1_1gCMatrix.html" title="Sparse logical or numeric matrices in the lgCMatrix or dgCMatrix format, respectively,..." alt="" coords="412,37,548,79"/>
+<area shape="rect" id="node5" href="$classbeachmat_1_1lin__SparseArraySeed.html" title="Sparse integer, logical or numeric matrices in the SparseArraySeed format from the DelayedArray packa..." alt="" coords="392,103,568,144"/>
+</map>

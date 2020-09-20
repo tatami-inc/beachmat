@@ -1,0 +1,5 @@
+<map id="beachmat::lin_SparseArraySeed&lt; V, TIT &gt;" name="beachmat::lin_SparseArraySeed&lt; V, TIT &gt;">
+<area shape="rect" id="node1" title="Sparse integer, logical or numeric matrices in the SparseArraySeed format from the DelayedArray packa..." alt="" coords="5,169,181,211"/>
+<area shape="rect" id="node2" href="$classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="21,80,165,121"/>
+<area shape="rect" id="node3" href="$classbeachmat_1_1lin__matrix.html" title="Virtual base class for a logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="23,5,163,32"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="beachmat::lin_matrix" name="beachmat::lin_matrix">
+<area shape="rect" id="node1" title="Virtual base class for a logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="96,5,236,32"/>
+<area shape="rect" id="node2" href="$classbeachmat_1_1lin__ordinary__matrix.html" title="Logical, integer or numeric matrices in the &quot;ordinary&quot; R format, i.e., column&#45;major dense arrays." alt="" coords="5,80,156,121"/>
+<area shape="rect" id="node3" href="$classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="181,80,325,121"/>
+<area shape="rect" id="node4" href="$classbeachmat_1_1gCMatrix.html" title="Sparse logical or numeric matrices in the lgCMatrix or dgCMatrix format, respectively,..." alt="" coords="94,169,230,211"/>
+<area shape="rect" id="node5" href="$classbeachmat_1_1lin__SparseArraySeed.html" title="Sparse integer, logical or numeric matrices in the SparseArraySeed format from the DelayedArray packa..." alt="" coords="254,169,430,211"/>
+</map>
