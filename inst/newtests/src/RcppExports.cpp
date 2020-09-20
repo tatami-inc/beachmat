@@ -5,6 +5,26 @@
 
 using namespace Rcpp;
 
+// test_clone
+Rcpp::NumericVector test_clone(Rcpp::RObject mat);
+RcppExport SEXP _morebeachtests_test_clone(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_clone(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_clone_sparse
+Rcpp::NumericVector test_clone_sparse(Rcpp::RObject mat);
+RcppExport SEXP _morebeachtests_test_clone_sparse(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_clone_sparse(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_sparse_writer1
 Rcpp::RObject test_sparse_writer1(int type);
 RcppExport SEXP _morebeachtests_test_sparse_writer1(SEXP typeSEXP) {
@@ -130,8 +150,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_promotion
+Rcpp::NumericVector test_promotion(Rcpp::RObject mat);
+RcppExport SEXP _morebeachtests_test_promotion(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_promotion(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_morebeachtests_test_clone", (DL_FUNC) &_morebeachtests_test_clone, 1},
+    {"_morebeachtests_test_clone_sparse", (DL_FUNC) &_morebeachtests_test_clone_sparse, 1},
     {"_morebeachtests_test_sparse_writer1", (DL_FUNC) &_morebeachtests_test_sparse_writer1, 1},
     {"_morebeachtests_test_sparse_writer2", (DL_FUNC) &_morebeachtests_test_sparse_writer2, 2},
     {"_morebeachtests_get_column_slice", (DL_FUNC) &_morebeachtests_get_column_slice, 5},
@@ -142,6 +174,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_morebeachtests_get_sparse_column", (DL_FUNC) &_morebeachtests_get_sparse_column, 3},
     {"_morebeachtests_get_sparse_row_slice", (DL_FUNC) &_morebeachtests_get_sparse_row_slice, 5},
     {"_morebeachtests_get_sparse_row", (DL_FUNC) &_morebeachtests_get_sparse_row, 3},
+    {"_morebeachtests_test_promotion", (DL_FUNC) &_morebeachtests_test_promotion, 1},
     {NULL, NULL, 0}
 };
 

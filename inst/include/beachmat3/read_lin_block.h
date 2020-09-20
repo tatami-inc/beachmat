@@ -101,6 +101,29 @@ inline std::unique_ptr<lin_sparse_matrix> read_lin_sparse_block(Rcpp::RObject bl
     throw std::runtime_error(ctype + std::string(" is not a recognized sparse representation"));
 }
 
+/**
+ * Promote an existing pointer to a `lin_matrix` into a pointer to a `lin_sparse_matrix`.
+ * This allows the code to switch between dense/sparse processing based on the observed class.
+ *
+ * @param ptr A pointer to a `lin_matrix`, typically produced by `read_lin_block()`.
+ * Note that this will no longer be valid upon successful return of this function.
+ *
+ * @return A pointer to a `lin_sparse_matrix` instance.
+ * This function will throw an error if promotion cannot be achieved.
+ */
+inline std::unique_ptr<lin_sparse_matrix> promote_to_sparse(std::unique_ptr<lin_matrix>& ptr) {
+    lin_sparse_matrix* tmp = dynamic_cast<lin_sparse_matrix*>(ptr.get());
+    if (tmp == NULL) {
+        throw std::runtime_error("cannot promote this matrix to sparse");
+    }
+
+    std::unique_ptr<lin_sparse_matrix> newptr;
+    ptr.release();
+    newptr.reset(tmp);
+
+    return newptr;
+}
+
 }
 
 #endif
