@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -70,25 +69,28 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;Rcpp.h&quot;</code><br />
-<code>#include &quot;ordinary_reader.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="ordinary__reader_8h_source.html">ordinary_reader.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="Csparse__reader_8h_source.html">Csparse_reader.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="utils_8h_source.html">utils.h</a>&quot;</code><br />
+<code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for lin_matrix.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="lin__matrix_8h__incl.png" border="0" usemap="#alin__matrix_8h" alt=""/></div>
 <map name="lin__matrix_8h" id="alin__matrix_8h">
-<area shape="rect" title=" " alt="" coords="121,5,207,32"/>
-<area shape="rect" title=" " alt="" coords="7,229,70,256"/>
-<area shape="rect" href="ordinary__reader_8h_source.html" title=" " alt="" coords="56,80,176,107"/>
-<area shape="rect" href="utils_8h.html" title=" " alt="" coords="207,155,263,181"/>
-<area shape="rect" href="Csparse__reader_8h.html" title=" " alt="" coords="251,80,373,107"/>
-<area shape="rect" href="dim__checker_8h_source.html" title=" " alt="" coords="76,155,183,181"/>
-<area shape="rect" title=" " alt="" coords="150,229,229,256"/>
-<area shape="rect" title=" " alt="" coords="417,229,471,256"/>
-<area shape="rect" title=" " alt="" coords="253,229,305,256"/>
-<area shape="rect" title=" " alt="" coords="337,155,412,181"/>
-<area shape="rect" title=" " alt="" coords="436,155,495,181"/>
+<area shape="rect" title=" " alt="" coords="231,5,318,32"/>
+<area shape="rect" title=" " alt="" coords="6,229,68,256"/>
+<area shape="rect" href="ordinary__reader_8h.html" title=" " alt="" coords="68,80,188,107"/>
+<area shape="rect" href="utils_8h.html" title=" " alt="" coords="205,155,261,181"/>
+<area shape="rect" href="Csparse__reader_8h.html" title=" " alt="" coords="262,80,385,107"/>
+<area shape="rect" title=" " alt="" coords="469,155,544,181"/>
+<area shape="rect" title=" " alt="" coords="460,80,528,107"/>
+<area shape="rect" href="dim__checker_8h.html" title=" " alt="" coords="74,155,181,181"/>
+<area shape="rect" title=" " alt="" coords="135,229,214,256"/>
+<area shape="rect" title=" " alt="" coords="374,229,428,256"/>
+<area shape="rect" title=" " alt="" coords="238,229,290,256"/>
+<area shape="rect" title=" " alt="" coords="336,155,394,181"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -107,10 +109,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1lin__matrix.html">beachmat::lin_matrix</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual base class for a logical, integer or numeric (i.e., double-precision) matrix, providing methods to extract rows or columns in dense form.  <a href="classbeachmat_1_1lin__matrix.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual base class for a logical, integer or numeric (i.e., double-precision) matrix,.  <a href="classbeachmat_1_1lin__matrix.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1lin__sparse__matrix.html">beachmat::lin_sparse_matrix</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix, providing methods to extract rows or columns in dense or sparse form.  <a href="classbeachmat_1_1lin__sparse__matrix.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix.  <a href="classbeachmat_1_1lin__sparse__matrix.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1lin__ordinary__matrix.html">beachmat::lin_ordinary_matrix&lt; V &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logical, integer or numeric matrices in the "ordinary" R format, i.e., column-major dense arrays.  <a href="classbeachmat_1_1lin__ordinary__matrix.html#details">More...</a><br /></td></tr>

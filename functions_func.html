@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -65,12 +64,31 @@ $(function() {
 &#160;
 
 <h3><a id="index_c"></a>- c -</h3><ul>
+<li>check_colargs()
+: <a class="el" href="classbeachmat_1_1dim__checker.html#a3874067ec13e7936921d00958d14755f">beachmat::dim_checker</a>
+</li>
+<li>check_dimension()
+: <a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">beachmat::dim_checker</a>
+</li>
+<li>check_rowargs()
+: <a class="el" href="classbeachmat_1_1dim__checker.html#a26ea8b66221d95eb14810088772ea0c2">beachmat::dim_checker</a>
+</li>
+<li>check_subset()
+: <a class="el" href="classbeachmat_1_1dim__checker.html#ab0c802c96811cba7ecdbc42f73401bfb">beachmat::dim_checker</a>
+</li>
 <li>clone()
 : <a class="el" href="classbeachmat_1_1lin__matrix.html#a61ff60d4a1559f293458e0ba1dea5350">beachmat::lin_matrix</a>
 , <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#a8d9cfe966957c1271e9a4e1accd0b55d">beachmat::lin_sparse_matrix</a>
 </li>
 <li>Csparse_core()
 : <a class="el" href="classbeachmat_1_1Csparse__core.html#a788ace13a68373c34a3ec8df49ef4ae3">beachmat::Csparse_core&lt; TIT, I, P &gt;</a>
+</li>
+</ul>
+
+
+<h3><a id="index_f"></a>- f -</h3><ul>
+<li>fill_dims()
+: <a class="el" href="classbeachmat_1_1dim__checker.html#aa4dbaf3d12557e3aac6af4f4d31e121c">beachmat::dim_checker</a>
 </li>
 </ul>
 
@@ -84,16 +102,18 @@ $(function() {
 </li>
 <li>get_col()
 : <a class="el" href="classbeachmat_1_1Csparse__core.html#aa8b5dc13a07e4932fb966b5273b73a45">beachmat::Csparse_core&lt; TIT, I, P &gt;</a>
-, <a class="el" href="classbeachmat_1_1gCMatrix.html#add4a7ae44cdba9037606ffc0c8581db7">beachmat::gCMatrix&lt; V, TIT &gt;</a>
+, <a class="el" href="classbeachmat_1_1gCMatrix.html#a595f4c4ace4860ce1dea4d3d71abe894">beachmat::gCMatrix&lt; V, TIT &gt;</a>
 , <a class="el" href="classbeachmat_1_1gCMatrix__reader.html#a53a574ef37b878cee9004d51b80ce42b">beachmat::gCMatrix_reader&lt; V, TIT &gt;</a>
 , <a class="el" href="classbeachmat_1_1lin__matrix.html#a3c828d58c0b46b2f1bb4857cdf8d7439">beachmat::lin_matrix</a>
 , <a class="el" href="classbeachmat_1_1lin__ordinary__matrix.html#af220a092e1a875e0d32c6bea6e5adf2f">beachmat::lin_ordinary_matrix&lt; V &gt;</a>
 , <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#ae91d4077b2bf88454f9ae2cd657d7077">beachmat::lin_sparse_matrix</a>
 , <a class="el" href="classbeachmat_1_1lin__SparseArraySeed.html#ad09d13ec572cc193d7824d054014e9a7">beachmat::lin_SparseArraySeed&lt; V, TIT &gt;</a>
+, <a class="el" href="classbeachmat_1_1ordinary__reader.html#ae18c07b5c08164658d476834ace04732">beachmat::ordinary_reader&lt; V &gt;</a>
 , <a class="el" href="classbeachmat_1_1SparseArraySeed__reader.html#aa4a1be5edf269f07768df00e4933fc3e">beachmat::SparseArraySeed_reader&lt; V, TIT &gt;</a>
 </li>
 <li>get_ncol()
-: <a class="el" href="classbeachmat_1_1lin__matrix.html#afbe30e28d71b18a45b81f5e2da63137b">beachmat::lin_matrix</a>
+: <a class="el" href="classbeachmat_1_1dim__checker.html#a5b6017636a4f658d0a97d1d8dab62c6d">beachmat::dim_checker</a>
+, <a class="el" href="classbeachmat_1_1lin__matrix.html#afbe30e28d71b18a45b81f5e2da63137b">beachmat::lin_matrix</a>
 </li>
 <li>get_nnzero()
 : <a class="el" href="classbeachmat_1_1gCMatrix.html#a5933607d9d1946bbfc8249366103c119">beachmat::gCMatrix&lt; V, TIT &gt;</a>
@@ -103,17 +123,19 @@ $(function() {
 , <a class="el" href="classbeachmat_1_1SparseArraySeed__reader.html#a0a982728d06ff89b957c1e87e8c36c16">beachmat::SparseArraySeed_reader&lt; V, TIT &gt;</a>
 </li>
 <li>get_nrow()
-: <a class="el" href="classbeachmat_1_1lin__matrix.html#a6f57b2d41c18c862548f2258c496bfe4">beachmat::lin_matrix</a>
+: <a class="el" href="classbeachmat_1_1dim__checker.html#ab510ae024ef9443f31cb1dcde29ae354">beachmat::dim_checker</a>
+, <a class="el" href="classbeachmat_1_1lin__matrix.html#a6f57b2d41c18c862548f2258c496bfe4">beachmat::lin_matrix</a>
 </li>
 <li>get_row()
 : <a class="el" href="classbeachmat_1_1Csparse__core.html#afbc1c7ec360f5475cab34e8b0c5a4eb1">beachmat::Csparse_core&lt; TIT, I, P &gt;</a>
 , <a class="el" href="classbeachmat_1_1gCMatrix.html#ac650a572788acf4630a20ed74bd2cfac">beachmat::gCMatrix&lt; V, TIT &gt;</a>
-, <a class="el" href="classbeachmat_1_1gCMatrix__reader.html#a463d4ff4f23b50c11770c396a37906b6">beachmat::gCMatrix_reader&lt; V, TIT &gt;</a>
+, <a class="el" href="classbeachmat_1_1gCMatrix__reader.html#adeced81dd0a4cbab41fb7c769bdcd2d2">beachmat::gCMatrix_reader&lt; V, TIT &gt;</a>
 , <a class="el" href="classbeachmat_1_1lin__matrix.html#a986f35dd6a746f3079abd56e45e965fc">beachmat::lin_matrix</a>
-, <a class="el" href="classbeachmat_1_1lin__ordinary__matrix.html#a3e836a5e0143b99709383f4332af6acf">beachmat::lin_ordinary_matrix&lt; V &gt;</a>
+, <a class="el" href="classbeachmat_1_1lin__ordinary__matrix.html#a0c2278ebc4c6a7e5dabb516e9b0ba0d1">beachmat::lin_ordinary_matrix&lt; V &gt;</a>
 , <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#afc49b17ced0dc0ee260743522e5e1c42">beachmat::lin_sparse_matrix</a>
-, <a class="el" href="classbeachmat_1_1lin__SparseArraySeed.html#a28740c9294250b69cf833f17fe036e0f">beachmat::lin_SparseArraySeed&lt; V, TIT &gt;</a>
-, <a class="el" href="classbeachmat_1_1SparseArraySeed__reader.html#a9a63846240691cff35db109edb358149">beachmat::SparseArraySeed_reader&lt; V, TIT &gt;</a>
+, <a class="el" href="classbeachmat_1_1lin__SparseArraySeed.html#af1d8e28c560a42edd235ff5095719514">beachmat::lin_SparseArraySeed&lt; V, TIT &gt;</a>
+, <a class="el" href="classbeachmat_1_1ordinary__reader.html#a72d194afc0776b6f63452ac88732991b">beachmat::ordinary_reader&lt; V &gt;</a>
+, <a class="el" href="classbeachmat_1_1SparseArraySeed__reader.html#aa371d66b51ae469c8baa4a9871a729b0">beachmat::SparseArraySeed_reader&lt; V, TIT &gt;</a>
 </li>
 </ul>
 
@@ -138,6 +160,13 @@ $(function() {
 </li>
 <li>lin_SparseArraySeed()
 : <a class="el" href="classbeachmat_1_1lin__SparseArraySeed.html#a7a953ac9e3103fe626417d24091e98fc">beachmat::lin_SparseArraySeed&lt; V, TIT &gt;</a>
+</li>
+</ul>
+
+
+<h3><a id="index_o"></a>- o -</h3><ul>
+<li>ordinary_reader()
+: <a class="el" href="classbeachmat_1_1ordinary__reader.html#aebc7242274279f6236715a446dc2d8f5">beachmat::ordinary_reader&lt; V &gt;</a>
 </li>
 </ul>
 

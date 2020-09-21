@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -75,6 +74,9 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Sparse index container, holding the number of non-zero elements extracted from a single row/column along with pointers to arrays containing their indices and values.  
+ <a href="structbeachmat_1_1sparse__index.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="Csparse__reader_8h_source.html">Csparse_reader.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -95,7 +97,8 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><h3>template&lt;typename TIT, typename I&gt;<br />
 struct beachmat::sparse_index&lt; TIT, I &gt;</h3>
 
-<p>Sparse index container, holding the number of non-zero elements extracted from a single row/column along with pointers to their indices and values. For extracted rows, the indices refer to column positions, and vice versa for extracted columns.</p>
+<p>Sparse index container, holding the number of non-zero elements extracted from a single row/column along with pointers to arrays containing their indices and values. </p>
+<p>For extracted rows, the indices refer to column positions; for extracted columns, the indices refer to the row positions. In both cases, indices can be assumed to be zero-indexed and sorted.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">TIT</td><td>The type of the (<code>const</code>) random-access iterator pointing to the data values. </td></tr>
@@ -145,7 +148,7 @@ template&lt;typename TIT , typename I &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Constructor for the <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code>, setting its data members directly to the supplied values without too much fuss.</p>
+<p>Constructor for the <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code>, setting its data members directly to the supplied values without too much fuss.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">_n</td><td>See <code>n</code>. </td></tr>
@@ -171,7 +174,7 @@ template&lt;typename TIT , typename I &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Pointer to the set of indices of the non-zero values. This should be incrementable up to <code>n</code>. </p>
+<p>Pointer to an array of indices of the non-zero values. This should be incrementable up to <code>n</code>. </p>
 
 </div>
 </div>
@@ -205,7 +208,7 @@ template&lt;typename TIT , typename I &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Iterator pointing to the set of non-zero values. This should be incrementable up to <code>n</code>. </p>
+<p>Iterator to a sequence of non-zero values. This should be random-access and incrementable up to <code>n</code>. </p>
 
 </div>
 </div>

@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -70,7 +69,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;Rcpp.h&quot;</code><br />
-<code>#include &quot;dim_checker.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="dim__checker_8h_source.html">dim_checker.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="utils_8h_source.html">utils.h</a>&quot;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;stdexcept&gt;</code><br />
@@ -83,7 +82,7 @@ Include dependency graph for Csparse_reader.h:</div>
 <map name="Csparse__reader_8h" id="aCsparse__reader_8h">
 <area shape="rect" title=" " alt="" coords="172,5,294,32"/>
 <area shape="rect" title=" " alt="" coords="18,155,80,181"/>
-<area shape="rect" href="dim__checker_8h_source.html" title=" " alt="" coords="24,80,130,107"/>
+<area shape="rect" href="dim__checker_8h.html" title=" " alt="" coords="24,80,130,107"/>
 <area shape="rect" title=" " alt="" coords="104,155,183,181"/>
 <area shape="rect" href="utils_8h.html" title=" " alt="" coords="205,80,261,107"/>
 <area shape="rect" title=" " alt="" coords="283,155,338,181"/>
@@ -109,24 +108,92 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeachmat_1_1sparse__index.html">beachmat::sparse_index&lt; TIT, I &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sparse index container, holding the number of non-zero elements extracted from a single row/column along with pointers to arrays containing their indices and values.  <a href="structbeachmat_1_1sparse__index.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1Csparse__core.html">beachmat::Csparse_core&lt; TIT, I, P &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Core handler for data extraction from compressed sparse column (CSC) matrices.  <a href="classbeachmat_1_1Csparse__core.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1gCMatrix__reader.html">beachmat::gCMatrix_reader&lt; V, TIT &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type-agnostic reader for <code>*gCMatrix</code> R objects.  <a href="classbeachmat_1_1gCMatrix__reader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1SparseArraySeed__reader.html">beachmat::SparseArraySeed_reader&lt; V, TIT &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type-agnostic reader for <code>SparseArraySeed</code> R objects.  <a href="classbeachmat_1_1SparseArraySeed__reader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a27b76ad35af4f2ca15e7425de7db55a5"><td class="memTemplParams" colspan="2"><a id="a27b76ad35af4f2ca15e7425de7db55a5"></a>
-template&lt;typename OUT , typename TIT , typename ALT , typename I &gt; </td></tr>
-<tr class="memitem:a27b76ad35af4f2ca15e7425de7db55a5"><td class="memTemplItemLeft" align="right" valign="top">sparse_index&lt; OUT, int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>beachmat::transplant</b> (sparse_index&lt; TIT, I &gt; ref, ALT work_x, I *work_i)</td></tr>
+<tr class="memitem:a27b76ad35af4f2ca15e7425de7db55a5"><td class="memTemplParams" colspan="2">template&lt;typename OUT , typename TIT , typename ALT , typename I &gt; </td></tr>
+<tr class="memitem:a27b76ad35af4f2ca15e7425de7db55a5"><td class="memTemplItemLeft" align="right" valign="top">sparse_index&lt; OUT, int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="Csparse__reader_8h.html#a27b76ad35af4f2ca15e7425de7db55a5">beachmat::transplant</a> (sparse_index&lt; TIT, I &gt; ref, ALT work_x, I *work_i)</td></tr>
 <tr class="separator:a27b76ad35af4f2ca15e7425de7db55a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Internal utilities and class definitions for processing compressed sparse column matrix representations. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a27b76ad35af4f2ca15e7425de7db55a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27b76ad35af4f2ca15e7425de7db55a5">&#9670;&nbsp;</a></span>transplant()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OUT , typename TIT , typename ALT , typename I &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">sparse_index&lt;OUT, int&gt; beachmat::transplant </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a>&lt; TIT, I &gt;&#160;</td>
+          <td class="paramname"><em>ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ALT&#160;</td>
+          <td class="paramname"><em>work_x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">I *&#160;</td>
+          <td class="paramname"><em>work_i</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Transplant indices and values into their respective workspaces and use them to construct a new <code>sparse_index</code> object. This is necessary for type conversions between the stored and expected types of non-zero values.</p>
+<dl class="section note"><dt>Note</dt><dd>This is an internal function and should not be called directly by <b>beachmat</b> users.</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">OUT</td><td>Iterator to be stored in the new <code>sparse_index</code>. This should be the <code>const</code>-type counterpart to <code>ALT</code>. </td></tr>
+    <tr><td class="paramname">TIT</td><td><code>const</code> iterator of native type, i.e., equal to the original data values in the matrix. </td></tr>
+    <tr><td class="paramname">ALT</td><td>Non-<code>const</code> iterator to the workspace of the desired type. </td></tr>
+    <tr><td class="paramname">I</td><td>Integer type of the index.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ref</td><td><code>sparse_index</code> containing pointers from a column (usually) of a sparse representation. </td></tr>
+    <tr><td class="paramname">work_x</td><td>Pointer to the workspace for the data values, usually of a different type to that of the native representation. This should have space for at least <code>ref.n</code> values. </td></tr>
+    <tr><td class="paramname">work_i</td><td>Pointeger to the workspace for the indices of the non-zero values. This should have space for at least <code>ref.n</code> values.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code>sparse_index</code> containing iterators for <code>work_x</code> and <code>work_i</code>. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20

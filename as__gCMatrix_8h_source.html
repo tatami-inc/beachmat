@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -75,7 +74,7 @@ $(function() {
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">namespace </span>beachmat {</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V&gt;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">inline</span> Rcpp::S4 generate_gCMatrix () { <span class="comment">// could also use = delete here.</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="as__gCMatrix_8h.html#a52e933cae6fd9995b4d178a6d6edd48d">   28</a></span>&#160;<span class="keyword">inline</span> Rcpp::S4 <a class="code" href="as__gCMatrix_8h.html#a52e933cae6fd9995b4d178a6d6edd48d">generate_gCMatrix</a> () { <span class="comment">// could also use = delete here.</span></div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    static_assert(<span class="keyword">sizeof</span>(V)==0, <span class="stringliteral">&quot;unsupported specialization of generate_gCMatrix&quot;</span>);</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keywordflow">return</span> Rcpp::S4(<span class="stringliteral">&quot;lgCMatrix&quot;</span>);</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
@@ -90,76 +89,77 @@ $(function() {
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordflow">return</span> Rcpp::S4(<span class="stringliteral">&quot;dgCMatrix&quot;</span>);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;}</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V, <span class="keyword">typename</span> T = <span class="keyword">typename</span> V::stored_type&gt;</div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">   60</a></span>&#160;<span class="keyword">inline</span> Rcpp::RObject <a class="code" href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">as_gCMatrix</a> (<span class="keywordtype">int</span> nr, <span class="keywordtype">int</span> nc, <span class="keyword">const</span> std::map&lt;std::pair&lt;int, int&gt;, T&gt;&amp; holder) {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">auto</span> mat = generate_gCMatrix&lt;V&gt;();</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    mat.slot(<span class="stringliteral">&quot;Dim&quot;</span>) = Rcpp::IntegerVector::create(nr, nc);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">size_t</span> total_size = holder.size();</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    Rcpp::IntegerVector i(total_size);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    V x(total_size);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    Rcpp::IntegerVector p(nc + 1, 0);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">auto</span> xIt=x.begin();</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">auto</span> iIt=i.begin();</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">auto</span> hIt = holder.begin();</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">int</span> counter = 0;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> c = 1; c &lt;= nc; ++c) {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">while</span> (hIt != holder.end() &amp;&amp; (hIt-&gt;first).first &lt; c) {</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            (*xIt) = (hIt-&gt;second);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            (*iIt) = (hIt-&gt;first).second;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            <span class="keywordflow">if</span> (*iIt &gt;= nr || *iIt &lt; 0) {</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;entries in &#39;holder&#39; refer to out-of-range rows&quot;</span>);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            }</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            <span class="keywordflow">if</span> ((hIt-&gt;first).first &lt; 0) {</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;entries in &#39;holder&#39; refer to out-of-range columns&quot;</span>);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            ++xIt;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            ++iIt;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            ++hIt;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            ++counter;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        }</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        p[c] = counter;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordflow">if</span> (<span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(counter) != holder.size()) {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;entries in &#39;holder&#39; refer to out-of-range columns&quot;</span>);</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    }</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    mat.slot(<span class="stringliteral">&quot;p&quot;</span>)=p;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    mat.slot(<span class="stringliteral">&quot;i&quot;</span>)=i;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    mat.slot(<span class="stringliteral">&quot;x&quot;</span>)=x;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordflow">return</span> SEXP(mat);</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;}</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V&gt;</div>
-<div class="line"><a name="l00121"></a><span class="lineno"><a class="line" href="as__gCMatrix_8h.html#aca55ec28c0121491ff1b7636f08f690f">  121</a></span>&#160;<span class="keyword">inline</span> Rcpp::RObject <a class="code" href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">as_gCMatrix</a> (Rcpp::RObject old, V x) {</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="comment">// Needs to be regenerated from scratch in case of a type conversion.</span></div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keyword">auto</span> mat = generate_gCMatrix&lt;V&gt;();</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    mat.slot(<span class="stringliteral">&quot;Dim&quot;</span>) = old.slot(<span class="stringliteral">&quot;Dim&quot;</span>);</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    mat.slot(<span class="stringliteral">&quot;p&quot;</span>) = old.slot(<span class="stringliteral">&quot;p&quot;</span>);</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    Rcpp::IntegerVector oldi = old.slot(<span class="stringliteral">&quot;i&quot;</span>);</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    mat.slot(<span class="stringliteral">&quot;i&quot;</span>) = oldi;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="keywordflow">if</span> (x.size() != oldi.size()) {</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;inconsistent number of non-zero entries&quot;</span>);</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    }</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    mat.slot(<span class="stringliteral">&quot;x&quot;</span>) = x;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keywordflow">return</span> SEXP(mat);</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;}</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V, <span class="keyword">typename</span> T = <span class="keyword">typename</span> V::stored_type&gt;</div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">   61</a></span>&#160;<span class="keyword">inline</span> Rcpp::RObject <a class="code" href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">as_gCMatrix</a> (<span class="keywordtype">int</span> nr, <span class="keywordtype">int</span> nc, <span class="keyword">const</span> std::map&lt;std::pair&lt;int, int&gt;, T&gt;&amp; holder) {</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">auto</span> mat = generate_gCMatrix&lt;V&gt;();</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    mat.slot(<span class="stringliteral">&quot;Dim&quot;</span>) = Rcpp::IntegerVector::create(nr, nc);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">size_t</span> total_size = holder.size();</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    Rcpp::IntegerVector i(total_size);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    V x(total_size);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    Rcpp::IntegerVector p(nc + 1, 0);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">auto</span> xIt=x.begin();</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">auto</span> iIt=i.begin();</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">auto</span> hIt = holder.begin();</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">int</span> counter = 0;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> c = 1; c &lt;= nc; ++c) {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordflow">while</span> (hIt != holder.end() &amp;&amp; (hIt-&gt;first).first &lt; c) {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            (*xIt) = (hIt-&gt;second);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            (*iIt) = (hIt-&gt;first).second;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <span class="keywordflow">if</span> (*iIt &gt;= nr || *iIt &lt; 0) {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;entries in &#39;holder&#39; refer to out-of-range rows&quot;</span>);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <span class="keywordflow">if</span> ((hIt-&gt;first).first &lt; 0) {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;entries in &#39;holder&#39; refer to out-of-range columns&quot;</span>);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            }</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            ++xIt;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            ++iIt;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            ++hIt;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            ++counter;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        }</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        p[c] = counter;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    }</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordflow">if</span> (<span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(counter) != holder.size()) {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;entries in &#39;holder&#39; refer to out-of-range columns&quot;</span>);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    mat.slot(<span class="stringliteral">&quot;p&quot;</span>)=p;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    mat.slot(<span class="stringliteral">&quot;i&quot;</span>)=i;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    mat.slot(<span class="stringliteral">&quot;x&quot;</span>)=x;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordflow">return</span> SEXP(mat);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;}</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V&gt;</div>
+<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="as__gCMatrix_8h.html#aca55ec28c0121491ff1b7636f08f690f">  123</a></span>&#160;<span class="keyword">inline</span> Rcpp::RObject <a class="code" href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">as_gCMatrix</a> (Rcpp::RObject old, V x) {</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="comment">// Needs to be regenerated from scratch in case of a type conversion.</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keyword">auto</span> mat = generate_gCMatrix&lt;V&gt;();</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    mat.slot(<span class="stringliteral">&quot;Dim&quot;</span>) = old.slot(<span class="stringliteral">&quot;Dim&quot;</span>);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    mat.slot(<span class="stringliteral">&quot;p&quot;</span>) = old.slot(<span class="stringliteral">&quot;p&quot;</span>);</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    Rcpp::IntegerVector oldi = old.slot(<span class="stringliteral">&quot;i&quot;</span>);</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    mat.slot(<span class="stringliteral">&quot;i&quot;</span>) = oldi;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    <span class="keywordflow">if</span> (x.size() != oldi.size()) {</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;inconsistent number of non-zero entries&quot;</span>);</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    }</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    mat.slot(<span class="stringliteral">&quot;x&quot;</span>) = x;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160; </div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keywordflow">return</span> SEXP(mat);</div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;}</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;}</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aas__gCMatrix_8h_html_ae591fe85d1482287a00de9055f98a1f5"><div class="ttname"><a href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">beachmat::as_gCMatrix</a></div><div class="ttdeci">Rcpp::RObject as_gCMatrix(int nr, int nc, const std::map&lt; std::pair&lt; int, int &gt;, T &gt; &amp;holder)</div><div class="ttdef"><b>Definition:</b> as_gCMatrix.h:60</div></div>
+<div class="ttc" id="aas__gCMatrix_8h_html_ae591fe85d1482287a00de9055f98a1f5"><div class="ttname"><a href="as__gCMatrix_8h.html#ae591fe85d1482287a00de9055f98a1f5">beachmat::as_gCMatrix</a></div><div class="ttdeci">Rcpp::RObject as_gCMatrix(int nr, int nc, const std::map&lt; std::pair&lt; int, int &gt;, T &gt; &amp;holder)</div><div class="ttdef"><b>Definition:</b> as_gCMatrix.h:61</div></div>
+<div class="ttc" id="aas__gCMatrix_8h_html_a52e933cae6fd9995b4d178a6d6edd48d"><div class="ttname"><a href="as__gCMatrix_8h.html#a52e933cae6fd9995b4d178a6d6edd48d">beachmat::generate_gCMatrix</a></div><div class="ttdeci">Rcpp::S4 generate_gCMatrix()</div><div class="ttdef"><b>Definition:</b> as_gCMatrix.h:28</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20

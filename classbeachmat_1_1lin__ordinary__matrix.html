@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -168,6 +167,7 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ncol</b> =0</td></t
 class beachmat::lin_ordinary_matrix&lt; V &gt;</h3>
 
 <p>Logical, integer or numeric matrices in the "ordinary" R format, i.e., column-major dense arrays. </p>
+<p>It is unlikely that this class will be constructed directly by users; most applications will use <code><a class="el" href="read__lin__block_8h.html#a856a47172871c87892796f9d7fb5a2a4">read_lin_block()</a></code> instead.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">V</td><td>The class of the <code>Rcpp::Vector</code> holding the R-level data. </td></tr>
@@ -256,17 +256,17 @@ template&lt;class V &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a column as an array of doubles.</p>
+<p>Extract values from a column as an array of doubles, restricted to a contiguous subset of rows.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>Index of the column of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as doubles, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed if the return value compares equal to <code>work</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as doubles, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed iff the return value compares equal to <code>work</code>. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__matrix.html#a99195bf412a30ff241c8154abb53ffa2">beachmat::lin_matrix</a>.</p>
 
@@ -317,17 +317,17 @@ template&lt;class V &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a column as an array of integers.</p>
+<p>Extract values from a column as an array of integers, restricted to a contiguous subset of rows.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>Index of the column of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as integers, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed if the return value compares equal to <code>work</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as integers, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed iff the return value compares equal to <code>work</code>. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__matrix.html#a3c828d58c0b46b2f1bb4857cdf8d7439">beachmat::lin_matrix</a>.</p>
 
@@ -380,13 +380,13 @@ template&lt;class V &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a row as an array of doubles.</p>
+<p>Extract values from a row as an array of doubles, restricted to a contiguous subset of columns.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the row of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last column of interest.</td></tr>
   </table>
   </dd>
 </dl>
@@ -443,13 +443,13 @@ template&lt;class V &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a row as an array of integers.</p>
+<p>Extract values from a row as an array of integers, restricted to a contiguous subset of columns.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the row of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last column of interest.</td></tr>
   </table>
   </dd>
 </dl>

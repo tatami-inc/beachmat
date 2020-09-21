@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -94,9 +93,8 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a52e933cae6fd9995b4d178a6d6edd48d"><td class="memTemplParams" colspan="2"><a id="a52e933cae6fd9995b4d178a6d6edd48d"></a>
-template&lt;class V &gt; </td></tr>
-<tr class="memitem:a52e933cae6fd9995b4d178a6d6edd48d"><td class="memTemplItemLeft" align="right" valign="top">Rcpp::S4&#160;</td><td class="memTemplItemRight" valign="bottom"><b>beachmat::generate_gCMatrix</b> ()</td></tr>
+<tr class="memitem:a52e933cae6fd9995b4d178a6d6edd48d"><td class="memTemplParams" colspan="2">template&lt;class V &gt; </td></tr>
+<tr class="memitem:a52e933cae6fd9995b4d178a6d6edd48d"><td class="memTemplItemLeft" align="right" valign="top">Rcpp::S4&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="as__gCMatrix_8h.html#a52e933cae6fd9995b4d178a6d6edd48d">beachmat::generate_gCMatrix</a> ()</td></tr>
 <tr class="separator:a52e933cae6fd9995b4d178a6d6edd48d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f981fbcb8428831045b03ec000e5be6"><td class="memItemLeft" align="right" valign="top"><a id="a5f981fbcb8428831045b03ec000e5be6"></a>
 template&lt;&gt; </td></tr>
@@ -157,11 +155,11 @@ template&lt;class V , typename T  = typename V::stored_type&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create a <code>*gCMatrix</code> from a triplet map of non-zero entries. Best used when the number of non-zero entries is not known in advance.</p>
+<p>Create a <code>*gCMatrix</code> from a triplet-formatted store of non-zero entries. Best used when the number of non-zero entries is not known in advance.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">V</td><td>An <code>Rcpp::Vector</code> class. Only <code>Rcpp::NumericVector</code> and <code>Rcpp::LogicalVector</code> are supported. </td></tr>
-    <tr><td class="paramname">T</td><td>Type of data to be stored in the <code>V</code> class.</td></tr>
+    <tr><td class="paramname">V</td><td>An <code>Rcpp::Vector</code> class, to be used as the <code>x</code> slot in the output <code>*gCMatrix</code>. Only <code>Rcpp::NumericVector</code> and <code>Rcpp::LogicalVector</code> are supported. </td></tr>
+    <tr><td class="paramname">T</td><td>Type of data in the triplet store. It should be possible to cast this to the storage type of <code>V</code>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -169,7 +167,7 @@ template&lt;class V , typename T  = typename V::stored_type&gt; </div>
   <table class="params">
     <tr><td class="paramname">nr</td><td>Number of rows. </td></tr>
     <tr><td class="paramname">nc</td><td>Number of columns. </td></tr>
-    <tr><td class="paramname">holder</td><td>Triplet-formatted information for all non-zero entries. The key should contain the zero-based column index (first) and the zero-based row index (second). The value should contain the non-zero value itself.</td></tr>
+    <tr><td class="paramname">holder</td><td>Triplet-formatted information for all non-zero entries. The key should contain the zero-based <em>column</em> index (first) and the zero-based _row__index (second). The value should contain the non-zero value itself.</td></tr>
   </table>
   </dd>
 </dl>
@@ -212,22 +210,58 @@ template&lt;class V &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create a <code>*gCMatrix</code> containing modified values from an existing <code>*gCMatrix</code> in the same order.</p>
+<p>Create a <code>*gCMatrix</code> by modifying the non-zero values (but not their order or position) in an existing <code>*gCMatrix</code>.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">V</td><td>An <code>Rcpp::Vector</code> class. Only <code>Rcpp::NumericVector</code> and <code>Rcpp::LogicalVector</code> are supported. </td></tr>
-    <tr><td class="paramname">T</td><td>Type of data to be stored in the <code>V</code> class.</td></tr>
+    <tr><td class="paramname">V</td><td>An <code>Rcpp::Vector</code> class, to be used as the <code>x</code> slot in the output <code>*gCMatrix</code>. Only <code>Rcpp::NumericVector</code> and <code>Rcpp::LogicalVector</code> are supported. </td></tr>
+    <tr><td class="paramname">T</td><td>Type of data in the triplet store. It should be possible to cast this to the storage type of <code>V</code>.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">old</td><td>A <code>*gCMatrix</code> object. This need not be of a type corresponding to <code>V</code>. </td></tr>
-    <tr><td class="paramname">x</td><td>A vector of non-zero values to use to replace the existing <code>x</code> slot in <code>old</code>. This should correspond to the same positions and ordering of the non-zero values already in <code>old</code>.</td></tr>
+    <tr><td class="paramname">old</td><td>A <code>*gCMatrix</code> object. This does not need to be of a type corresponding to <code>V</code>. </td></tr>
+    <tr><td class="paramname">x</td><td>A vector of non-zero values to use to replace the existing <code>x</code> slot in <code>old</code>. The row index and column identity oeach value is assumed to be the same as the non-zero values already in <code>old</code>.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code>dgCMatrix</code> or <code>lgCMatrix</code> instance (depending on <code>V</code>) containing indexing information from <code>old</code> with the values in <code>x</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code>dgCMatrix</code> or <code>lgCMatrix</code> instance (depending on <code>V</code>) containing indexing information from <code>old</code> but updated with the non-zero values in <code>x</code>. </dd></dl>
+
+</div>
+</div>
+<a id="a52e933cae6fd9995b4d178a6d6edd48d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52e933cae6fd9995b4d178a6d6edd48d">&#9670;&nbsp;</a></span>generate_gCMatrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class V &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Rcpp::S4 beachmat::generate_gCMatrix </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Generate a <code>*gCMatrix</code> of the appropriate class for the specified <code>Rcpp::Vector</code> class in <code>V</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>This is an internal function and should not be called directly by <b>beachmat</b> users.</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">V</td><td>An <code>Rcpp::Vector</code> class. Currently only <code>Rcpp::NumericVector</code> and <code>Rcpp::LogicalVector</code> are supported.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An <code>Rcpp::S4</code> object of the appropriate <code>*gCMatrix</code> class for <code>V</code>, either <code>dgCMatrix</code> or <code>lgCMatrix</code> for double-precision and logical data, respectively. All other choices of <code>V</code> will trigger a compile-time error. </dd></dl>
 
 </div>
 </div>

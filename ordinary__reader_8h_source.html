@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -66,52 +65,59 @@ $(function() {
 <div class="title">ordinary_reader.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef BEACHMAT_ORDINARY_READER_H</span></div>
+<a href="ordinary__reader_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef BEACHMAT_ORDINARY_READER_H</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define BEACHMAT_ORDINARY_READER_H</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;Rcpp.h&quot;</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;dim_checker.h&quot;</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="utils_8h.html">utils.h</a>&quot;</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="keyword">namespace </span>beachmat {</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V&gt;</div>
-<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classbeachmat_1_1ordinary__reader.html">   11</a></span>&#160;<span class="keyword">class </span><a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a> : <span class="keyword">public</span> <a class="code" href="classbeachmat_1_1dim__checker.html">dim_checker</a> {</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    ~<a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>(<span class="keyword">const</span> <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>(<a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp; operator=(<a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>(Rcpp::RObject input) : mat(input) {</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        this-&gt;fill_dims(input.attr(<span class="stringliteral">&quot;dim&quot;</span>)); <span class="comment">// consistency between &#39;dim&#39; and mat.size() is guaranteed by R.</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    }</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keyword">typename</span> V::const_iterator get_col(<span class="keywordtype">size_t</span> c, <span class="keywordtype">size_t</span> first, <span class="keywordtype">size_t</span> last) {</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        this-&gt;check_colargs(c, first, last);</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        <span class="keywordflow">return</span> mat.begin() + (c * this-&gt;nrow) + first;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    }</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> Iter&gt;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keywordtype">void</span> get_row(<span class="keywordtype">size_t</span> r, Iter work, <span class="keywordtype">size_t</span> first, <span class="keywordtype">size_t</span> last) {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        this-&gt;check_rowargs(r, first, last);</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <span class="keyword">auto</span> src=mat.begin() + first * (this-&gt;nrow) + r;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> col=first; col&lt;last; ++col, src+=(this-&gt;nrow), ++work) { (*work)=(*src); }</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    V mat;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;};</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;}</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Rcpp.h&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="dim__checker_8h.html">dim_checker.h</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="utils_8h.html">utils.h</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">namespace </span>beachmat {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> V&gt;</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classbeachmat_1_1ordinary__reader.html">   26</a></span>&#160;<span class="keyword">class </span><a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a> : <span class="keyword">public</span> <a class="code" href="classbeachmat_1_1dim__checker.html">dim_checker</a> {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    ~<a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>(<span class="keyword">const</span> <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>(<a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp; operator=(<a class="code" href="classbeachmat_1_1ordinary__reader.html">ordinary_reader</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="classbeachmat_1_1ordinary__reader.html#aebc7242274279f6236715a446dc2d8f5">   39</a></span>&#160;    <a class="code" href="classbeachmat_1_1ordinary__reader.html#aebc7242274279f6236715a446dc2d8f5">ordinary_reader</a>(Rcpp::RObject input) : mat(input) {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        this-&gt;<a class="code" href="classbeachmat_1_1dim__checker.html#aa4dbaf3d12557e3aac6af4f4d31e121c">fill_dims</a>(input.attr(<span class="stringliteral">&quot;dim&quot;</span>)); <span class="comment">// consistency between &#39;dim&#39; and mat.size() is guaranteed by R.</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    }</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="classbeachmat_1_1ordinary__reader.html#ae18c07b5c08164658d476834ace04732">   54</a></span>&#160;    <span class="keyword">typename</span> V::const_iterator <a class="code" href="classbeachmat_1_1ordinary__reader.html#ae18c07b5c08164658d476834ace04732">get_col</a>(<span class="keywordtype">size_t</span> c, <span class="keywordtype">size_t</span> first, <span class="keywordtype">size_t</span> last) {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        this-&gt;<a class="code" href="classbeachmat_1_1dim__checker.html#a3874067ec13e7936921d00958d14755f">check_colargs</a>(c, first, last);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keywordflow">return</span> mat.begin() + (c * this-&gt;nrow) + first;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> Iter&gt;</div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="classbeachmat_1_1ordinary__reader.html#a72d194afc0776b6f63452ac88732991b">   73</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classbeachmat_1_1ordinary__reader.html#a72d194afc0776b6f63452ac88732991b">get_row</a>(<span class="keywordtype">size_t</span> r, Iter work, <span class="keywordtype">size_t</span> first, <span class="keywordtype">size_t</span> last) {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        this-&gt;<a class="code" href="classbeachmat_1_1dim__checker.html#a26ea8b66221d95eb14810088772ea0c2">check_rowargs</a>(r, first, last);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keyword">auto</span> src=mat.begin() + first * (this-&gt;nrow) + r;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> col=first; col&lt;last; ++col, src+=(this-&gt;nrow), ++work) { (*work)=(*src); }</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    V mat;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;};</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassbeachmat_1_1ordinary__reader_html_ae18c07b5c08164658d476834ace04732"><div class="ttname"><a href="classbeachmat_1_1ordinary__reader.html#ae18c07b5c08164658d476834ace04732">beachmat::ordinary_reader::get_col</a></div><div class="ttdeci">V::const_iterator get_col(size_t c, size_t first, size_t last)</div><div class="ttdef"><b>Definition:</b> ordinary_reader.h:54</div></div>
+<div class="ttc" id="aclassbeachmat_1_1ordinary__reader_html_aebc7242274279f6236715a446dc2d8f5"><div class="ttname"><a href="classbeachmat_1_1ordinary__reader.html#aebc7242274279f6236715a446dc2d8f5">beachmat::ordinary_reader::ordinary_reader</a></div><div class="ttdeci">ordinary_reader(Rcpp::RObject input)</div><div class="ttdef"><b>Definition:</b> ordinary_reader.h:39</div></div>
 <div class="ttc" id="autils_8h_html"><div class="ttname"><a href="utils_8h.html">utils.h</a></div></div>
-<div class="ttc" id="aclassbeachmat_1_1dim__checker_html"><div class="ttname"><a href="classbeachmat_1_1dim__checker.html">beachmat::dim_checker</a></div><div class="ttdef"><b>Definition:</b> dim_checker.h:9</div></div>
-<div class="ttc" id="aclassbeachmat_1_1ordinary__reader_html"><div class="ttname"><a href="classbeachmat_1_1ordinary__reader.html">beachmat::ordinary_reader</a></div><div class="ttdef"><b>Definition:</b> ordinary_reader.h:11</div></div>
+<div class="ttc" id="aclassbeachmat_1_1dim__checker_html_a3874067ec13e7936921d00958d14755f"><div class="ttname"><a href="classbeachmat_1_1dim__checker.html#a3874067ec13e7936921d00958d14755f">beachmat::dim_checker::check_colargs</a></div><div class="ttdeci">void check_colargs(size_t c) const</div><div class="ttdef"><b>Definition:</b> dim_checker.h:137</div></div>
+<div class="ttc" id="aclassbeachmat_1_1dim__checker_html_a26ea8b66221d95eb14810088772ea0c2"><div class="ttname"><a href="classbeachmat_1_1dim__checker.html#a26ea8b66221d95eb14810088772ea0c2">beachmat::dim_checker::check_rowargs</a></div><div class="ttdeci">void check_rowargs(size_t r) const</div><div class="ttdef"><b>Definition:</b> dim_checker.h:110</div></div>
+<div class="ttc" id="aclassbeachmat_1_1dim__checker_html_aa4dbaf3d12557e3aac6af4f4d31e121c"><div class="ttname"><a href="classbeachmat_1_1dim__checker.html#aa4dbaf3d12557e3aac6af4f4d31e121c">beachmat::dim_checker::fill_dims</a></div><div class="ttdeci">void fill_dims(Rcpp::RObject dims)</div><div class="ttdef"><b>Definition:</b> dim_checker.h:85</div></div>
+<div class="ttc" id="aclassbeachmat_1_1dim__checker_html"><div class="ttname"><a href="classbeachmat_1_1dim__checker.html">beachmat::dim_checker</a></div><div class="ttdoc">Base virtual class implementing dimensionality checks.</div><div class="ttdef"><b>Definition:</b> dim_checker.h:20</div></div>
+<div class="ttc" id="adim__checker_8h_html"><div class="ttname"><a href="dim__checker_8h.html">dim_checker.h</a></div></div>
+<div class="ttc" id="aclassbeachmat_1_1ordinary__reader_html_a72d194afc0776b6f63452ac88732991b"><div class="ttname"><a href="classbeachmat_1_1ordinary__reader.html#a72d194afc0776b6f63452ac88732991b">beachmat::ordinary_reader::get_row</a></div><div class="ttdeci">void get_row(size_t r, Iter work, size_t first, size_t last)</div><div class="ttdef"><b>Definition:</b> ordinary_reader.h:73</div></div>
+<div class="ttc" id="aclassbeachmat_1_1ordinary__reader_html"><div class="ttname"><a href="classbeachmat_1_1ordinary__reader.html">beachmat::ordinary_reader</a></div><div class="ttdoc">Type-agnostic reader for row/column data from an ordinary R matrix.</div><div class="ttdef"><b>Definition:</b> ordinary_reader.h:26</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20

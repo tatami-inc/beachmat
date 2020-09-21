@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['sparse_5findex_29',['sparse_index',['../structbeachmat_1_1sparse__index.html',1,'beachmat::sparse_index&lt; TIT, I &gt;'],['../structbeachmat_1_1sparse__index.html#a7b6878ae691657a1d60e5e6e358a0d07',1,'beachmat::sparse_index::sparse_index()']]],
-  ['sparsearrayseed_5freader_30',['SparseArraySeed_reader',['../classbeachmat_1_1SparseArraySeed__reader.html',1,'beachmat::SparseArraySeed_reader&lt; V, TIT &gt;'],['../classbeachmat_1_1SparseArraySeed__reader.html#ad1f1cf8cc2aeb7da83243b7803cba808',1,'beachmat::SparseArraySeed_reader::SparseArraySeed_reader()']]]
+  ['ordinary_5freader_36',['ordinary_reader',['../classbeachmat_1_1ordinary__reader.html',1,'beachmat::ordinary_reader&lt; V &gt;'],['../classbeachmat_1_1ordinary__reader.html#aebc7242274279f6236715a446dc2d8f5',1,'beachmat::ordinary_reader::ordinary_reader()']]],
+  ['ordinary_5freader_2eh_37',['ordinary_reader.h',['../ordinary__reader_8h.html',1,'']]]
 ];

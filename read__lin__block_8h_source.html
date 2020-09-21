@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -77,26 +76,26 @@ $(function() {
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">namespace </span>beachmat {</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> M&gt; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;std::unique_ptr&lt;M&gt; read_lin_sparse_block_raw (Rcpp::RObject block) {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    std::string ctype=get_class_name(block);</div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="read__lin__block_8h.html#a479ff26dfe99e3300bd5795f21b86b30">   28</a></span>&#160;std::unique_ptr&lt;M&gt; <a class="code" href="read__lin__block_8h.html#a479ff26dfe99e3300bd5795f21b86b30">read_lin_sparse_block_raw</a> (Rcpp::RObject block) {</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    std::string ctype=<a class="code" href="utils_8h.html#a54f91b74d86e7a76f79657929c03ba1c">get_class_name</a>(block);</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">if</span> (ctype == <span class="stringliteral">&quot;SparseArraySeed&quot;</span>) {</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        Rcpp::RObject nzdata=block.slot(<span class="stringliteral">&quot;nzdata&quot;</span>);</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keyword">auto</span> sexptype = nzdata.sexp_type();</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        </div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keywordflow">if</span> (sexptype == INTSXP) {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> integer_SparseArraySeed(block));</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> <a class="code" href="classbeachmat_1_1lin__SparseArraySeed.html">integer_SparseArraySeed</a>(block));</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (sexptype == REALSXP) {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> double_SparseArraySeed(block));</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> <a class="code" href="classbeachmat_1_1lin__SparseArraySeed.html">double_SparseArraySeed</a>(block));</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (sexptype == LGLSXP) {</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> logical_SparseArraySeed(block));</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> <a class="code" href="classbeachmat_1_1lin__SparseArraySeed.html">logical_SparseArraySeed</a>(block));</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        }</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ctype == <span class="stringliteral">&quot;lgCMatrix&quot;</span>) {</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> lgCMatrix(block));</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> <a class="code" href="classbeachmat_1_1gCMatrix.html">lgCMatrix</a>(block));</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ctype == <span class="stringliteral">&quot;dgCMatrix&quot;</span>) {</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> dgCMatrix(block));</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">return</span> std::unique_ptr&lt;M&gt;(<span class="keyword">new</span> <a class="code" href="classbeachmat_1_1gCMatrix.html">dgCMatrix</a>(block));</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    } </div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
@@ -131,7 +130,7 @@ $(function() {
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        }</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    }</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    std::string ctype=get_class_name(block);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    std::string ctype=<a class="code" href="utils_8h.html#a54f91b74d86e7a76f79657929c03ba1c">get_class_name</a>(block);</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordflow">throw</span> std::runtime_error(ctype + std::string(<span class="stringliteral">&quot; is not a recognized sparse representation&quot;</span>));</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;}</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
@@ -152,12 +151,16 @@ $(function() {
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclassbeachmat_1_1lin__ordinary__matrix_html"><div class="ttname"><a href="classbeachmat_1_1lin__ordinary__matrix.html">beachmat::lin_ordinary_matrix</a></div><div class="ttdoc">Logical, integer or numeric matrices in the &quot;ordinary&quot; R format, i.e., column-major dense arrays.</div><div class="ttdef"><b>Definition:</b> lin_matrix.h:354</div></div>
+<div class="ttc" id="aclassbeachmat_1_1lin__ordinary__matrix_html"><div class="ttname"><a href="classbeachmat_1_1lin__ordinary__matrix.html">beachmat::lin_ordinary_matrix</a></div><div class="ttdoc">Logical, integer or numeric matrices in the &quot;ordinary&quot; R format, i.e., column-major dense arrays.</div><div class="ttdef"><b>Definition:</b> lin_matrix.h:368</div></div>
 <div class="ttc" id="aread__lin__block_8h_html_a856a47172871c87892796f9d7fb5a2a4"><div class="ttname"><a href="read__lin__block_8h.html#a856a47172871c87892796f9d7fb5a2a4">beachmat::read_lin_block</a></div><div class="ttdeci">std::unique_ptr&lt; lin_matrix &gt; read_lin_block(Rcpp::RObject block)</div><div class="ttdef"><b>Definition:</b> read_lin_block.h:63</div></div>
+<div class="ttc" id="aclassbeachmat_1_1lin__SparseArraySeed_html"><div class="ttname"><a href="classbeachmat_1_1lin__SparseArraySeed.html">beachmat::lin_SparseArraySeed</a></div><div class="ttdoc">Sparse integer, logical or numeric matrices in the SparseArraySeed format from the DelayedArray packa...</div><div class="ttdef"><b>Definition:</b> lin_matrix.h:554</div></div>
+<div class="ttc" id="autils_8h_html_a54f91b74d86e7a76f79657929c03ba1c"><div class="ttname"><a href="utils_8h.html#a54f91b74d86e7a76f79657929c03ba1c">beachmat::get_class_name</a></div><div class="ttdeci">std::string get_class_name(const Rcpp::RObject &amp;incoming)</div><div class="ttdef"><b>Definition:</b> utils.h:64</div></div>
 <div class="ttc" id="aread__lin__block_8h_html_aeb93803734ec9eeb2be48ef56649d7af"><div class="ttname"><a href="read__lin__block_8h.html#aeb93803734ec9eeb2be48ef56649d7af">beachmat::promote_to_sparse</a></div><div class="ttdeci">std::unique_ptr&lt; lin_sparse_matrix &gt; promote_to_sparse(std::unique_ptr&lt; lin_matrix &gt; &amp;ptr)</div><div class="ttdef"><b>Definition:</b> read_lin_block.h:114</div></div>
+<div class="ttc" id="aread__lin__block_8h_html_a479ff26dfe99e3300bd5795f21b86b30"><div class="ttname"><a href="read__lin__block_8h.html#a479ff26dfe99e3300bd5795f21b86b30">beachmat::read_lin_sparse_block_raw</a></div><div class="ttdeci">std::unique_ptr&lt; M &gt; read_lin_sparse_block_raw(Rcpp::RObject block)</div><div class="ttdef"><b>Definition:</b> read_lin_block.h:28</div></div>
 <div class="ttc" id="aread__lin__block_8h_html_afd1a4d207780df54a856bb9a094b5be9"><div class="ttname"><a href="read__lin__block_8h.html#afd1a4d207780df54a856bb9a094b5be9">beachmat::read_lin_sparse_block</a></div><div class="ttdeci">std::unique_ptr&lt; lin_sparse_matrix &gt; read_lin_sparse_block(Rcpp::RObject block)</div><div class="ttdef"><b>Definition:</b> read_lin_block.h:92</div></div>
 <div class="ttc" id="alin__matrix_8h_html"><div class="ttname"><a href="lin__matrix_8h.html">lin_matrix.h</a></div></div>
-<div class="ttc" id="aclassbeachmat_1_1lin__sparse__matrix_html"><div class="ttname"><a href="classbeachmat_1_1lin__sparse__matrix.html">beachmat::lin_sparse_matrix</a></div><div class="ttdoc">Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix,...</div><div class="ttdef"><b>Definition:</b> lin_matrix.h:182</div></div>
+<div class="ttc" id="aclassbeachmat_1_1gCMatrix_html"><div class="ttname"><a href="classbeachmat_1_1gCMatrix.html">beachmat::gCMatrix</a></div><div class="ttdoc">Sparse logical or numeric matrices in the lgCMatrix or dgCMatrix format, respectively,...</div><div class="ttdef"><b>Definition:</b> lin_matrix.h:459</div></div>
+<div class="ttc" id="aclassbeachmat_1_1lin__sparse__matrix_html"><div class="ttname"><a href="classbeachmat_1_1lin__sparse__matrix.html">beachmat::lin_sparse_matrix</a></div><div class="ttdoc">Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix.</div><div class="ttdef"><b>Definition:</b> lin_matrix.h:189</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20

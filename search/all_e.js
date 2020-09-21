@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['x_33',['x',['../structbeachmat_1_1sparse__index.html#a9ea06b388bcb021d8a62f8021f6a25b7',1,'beachmat::sparse_index']]]
+  ['sparse_5findex_43',['sparse_index',['../structbeachmat_1_1sparse__index.html',1,'beachmat::sparse_index&lt; TIT, I &gt;'],['../structbeachmat_1_1sparse__index.html#a7b6878ae691657a1d60e5e6e358a0d07',1,'beachmat::sparse_index::sparse_index()']]],
+  ['sparsearrayseed_5freader_44',['SparseArraySeed_reader',['../classbeachmat_1_1SparseArraySeed__reader.html',1,'beachmat::SparseArraySeed_reader&lt; V, TIT &gt;'],['../classbeachmat_1_1SparseArraySeed__reader.html#ad1f1cf8cc2aeb7da83243b7803cba808',1,'beachmat::SparseArraySeed_reader::SparseArraySeed_reader()']]]
 ];

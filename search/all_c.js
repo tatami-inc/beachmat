@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['t_31',['T',['../classbeachmat_1_1Csparse__core.html#ad6045321433f40d731d26eea379fa843',1,'beachmat::Csparse_core']]]
+  ['promote_5fto_5fsparse_38',['promote_to_sparse',['../read__lin__block_8h.html#aeb93803734ec9eeb2be48ef56649d7af',1,'beachmat']]]
 ];

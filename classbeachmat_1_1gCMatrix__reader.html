@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -73,13 +72,18 @@ $(function() {
 <div class="title">beachmat::gCMatrix_reader&lt; V, TIT &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Type-agnostic reader for <code>*gCMatrix</code> R objects.  
+ <a href="classbeachmat_1_1gCMatrix__reader.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Csparse__reader_8h_source.html">Csparse_reader.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for beachmat::gCMatrix_reader&lt; V, TIT &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classbeachmat_1_1gCMatrix__reader__inherit__graph.png" border="0" usemap="#abeachmat_1_1gCMatrix__reader_3_01V_00_01TIT_01_4_inherit__map" alt="Inheritance graph"/></div>
 <map name="beachmat_1_1gCMatrix__reader_3_01V_00_01TIT_01_4_inherit__map" id="abeachmat_1_1gCMatrix__reader_3_01V_00_01TIT_01_4_inherit__map">
-<area shape="rect" title=" " alt="" coords="17,80,153,121"/>
-<area shape="rect" href="classbeachmat_1_1dim__checker.html" title=" " alt="" coords="5,5,164,32"/>
+<area shape="rect" title="Type&#45;agnostic reader for *gCMatrix R objects." alt="" coords="17,80,153,121"/>
+<area shape="rect" href="classbeachmat_1_1dim__checker.html" title="Base virtual class implementing dimensionality checks." alt="" coords="5,5,164,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
@@ -87,8 +91,8 @@ Collaboration diagram for beachmat::gCMatrix_reader&lt; V, TIT &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classbeachmat_1_1gCMatrix__reader__coll__graph.png" border="0" usemap="#abeachmat_1_1gCMatrix__reader_3_01V_00_01TIT_01_4_coll__map" alt="Collaboration graph"/></div>
 <map name="beachmat_1_1gCMatrix__reader_3_01V_00_01TIT_01_4_coll__map" id="abeachmat_1_1gCMatrix__reader_3_01V_00_01TIT_01_4_coll__map">
-<area shape="rect" title=" " alt="" coords="17,80,153,121"/>
-<area shape="rect" href="classbeachmat_1_1dim__checker.html" title=" " alt="" coords="5,5,164,32"/>
+<area shape="rect" title="Type&#45;agnostic reader for *gCMatrix R objects." alt="" coords="17,80,153,121"/>
+<area shape="rect" href="classbeachmat_1_1dim__checker.html" title="Base virtual class implementing dimensionality checks." alt="" coords="5,5,164,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -134,37 +138,28 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7e8e30ecfd4f62070dba773ca561bd1e inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a7e8e30ecfd4f62070dba773ca561bd1e"></a>
 <a class="el" href="classbeachmat_1_1dim__checker.html">dim_checker</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classbeachmat_1_1dim__checker.html">dim_checker</a> &amp;&amp;)=default</td></tr>
 <tr class="separator:a7e8e30ecfd4f62070dba773ca561bd1e inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab510ae024ef9443f31cb1dcde29ae354 inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="ab510ae024ef9443f31cb1dcde29ae354"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_nrow</b> () const</td></tr>
+<tr class="memitem:ab510ae024ef9443f31cb1dcde29ae354 inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#ab510ae024ef9443f31cb1dcde29ae354">get_nrow</a> () const</td></tr>
 <tr class="separator:ab510ae024ef9443f31cb1dcde29ae354 inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b6017636a4f658d0a97d1d8dab62c6d inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a5b6017636a4f658d0a97d1d8dab62c6d"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_ncol</b> () const</td></tr>
+<tr class="memitem:a5b6017636a4f658d0a97d1d8dab62c6d inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a5b6017636a4f658d0a97d1d8dab62c6d">get_ncol</a> () const</td></tr>
 <tr class="separator:a5b6017636a4f658d0a97d1d8dab62c6d inherit pub_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_static_methods_classbeachmat_1_1dim__checker"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_classbeachmat_1_1dim__checker')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classbeachmat_1_1dim__checker.html">beachmat::dim_checker</a></td></tr>
-<tr class="memitem:a64aed6bd16d0f83a658e018e34e6cae4 inherit pub_static_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a64aed6bd16d0f83a658e018e34e6cae4"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>check_dimension</b> (size_t i, size_t dim, const std::string &amp;msg)</td></tr>
+<tr class="memitem:a64aed6bd16d0f83a658e018e34e6cae4 inherit pub_static_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">check_dimension</a> (size_t i, size_t dim, const std::string &amp;msg)</td></tr>
 <tr class="separator:a64aed6bd16d0f83a658e018e34e6cae4 inherit pub_static_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0c802c96811cba7ecdbc42f73401bfb inherit pub_static_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="ab0c802c96811cba7ecdbc42f73401bfb"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>check_subset</b> (size_t first, size_t last, size_t dim, const std::string &amp;msg)</td></tr>
+<tr class="memitem:ab0c802c96811cba7ecdbc42f73401bfb inherit pub_static_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#ab0c802c96811cba7ecdbc42f73401bfb">check_subset</a> (size_t first, size_t last, size_t dim, const std::string &amp;msg)</td></tr>
 <tr class="separator:ab0c802c96811cba7ecdbc42f73401bfb inherit pub_static_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classbeachmat_1_1dim__checker"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classbeachmat_1_1dim__checker')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classbeachmat_1_1dim__checker.html">beachmat::dim_checker</a></td></tr>
-<tr class="memitem:aa4dbaf3d12557e3aac6af4f4d31e121c inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="aa4dbaf3d12557e3aac6af4f4d31e121c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>fill_dims</b> (Rcpp::RObject dims)</td></tr>
+<tr class="memitem:aa4dbaf3d12557e3aac6af4f4d31e121c inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#aa4dbaf3d12557e3aac6af4f4d31e121c">fill_dims</a> (Rcpp::RObject dims)</td></tr>
 <tr class="separator:aa4dbaf3d12557e3aac6af4f4d31e121c inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26ea8b66221d95eb14810088772ea0c2 inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a26ea8b66221d95eb14810088772ea0c2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_rowargs</b> (size_t r) const</td></tr>
+<tr class="memitem:a26ea8b66221d95eb14810088772ea0c2 inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a26ea8b66221d95eb14810088772ea0c2">check_rowargs</a> (size_t r) const</td></tr>
 <tr class="separator:a26ea8b66221d95eb14810088772ea0c2 inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a01bca7efbb190e83023e7bfefeefb6 inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a3a01bca7efbb190e83023e7bfefeefb6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_rowargs</b> (size_t r, size_t first, size_t last) const</td></tr>
+<tr class="memitem:a3a01bca7efbb190e83023e7bfefeefb6 inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a3a01bca7efbb190e83023e7bfefeefb6">check_rowargs</a> (size_t r, size_t first, size_t last) const</td></tr>
 <tr class="separator:a3a01bca7efbb190e83023e7bfefeefb6 inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3874067ec13e7936921d00958d14755f inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a3874067ec13e7936921d00958d14755f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_colargs</b> (size_t c) const</td></tr>
+<tr class="memitem:a3874067ec13e7936921d00958d14755f inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a3874067ec13e7936921d00958d14755f">check_colargs</a> (size_t c) const</td></tr>
 <tr class="separator:a3874067ec13e7936921d00958d14755f inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f833050fa240e4c621dd1e59dd40a5e inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="a2f833050fa240e4c621dd1e59dd40a5e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_colargs</b> (size_t c, size_t first, size_t last) const</td></tr>
+<tr class="memitem:a2f833050fa240e4c621dd1e59dd40a5e inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a2f833050fa240e4c621dd1e59dd40a5e">check_colargs</a> (size_t c, size_t first, size_t last) const</td></tr>
 <tr class="separator:a2f833050fa240e4c621dd1e59dd40a5e inherit pro_methods_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classbeachmat_1_1dim__checker"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classbeachmat_1_1dim__checker')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classbeachmat_1_1dim__checker.html">beachmat::dim_checker</a></td></tr>
 <tr class="memitem:ae31c8aac833d74422530355c6f553119 inherit pro_attribs_classbeachmat_1_1dim__checker"><td class="memItemLeft" align="right" valign="top"><a id="ae31c8aac833d74422530355c6f553119"></a>
@@ -174,7 +169,21 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>nrow</b> =0</td></t
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ncol</b> =0</td></tr>
 <tr class="separator:abbe71f76a205f8b98670afa17e3efb6f inherit pro_attribs_classbeachmat_1_1dim__checker"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class V, typename TIT = typename V::iterator&gt;<br />
+class beachmat::gCMatrix_reader&lt; V, TIT &gt;</h3>
+
+<p>Type-agnostic reader for <code>*gCMatrix</code> R objects. </p>
+<p>This provides checks for the incoming <code>Rcpp::RObject</code> prior to the internal construction of a <code><a class="el" href="classbeachmat_1_1Csparse__core.html" title="Core handler for data extraction from compressed sparse column (CSC) matrices.">Csparse_core</a></code> object. Unlike the <code><a class="el" href="classbeachmat_1_1gCMatrix.html" title="Sparse logical or numeric matrices in the lgCMatrix or dgCMatrix format, respectively,...">gCMatrix</a></code> class template, this is type-agnostic (though given we only have two possible <code>*gCMatrix</code> classes, this distinction is purely aesthetic).</p>
+<dl class="section note"><dt>Note</dt><dd>This is an internal class and should not be constructed directly by <b>beachmat</b> users.</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">V</td><td>The type of the <code>Rcpp::Vector</code> containing the data values. </td></tr>
+    <tr><td class="paramname">TIT</td><td>The type of the (<code>const</code>) random-access iterator pointing to the data values. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3a3f84abebaf0907ec4e3fa77163d13e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3a3f84abebaf0907ec4e3fa77163d13e">&#9670;&nbsp;</a></span>gCMatrix_reader()</h2>
 
@@ -200,7 +209,7 @@ template&lt;class V , typename TIT  = typename V::iterator&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Constructor from an R object containing a <code>*gCMatrix</code> instance. This implements a series of checks for the validity of the slots for the compressed column-sparse format.</p>
+<p>Constructor from an R object containing a <code>*gCMatrix</code> instance. This implements a series of checks for the validity of the slots for the compressed sparse column (CSC) format.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mat</td><td>An R object containing a <code>*gCMatrix</code> instance. </td></tr>
@@ -262,7 +271,7 @@ template&lt;typename ALT  = TIT&gt; </div>
 </div><div class="memdoc">
 
 <p></p>
-<p>Get all elements from a column, explicitly filling in the zeroes.</p>
+<p>Get all values from a column of the CSC matrix, possibly restricted to a contiguous subset of rows. Zeroes are explicitly filled in.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">ALT</td><td>Iterator class for the workspace.</td></tr>
@@ -273,8 +282,8 @@ template&lt;typename ALT  = TIT&gt; </div>
   <table class="params">
     <tr><td class="paramname">c</td><td>The index of the column to extract. </td></tr>
     <tr><td class="paramname">work</td><td>A pointer or iterator to the workspace in which the column values are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row that is <em>not</em> of interest. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first row of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last row of interest. </td></tr>
     <tr><td class="paramname">empty</td><td>Value corresponding to zero, almost always <code>0</code>.</td></tr>
   </table>
   </dd>
@@ -326,16 +335,16 @@ template&lt;class V , typename TIT  = typename V::iterator&gt; </div>
 </div><div class="memdoc">
 
 <p></p>
-<p>Get all non-zero elements from a column.</p>
+<p>Get all non-zero elements from a column of a CSC matrix, possibly restricted to contiguous subset of rows. This is guaranteed to be a no-copy operation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>The index of the column to extract. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first row of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> containing pointers to the first non-zero element in <code>c</code> with row index no less than <code>first</code>. The number of non-zero elements is set to all those in <code>[first, last)</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> containing pointers to the first non-zero element in <code>c</code> with row index no less than <code>first</code>. The number of non-zero elements is that with row indices in <code>[first, last)</code>. </dd></dl>
 
 </div>
 </div>
@@ -418,7 +427,7 @@ template&lt;typename ALT  = TIT&gt; </div>
 </div><div class="memdoc">
 
 <p></p>
-<p>Get all elements from a row, explicitly filling in the zeroes.</p>
+<p>Get all values from a row of a CSC matrix, possibly restricted to a contiguous subset of columns. Zeroes are explicitly filled in.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">ALT</td><td>Iterator class for the workspace.</td></tr>
@@ -429,8 +438,8 @@ template&lt;typename ALT  = TIT&gt; </div>
   <table class="params">
     <tr><td class="paramname">r</td><td>The index of the row to extract. </td></tr>
     <tr><td class="paramname">work</td><td>A pointer or iterator to the workspace in which the row values are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column that is <em>not</em> of interest. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first column of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last column of interest. </td></tr>
     <tr><td class="paramname">empty</td><td>Value corresponding to zero, almost always <code>0</code>.</td></tr>
   </table>
   </dd>
@@ -496,10 +505,10 @@ template&lt;typename OUT , typename ALT  = TIT&gt; </div>
 </div><div class="memdoc">
 
 <p></p>
-<p>Get all non-zero elements from a row.</p>
+<p>Get all non-zero elements from a row of a CSC matrix, possibly restricted to a contiguous subset of columns. Values and indices will be copied into their respective workspaces.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">OUT</td><td>Iterator class for the data values in the output <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code>, expected to correspond to a <code>const</code>-type counterpart to <code>ALT</code>. </td></tr>
+    <tr><td class="paramname">OUT</td><td>Iterator class for the data values in the output <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code>, expected to correspond to a <code>const</code>-type counterpart to <code>ALT</code>. </td></tr>
     <tr><td class="paramname">ALT</td><td>Iterator class for the workspace.</td></tr>
   </table>
   </dd>
@@ -509,13 +518,13 @@ template&lt;typename OUT , typename ALT  = TIT&gt; </div>
     <tr><td class="paramname">r</td><td>The index of the row to extract. </td></tr>
     <tr><td class="paramname">work_x</td><td>A pointer or iterator to the workspace in which the non-zero row values are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">work_i</td><td>A pointer or iterator to the workspace in which the non-zero column indices are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column that is <em>not</em> of interest. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first column of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last column of interest. </td></tr>
     <tr><td class="paramname">empty</td><td>Value corresponding to zero, almost usually <code>0</code>.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> containing pointers to the workspaces. The number of non-zero elements is set to all those in <code>[first, last)</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> containing pointers to the workspaces. The number of non-zero elements is set to all those in <code>[first, last)</code>. </dd></dl>
 
 </div>
 </div>

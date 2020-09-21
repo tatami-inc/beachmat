@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -74,6 +73,11 @@ $(function() {
 <div class="title">beachmat::Csparse_core&lt; TIT, I, P &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Core handler for data extraction from compressed sparse column (CSC) matrices.  
+ <a href="classbeachmat_1_1Csparse__core.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Csparse__reader_8h_source.html">Csparse_reader.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -98,7 +102,22 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ad6045321433f40d731d26eea379fa843"><td class="memItemLeft" align="right" valign="top">decltype(*std::declval&lt; TIT &gt;()) typede&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1Csparse__core.html#ad6045321433f40d731d26eea379fa843">T</a> )</td></tr>
 <tr class="separator:ad6045321433f40d731d26eea379fa843"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename TIT, typename I, typename P&gt;<br />
+class beachmat::Csparse_core&lt; TIT, I, P &gt;</h3>
+
+<p>Core handler for data extraction from compressed sparse column (CSC) matrices. </p>
+<p>This is used by other classes to provide no-copy extraction of column data and search-free extraction of row data.</p>
+<dl class="section note"><dt>Note</dt><dd>This is an internal class and should not be constructed directly by <b>beachmat</b> users.</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">TIT</td><td>The type of the (<code>const</code>) random-access iterator pointing to the data values. </td></tr>
+    <tr><td class="paramname">I</td><td>The integer type of the index. </td></tr>
+    <tr><td class="paramname">P</td><td>The integer type of the column pointers. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a788ace13a68373c34a3ec8df49ef4ae3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a788ace13a68373c34a3ec8df49ef4ae3">&#9670;&nbsp;</a></span>Csparse_core() <span class="overload">[1/2]</span></h2>
 
@@ -187,14 +206,15 @@ template&lt;typename TIT , typename I , typename P &gt; </div>
 </table>
 </div><div class="memdoc">
 <p>Constructor where arguments are copied directly into their corresponding data members.</p>
+<p><code>_i</code> and <code>_p</code> are assumed to follow the usual properties for CSC matrices. In particular, we note that <code>*(_x + _p[c])</code> is the value of the first non-zero element in column <code>c</code>. Technically speaking, <code>_p</code> contains indices, but it gets confusing to talk about these with row/column indices also in play, so we will refer to them as column pointers instead.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">_n</td><td>Number of non-zero elements. </td></tr>
-    <tr><td class="paramname">_x</td><td>Iterator to the non-zero data values in the matrix. This should have at least <code>n</code> addressable elements. </td></tr>
-    <tr><td class="paramname">_i</td><td>Pointer to the row indices of the non-zero data values in the matrix. This should have at least <code>n</code> addressable elements. </td></tr>
+    <tr><td class="paramname">_x</td><td>Iterator to the non-zero data values in the matrix. This should be random-access and have at least <code>n</code> addressable elements. </td></tr>
+    <tr><td class="paramname">_i</td><td>Pointer to an array of row indices of the non-zero data values in the matrix. This should have at least <code>n</code> addressable elements. </td></tr>
     <tr><td class="paramname">_nr</td><td>Number of rows in the CSC matrix. </td></tr>
     <tr><td class="paramname">_nc</td><td>Number of columns in the CSC matrix. </td></tr>
-    <tr><td class="paramname">_p</td><td>Pointer to the array of column pointers, specifying the starting index of each column in <code>_x</code> and <code>_i</code>. This should have at least <code>nc + 1</code> addressable elements. </td></tr>
+    <tr><td class="paramname">_p</td><td>Pointer to the array of column pointers. This should have at least <code>nc + 1</code> addressable elements. </td></tr>
   </table>
   </dd>
 </dl>
@@ -257,7 +277,7 @@ template&lt;typename ALT  = TIT&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get all elements from a column, explicitly filling in the zeroes.</p>
+<p>Get all values from a column of the CSC matrix, possibly restricted to a contiguous subset of rows. Zeroes are explicitly filled in.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">ALT</td><td>Iterator class for the workspace.</td></tr>
@@ -268,8 +288,8 @@ template&lt;typename ALT  = TIT&gt; </div>
   <table class="params">
     <tr><td class="paramname">c</td><td>The index of the column to extract. </td></tr>
     <tr><td class="paramname">work</td><td>A pointer or iterator to the workspace in which the column values are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row that is <em>not</em> of interest. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first row of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last row of interest. </td></tr>
     <tr><td class="paramname">empty</td><td>Value corresponding to zero, almost always <code>0</code>.</td></tr>
   </table>
   </dd>
@@ -319,16 +339,16 @@ template&lt;typename TIT , typename I , typename P &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get all non-zero elements from a column.</p>
+<p>Get all non-zero elements from a column of a CSC matrix, possibly restricted to contiguous subset of rows. This is guaranteed to be a no-copy operation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>The index of the column to extract. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first row of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> containing pointers to the first non-zero element in <code>c</code> with row index no less than <code>first</code>. The number of non-zero elements is set to all those in <code>[first, last)</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> containing pointers to the first non-zero element in <code>c</code> with row index no less than <code>first</code>. The number of non-zero elements is that with row indices in <code>[first, last)</code>. </dd></dl>
 
 </div>
 </div>
@@ -387,7 +407,7 @@ template&lt;typename ALT  = TIT&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get all elements from a row, explicitly filling in the zeroes.</p>
+<p>Get all values from a row of a CSC matrix, possibly restricted to a contiguous subset of columns. Zeroes are explicitly filled in.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">ALT</td><td>Iterator class for the workspace.</td></tr>
@@ -398,8 +418,8 @@ template&lt;typename ALT  = TIT&gt; </div>
   <table class="params">
     <tr><td class="paramname">r</td><td>The index of the row to extract. </td></tr>
     <tr><td class="paramname">work</td><td>A pointer or iterator to the workspace in which the row values are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column that is <em>not</em> of interest. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first column of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last column of interest. </td></tr>
     <tr><td class="paramname">empty</td><td>Value corresponding to zero, almost always <code>0</code>.</td></tr>
   </table>
   </dd>
@@ -463,10 +483,10 @@ template&lt;typename OUT , typename ALT  = TIT&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get all non-zero elements from a row.</p>
+<p>Get all non-zero elements from a row of a CSC matrix, possibly restricted to a contiguous subset of columns. Values and indices will be copied into their respective workspaces.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">OUT</td><td>Iterator class for the data values in the output <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code>, expected to correspond to a <code>const</code>-type counterpart to <code>ALT</code>. </td></tr>
+    <tr><td class="paramname">OUT</td><td>Iterator class for the data values in the output <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code>, expected to correspond to a <code>const</code>-type counterpart to <code>ALT</code>. </td></tr>
     <tr><td class="paramname">ALT</td><td>Iterator class for the workspace.</td></tr>
   </table>
   </dd>
@@ -476,13 +496,13 @@ template&lt;typename OUT , typename ALT  = TIT&gt; </div>
     <tr><td class="paramname">r</td><td>The index of the row to extract. </td></tr>
     <tr><td class="paramname">work_x</td><td>A pointer or iterator to the workspace in which the non-zero row values are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">work_i</td><td>A pointer or iterator to the workspace in which the non-zero column indices are to be stored. This should have at least <code>last - first</code> addressable elements. </td></tr>
-    <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column that is <em>not</em> of interest. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first column of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last column of interest. </td></tr>
     <tr><td class="paramname">empty</td><td>Value corresponding to zero, almost usually <code>0</code>.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> containing pointers to the workspaces. The number of non-zero elements is set to all those in <code>[first, last)</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> containing pointers to the workspaces. The number of non-zero elements is set to all those in <code>[first, last)</code>. </dd></dl>
 
 </div>
 </div>

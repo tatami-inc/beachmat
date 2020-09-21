@@ -1,13 +1,14 @@
 <map id="lin_matrix.h" name="lin_matrix.h">
-<area shape="rect" id="node1" title=" " alt="" coords="121,5,207,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="7,229,70,256"/>
-<area shape="rect" id="node3" href="$ordinary__reader_8h_source.html" title=" " alt="" coords="56,80,176,107"/>
-<area shape="rect" id="node6" href="$utils_8h.html" title=" " alt="" coords="207,155,263,181"/>
-<area shape="rect" id="node9" href="$Csparse__reader_8h.html" title=" " alt="" coords="251,80,373,107"/>
-<area shape="rect" id="node4" href="$dim__checker_8h_source.html" title=" " alt="" coords="76,155,183,181"/>
-<area shape="rect" id="node5" title=" " alt="" coords="150,229,229,256"/>
-<area shape="rect" id="node7" title=" " alt="" coords="417,229,471,256"/>
-<area shape="rect" id="node8" title=" " alt="" coords="253,229,305,256"/>
-<area shape="rect" id="node10" title=" " alt="" coords="337,155,412,181"/>
-<area shape="rect" id="node11" title=" " alt="" coords="436,155,495,181"/>
+<area shape="rect" id="node1" title=" " alt="" coords="231,5,318,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="6,229,68,256"/>
+<area shape="rect" id="node3" href="$ordinary__reader_8h.html" title=" " alt="" coords="68,80,188,107"/>
+<area shape="rect" id="node6" href="$utils_8h.html" title=" " alt="" coords="205,155,261,181"/>
+<area shape="rect" id="node9" href="$Csparse__reader_8h.html" title=" " alt="" coords="262,80,385,107"/>
+<area shape="rect" id="node10" title=" " alt="" coords="469,155,544,181"/>
+<area shape="rect" id="node12" title=" " alt="" coords="460,80,528,107"/>
+<area shape="rect" id="node4" href="$dim__checker_8h.html" title=" " alt="" coords="74,155,181,181"/>
+<area shape="rect" id="node5" title=" " alt="" coords="135,229,214,256"/>
+<area shape="rect" id="node7" title=" " alt="" coords="374,229,428,256"/>
+<area shape="rect" id="node8" title=" " alt="" coords="238,229,290,256"/>
+<area shape="rect" id="node11" title=" " alt="" coords="336,155,394,181"/>
 </map>

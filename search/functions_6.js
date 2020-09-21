@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['read_5flin_5fblock_69',['read_lin_block',['../read__lin__block_8h.html#a856a47172871c87892796f9d7fb5a2a4',1,'beachmat']]],
-  ['read_5flin_5fsparse_5fblock_70',['read_lin_sparse_block',['../read__lin__block_8h.html#afd1a4d207780df54a856bb9a094b5be9',1,'beachmat']]]
+  ['lin_5fmatrix_92',['lin_matrix',['../classbeachmat_1_1lin__matrix.html#ab6d0a994e33459ac1e6bc7d76fad9bfa',1,'beachmat::lin_matrix']]],
+  ['lin_5fordinary_5fmatrix_93',['lin_ordinary_matrix',['../classbeachmat_1_1lin__ordinary__matrix.html#aaabb52e0748cf800f4714ce76cb2366e',1,'beachmat::lin_ordinary_matrix']]],
+  ['lin_5fsparse_5fmatrix_94',['lin_sparse_matrix',['../classbeachmat_1_1lin__sparse__matrix.html#a60eb88be29edf009954f023234a090e7',1,'beachmat::lin_sparse_matrix']]],
+  ['lin_5fsparsearrayseed_95',['lin_SparseArraySeed',['../classbeachmat_1_1lin__SparseArraySeed.html#a7a953ac9e3103fe626417d24091e98fc',1,'beachmat::lin_SparseArraySeed']]]
 ];

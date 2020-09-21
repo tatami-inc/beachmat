@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -84,7 +83,7 @@ Inheritance diagram for beachmat::gCMatrix&lt; V, TIT &gt;:</div>
 <div class="center"><img src="classbeachmat_1_1gCMatrix__inherit__graph.png" border="0" usemap="#abeachmat_1_1gCMatrix_3_01V_00_01TIT_01_4_inherit__map" alt="Inheritance graph"/></div>
 <map name="beachmat_1_1gCMatrix_3_01V_00_01TIT_01_4_inherit__map" id="abeachmat_1_1gCMatrix_3_01V_00_01TIT_01_4_inherit__map">
 <area shape="rect" title="Sparse logical or numeric matrices in the lgCMatrix or dgCMatrix format, respectively,..." alt="" coords="9,169,145,211"/>
-<area shape="rect" href="classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="5,80,149,121"/>
+<area shape="rect" href="classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix." alt="" coords="5,80,149,121"/>
 <area shape="rect" href="classbeachmat_1_1lin__matrix.html" title="Virtual base class for a logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="7,5,147,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -94,7 +93,7 @@ Collaboration diagram for beachmat::gCMatrix&lt; V, TIT &gt;:</div>
 <div class="center"><img src="classbeachmat_1_1gCMatrix__coll__graph.png" border="0" usemap="#abeachmat_1_1gCMatrix_3_01V_00_01TIT_01_4_coll__map" alt="Collaboration graph"/></div>
 <map name="beachmat_1_1gCMatrix_3_01V_00_01TIT_01_4_coll__map" id="abeachmat_1_1gCMatrix_3_01V_00_01TIT_01_4_coll__map">
 <area shape="rect" title="Sparse logical or numeric matrices in the lgCMatrix or dgCMatrix format, respectively,..." alt="" coords="9,169,145,211"/>
-<area shape="rect" href="classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="5,80,149,121"/>
+<area shape="rect" href="classbeachmat_1_1lin__sparse__matrix.html" title="Virtual base class for a sparse logical, integer or numeric (i.e., double&#45;precision) matrix." alt="" coords="5,80,149,121"/>
 <area shape="rect" href="classbeachmat_1_1lin__matrix.html" title="Virtual base class for a logical, integer or numeric (i.e., double&#45;precision) matrix,..." alt="" coords="7,5,147,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -205,6 +204,7 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ncol</b> =0</td></t
 class beachmat::gCMatrix&lt; V, TIT &gt;</h3>
 
 <p>Sparse logical or numeric matrices in the <code>lgCMatrix</code> or <code>dgCMatrix</code> format, respectively, from the <b>Matrix</b> package. </p>
+<p>It is unlikely that this class will be constructed directly by users; most applications will use <code><a class="el" href="read__lin__block_8h.html#a856a47172871c87892796f9d7fb5a2a4">read_lin_block()</a></code> or <code><a class="el" href="read__lin__block_8h.html#afd1a4d207780df54a856bb9a094b5be9">read_lin_sparse_block()</a></code> instead.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">V</td><td>The class of the <code>Rcpp::Vector</code> holding the R-level data for non-zero values. </td></tr>
@@ -295,17 +295,17 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a column as an array of doubles.</p>
+<p>Extract values from a column as an array of doubles, restricted to a contiguous subset of rows.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>Index of the column of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as doubles, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed if the return value compares equal to <code>work</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as doubles, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed iff the return value compares equal to <code>work</code>. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__matrix.html#a99195bf412a30ff241c8154abb53ffa2">beachmat::lin_matrix</a>.</p>
 
@@ -362,18 +362,18 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract all non-zero elements in a column, storing values as doubles.</p>
+<p>Extract all non-zero elements in a column, restricted to a contiguous subset of rows. Values are returned as doubles.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the column of interest. </td></tr>
     <tr><td class="paramname">work_x</td><td>The workspace for extracted non-zero values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">work_i</td><td>The workspace for column indices. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> is returned containing pointers to non-zero elements in <code>c</code> with row indices in <code>[first, last)</code>. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed if the return value's pointers compare equal to <code>work_x</code> and <code>work_i</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> is returned containing pointers to non-zero elements in <code>c</code> with row indices in <code>[first, last)</code>. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed iff the return value's pointers compare equal to <code>work_x</code> and <code>work_i</code>. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#a9ee670f2c11a74266da4883c3e77a9fb">beachmat::lin_sparse_matrix</a>.</p>
 
@@ -426,17 +426,17 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a column as an array of integers.</p>
+<p>Extract values from a column as an array of integers, restricted to a contiguous subset of rows.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>Index of the column of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as integers, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed if the return value compares equal to <code>work</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer is returned to the values of <code>c</code> as integers, starting at the <code>first</code> element. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed iff the return value compares equal to <code>work</code>. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__matrix.html#a3c828d58c0b46b2f1bb4857cdf8d7439">beachmat::lin_matrix</a>.</p>
 
@@ -493,18 +493,18 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract all non-zero elements in a column, storing values as integers.</p>
+<p>Extract all non-zero elements in a column, restricted to a contiguous subset of rows. Values are returned as integers.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the column of interest. </td></tr>
     <tr><td class="paramname">work_x</td><td>The workspace for extracted non-zero values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">work_i</td><td>The workspace for column indices. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first row of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first row of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last row of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> is returned containing pointers to non-zero elements in <code>c</code> with row indices in <code>[first, last)</code>. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed if the return value's pointers compare equal to <code>work_x</code> and <code>work_i</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> is returned containing pointers to non-zero elements in <code>c</code> with row indices in <code>[first, last)</code>. This may or may not involve populating <code>work</code> with values copied from the underlying matrix; a copy will have been performed iff the return value's pointers compare equal to <code>work_x</code> and <code>work_i</code>. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#a76e13b1683c4f92921c0cd5203d851e6">beachmat::lin_sparse_matrix</a>.</p>
 
@@ -587,13 +587,13 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a row as an array of doubles.</p>
+<p>Extract values from a row as an array of doubles, restricted to a contiguous subset of columns.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the row of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last column of interest.</td></tr>
   </table>
   </dd>
 </dl>
@@ -656,18 +656,18 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract all non-zero elements in a row, storing values as doubles.</p>
+<p>Extract all non-zero elements in a row, restricted to a contiguous subset of columns. Values are returned as doubles.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the row of interest. </td></tr>
     <tr><td class="paramname">work_x</td><td>The workspace for extracted non-zero values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">work_i</td><td>The workspace for column indices. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last column of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> is returned containing pointers to the workspace. containing non-zero elements in <code>r</code> with column indices in <code>[first, last)</code>. A copy of non-zero values and their indices is always performed into the workspace. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> is returned containing pointers to the workspaces. containing non-zero elements in <code>r</code> with column indices in <code>[first, last)</code>. A copy of non-zero values and their indices is always performed into the workspaces. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#a47845dfea3c4353e6f0f1fb2be849d9d">beachmat::lin_sparse_matrix</a>.</p>
 
@@ -720,13 +720,13 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract a row as an array of integers.</p>
+<p>Extract values from a row as an array of integers, restricted to a contiguous subset of columns.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the row of interest. </td></tr>
     <tr><td class="paramname">work</td><td>The workspace, potentially used to store extracted values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last column of interest.</td></tr>
   </table>
   </dd>
 </dl>
@@ -789,18 +789,18 @@ template&lt;class V , typename TIT &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Extract all non-zero elements in a row, storing values as integers.</p>
+<p>Extract all non-zero elements in a row, restricted to a contiguous subset of columns. Values are returned as integers.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">r</td><td>Index of the row of interest. </td></tr>
     <tr><td class="paramname">work_x</td><td>The workspace for extracted non-zero values. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">work_i</td><td>The workspace for column indices. This should have at least <code>last - first</code> addressable elements. </td></tr>
     <tr><td class="paramname">first</td><td>The index of the first column of interest. </td></tr>
-    <tr><td class="paramname">last</td><td>The index of the first column of that is <em>not</em> of interest.</td></tr>
+    <tr><td class="paramname">last</td><td>The index of one-past-the-last column of interest.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html">sparse_index</a></code> is returned containing pointers to the workspace, containing non-zero elements in <code>r</code> with column indices in <code>[first, last)</code>. A copy of non-zero values and their indices is always performed into the workspace. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code><a class="el" href="structbeachmat_1_1sparse__index.html" title="Sparse index container, holding the number of non-zero elements extracted from a single row/column al...">sparse_index</a></code> is returned containing pointers to the workspaces, containing non-zero elements in <code>r</code> with column indices in <code>[first, last)</code>. A copy of non-zero values and their indices is always performed into the workspaces. </dd></dl>
 
 <p>Implements <a class="el" href="classbeachmat_1_1lin__sparse__matrix.html#a78ffb7320e53a93230372067d12013cf">beachmat::lin_sparse_matrix</a>.</p>
 

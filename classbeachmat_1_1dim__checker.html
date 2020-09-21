@@ -23,7 +23,6 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">beachmat
    </div>
-   <div id="projectbrief">Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism.</div>
   </td>
  </tr>
  </tbody>
@@ -76,15 +75,20 @@ $(function() {
 <div class="title">beachmat::dim_checker Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Base virtual class implementing dimensionality checks.  
+ <a href="classbeachmat_1_1dim__checker.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="dim__checker_8h_source.html">dim_checker.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for beachmat::dim_checker:</div>
 <div class="dyncontent">
 <div class="center"><img src="classbeachmat_1_1dim__checker__inherit__graph.png" border="0" usemap="#abeachmat_1_1dim__checker_inherit__map" alt="Inheritance graph"/></div>
 <map name="beachmat_1_1dim__checker_inherit__map" id="abeachmat_1_1dim__checker_inherit__map">
-<area shape="rect" title=" " alt="" coords="5,78,164,105"/>
-<area shape="rect" href="classbeachmat_1_1gCMatrix__reader.html" title=" " alt="" coords="237,5,373,47"/>
-<area shape="rect" href="classbeachmat_1_1ordinary__reader.html" title=" " alt="" coords="240,71,371,112"/>
-<area shape="rect" href="classbeachmat_1_1SparseArraySeed__reader.html" title=" " alt="" coords="212,136,399,177"/>
+<area shape="rect" title="Base virtual class implementing dimensionality checks." alt="" coords="5,78,164,105"/>
+<area shape="rect" href="classbeachmat_1_1gCMatrix__reader.html" title="Type&#45;agnostic reader for *gCMatrix R objects." alt="" coords="237,5,373,47"/>
+<area shape="rect" href="classbeachmat_1_1ordinary__reader.html" title="Type&#45;agnostic reader for row/column data from an ordinary R matrix." alt="" coords="240,71,371,112"/>
+<area shape="rect" href="classbeachmat_1_1SparseArraySeed__reader.html" title="Type&#45;agnostic reader for SparseArraySeed R objects." alt="" coords="212,136,399,177"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -102,38 +106,29 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7e8e30ecfd4f62070dba773ca561bd1e"><td class="memItemLeft" align="right" valign="top"><a id="a7e8e30ecfd4f62070dba773ca561bd1e"></a>
 <a class="el" href="classbeachmat_1_1dim__checker.html">dim_checker</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classbeachmat_1_1dim__checker.html">dim_checker</a> &amp;&amp;)=default</td></tr>
 <tr class="separator:a7e8e30ecfd4f62070dba773ca561bd1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab510ae024ef9443f31cb1dcde29ae354"><td class="memItemLeft" align="right" valign="top"><a id="ab510ae024ef9443f31cb1dcde29ae354"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_nrow</b> () const</td></tr>
+<tr class="memitem:ab510ae024ef9443f31cb1dcde29ae354"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#ab510ae024ef9443f31cb1dcde29ae354">get_nrow</a> () const</td></tr>
 <tr class="separator:ab510ae024ef9443f31cb1dcde29ae354"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b6017636a4f658d0a97d1d8dab62c6d"><td class="memItemLeft" align="right" valign="top"><a id="a5b6017636a4f658d0a97d1d8dab62c6d"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_ncol</b> () const</td></tr>
+<tr class="memitem:a5b6017636a4f658d0a97d1d8dab62c6d"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a5b6017636a4f658d0a97d1d8dab62c6d">get_ncol</a> () const</td></tr>
 <tr class="separator:a5b6017636a4f658d0a97d1d8dab62c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a64aed6bd16d0f83a658e018e34e6cae4"><td class="memItemLeft" align="right" valign="top"><a id="a64aed6bd16d0f83a658e018e34e6cae4"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>check_dimension</b> (size_t i, size_t dim, const std::string &amp;msg)</td></tr>
+<tr class="memitem:a64aed6bd16d0f83a658e018e34e6cae4"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">check_dimension</a> (size_t i, size_t dim, const std::string &amp;msg)</td></tr>
 <tr class="separator:a64aed6bd16d0f83a658e018e34e6cae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0c802c96811cba7ecdbc42f73401bfb"><td class="memItemLeft" align="right" valign="top"><a id="ab0c802c96811cba7ecdbc42f73401bfb"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>check_subset</b> (size_t first, size_t last, size_t dim, const std::string &amp;msg)</td></tr>
+<tr class="memitem:ab0c802c96811cba7ecdbc42f73401bfb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#ab0c802c96811cba7ecdbc42f73401bfb">check_subset</a> (size_t first, size_t last, size_t dim, const std::string &amp;msg)</td></tr>
 <tr class="separator:ab0c802c96811cba7ecdbc42f73401bfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:aa4dbaf3d12557e3aac6af4f4d31e121c"><td class="memItemLeft" align="right" valign="top"><a id="aa4dbaf3d12557e3aac6af4f4d31e121c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>fill_dims</b> (Rcpp::RObject dims)</td></tr>
+<tr class="memitem:aa4dbaf3d12557e3aac6af4f4d31e121c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#aa4dbaf3d12557e3aac6af4f4d31e121c">fill_dims</a> (Rcpp::RObject dims)</td></tr>
 <tr class="separator:aa4dbaf3d12557e3aac6af4f4d31e121c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26ea8b66221d95eb14810088772ea0c2"><td class="memItemLeft" align="right" valign="top"><a id="a26ea8b66221d95eb14810088772ea0c2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_rowargs</b> (size_t r) const</td></tr>
+<tr class="memitem:a26ea8b66221d95eb14810088772ea0c2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a26ea8b66221d95eb14810088772ea0c2">check_rowargs</a> (size_t r) const</td></tr>
 <tr class="separator:a26ea8b66221d95eb14810088772ea0c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a01bca7efbb190e83023e7bfefeefb6"><td class="memItemLeft" align="right" valign="top"><a id="a3a01bca7efbb190e83023e7bfefeefb6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_rowargs</b> (size_t r, size_t first, size_t last) const</td></tr>
+<tr class="memitem:a3a01bca7efbb190e83023e7bfefeefb6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a3a01bca7efbb190e83023e7bfefeefb6">check_rowargs</a> (size_t r, size_t first, size_t last) const</td></tr>
 <tr class="separator:a3a01bca7efbb190e83023e7bfefeefb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3874067ec13e7936921d00958d14755f"><td class="memItemLeft" align="right" valign="top"><a id="a3874067ec13e7936921d00958d14755f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_colargs</b> (size_t c) const</td></tr>
+<tr class="memitem:a3874067ec13e7936921d00958d14755f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a3874067ec13e7936921d00958d14755f">check_colargs</a> (size_t c) const</td></tr>
 <tr class="separator:a3874067ec13e7936921d00958d14755f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f833050fa240e4c621dd1e59dd40a5e"><td class="memItemLeft" align="right" valign="top"><a id="a2f833050fa240e4c621dd1e59dd40a5e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>check_colargs</b> (size_t c, size_t first, size_t last) const</td></tr>
+<tr class="memitem:a2f833050fa240e4c621dd1e59dd40a5e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeachmat_1_1dim__checker.html#a2f833050fa240e4c621dd1e59dd40a5e">check_colargs</a> (size_t c, size_t first, size_t last) const</td></tr>
 <tr class="separator:a2f833050fa240e4c621dd1e59dd40a5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
@@ -145,6 +140,379 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>nrow</b> =0</td></t
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ncol</b> =0</td></tr>
 <tr class="separator:abbe71f76a205f8b98670afa17e3efb6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Base virtual class implementing dimensionality checks. </p>
+<dl class="section note"><dt>Note</dt><dd>This is an internal class and should not be constructed directly by <b>beachmat</b> users. </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a3874067ec13e7936921d00958d14755f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3874067ec13e7936921d00958d14755f">&#9670;&nbsp;</a></span>check_colargs() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void beachmat::dim_checker::check_colargs </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check that the requested column index is compatible with the stored dimensions.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">c</td><td>A requested column index.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error is raised for invalid <code>c</code>, see <code><a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">check_dimension()</a></code>. </dd></dl>
+
+</div>
+</div>
+<a id="a2f833050fa240e4c621dd1e59dd40a5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f833050fa240e4c621dd1e59dd40a5e">&#9670;&nbsp;</a></span>check_colargs() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void beachmat::dim_checker::check_colargs </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>last</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check that the requested column index and row subsets are compatible with the stored dimensions.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">c</td><td>A requested column index. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first row of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last row of interest.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error is raised for invalid indices, see <code><a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">check_dimension()</a></code> and <code><a class="el" href="classbeachmat_1_1dim__checker.html#ab0c802c96811cba7ecdbc42f73401bfb">check_subset()</a></code>. </dd></dl>
+
+</div>
+</div>
+<a id="a64aed6bd16d0f83a658e018e34e6cae4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64aed6bd16d0f83a658e018e34e6cae4">&#9670;&nbsp;</a></span>check_dimension()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void beachmat::dim_checker::check_dimension </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>msg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check index against the dimension length and report an error if the former is out of range.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">i</td><td>Requested index along a dimension of interest. </td></tr>
+    <tr><td class="paramname">dim</td><td>Total length of the dimension. </td></tr>
+    <tr><td class="paramname">msg</td><td>Name of the dimension, e.g., <code>"row"</code>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error is raised if <code>i &gt;= dim</code>. </dd></dl>
+
+</div>
+</div>
+<a id="a26ea8b66221d95eb14810088772ea0c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26ea8b66221d95eb14810088772ea0c2">&#9670;&nbsp;</a></span>check_rowargs() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void beachmat::dim_checker::check_rowargs </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>r</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check that the requested row index is compatible with the stored dimensions.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">r</td><td>A requested row index.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error is raised for invalid <code>r</code>, see <code><a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">check_dimension()</a></code>. </dd></dl>
+
+</div>
+</div>
+<a id="a3a01bca7efbb190e83023e7bfefeefb6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a01bca7efbb190e83023e7bfefeefb6">&#9670;&nbsp;</a></span>check_rowargs() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void beachmat::dim_checker::check_rowargs </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>last</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check that the requested row index and column subsets are compatible with the stored dimensions.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">r</td><td>A requested row index. </td></tr>
+    <tr><td class="paramname">first</td><td>Index of the first column of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Index of one-past-the-last column of interest.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error is raised for invalid indices, see <code><a class="el" href="classbeachmat_1_1dim__checker.html#a64aed6bd16d0f83a658e018e34e6cae4">check_dimension()</a></code> and <code><a class="el" href="classbeachmat_1_1dim__checker.html#ab0c802c96811cba7ecdbc42f73401bfb">check_subset()</a></code>. </dd></dl>
+
+</div>
+</div>
+<a id="ab0c802c96811cba7ecdbc42f73401bfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0c802c96811cba7ecdbc42f73401bfb">&#9670;&nbsp;</a></span>check_subset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void beachmat::dim_checker::check_subset </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>msg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check requested subset indices against the dimension and report errors if the former are invalid.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">first</td><td>Requested start index along a dimension of interest. </td></tr>
+    <tr><td class="paramname">last</td><td>Requested one-past-the-end index along the dimension of interest. </td></tr>
+    <tr><td class="paramname">dim</td><td>Total length of the dimension. </td></tr>
+    <tr><td class="paramname">msg</td><td>Name of the dimension, e.g., <code>"row"</code>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error is raised if <code>last &lt; first</code> or if <code>last &gt; dim</code>. </dd></dl>
+
+</div>
+</div>
+<a id="aa4dbaf3d12557e3aac6af4f4d31e121c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4dbaf3d12557e3aac6af4f4d31e121c">&#9670;&nbsp;</a></span>fill_dims()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void beachmat::dim_checker::fill_dims </td>
+          <td>(</td>
+          <td class="paramtype">Rcpp::RObject&#160;</td>
+          <td class="paramname"><em>dims</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Fill the dimensions of this object.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dims</td><td>An <code>Rcpp::IntegerVector</code> of length 2 or something that can be coerced to one.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><code>nrow</code> and <code>ncol</code> are set to the first and second element of <code>dims</code>, respectively. </dd></dl>
+
+</div>
+</div>
+<a id="a5b6017636a4f658d0a97d1d8dab62c6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b6017636a4f658d0a97d1d8dab62c6d">&#9670;&nbsp;</a></span>get_ncol()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t beachmat::dim_checker::get_ncol </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the current number of columns. </p>
+
+</div>
+</div>
+<a id="ab510ae024ef9443f31cb1dcde29ae354"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab510ae024ef9443f31cb1dcde29ae354">&#9670;&nbsp;</a></span>get_nrow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t beachmat::dim_checker::get_nrow </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the current number of rows. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="dim__checker_8h_source.html">dim_checker.h</a></li>
 </ul>
