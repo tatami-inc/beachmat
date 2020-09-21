@@ -12,11 +12,16 @@
 #include "Csparse_reader.h"
 #include "utils.h"
 
+#include <memory>
+#include <algorithm>
+
 namespace beachmat {
 
 /**
  * @brief Virtual base class for a logical, integer or numeric (i.e., double-precision) matrix,
- * providing methods to extract rows or columns in dense form.
+ *
+ * This provides methods to extract rows or columns in dense form.
+ * We suggest using the `read_lin_block()` function to construct instances of this class.
  */
 class lin_matrix {
 public:
@@ -32,28 +37,28 @@ public:
     lin_matrix& operator=(lin_matrix&&) = default;
 
     /**
-     * Extract a column as an array of integers.
+     * Extract values from a column as an array of integers, restricted to a contiguous subset of rows.
      *
      * @param c Index of the column of interest.
      * @param work The workspace, potentially used to store extracted values.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first row of interest.
-     * @param last The index of the first row of that is _not_ of interest.
+     * @param last The index of one-past-the-last row of interest.
      *
      * @return A pointer is returned to the values of `c` as integers, starting at the `first` element.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value compares equal to `work`.
+     * a copy will have been performed iff the return value compares equal to `work`.
      */
     virtual const int* get_col(size_t c, int* work, size_t first, size_t last) = 0;
 
     /**
-     * Extract a row as an array of integers.
+     * Extract values from a row as an array of integers, restricted to a contiguous subset of columns.
      *
      * @param r Index of the row of interest.
      * @param work The workspace, potentially used to store extracted values.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first column of interest.
-     * @param last The index of the first column of that is _not_ of interest.
+     * @param last The index of one-past-the-last column of interest.
      *
      * @return A pointer is returned to the values of `r` as integers, starting at the `first` element.
      * This involves creating a copy in the workspace so the return value is always equal to `work`.
@@ -61,28 +66,28 @@ public:
     virtual const int* get_row(size_t r, int* work, size_t first, size_t last) = 0;
 
     /**
-     * Extract a column as an array of doubles.
+     * Extract values from a column as an array of doubles, restricted to a contiguous subset of rows.
      *
      * @param c Index of the column of interest.
      * @param work The workspace, potentially used to store extracted values.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first row of interest.
-     * @param last The index of the first row of that is _not_ of interest.
+     * @param last The index of one-past-the-last row of interest.
      *
      * @return A pointer is returned to the values of `c` as doubles, starting at the `first` element.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value compares equal to `work`.
+     * a copy will have been performed iff the return value compares equal to `work`.
      */
     virtual const double* get_col(size_t c, double* work, size_t first, size_t last) = 0;
 
     /**
-     * Extract a row as an array of doubles.
+     * Extract values from a row as an array of doubles, restricted to a contiguous subset of columns.
      *
      * @param r Index of the row of interest.
      * @param work The workspace, potentially used to store extracted values.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first column of interest.
-     * @param last The index of the first column of that is _not_ of interest.
+     * @param last The index of one-past-the-last column of interest.
      *
      * @return A pointer is returned to the values of `r` as doubles, starting at the `first` element.
      * This involves creating a copy in the workspace so the return value is always equal to `work`.
@@ -90,7 +95,7 @@ public:
     virtual const double* get_row(size_t r, double* work, size_t first, size_t last) = 0;
 
     /**
-     * Extract a column as an array of integers.
+     * Extract values from a column as an array of integers.
      *
      * @param c Index of the column of interest.
      * @param work The workspace, potentially used to store extracted values.
@@ -98,14 +103,14 @@ public:
      *
      * @return A pointer is returned to the values of `c` as integers, starting at the first element.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value compares equal to `work`.
+     * a copy will have been performed iff the return value compares equal to `work`.
      */
     const int* get_col(size_t c, int* work) {
         return get_col(c, work, 0, nrow);
     }
 
     /**
-     * Extract a row as an array of integers.
+     * Extract values from a row as an array of integers.
      *
      * @param r Index of the column of interest.
      * @param work The workspace, potentially used to store extracted values.
@@ -119,7 +124,7 @@ public:
     }
 
     /**
-     * Extract a column as an array of doubles.
+     * Extract values from a column as an array of doubles.
      *
      * @param c Index of the column of interest.
      * @param work The workspace, potentially used to store extracted values.
@@ -127,14 +132,14 @@ public:
      *
      * @return A pointer is returned to the values of `c` as doubles, starting at the first element.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value compares equal to `work`.
+     * a copy will have been performed iff the return value compares equal to `work`.
      */
     const double* get_col(size_t c, double* work) {
         return get_col(c, work, 0, nrow);
     }
 
     /**
-     * Extract a row as an array of doubles.
+     * Extract values from a row as an array of doubles.
      *
      * @param r Index of the column of interest.
      * @param work The workspace, potentially used to store extracted values.
@@ -176,8 +181,10 @@ protected:
 };
 
 /**
- * @brief Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix,
- * providing methods to extract rows or columns in dense or sparse form.
+ * @brief Virtual base class for a sparse logical, integer or numeric (i.e., double-precision) matrix.
+ *
+ * This provides methods to extract rows or columns in dense or sparse form.
+ * We suggest using the `read_lin_sparse_block()` function to construct instances of this class.
  */
 class lin_sparse_matrix : public lin_matrix {
 public:
@@ -193,7 +200,8 @@ public:
     lin_sparse_matrix& operator=(lin_sparse_matrix&&) = default;
 
     /**
-     * Extract all non-zero elements in a row, storing values as integers.
+     * Extract all non-zero elements in a row, restricted to a contiguous subset of columns.
+     * Values are returned as integers.
      *
      * @param r Index of the row of interest.
      * @param work_x The workspace for extracted non-zero values.
@@ -201,16 +209,17 @@ public:
      * @param work_i The workspace for column indices.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first column of interest.
-     * @param last The index of the first column of that is _not_ of interest.
+     * @param last The index of one-past-the-last column of interest.
      *
-     * @return A `sparse_index` is returned containing pointers to the workspace,
+     * @return A `sparse_index` is returned containing pointers to the workspaces,
      * containing non-zero elements in `r` with column indices in `[first, last)`.
-     * A copy of non-zero values and their indices is always performed into the workspace.
+     * A copy of non-zero values and their indices is always performed into the workspaces.
      */
     virtual sparse_index<const int*, int> get_row(size_t r, int* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
-     * Extract all non-zero elements in a column, storing values as integers.
+     * Extract all non-zero elements in a column, restricted to a contiguous subset of rows.
+     * Values are returned as integers.
      *
      * @param r Index of the column of interest.
      * @param work_x The workspace for extracted non-zero values.
@@ -218,16 +227,17 @@ public:
      * @param work_i The workspace for column indices.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first row of interest.
-     * @param last The index of the first row of that is _not_ of interest.
+     * @param last The index of one-past-the-last row of interest.
      *
      * @return A `sparse_index` is returned containing pointers to non-zero elements in `c` with row indices in `[first, last)`.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value's pointers compare equal to `work_x` and `work_i`.
+     * a copy will have been performed iff the return value's pointers compare equal to `work_x` and `work_i`.
      */
     virtual sparse_index<const int*, int> get_col(size_t c, int* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
-     * Extract all non-zero elements in a row, storing values as doubles.
+     * Extract all non-zero elements in a row, restricted to a contiguous subset of columns.
+     * Values are returned as doubles.
      *
      * @param r Index of the row of interest.
      * @param work_x The workspace for extracted non-zero values.
@@ -235,16 +245,17 @@ public:
      * @param work_i The workspace for column indices.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first column of interest.
-     * @param last The index of the first column of that is _not_ of interest.
+     * @param last The index of one-past-the-last column of interest.
      *
-     * @return A `sparse_index` is returned containing pointers to the workspace.
+     * @return A `sparse_index` is returned containing pointers to the workspaces.
      * containing non-zero elements in `r` with column indices in `[first, last)`.
-     * A copy of non-zero values and their indices is always performed into the workspace.
+     * A copy of non-zero values and their indices is always performed into the workspaces.
      */
     virtual sparse_index<const double*, int> get_row(size_t r, double* work_x, int* work_i, size_t first, size_t last) = 0;
 
     /**
-     * Extract all non-zero elements in a column, storing values as doubles.
+     * Extract all non-zero elements in a column, restricted to a contiguous subset of rows.
+     * Values are returned as doubles.
      *
      * @param r Index of the column of interest.
      * @param work_x The workspace for extracted non-zero values.
@@ -252,11 +263,11 @@ public:
      * @param work_i The workspace for column indices.
      * This should have at least `last - first` addressable elements.
      * @param first The index of the first row of interest.
-     * @param last The index of the first row of that is _not_ of interest.
+     * @param last The index of one-past-the-last row of interest.
      *
      * @return A `sparse_index` is returned containing pointers to non-zero elements in `c` with row indices in `[first, last)`.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value's pointers compare equal to `work_x` and `work_i`.
+     * a copy will have been performed iff the return value's pointers compare equal to `work_x` and `work_i`.
      */
     virtual sparse_index<const double*, int> get_col(size_t c, double* work_x, int* work_i, size_t first, size_t last) = 0;
 
@@ -271,7 +282,7 @@ public:
      *
      * @return A `sparse_index` is returned containing pointers to all non-zero elements in `c`.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value's pointers compare equal to `work_x` and `work_i`.
+     * a copy will have been performed iff the return value's pointers compare equal to `work_x` and `work_i`.
      */
     sparse_index<const int*, int> get_col(size_t c, int* work_x, int* work_i) {
         return get_col(c, work_x, work_i, 0, this->nrow);
@@ -286,9 +297,9 @@ public:
      * @param work_i The workspace for column indices.
      * This should have at least `last - first` addressable elements.
      *
-     * @return A `sparse_index` is returned containing pointers to the workspace,
+     * @return A `sparse_index` is returned containing pointers to the workspaces,
      * containing all non-zero elements in `r`.
-     * A copy of non-zero values and their indices is always performed into the workspace.
+     * A copy of non-zero values and their indices is always performed into the workspaces.
      */
     sparse_index<const int*, int> get_row(size_t r, int* work_x, int* work_i) {
         return get_row(r, work_x, work_i, 0, this->ncol);
@@ -305,7 +316,7 @@ public:
      *
      * @return A `sparse_index` is returned containing pointers to all non-zero elements in `c`.
      * This may or may not involve populating `work` with values copied from the underlying matrix;
-     * a copy will have been performed if the return value's pointers compare equal to `work_x` and `work_i`.
+     * a copy will have been performed iff the return value's pointers compare equal to `work_x` and `work_i`,
      */
     sparse_index<const double*, int> get_col(size_t c, double* work_x, int* work_i) {
         return get_col(c, work_x, work_i, 0, this->nrow);
@@ -322,7 +333,7 @@ public:
      *
      * @return A `sparse_index` is returned containing pointers to the workspace,
      * containing all non-zero elements in `r`.
-     * A copy of non-zero values and their indices is always performed into the workspace.
+     * A copy of non-zero values and their indices is always performed into the workspaces.
      */
     sparse_index<const double*, int> get_row(size_t r, double* work_x, int* work_i) {
         return get_row(r, work_x, work_i, 0, this->ncol);
@@ -347,6 +358,9 @@ protected:
 
 /**
  * @brief Logical, integer or numeric matrices in the "ordinary" R format, i.e., column-major dense arrays.
+ *
+ * It is unlikely that this class will be constructed directly by users;
+ * most applications will use `read_lin_block()` instead.
  *
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data.
  */
@@ -435,6 +449,9 @@ inline const double* double_ordinary_matrix::get_col(size_t c, double* work, siz
 
 /**
  * @brief Sparse logical or numeric matrices in the `lgCMatrix` or `dgCMatrix` format, respectively, from the **Matrix** package.
+ *
+ * It is unlikely that this class will be constructed directly by users;
+ * most applications will use `read_lin_block()` or `read_lin_sparse_block()` instead.
  *
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
  */
@@ -527,6 +544,9 @@ inline sparse_index<const double*, int> dgCMatrix::get_col(size_t c, double* wor
 
 /**
  * @brief Sparse integer, logical or numeric matrices in the `SparseArraySeed` format from the **DelayedArray** package.
+ *
+ * It is unlikely that this class will be constructed directly by users;
+ * most applications will use `read_lin_block()` or `read_lin_sparse_block()` instead.
  *
  * @tparam V The class of the `Rcpp::Vector` holding the R-level data for non-zero values.
  */
