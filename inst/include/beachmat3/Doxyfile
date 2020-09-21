@@ -6,7 +6,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "beachmat"
 PROJECT_NUMBER         =
-PROJECT_BRIEF          = "Provides a C++ API for extracting row/column vectors from dense/sparse blocks of a matrix, typically generated in each iteration of the DelayedArray block processing mechanism."
+PROJECT_BRIEF          =
 PROJECT_LOGO           = 
 OUTPUT_DIRECTORY       =
 CREATE_SUBDIRS         = NO
