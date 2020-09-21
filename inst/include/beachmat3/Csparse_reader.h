@@ -20,9 +20,12 @@
 namespace beachmat {
 
 /**
- * Sparse index container, holding the number of non-zero elements extracted from a single row/column 
- * along with pointers to their indices and values.
- * For extracted rows, the indices refer to column positions, and vice versa for extracted columns.
+ * @brief Sparse index container, holding the number of non-zero elements extracted from a single row/column 
+ * along with pointers to arrays containing their indices and values.
+ * 
+ * For extracted rows, the indices refer to column positions;
+ * for extracted columns, the indices refer to the row positions.
+ * In both cases, indices can be assumed to be zero-indexed and sorted.
  * 
  * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
  * @tparam I The integer type of the index.
@@ -44,24 +47,23 @@ struct sparse_index {
     size_t n; 
 
     /**
-     * Iterator pointing to the set of non-zero values.
-     * This should be incrementable up to `n`.
+     * Iterator to a sequence of non-zero values.
+     * This should be random-access and incrementable up to `n`.
      */
     TIT x;
 
     /**  
-     * Pointer to the set of indices of the non-zero values.
+     * Pointer to an array of indices of the non-zero values.
      * This should be incrementable up to `n`.
      */
     const I* i;
 };
 
 /**
- * @internal
+ * Transplant indices and values into their respective workspaces and use them to construct a new `sparse_index` object.
+ * This is necessary for type conversions between the stored and expected types of non-zero values.
  *
- * Transplant indices and values into their respective workspaces 
- * and use them to construct a new `sparse_index` object.
- * This is necessary for type conversions between the native value type and the expected value type.
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @tparam OUT Iterator to be stored in the new `sparse_index`.
  * This should be the `const`-type counterpart to `ALT`.
@@ -85,10 +87,11 @@ inline sparse_index<OUT, int> transplant(sparse_index<TIT, I> ref, ALT work_x, I
 }
 
 /**
- * @internal
+ * @brief Core handler for data extraction from compressed sparse column (CSC) matrices.
  *
- * Core handler for compressed sparse column (CSC) matrices,
- * controlling extraction of elements from the columns and rows for use by other classes.
+ * This is used by other classes to provide no-copy extraction of column data and search-free extraction of row data.
+ *
+ * @note This is an internal class and should not be constructed directly by **beachmat** users.
  *
  * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
  * @tparam I The integer type of the index.
@@ -105,29 +108,34 @@ public:
     /**
      * Constructor where arguments are copied directly into their corresponding data members.
      *
+     * `_i` and `_p` are assumed to follow the usual properties for CSC matrices.
+     * In particular, we note that `*(_x + _p[c])` is the value of the first non-zero element in column `c`.
+     * Technically speaking, `_p` contains indices, but it gets confusing to talk about these with row/column indices also in play,
+     * so we will refer to them as column pointers instead.
+     *
      * @param _n Number of non-zero elements.
      * @param _x Iterator to the non-zero data values in the matrix.
-     * This should have at least `n` addressable elements.
-     * @param _i Pointer to the row indices of the non-zero data values in the matrix.
+     * This should be random-access and have at least `n` addressable elements.
+     * @param _i Pointer to an array of row indices of the non-zero data values in the matrix.
      * This should have at least `n` addressable elements.
      * @param _nr Number of rows in the CSC matrix.
      * @param _nc Number of columns in the CSC matrix.
-     * @param _p Pointer to the array of column pointers, 
-     * specifying the starting index of each column in `_x` and `_i`.
+     * @param _p Pointer to the array of column pointers.
      * This should have at least `nc + 1` addressable elements.
      */
     Csparse_core(const size_t _n, TIT _x, const I* _i, const size_t _nr, const size_t _nc, const P* _p) : 
         n(_n), nr(_nr), nc(_nc), x(_x), i(_i), p(_p), currow(0), curstart(0), curend(nc) {}
    
     /**
-     * Get all non-zero elements from a column. 
+     * Get all non-zero elements from a column of a CSC matrix, possibly restricted to contiguous subset of rows.
+     * This is guaranteed to be a no-copy operation.
      *
      * @param c The index of the column to extract.
-     * @param first The index of the first row of interest.
-     * @param last The index of the first row that is _not_ of interest.
+     * @param first Index of the first row of interest.
+     * @param last Index of one-past-the-last row of interest.
      *
      * @return A `sparse_index` containing pointers to the first non-zero element in `c` with row index no less than `first`.
-     * The number of non-zero elements is set to all those in `[first, last)`. 
+     * The number of non-zero elements is that with row indices in `[first, last)`. 
      */
     sparse_index<TIT, I> get_col(size_t c, size_t first, size_t last) {
         const auto pstart=p[c]; 
@@ -154,15 +162,16 @@ public:
     typedef decltype(*std::declval<TIT>()) T;
 
     /**
-     * Get all elements from a column, explicitly filling in the zeroes.
+     * Get all values from a column of the CSC matrix, possibly restricted to a contiguous subset of rows.
+     * Zeroes are explicitly filled in.
      *
      * @tparam ALT Iterator class for the workspace.
      *
      * @param c The index of the column to extract.
      * @param work A pointer or iterator to the workspace in which the column values are to be stored.
      * This should have at least `last - first` addressable elements.
-     * @param first The index of the first row of interest.
-     * @param last The index of the first row that is _not_ of interest.
+     * @param first Index of the first row of interest.
+     * @param last Index of one-past-the-last row of interest.
      * @param empty Value corresponding to zero, almost always `0`.
      *
      * @return `work` is filled in with the contents of column `c` from rows `[first, last)`.
@@ -179,15 +188,16 @@ public:
     }
 
     /**
-     * Get all elements from a row, explicitly filling in the zeroes.
+     * Get all values from a row of a CSC matrix, possibly restricted to a contiguous subset of columns.
+     * Zeroes are explicitly filled in.
      *
      * @tparam ALT Iterator class for the workspace.
      *
      * @param r The index of the row to extract.
      * @param work A pointer or iterator to the workspace in which the row values are to be stored.
      * This should have at least `last - first` addressable elements.
-     * @param first The index of the first column of interest.
-     * @param last The index of the first column that is _not_ of interest.
+     * @param first Index of the first column of interest.
+     * @param last Index of one-past-the-last column of interest.
      * @param empty Value corresponding to zero, almost always `0`.
      *
      * @return `work` is filled in with the contents of row `r` from columns `[first, last)`.
@@ -209,7 +219,8 @@ public:
     }
 
     /**
-     * Get all non-zero elements from a row.
+     * Get all non-zero elements from a row of a CSC matrix, possibly restricted to a contiguous subset of columns.
+     * Values and indices will be copied into their respective workspaces.
      *
      * @tparam OUT Iterator class for the data values in the output `sparse_index`,
      * expected to correspond to a `const`-type counterpart to `ALT`.
@@ -220,8 +231,8 @@ public:
      * This should have at least `last - first` addressable elements.
      * @param work_i A pointer or iterator to the workspace in which the non-zero column indices are to be stored.
      * This should have at least `last - first` addressable elements.
-     * @param first The index of the first column of interest.
-     * @param last The index of the first column that is _not_ of interest.
+     * @param first Index of the first column of interest.
+     * @param last Index of one-past-the-last column of interest.
      * @param empty Value corresponding to zero, almost usually `0`.
      *
      * @return A `sparse_index` containing pointers to the workspaces.
@@ -257,16 +268,19 @@ private:
 
     /**
      * Update the index to the last requested non-zero element in each column.
+     *
      * This is used to accelerate consecutive row queries by avoiding the need for a new binary search.
      * After one row extraction, we hold the index of the lower-bounded non-zero element for each column;
      * on the next request for a row, we check whether it can be satisfied by the next non-zero element in that column.
      *
+     * We perform a similar check upon a request for a row immediately preceding the last requested row.
+     * For all other requested rows, we also use the last requested row to constrict the space for a faster binary search. 
+     *
      * @param r The requested row.
-     * @param first The first column of interest.
-     * @param last The first column that is not of interest.
+     * @param first Index of the first column of interest.
+     * @param last Index of one-past-the-last column of interest.
      * 
      * @return `indices` is updated.
-     * 
      */
     void update_indices(size_t r, size_t first, size_t last) {
         /* Initializing the indices upon the first request, assuming currow=0 based on initialization above.
@@ -332,9 +346,13 @@ private:
 };
 
 /**
- * @internal
+ * @brief Type-agnostic reader for `*gCMatrix` R objects.
  *
- * Reader for `dgCMatrix` and `lgCMatrix` R objects.
+ * This provides checks for the incoming `Rcpp::RObject` prior to the internal construction of a `Csparse_core` object.
+ * Unlike the `gCMatrix` class template, this is type-agnostic
+ * (though given we only have two possible `*gCMatrix` classes, this distinction is purely aesthetic).
+ *
+ * @note This is an internal class and should not be constructed directly by **beachmat** users.
  *
  * @tparam V The type of the `Rcpp::Vector` containing the data values.
  * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
@@ -350,7 +368,7 @@ public:
 
     /**
      * Constructor from an R object containing a `*gCMatrix` instance.
-     * This implements a series of checks for the validity of the slots for the compressed column-sparse format.
+     * This implements a series of checks for the validity of the slots for the compressed sparse column (CSC) format.
      *
      * @param mat An R object containing a `*gCMatrix` instance.
      */
@@ -467,9 +485,12 @@ private:
 };
 
 /**
- * @internal
+ * @brief Type-agnostic reader for `SparseArraySeed` R objects.
  *
- * Reader for `SparseArraySeed` R objects.
+ * This provides checks for the incoming `Rcpp::RObject` prior to the internal construction of a `Csparse_core` object.
+ * Unlike the `lin_SparseArraySeed` class template, this is type-agnostic. 
+ *
+ * @note This is an internal class and should not be constructed directly by **beachmat** users.
  *
  * @tparam V The type of the `Rcpp::Vector` containing the data values.
  * @tparam TIT The type of the (`const`) random-access iterator pointing to the data values.
@@ -494,7 +515,7 @@ public:
      * Constructor from an R object containing a `SparseArraySeed` instance.
      * This implements a series of checks for the consistency of the slots.
      * It will copy the row and column indices to make them zero-based,
-     * and if necessary, sort them to create a compressed sparse column format.
+     * and if necessary, sort them to create a compressed sparse column (CSC) format.
      *
      * @param mat An R object containing a `SparseArraySeed` instance.
      */

@@ -15,10 +15,10 @@
 namespace beachmat {
 
 /**
- * @internal
- *
  * Read a sparse logical, integer or numeric block into an instance of a `M` class.
  * `M` should most typically be either a `lin_matrix` or `lin_sparse_matrix`.
+ *
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @param block An R object containing a `dgCMatrix`, `lgCMatrix` or `SparseArraySeed`.
  *

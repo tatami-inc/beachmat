@@ -15,9 +15,9 @@
 namespace beachmat { 
 
 /** 
- * @internal
- * 
  * A utility to check that the input `Rcpp::StringVector` is of length 1 and then to convert it into a `std::string`.
+ *
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @param str An R object containing a character vector of length 1.
  * @return The first (and only) string in `str`, but as a `std::string`.
@@ -33,9 +33,9 @@ inline std::string make_to_string(const Rcpp::RObject& str) {
 }
 
 /**
- * @internal
- *
  * Extract the class infomation as the `class` attribute of an S4 object.
+ *
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @param incoming An R object, expected to be an instance of an S4 class.
  *
@@ -51,9 +51,9 @@ inline Rcpp::RObject get_class_object(const Rcpp::RObject& incoming) {
 }
 
 /**
- * @internal
- *
  * Extract the class name for an S4 object.
+ *
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @param incoming An R object, expected to be an instance of an S4 class.
  *
@@ -66,9 +66,9 @@ inline std::string get_class_name(const Rcpp::RObject& incoming) {
 }
 
 /**
- * @internal
- *
  * Extract the package of origin for a given class.
+ *
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @param incoming An R object containing S4 class information, typically the output of `get_class_object`.
  *
@@ -82,9 +82,9 @@ inline std::string extract_class_package(const Rcpp::RObject& classname) {
 }
 
 /**
- * @internal
- *
  * Extract the class name and its the package of origin for an instance of an S4 object.
+ *
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @param incoming An R object, expected to be an instance of an S4 class.
  *
@@ -96,10 +96,10 @@ inline std::pair<std::string, std::string> get_class_package(const Rcpp::RObject
 }
 
 /**
- * @internal
- * 
  * Translate SEXP numbers to plain-English types, for the supported integer, logical, character and double-precision types.
  * 
+ * @note This is an internal function and should not be called directly by **beachmat** users.
+ *
  * @param sexp_type The code number for a given SEXP type.
  *
  * @return The plain-English name for that type.

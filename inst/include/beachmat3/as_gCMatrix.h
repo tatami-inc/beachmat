@@ -13,16 +13,16 @@
 namespace beachmat {
 
 /** 
- * @internal
+ * Generate a `*gCMatrix` of the appropriate class for the specified `Rcpp::Vector` class in `V`.
  *
- * Generate a `*gCMatrix` of the appropriate class for the `Rcpp::Vector` class.
+ * @note This is an internal function and should not be called directly by **beachmat** users.
  *
  * @tparam V An `Rcpp::Vector` class.
  * Currently only `Rcpp::NumericVector` and `Rcpp::LogicalVector` are supported.
  *
  * @return An `Rcpp::S4` object of the appropriate `*gCMatrix` class for `V`,
  * either `dgCMatrix` or `lgCMatrix` for double-precision and logical data, respectively.
- * All other `V` will trigger a compile-time error.
+ * All other choices of `V` will trigger a compile-time error.
  */
 template <class V>
 inline Rcpp::S4 generate_gCMatrix () { // could also use = delete here.
@@ -41,17 +41,18 @@ inline Rcpp::S4 generate_gCMatrix<Rcpp::NumericVector> () {
 }
 
 /**
- * Create a `*gCMatrix` from a triplet map of non-zero entries.
+ * Create a `*gCMatrix` from a triplet-formatted store of non-zero entries.
  * Best used when the number of non-zero entries is not known in advance.
  *
- * @tparam V An `Rcpp::Vector` class.
+ * @tparam V An `Rcpp::Vector` class, to be used as the `x` slot in the output `*gCMatrix`.
  * Only `Rcpp::NumericVector` and `Rcpp::LogicalVector` are supported.
- * @tparam T Type of data to be stored in the `V` class.
+ * @tparam T Type of data in the triplet store.
+ * It should be possible to cast this to the storage type of `V`.
  *
  * @param nr Number of rows.
  * @param nc Number of columns.
  * @param holder Triplet-formatted information for all non-zero entries.
- * The key should contain the zero-based column index (first) and the zero-based row index (second).
+ * The key should contain the zero-based _column_ index (first) and the zero-based _row__index (second).
  * The value should contain the non-zero value itself.
  *
  * @return A `dgCMatrix` or `lgCMatrix` instance (depending on `V`) containing all entries in `holder`.
@@ -103,19 +104,20 @@ inline Rcpp::RObject as_gCMatrix (int nr, int nc, const std::map<std::pair<int, 
 }
 
 /**
- * Create a `*gCMatrix` containing modified values from an existing `*gCMatrix` in the same order.
+ * Create a `*gCMatrix` by modifying the non-zero values (but not their order or position) in an existing `*gCMatrix`.
  *
- * @tparam V An `Rcpp::Vector` class.
+ * @tparam V An `Rcpp::Vector` class, to be used as the `x` slot in the output `*gCMatrix`.
  * Only `Rcpp::NumericVector` and `Rcpp::LogicalVector` are supported.
- * @tparam T Type of data to be stored in the `V` class.
+ * @tparam T Type of data in the triplet store.
+ * It should be possible to cast this to the storage type of `V`.
  *
  * @param old A `*gCMatrix` object.
- * This need not be of a type corresponding to `V`.
+ * This does not need to be of a type corresponding to `V`.
  * @param x A vector of non-zero values to use to replace the existing `x` slot in `old`.
- * This should correspond to the same positions and ordering of the non-zero values already in `old`.
+ * The row index and column identity oeach value is assumed to be the same as the non-zero values already in `old`.
  *
  * @return A `dgCMatrix` or `lgCMatrix` instance (depending on `V`) 
- * containing indexing information from `old` with the values in `x`.
+ * containing indexing information from `old` but updated with the non-zero values in `x`.
  */
 template <class V>
 inline Rcpp::RObject as_gCMatrix (Rcpp::RObject old, V x) {
