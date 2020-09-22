@@ -63,7 +63,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
-#' makeNindexFromArrayViewport getAutoBlockLength type
+#' makeNindexFromArrayViewport getAutoBlockLength type RegularArrayGrid
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, by.row=FALSE) {
     native <- is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix") 
 
