@@ -99,7 +99,7 @@ If you see an `expected unqualified-id before 'using'` error during compilation,
 
 ## Reading agnostic inputs
 
-The API itself has comprehensive documentation so we will not go into detail there.
+The API itself has [comprehensive documentation](https://ltla.github.io/beachmat) so we will not go into detail there.
 Instead, we will focus on the most common usage patterns.
 Let's say we wanted to compute column sums from a logical, integer or numeric matrix-like object:
  
