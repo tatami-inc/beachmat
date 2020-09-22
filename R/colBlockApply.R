@@ -66,6 +66,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 #' makeNindexFromArrayViewport getAutoBlockLength type
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, by.row=FALSE) {
     native <- is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix") 
+
     if (is.null(grid)) {
         nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
@@ -85,8 +86,14 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 
     if (!native) {
         return(blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM))
+
     } else if (is.null(grid) || length(grid)==1L) {
         # Avoid overhead of block processing if there isn't any grid.
+        if (is.null(grid)) {
+            grid <- RegularArrayGrid(dim(x))
+        }
+        attr(x, "from_grid") <- grid
+        attr(x, "block_id") <- 1L
         return(list(FUN(x, ...)))
 
     }  else {
@@ -105,9 +112,12 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
             if (is.null(idx[[2]])) {
                 idx[[2]] <- substitute()
             }
-
             names(idx) <- c("i", "j")
-            fragments[[i]] <- do.call("[", c(common.args, idx))
+
+            block <- do.call("[", c(common.args, idx))
+            attr(block, "from_grid") <- grid
+            attr(block, "block_id") <- i
+            fragments[[i]] <- block
         }
 
         DelayedArray:::bplapply2(fragments, FUN, ..., BPPARAM = BPPARAM)

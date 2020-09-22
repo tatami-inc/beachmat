@@ -208,3 +208,21 @@ test_that("apply preserves sparsity in sparse DelayedMatrices", {
     expect_true(all(vapply(out, is, class="SparseArraySeed", FUN.VALUE=TRUE)))
 })
 
+test_that("native apply reports the grid in attributes", {
+    x <- matrix(runif(10000), ncol=10)
+
+    # Reports the grid size.
+    out <- rowBlockApply(x, attr, which="from_grid")
+    expect_s4_class(out[[1]], "ArrayGrid")
+
+    dout <- rowBlockApply(DelayedArray(x), attr, which="from_grid")
+    expect_identical(dout, out)
+
+    # Same handling when there are multiple grid elenehts.
+    out <- rowBlockApply(x, attr, which="from_grid", BPPARAM=SnowParam(2))
+    expect_s4_class(out[[1]], "ArrayGrid")
+    expect_s4_class(out[[2]], "ArrayGrid")
+
+    dout <- rowBlockApply(x, attr, which="from_grid", BPPARAM=SnowParam(2))
+    expect_identical(dout, out)
+})
