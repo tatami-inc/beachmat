@@ -73,12 +73,14 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         if (!native || nworkers != 1L) {
             # Scaling down the block length so that each worker is more likely to get a task.
             max.block.length <- getAutoBlockLength(type(x))
-            expected.block.length <- length(x) / nworkers
-            block.length <- min(max.block.length, expected.block.length)
 
             if (by.row) {
+                expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
+                block.length <- min(max.block.length, expected.block.length)
                 grid <- rowAutoGrid(x, block.length=block.length)
             } else {
+                expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
+                block.length <- min(max.block.length, expected.block.length)
                 grid <- colAutoGrid(x, block.length=block.length)
             }
         }
