@@ -74,10 +74,10 @@ test_that("read_lin_block errors thrown", {
 })
 
 test_that("sparse writers throw appropriate errors", {
-    expect_error(morebeachtests:::test_sparse_writer1(1), "entries in 'holder' refer to out-of-range columns")
-    expect_error(morebeachtests:::test_sparse_writer1(2), "entries in 'holder' refer to out-of-range rows")
-    expect_error(morebeachtests:::test_sparse_writer1(3), "entries in 'holder' refer to out-of-range rows")
-    expect_error(morebeachtests:::test_sparse_writer1(4), "entries in 'holder' refer to out-of-range columns")
+    expect_error(morebeachtests:::test_sparse_writer1(1), "entries in 'store' refer to out-of-range columns")
+    expect_error(morebeachtests:::test_sparse_writer1(2), "entries in 'store' refer to out-of-range rows")
+    expect_error(morebeachtests:::test_sparse_writer1(3), "entries in 'store' refer to out-of-range rows")
+    expect_error(morebeachtests:::test_sparse_writer1(4), "entries in 'store' refer to out-of-range columns")
     expect_error(morebeachtests:::test_sparse_writer1(5), NA)
 
     expect_error(morebeachtests:::test_sparse_writer2(A, A@x[1]), "inconsistent number of non-zero entries")

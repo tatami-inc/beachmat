@@ -46,54 +46,60 @@ inline Rcpp::S4 generate_gCMatrix<Rcpp::NumericVector> () {
  *
  * @tparam V An `Rcpp::Vector` class, to be used as the `x` slot in the output `*gCMatrix`.
  * Only `Rcpp::NumericVector` and `Rcpp::LogicalVector` are supported.
- * @tparam T Type of data in the triplet store.
- * It should be possible to cast this to the storage type of `V`.
+ * @tparam S An appropriate triplet store, see comments below.
  *
  * @param nr Number of rows.
  * @param nc Number of columns.
- * @param holder Triplet-formatted information for all non-zero entries.
- * The key should contain the zero-based _column_ index (first) and the zero-based _row__index (second).
- * The value should contain the non-zero value itself.
+ * @param store A sorted triplet store.
  *
- * @return A `dgCMatrix` or `lgCMatrix` instance (depending on `V`) containing all entries in `holder`.
+ * @details
+ * For an element `x` in the triplet store, we should obtain the zero-based _column_ index from `x.first.first`;
+ * the zero-based _row_ index from `x.first.second`; and the value from `x.second`.
+ * The store itself can be any container that supports the usual STL `.begin()`, `.end()` and `.size()` operations.
+ * Elements in the store should be sorted by the column index and row index.
+ * (If multiple elements have the same row/column indices, the last element in the store is used.)
+ * One can naturally obtain an appropriate store with a `std::map<std::pair<int, int>, double>`, which sorts for us as well.
+ * Alternatively, we can create a store manually with `std::deque<std::pair<std::pair<int, int>, double> >`.
+ *
+ * @return A `dgCMatrix` or `lgCMatrix` instance (depending on `V`) containing all entries in `store`.
  */
-template <class V, typename T = typename V::stored_type>
-inline Rcpp::RObject as_gCMatrix (int nr, int nc, const std::map<std::pair<int, int>, T>& holder) {
+template <class V, class S>
+inline Rcpp::RObject as_gCMatrix (int nr, int nc, const S& store) {
     auto mat = generate_gCMatrix<V>();
     mat.slot("Dim") = Rcpp::IntegerVector::create(nr, nc);
 
-    size_t total_size = holder.size();
-    Rcpp::IntegerVector i(total_size);
-    V x(total_size);
+    const size_t nnzero = store.size();
+    Rcpp::IntegerVector i(nnzero);
+    V x(nnzero);
     Rcpp::IntegerVector p(nc + 1, 0);
 
     auto xIt=x.begin();
     auto iIt=i.begin();
-    auto hIt = holder.begin();
+    auto sIt = store.begin();
 
     int counter = 0;
     for (int c = 1; c <= nc; ++c) {
-        while (hIt != holder.end() && (hIt->first).first < c) {
-            (*xIt) = (hIt->second);
-            (*iIt) = (hIt->first).second;
+        while (sIt != store.end() && (sIt->first).first < c) {
+            (*xIt) = (sIt->second);
+            (*iIt) = (sIt->first).second;
 
             if (*iIt >= nr || *iIt < 0) {
-                throw std::runtime_error("entries in 'holder' refer to out-of-range rows");
+                throw std::runtime_error("entries in 'store' refer to out-of-range rows");
             }
-            if ((hIt->first).first < 0) {
-                throw std::runtime_error("entries in 'holder' refer to out-of-range columns");
+            if ((sIt->first).first < 0) {
+                throw std::runtime_error("entries in 'store' refer to out-of-range columns");
             }
 
             ++xIt;
             ++iIt;
-            ++hIt;
+            ++sIt;
             ++counter;
         }
         p[c] = counter;
     }
     
-    if (static_cast<size_t>(counter) != holder.size()) {
-        throw std::runtime_error("entries in 'holder' refer to out-of-range columns");
+    if (static_cast<size_t>(counter) != store.size()) {
+        throw std::runtime_error("entries in 'store' refer to out-of-range columns");
     }
 
     mat.slot("p")=p;
