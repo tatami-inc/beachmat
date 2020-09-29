@@ -78,17 +78,27 @@ inline Rcpp::RObject as_gCMatrix (int nr, int nc, const S& store) {
     auto sIt = store.begin();
 
     int counter = 0;
+    int lastcol = 0, lastrow = 0;
+
     for (int c = 1; c <= nc; ++c) {
         while (sIt != store.end() && (sIt->first).first < c) {
-            (*xIt) = (sIt->second);
-            (*iIt) = (sIt->first).second;
+            const auto& curcol = (sIt->first).first;
+            const auto& currow = (sIt->first).second;
 
-            if (*iIt >= nr || *iIt < 0) {
+            if (currow >= nr || currow < 0) {
                 throw std::runtime_error("entries in 'store' refer to out-of-range rows");
             }
-            if ((sIt->first).first < 0) {
+            if (curcol < 0) {
                 throw std::runtime_error("entries in 'store' refer to out-of-range columns");
             }
+            if (lastcol > curcol || (lastcol == curcol && lastrow > currow)) {
+                throw std::runtime_error("entries in 'store' are not sorted");
+            } 
+
+            (*xIt) = (sIt->second);
+            (*iIt) = currow;
+            lastcol = curcol;
+            lastrow = currow;
 
             ++xIt;
             ++iIt;

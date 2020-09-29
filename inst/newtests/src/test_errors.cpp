@@ -23,4 +23,10 @@ Rcpp::RObject test_sparse_writer2(Rcpp::RObject mat, Rcpp::NumericVector replace
     return beachmat::as_gCMatrix<Rcpp::NumericVector>(mat, replacement);
 }
 
-
+// [[Rcpp::export(rng=false)]]
+Rcpp::RObject test_sparse_writer3() {
+    std::deque<std::pair<std::pair<int, int>, double> > thingy;
+    thingy.push_back(std::make_pair(std::make_pair(1, 1), 1));
+    thingy.push_back(std::make_pair(std::make_pair(0, 0), 1));
+    return beachmat::as_gCMatrix<Rcpp::NumericVector>(2, 2, thingy);
+}

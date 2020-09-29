@@ -17,6 +17,10 @@ test_sparse_writer2 <- function(mat, replacement) {
     .Call('_morebeachtests_test_sparse_writer2', PACKAGE = 'morebeachtests', mat, replacement)
 }
 
+test_sparse_writer3 <- function() {
+    .Call('_morebeachtests_test_sparse_writer3', PACKAGE = 'morebeachtests')
+}
+
 get_column_slice <- function(mat, order, starts, ends, mode) {
     .Call('_morebeachtests_get_column_slice', PACKAGE = 'morebeachtests', mat, order, starts, ends, mode)
 }

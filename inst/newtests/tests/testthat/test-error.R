@@ -83,4 +83,6 @@ test_that("sparse writers throw appropriate errors", {
     expect_error(morebeachtests:::test_sparse_writer2(A, A@x[1]), "inconsistent number of non-zero entries")
     expect_identical(A, morebeachtests:::test_sparse_writer2(A, A@x))
     expect_identical(A*2, morebeachtests:::test_sparse_writer2(A, A@x*2))
+
+    expect_error(morebeachtests:::test_sparse_writer3(), "entries in 'store' are not sorted")
 })

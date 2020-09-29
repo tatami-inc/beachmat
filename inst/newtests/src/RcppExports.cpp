@@ -46,6 +46,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_sparse_writer3
+Rcpp::RObject test_sparse_writer3();
+RcppExport SEXP _morebeachtests_test_sparse_writer3() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    rcpp_result_gen = Rcpp::wrap(test_sparse_writer3());
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_column_slice
 Rcpp::RObject get_column_slice(Rcpp::RObject mat, Rcpp::IntegerVector order, Rcpp::IntegerVector starts, Rcpp::IntegerVector ends, int mode);
 RcppExport SEXP _morebeachtests_get_column_slice(SEXP matSEXP, SEXP orderSEXP, SEXP startsSEXP, SEXP endsSEXP, SEXP modeSEXP) {
@@ -166,6 +175,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_morebeachtests_test_clone_sparse", (DL_FUNC) &_morebeachtests_test_clone_sparse, 1},
     {"_morebeachtests_test_sparse_writer1", (DL_FUNC) &_morebeachtests_test_sparse_writer1, 1},
     {"_morebeachtests_test_sparse_writer2", (DL_FUNC) &_morebeachtests_test_sparse_writer2, 2},
+    {"_morebeachtests_test_sparse_writer3", (DL_FUNC) &_morebeachtests_test_sparse_writer3, 0},
     {"_morebeachtests_get_column_slice", (DL_FUNC) &_morebeachtests_get_column_slice, 5},
     {"_morebeachtests_get_column", (DL_FUNC) &_morebeachtests_get_column, 3},
     {"_morebeachtests_get_row_slice", (DL_FUNC) &_morebeachtests_get_row_slice, 5},
