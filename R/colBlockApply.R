@@ -10,6 +10,7 @@
 #' @param ... Further arguments to pass to \code{FUN}.
 #' @param grid An \linkS4class{ArrayGrid} object specifying how \code{x} should be split into blocks.
 #' For \code{colBlockApply} and \code{rowBlockApply}, blocks should consist of consecutive columns and rows, respectively.
+#' Alternatively, this can be set to \code{TRUE} or \code{FALSE}, see Details.
 #' @param BPPARAM A BiocParallelParam object from the \pkg{BiocParallel} package,
 #' specifying how parallelization should be performed across blocks.
 #'
@@ -21,8 +22,22 @@
 #' This is a wrapper around \code{\link{blockApply}} that is dedicated to looping across rows or columns of \code{x}.
 #' The aim is to provide a simpler interface for the common task of \code{\link{apply}}ing across a matrix,
 #' along with a few modifications to improve efficiency for parallel processing and for natively supported \code{x}.
-#' Note that the fragmentation of \code{x} into blocks is not easily predictable, 
+#'
+#' Note that the fragmentation of \code{x} into blocks is not easily predictable,
 #' meaning that \code{FUN} should be capable of operating on each row/column independently.
+#' Users can retrieve the current location of each block within \code{x} with \code{\link{currentViewport}} inside \code{FUN}.
+#'
+#' If \code{grid} is not explicitly set to an \linkS4class{ArrayGrid} object, it can take several values:
+#' \itemize{
+#' \item If \code{TRUE}, the function will choose a grid that (i) respects the memory limits in \code{\link{getAutoBlockSize}}
+#' and (ii) fragments \code{x} into sufficiently fine chunks that every worker in \code{BPPARAM} gets to do something.
+#' If \code{FUN} might make large allocations, this mode should be used to constrain memory usage.
+#' \item The default \code{grid=NULL} is very similar to \code{TRUE} 
+#' except that that memory limits are ignored when \code{x} is of any type that can be passed directly to \code{FUN}.
+#' This avoids unnecessary copies of \code{x} and is best used when \code{FUN} itself does not make large allocations.
+#' \item If \code{FALSE}, the function will choose a grid that covers the entire \code{x}.
+#' This is provided for completeness and is only really useful for debugging.
+#' }
 #' 
 #' @examples
 #' x <- matrix(runif(10000), ncol=10)
@@ -51,39 +66,37 @@
 #' @export
 #' @importFrom DelayedArray getAutoBPPARAM
 colBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
-    .blockApply2(x, FUN=FUN, ..., grid=grid, BPPARAM=BPPARAM, by.row=FALSE)
+    .blockApply2(x, FUN=FUN, ..., grid=grid, BPPARAM=BPPARAM, beachmat_by_row=FALSE)
 }
 
 #' @export
 #' @rdname colBlockApply
 #' @importFrom DelayedArray getAutoBPPARAM
 rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
-    .blockApply2(x, FUN=FUN, ..., grid=grid, BPPARAM=BPPARAM, by.row=TRUE)
+    .blockApply2(x, FUN=FUN, ..., grid=grid, BPPARAM=BPPARAM, beachmat_by_row=TRUE)
 }
 
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
 #' makeNindexFromArrayViewport getAutoBlockLength type RegularArrayGrid
-#' set_grid_context 
-.blockApply2 <- function(x, FUN, ..., grid, BPPARAM, by.row=FALSE) {
+.blockApply2 <- function(x, FUN, ..., grid, BPPARAM, beachmat_by_row=FALSE) {
     native <- is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix") 
+    nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
-    if (is.null(grid)) {
-        nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
+    if (isFALSE(grid)) {
+        grid <- RegularArrayGrid(dim(x))
+    } else if (isTRUE(grid) || !native || nworkers != 1L) {
+        # Scaling down the block length so that each worker is more likely to get a task.
+        max.block.length <- getAutoBlockLength(type(x))
 
-        if (!native || nworkers != 1L) {
-            # Scaling down the block length so that each worker is more likely to get a task.
-            max.block.length <- getAutoBlockLength(type(x))
-
-            if (by.row) {
-                expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
-                block.length <- min(max.block.length, expected.block.length)
-                grid <- rowAutoGrid(x, block.length=block.length)
-            } else {
-                expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
-                block.length <- min(max.block.length, expected.block.length)
-                grid <- colAutoGrid(x, block.length=block.length)
-            }
+        if (beachmat_by_row) {
+            expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
+            block.length <- min(max.block.length, expected.block.length)
+            grid <- rowAutoGrid(x, block.length=block.length)
+        } else {
+            expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
+            block.length <- min(max.block.length, expected.block.length)
+            grid <- colAutoGrid(x, block.length=block.length)
         }
     }
 
@@ -95,8 +108,8 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         if (is.null(grid)) {
             grid <- RegularArrayGrid(dim(x))
         }
-        set_grid_context(grid, 1L)
-        list(FUN(x, ...))
+        frag.info <- list(grid, 1L, x)
+        list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
     }  else {
         # Break up the native matrix in the parent to ensure that we only 
@@ -104,6 +117,10 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         # still contains objects in their native format.
         fragments <- vector("list", length(grid))
         common.args <- list(x=x, drop=FALSE)
+
+        # However, if we're not parallelizing, then we just execute in 
+        # the loop and avoid making an effective copy of the entire matrix.
+        nopar <- nworkers==1L
 
         for (i in seq_along(fragments)) {
             idx <- makeNindexFromArrayViewport(grid[[i]], expand.RangeNSBS=TRUE)
@@ -117,10 +134,20 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
             names(idx) <- c("i", "j")
 
             block <- do.call("[", c(common.args, idx))
-            fragments[[i]] <- list(grid, i, block)
+            frag.info <- list(grid, i, block)
+
+            if (nopar) {
+                fragments[i] <- list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
+            } else {
+                fragments[[i]] <- frag.info
+            }
         }
 
-        DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
+        if (nopar) {
+            fragments
+        } else {
+            DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
+        }
     }
 }
 

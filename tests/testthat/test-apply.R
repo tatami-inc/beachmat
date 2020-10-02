@@ -208,6 +208,27 @@ test_that("apply preserves sparsity in sparse DelayedMatrices", {
     expect_true(all(vapply(out, is, class="SparseArraySeed", FUN.VALUE=TRUE)))
 })
 
+test_that("logical aliases work as expected", {
+    x <- matrix(runif(10000), ncol=50)
+    setAutoBlockSize(nrow(x) * 8 * 10)
+
+    out <- colBlockApply(x, cs, grid=TRUE)
+    expect_equal(length(out), ncol(x)/10L)
+
+    out <- colBlockApply(x, cs, grid=FALSE)
+    expect_identical(length(out), 1L)
+
+    setAutoBlockSize(ncol(x) * 8 * 10)
+
+    out <- rowBlockApply(x, rs, grid=TRUE)
+    expect_equal(length(out), nrow(x)/10L)
+
+    out <- rowBlockApply(x, rs, grid=FALSE)
+    expect_identical(length(out), 1L)
+
+    setAutoBlockSize()
+})
+
 test_that("native apply reports the grid in attributes", {
     x <- matrix(runif(10000), ncol=10)
     extractor <- function(x) { 

@@ -20,7 +20,8 @@ Ordinary matrices, *gCMatrix or \linkS4class{SparseArraySeed} objects may be pas
 \item{...}{Further arguments to pass to \code{FUN}.}
 
 \item{grid}{An \linkS4class{ArrayGrid} object specifying how \code{x} should be split into blocks.
-For \code{colBlockApply} and \code{rowBlockApply}, blocks should consist of consecutive columns and rows, respectively.}
+For \code{colBlockApply} and \code{rowBlockApply}, blocks should consist of consecutive columns and rows, respectively.
+Alternatively, this can be set to \code{TRUE} or \code{FALSE}, see Details.}
 
 \item{BPPARAM}{A BiocParallelParam object from the \pkg{BiocParallel} package,
 specifying how parallelization should be performed across blocks.}
@@ -36,8 +37,22 @@ Apply a function over blocks of columns or rows using \pkg{DelayedArray}'s block
 This is a wrapper around \code{\link{blockApply}} that is dedicated to looping across rows or columns of \code{x}.
 The aim is to provide a simpler interface for the common task of \code{\link{apply}}ing across a matrix,
 along with a few modifications to improve efficiency for parallel processing and for natively supported \code{x}.
-Note that the fragmentation of \code{x} into blocks is not easily predictable, 
+
+Note that the fragmentation of \code{x} into blocks is not easily predictable,
 meaning that \code{FUN} should be capable of operating on each row/column independently.
+Users can retrieve the current location of each block within \code{x} with \code{\link{currentViewport}} inside \code{FUN}.
+
+If \code{grid} is not explicitly set to an \linkS4class{ArrayGrid} object, it can take several values:
+\itemize{
+\item If \code{TRUE}, the function will choose a grid that (i) respects the memory limits in \code{\link{getAutoBlockSize}}
+and (ii) fragments \code{x} into sufficiently fine chunks that every worker in \code{BPPARAM} gets to do something.
+If \code{FUN} might make large allocations, this mode should be used to constrain memory usage.
+\item The default \code{grid=NULL} is very similar to \code{TRUE} 
+except that that memory limits are ignored when \code{x} is of any type that can be passed directly to \code{FUN}.
+This avoids unnecessary copies of \code{x} and is best used when \code{FUN} itself does not make large allocations.
+\item If \code{FALSE}, the function will choose a grid that covers the entire \code{x}.
+This is provided for completeness and is only really useful for debugging.
+}
 }
 \examples{
 x <- matrix(runif(10000), ncol=10)
