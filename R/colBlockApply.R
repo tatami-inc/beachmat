@@ -64,6 +64,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
 #' makeNindexFromArrayViewport getAutoBlockLength type RegularArrayGrid
+#' set_grid_context 
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, by.row=FALSE) {
     native <- is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix") 
 
@@ -87,16 +88,15 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     }
 
     if (!native) {
-        return(blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM))
+        blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
 
     } else if (is.null(grid) || length(grid)==1L) {
         # Avoid overhead of block processing if there isn't any grid.
         if (is.null(grid)) {
             grid <- RegularArrayGrid(dim(x))
         }
-        attr(x, "from_grid") <- grid
-        attr(x, "block_id") <- 1L
-        return(list(FUN(x, ...)))
+        set_grid_context(grid, 1L)
+        list(FUN(x, ...))
 
     }  else {
         # Break up the native matrix in the parent to ensure that we only 
@@ -117,11 +117,15 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
             names(idx) <- c("i", "j")
 
             block <- do.call("[", c(common.args, idx))
-            attr(block, "from_grid") <- grid
-            attr(block, "block_id") <- i
-            fragments[[i]] <- block
+            fragments[[i]] <- list(grid, i, block)
         }
 
-        DelayedArray:::bplapply2(fragments, FUN, ..., BPPARAM = BPPARAM)
+        DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
     }
+}
+
+#' @importFrom DelayedArray set_grid_context
+.helper <- function(X, beachmat_internal_FUN, ...) {
+    set_grid_context(X[[1]], X[[2]])
+    beachmat_internal_FUN(X[[3]], ...)
 }

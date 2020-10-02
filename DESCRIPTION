@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 2.5.7
-Date: 2020-09-28
+Version: 2.5.8
+Date: 2020-10-01
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
@@ -8,7 +8,7 @@ Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.mo
         person("Mike", "Smith", role="aut"))
 Imports: 
     methods,
-    DelayedArray,
+    DelayedArray (>= 0.15.14),
     BiocGenerics,
     Matrix
 Suggests: 

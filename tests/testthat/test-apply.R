@@ -210,19 +210,23 @@ test_that("apply preserves sparsity in sparse DelayedMatrices", {
 
 test_that("native apply reports the grid in attributes", {
     x <- matrix(runif(10000), ncol=10)
+    extractor <- function(x) { 
+        DelayedArray::currentViewport()
+    }
 
     # Reports the grid size.
-    out <- rowBlockApply(x, attr, which="from_grid")
-    expect_s4_class(out[[1]], "ArrayGrid")
+    out <- rowBlockApply(x, extractor)
+    expect_s4_class(out[[1]], "ArrayViewport")
 
-    dout <- rowBlockApply(DelayedArray(x), attr, which="from_grid")
-    expect_identical(dout, out)
+    dout <- rowBlockApply(DelayedArray(x), extractor)
+    expect_s4_class(dout[[1]], "ArrayViewport")
 
     # Same handling when there are multiple grid elenehts.
-    out <- rowBlockApply(x, attr, which="from_grid", BPPARAM=SnowParam(2))
-    expect_s4_class(out[[1]], "ArrayGrid")
-    expect_s4_class(out[[2]], "ArrayGrid")
+    out <- rowBlockApply(x, extractor, BPPARAM=SnowParam(2))
+    expect_s4_class(out[[1]], "ArrayViewport")
+    expect_s4_class(out[[2]], "ArrayViewport")
+    expect_false(identical(out[[1]], out[[2]]))
 
-    dout <- rowBlockApply(x, attr, which="from_grid", BPPARAM=SnowParam(2))
+    dout <- rowBlockApply(x, extractor, BPPARAM=SnowParam(2))
     expect_identical(dout, out)
 })
