@@ -84,7 +84,12 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
     if (isFALSE(grid)) {
-        grid <- RegularArrayGrid(dim(x))
+#        grid <- RegularArrayGrid(dim(x))
+        if (beachmat_by_row) {
+            grid <- rowAutoGrid(x)
+        } else {
+            grid <- colAutoGrid(x)
+        }
     } else if (isTRUE(grid) || !native || nworkers != 1L) {
         # Scaling down the block length so that each worker is more likely to get a task.
         max.block.length <- getAutoBlockLength(type(x))
