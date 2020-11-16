@@ -78,13 +78,13 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
-#' makeNindexFromArrayViewport getAutoBlockLength type RegularArrayGrid
+#' makeNindexFromArrayViewport getAutoBlockLength type DummyArrayGrid
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, beachmat_by_row=FALSE) {
     native <- is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix") 
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
     if (isFALSE(grid)) {
-        grid <- RegularArrayGrid(dim(x))
+        grid <- DummyArrayGrid(dim(x))
     } else if (isTRUE(grid) || !native || nworkers != 1L) {
         # Scaling down the block length so that each worker is more likely to get a task.
         max.block.length <- getAutoBlockLength(type(x))
@@ -106,7 +106,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     } else if (is.null(grid) || length(grid)==1L) {
         # Avoid overhead of block processing if there isn't any grid.
         if (is.null(grid)) {
-            grid <- RegularArrayGrid(dim(x))
+            grid <- DummyArrayGrid(dim(x))
         }
         frag.info <- list(grid, 1L, x)
         list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
