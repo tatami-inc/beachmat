@@ -79,8 +79,15 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
 #' makeNindexFromArrayViewport getAutoBlockLength type DummyArrayGrid
+#' isPristine seed DelayedArray
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, beachmat_by_row=FALSE) {
-    native <- is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix") 
+    if (is(x, "DelayedArray") && isPristine(x)) {
+        cur.seed <- seed(x)
+        if (.is_native(cur.seed)) {
+            x <- cur.seed
+        }
+    } 
+    native <- .is_native(x) 
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
     if (isFALSE(grid)) {
@@ -149,6 +156,11 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
             DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
         }
     }
+}
+
+#' @importClassesFrom Matrix lgCMatrix dgCMatrix
+.is_native <- function(x) {
+    is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix")
 }
 
 #' @importFrom DelayedArray set_grid_context
