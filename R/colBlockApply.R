@@ -84,8 +84,9 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
     if (isFALSE(grid)) {
-#        grid <- RegularArrayGrid(dim(x))
-        if (beachmat_by_row) {
+        if (prod(as.double(dim(x))) <= .Machine$integer.max) {
+            grid <- RegularArrayGrid(dim(x))
+        } else if (beachmat_by_row) {
             grid <- rowAutoGrid(x)
         } else {
             grid <- colAutoGrid(x)
