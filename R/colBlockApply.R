@@ -123,6 +123,20 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
     } else {
+        if (beachmat_by_row && .is_Csparse(x)) {
+            nrows <- dims(grid)[,1]
+            limits <- cumsum(nrows)
+            grid <- fragment_sparse_rows(x@i, x@p, limits)
+
+            last <- 1
+            for (i in seq_along(nrows)) {
+                grid[[i]][[3]] <- c(nrows[i], limits[i])
+                choice <- last + seq_len(nrows[i])
+                grid[[i]][4] <- list(rownames(x)[choice]) # possibly NULL.
+                last <- last + nrows[i]
+            }
+        }
+
         if (is.null(BPPARAM) || is(BPPARAM, "SerialParam") || is(BPPARAM, "MulticoreParam")) {
             # In serial or shared-memory cases, we can do the subsetting in each worker.
             # This avoids the effective copy of the entire matrix when we split it up,
@@ -148,23 +162,40 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 }
 
 #' @importClassesFrom Matrix lgCMatrix dgCMatrix
-.is_native <- function(x) {
-    is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix")
+.is_Csparse <- function(x) {
+    is(x, "lgCMatrix") || is(x, "dgCMatrix")
 }
 
+.is_native <- function(x) {
+    is.matrix(x) || .is_Csparse(x)
+}
+
+#' @useDynLib beachmat
+#' @importFrom Rcpp sourceCpp
 #' @importFrom DelayedArray makeNindexFromArrayViewport
 .subset_matrix <- function(x, vp) {
-    idx <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)
-    i <- idx[[1]]
-    j <- idx[[2]]
-    if (!is.null(i) && !is.null(j)) {
-        x[i, j, drop=FALSE]
-    } else if (!is.null(j)) {
-        x[, j, drop=FALSE]
-    } else if (!is.null(i)) {
-        x[i, , drop=FALSE]
+    if (is(vp, "ArrayViewport")) {
+        idx <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)
+        i <- idx[[1]]
+        j <- idx[[2]]
+        if (!is.null(i) && !is.null(j)) {
+            x[i, j, drop=FALSE]
+        } else if (!is.null(j)) {
+            x[, j, drop=FALSE]
+        } else if (!is.null(i)) {
+            x[i, , drop=FALSE]
+        } else {
+            x
+        }
     } else {
-        x
+        # This had damn better be a sparse matrix, subsetted by row!
+        idx <- sparse_subset_index(vp[[1]], vp[[2]])
+        new(class(x), 
+            x=x@x[idx], 
+            i=x@i[idx] - (vp[[3]][2] - vp[[3]][1]), # adjusting row indices for the new matrix.
+            p=vp[[2]],
+            Dim=c(vp[[3]][1], ncol(x)),
+            Dimnames=list(vp[[4]], colnames(x)))
     }
 }
 

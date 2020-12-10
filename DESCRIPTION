@@ -10,7 +10,8 @@ Imports:
     methods,
     DelayedArray (>= 0.15.14),
     BiocGenerics,
-    Matrix
+    Matrix,
+    Rcpp
 Suggests: 
     testthat,
     BiocStyle,
@@ -18,6 +19,7 @@ Suggests:
     rmarkdown,
     rcmdcheck,
     BiocParallel
+LinkingTo: Rcpp
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for reading from and 
         writing data to a variety of commonly used matrix types. Ordinary 
