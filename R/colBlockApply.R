@@ -93,9 +93,14 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     if (isFALSE(grid)) {
         grid <- DummyArrayGrid(dim(x))
     } else if (isTRUE(grid) || !native || nworkers != 1L) {
-        # Scaling down the block length so that each worker is more likely to get a task.
-        max.block.length <- getAutoBlockLength(type(x))
+        # Avoid block size limits for native matrices when grid=TRUE.
+        if (native && !isTRUE(grid)) {
+            max.block.length <- .Machine$integer.max
+        } else {
+            max.block.length <- getAutoBlockLength(type(x))
+        }
 
+        # Scaling down the block length so that each worker is more likely to get a task.
         if (beachmat_by_row) {
             expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
             block.length <- min(max.block.length, expected.block.length)
