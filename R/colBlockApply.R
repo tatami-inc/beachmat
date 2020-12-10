@@ -90,40 +90,39 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     native <- .is_native(x) 
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
-    if (isFALSE(grid)) {
-        grid <- DummyArrayGrid(dim(x))
-    } else if (isTRUE(grid) || !native || nworkers != 1L) {
-        # Avoid block size limits for native matrices when grid=TRUE.
-        if (native && !isTRUE(grid)) {
-            max.block.length <- .Machine$integer.max
-        } else {
-            max.block.length <- getAutoBlockLength(type(x))
-        }
+    if (is.logical(grid) || is.null(grid)) {
+        if (isTRUE(grid) || !native || nworkers != 1L) {
+            # Avoid block size limits for native matrices when grid=TRUE.
+            if (native && !isTRUE(grid)) {
+                max.block.length <- .Machine$integer.max
+            } else {
+                max.block.length <- getAutoBlockLength(type(x))
+            }
 
-        # Scaling down the block length so that each worker is more likely to get a task.
-        if (beachmat_by_row) {
-            expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
-            block.length <- min(max.block.length, expected.block.length)
-            grid <- rowAutoGrid(x, block.length=block.length)
-        } else {
-            expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
-            block.length <- min(max.block.length, expected.block.length)
-            grid <- colAutoGrid(x, block.length=block.length)
-        }
+            # Scaling down the block length so that each worker is more likely to get a task.
+            if (beachmat_by_row) {
+                expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
+                block.length <- min(max.block.length, expected.block.length)
+                grid <- rowAutoGrid(x, block.length=block.length)
+            } else {
+                expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
+                block.length <- min(max.block.length, expected.block.length)
+                grid <- colAutoGrid(x, block.length=block.length)
+            }
+        } else { 
+            grid <- DummyArrayGrid(dim(x))
+        } 
     }
 
     if (!native) {
         blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
 
-    } else if (is.null(grid) || length(grid)==1L) {
-        # Avoid overhead of block processing if there isn't any grid.
-        if (is.null(grid)) {
-            grid <- DummyArrayGrid(dim(x))
-        }
+    } else if (length(grid)==1L) {
+        # Avoid overhead of block subsetting if there isn't any grid.
         frag.info <- list(grid, 1L, x)
         list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
-    }  else {
+    } else {
         # Break up the native matrix in the parent to ensure that we only 
         # need to serialize the chunks to the child. Note that 'fragments' 
         # still contains objects in their native format.
