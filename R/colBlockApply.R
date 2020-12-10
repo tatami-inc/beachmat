@@ -78,7 +78,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
-#' makeNindexFromArrayViewport getAutoBlockLength type DummyArrayGrid
+#' getAutoBlockLength type DummyArrayGrid
 #' isPristine seed DelayedArray
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, beachmat_by_row=FALSE) {
     if (is(x, "DelayedArray") && isPristine(x)) {
@@ -123,40 +123,25 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
     } else {
-        # Break up the native matrix in the parent to ensure that we only 
-        # need to serialize the chunks to the child. Note that 'fragments' 
-        # still contains objects in their native format.
-        fragments <- vector("list", length(grid))
-        common.args <- list(x=x, drop=FALSE)
+        if (is.null(BPPARAM) || is(BPPARAM, "SerialParam") || is(BPPARAM, "MulticoreParam")) {
+            # In serial or shared-memory cases, we can do the subsetting in each worker.
+            # This avoids the effective copy of the entire matrix when we split it up,
+            # while also bypassing any need to serialize the entire matrix to the workers.
+            DelayedArray:::bplapply2(seq_along(grid), function(i) {
+                block <- .subset_matrix(x, grid[[i]])
+                frag.info <- list(grid, i, block)
+                .helper(frag.info, beachmat_internal_FUN=FUN, ...)
+            }, BPPARAM=BPPARAM)
 
-        # However, if we're not parallelizing, then we just execute in 
-        # the loop and avoid making an effective copy of the entire matrix.
-        nopar <- nworkers==1L
-
-        for (i in seq_along(fragments)) {
-            idx <- makeNindexFromArrayViewport(grid[[i]], expand.RangeNSBS=TRUE)
-
-            if (is.null(idx[[1]])) {
-                idx[[1]] <- substitute()
-            }
-            if (is.null(idx[[2]])) {
-                idx[[2]] <- substitute()
-            }
-            names(idx) <- c("i", "j")
-
-            block <- do.call("[", c(common.args, idx))
-            frag.info <- list(grid, i, block)
-
-            if (nopar) {
-                fragments[i] <- list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
-            } else {
-                fragments[[i]] <- frag.info
-            }
-        }
-
-        if (nopar) {
-            fragments
         } else {
+            # Break up the native matrix in the parent to ensure that we only 
+            # need to serialize the chunks to the child. Note that 'fragments' 
+            # still contains objects in their native format.
+            fragments <- vector("list", length(grid))
+            for (i in seq_along(fragments)) {
+                block <- .subset_matrix(x, grid[[i]])
+                fragments[[i]] <- list(grid, i, block)
+            }
             DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
         }
     }
@@ -165,6 +150,22 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 #' @importClassesFrom Matrix lgCMatrix dgCMatrix
 .is_native <- function(x) {
     is.matrix(x) || is(x, "lgCMatrix") || is(x, "dgCMatrix")
+}
+
+#' @importFrom DelayedArray makeNindexFromArrayViewport
+.subset_matrix <- function(x, vp) {
+    idx <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)
+    i <- idx[[1]]
+    j <- idx[[2]]
+    if (!is.null(i) && !is.null(j)) {
+        x[i, j, drop=FALSE]
+    } else if (!is.null(j)) {
+        x[, j, drop=FALSE]
+    } else if (!is.null(i)) {
+        x[i, , drop=FALSE]
+    } else {
+        x
+    }
 }
 
 #' @importFrom DelayedArray set_grid_context
