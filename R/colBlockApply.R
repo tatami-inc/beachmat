@@ -124,17 +124,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 
     } else {
         if (beachmat_by_row && .is_Csparse(x)) {
-            nrows <- dims(grid)[,1]
-            limits <- cumsum(nrows)
-            grid <- fragment_sparse_rows(x@i, x@p, limits)
-
-            last <- 1
-            for (i in seq_along(nrows)) {
-                grid[[i]][[3]] <- c(nrows[i], limits[i])
-                choice <- last + seq_len(nrows[i])
-                grid[[i]][4] <- list(rownames(x)[choice]) # possibly NULL.
-                last <- last + nrows[i]
-            }
+            grid <- .prepare_sparse_row_subset(x, grid)
         }
 
         if (is.null(BPPARAM) || is(BPPARAM, "SerialParam") || is(BPPARAM, "MulticoreParam")) {
@@ -168,6 +158,22 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 
 .is_native <- function(x) {
     is.matrix(x) || .is_Csparse(x)
+}
+
+.prepare_sparse_row_subset <- function(x, grid) {
+    nrows <- dims(grid)[,1]
+    limits <- cumsum(nrows)
+    grid <- fragment_sparse_rows(x@i, x@p, limits)
+
+    last <- 1
+    for (i in seq_along(nrows)) {
+        grid[[i]][[3]] <- c(nrows[i], limits[i])
+        choice <- last + seq_len(nrows[i])
+        grid[[i]][4] <- list(rownames(x)[choice]) # possibly NULL.
+        last <- last + nrows[i]
+    }
+
+    grid
 }
 
 #' @useDynLib beachmat
