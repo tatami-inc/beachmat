@@ -40,7 +40,7 @@ along with a few modifications to improve efficiency for parallel processing and
 
 Note that the fragmentation of \code{x} into blocks is not easily predictable,
 meaning that \code{FUN} should be capable of operating on each row/column independently.
-Users can retrieve the current location of each block within \code{x} with \code{\link{currentViewport}} inside \code{FUN}.
+Users can retrieve the current location of each block of \code{x} by calling \code{\link{currentViewport}} inside \code{FUN}.
 
 If \code{grid} is not explicitly set to an \linkS4class{ArrayGrid} object, it can take several values:
 \itemize{

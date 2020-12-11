@@ -2,8 +2,8 @@
 # library(testthat); library(beachmat); source("test-sparse.R")
 
 chunk_by_row_fast <- function(x, grid) {
-    beachmat:::.prepare_sparse_row_subset(x, grid)
-    lapply(grid, FUN=beachmat:::.subset_matrix, x=x)
+    grid <- beachmat:::.prepare_sparse_row_subset(x, grid)
+    lapply(grid, FUN=beachmat:::.subset_matrix, x=x, vp=NULL)
 }
 
 chunk_by_row_ref <- function(x, grid) {
@@ -48,4 +48,18 @@ test_that("fast row chunking works correctly", {
         chunk_by_row_fast(y[0,], grid),
         chunk_by_row_ref(y[0,], grid)
     )
+})
+
+library(DelayedArray)
+test_that("grid viewport is correctly passed", {
+    y <- Matrix::rsparsematrix(1000, 100, density=0.01)
+    setAutoBlockSize(ncol(y) * 8 * 10)
+
+    out <- rowBlockApply(y, function(x) currentViewport(), grid=TRUE)
+    expect_identical(length(out), 100L)
+
+    ref <- rowBlockApply(DelayedArray(y), function(x) currentViewport(), grid=TRUE)
+    expect_identical(out, ref)
+
+    setAutoBlockSize()
 })

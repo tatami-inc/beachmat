@@ -25,7 +25,7 @@
 #'
 #' Note that the fragmentation of \code{x} into blocks is not easily predictable,
 #' meaning that \code{FUN} should be capable of operating on each row/column independently.
-#' Users can retrieve the current location of each block within \code{x} with \code{\link{currentViewport}} inside \code{FUN}.
+#' Users can retrieve the current location of each block of \code{x} by calling \code{\link{currentViewport}} inside \code{FUN}.
 #'
 #' If \code{grid} is not explicitly set to an \linkS4class{ArrayGrid} object, it can take several values:
 #' \itemize{
@@ -77,9 +77,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 }
 
 #' @importFrom methods is
-#' @importFrom DelayedArray blockApply rowAutoGrid colAutoGrid
-#' getAutoBlockLength type DummyArrayGrid
-#' isPristine seed DelayedArray
+#' @importFrom DelayedArray blockApply DummyArrayGrid isPristine seed DelayedArray
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, beachmat_by_row=FALSE) {
     if (is(x, "DelayedArray") && isPristine(x)) {
         cur.seed <- seed(x)
@@ -90,64 +88,82 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     native <- .is_native(x) 
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
-    if (is.logical(grid) || is.null(grid)) {
-        if (isTRUE(grid) || !native || nworkers != 1L) {
-            # Avoid block size limits for native matrices when grid=TRUE.
-            if (native && !isTRUE(grid)) {
-                max.block.length <- .Machine$integer.max
-            } else {
-                max.block.length <- getAutoBlockLength(type(x))
-            }
-
-            # Scaling down the block length so that each worker is more likely to get a task.
-            if (beachmat_by_row) {
-                expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
-                block.length <- min(max.block.length, expected.block.length)
-                grid <- rowAutoGrid(x, block.length=block.length)
-            } else {
-                expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
-                block.length <- min(max.block.length, expected.block.length)
-                grid <- colAutoGrid(x, block.length=block.length)
-            }
-        } else { 
-            grid <- DummyArrayGrid(dim(x))
-        } 
+    if (isFALSE(grid)) {
+        grid <- DummyArrayGrid(dim(x))
     }
-
+    
     if (!native) {
-        blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
-
-    } else if (length(grid)==1L) {
-        # Avoid overhead of block subsetting if there isn't any grid.
-        frag.info <- list(grid, 1L, x)
-        list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
+        if (!is(grid, "ArrayGrid")) {
+            grid <- .define_multiworker_grid(x, nworkers, beachmat_by_row=beachmat_by_row) 
+        }
+        output <- blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
 
     } else {
-        if (beachmat_by_row && .is_Csparse(x)) {
-            grid <- .prepare_sparse_row_subset(x, grid)
+        if (!is(grid, "ArrayGrid")) {
+            if (isTRUE(grid)) {
+                grid <- .define_multiworker_grid(x, nworkers, beachmat_by_row=beachmat_by_row)
+            } else if (nworkers!=1) {
+                grid <- .define_multiworker_grid(x, nworkers, beachmat_by_row=beachmat_by_row, 
+                    max.block.length=.Machine$integer.max)
+            } else {
+                grid <- DummyArrayGrid(dim(x))
+            }
         }
 
-        if (is.null(BPPARAM) || is(BPPARAM, "SerialParam") || is(BPPARAM, "MulticoreParam")) {
-            # In serial or shared-memory cases, we can do the subsetting in each worker.
-            # This avoids the effective copy of the entire matrix when we split it up,
-            # while also bypassing any need to serialize the entire matrix to the workers.
-            DelayedArray:::bplapply2(seq_along(grid), function(i) {
-                block <- .subset_matrix(x, grid[[i]])
-                frag.info <- list(grid, i, block)
-                .helper(frag.info, beachmat_internal_FUN=FUN, ...)
-            }, BPPARAM=BPPARAM)
+        if (length(grid)==1L) {
+            # Avoid overhead of block subsetting if there isn't any grid.
+            frag.info <- list(grid, 1L, x)
+            output <- list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
         } else {
-            # Break up the native matrix in the parent to ensure that we only 
-            # need to serialize the chunks to the child. Note that 'fragments' 
-            # still contains objects in their native format.
-            fragments <- vector("list", length(grid))
-            for (i in seq_along(fragments)) {
-                block <- .subset_matrix(x, grid[[i]])
-                fragments[[i]] <- list(grid, i, block)
+            if (beachmat_by_row && .is_Csparse(x)) {
+                # This predefines the indices for faster chunking later on:
+                # try rowBlockApply(y, rowSums, grid=TRUE) with and without this line.
+                extra <- .prepare_sparse_row_subset(x, grid)
+            } else {
+                extra <- NULL
             }
-            DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
+
+            if (is.null(BPPARAM) || is(BPPARAM, "SerialParam") || is(BPPARAM, "MulticoreParam")) {
+                # In serial or shared-memory cases, we can do the subsetting in each worker.
+                # This avoids the effective copy of the entire matrix when we split it up,
+                # while also bypassing any need to serialize the entire matrix to the workers.
+                output <- DelayedArray:::bplapply2(seq_along(grid), function(i) {
+                    block <- .subset_matrix(x, grid[[i]], extra[[i]])
+                    frag.info <- list(grid, i, block)
+                    .helper(frag.info, beachmat_internal_FUN=FUN, ...)
+                }, BPPARAM=BPPARAM)
+
+            } else {
+                # Break up the native matrix in the parent to ensure that we only 
+                # need to serialize the chunks to the child. Note that 'fragments' 
+                # still contains objects in their native format.
+                fragments <- vector("list", length(grid))
+                for (i in seq_along(fragments)) {
+                    block <- .subset_matrix(x, grid[[i]], extra[[i]])
+                    fragments[[i]] <- list(grid, i, block)
+                }
+                output <- DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
+            }
         }
+    }
+
+    output
+}
+
+#' @importFrom DelayedArray rowAutoGrid colAutoGrid getAutoBlockLength type
+.define_multiworker_grid <- function(x, nworkers, beachmat_by_row, 
+    max.block.length=getAutoBlockLength(type(x)))
+{
+    # Scaling down the block length so that each worker is more likely to get a task.
+    if (beachmat_by_row) {
+        expected.block.length <- max(1, ceiling(nrow(x) / nworkers) * ncol(x))
+        block.length <- min(max.block.length, expected.block.length)
+        rowAutoGrid(x, block.length=block.length)
+    } else {
+        expected.block.length <- max(1, ceiling(ncol(x) / nworkers) * nrow(x))
+        block.length <- min(max.block.length, expected.block.length)
+        colAutoGrid(x, block.length=block.length)
     }
 }
 
@@ -179,8 +195,9 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 #' @useDynLib beachmat
 #' @importFrom Rcpp sourceCpp
 #' @importFrom DelayedArray makeNindexFromArrayViewport
-.subset_matrix <- function(x, vp) {
-    if (is(vp, "ArrayViewport")) {
+#' @importFrom methods new
+.subset_matrix <- function(x, vp, rowsparse=NULL) {
+    if (is.null(rowsparse)) {
         idx <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)
         i <- idx[[1]]
         j <- idx[[2]]
@@ -195,13 +212,13 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         }
     } else {
         # This had damn better be a sparse matrix, subsetted by row!
-        idx <- sparse_subset_index(vp[[1]], vp[[2]])
+        idx <- sparse_subset_index(rowsparse[[1]], rowsparse[[2]])
         new(class(x), 
             x=x@x[idx], 
-            i=x@i[idx] - (vp[[3]][2] - vp[[3]][1]), # adjusting row indices for the new matrix.
-            p=vp[[2]],
-            Dim=c(vp[[3]][1], ncol(x)),
-            Dimnames=list(vp[[4]], colnames(x)))
+            i=x@i[idx] - (rowsparse[[3]][2] - rowsparse[[3]][1]), # adjusting row indices for the new matrix.
+            p=rowsparse[[2]],
+            Dim=c(rowsparse[[3]][1], ncol(x)),
+            Dimnames=list(rowsparse[[4]], colnames(x)))
     }
 }
 
