@@ -50,6 +50,23 @@ test_that("fast row chunking works correctly", {
     )
 })
 
+test_that("fast row names are passed along correctly", {
+    y <- Matrix::rsparsematrix(1000, 100, density=0.01)
+    rownames(y) <- sprintf("Y%i", seq_len(nrow(y)))
+
+    grid <- DelayedArray::RegularArrayGrid(dim(y))
+    out <- chunk_by_row_fast(y, grid)
+    expect_identical(rownames(y), unlist(lapply(out, rownames)))
+
+    grid <- DelayedArray::RegularArrayGrid(dim(y), spacings=c(10, ncol(y)))
+    out <- chunk_by_row_fast(y, grid)
+    expect_identical(rownames(y), unlist(lapply(out, rownames)))
+
+    grid <- DelayedArray::RegularArrayGrid(dim(y), spacings=c(nrow(y)/3, ncol(y)))
+    out <- chunk_by_row_fast(y, grid)
+    expect_identical(rownames(y), unlist(lapply(out, rownames)))
+})
+
 library(DelayedArray)
 test_that("grid viewport is correctly passed", {
     y <- Matrix::rsparsematrix(1000, 100, density=0.01)

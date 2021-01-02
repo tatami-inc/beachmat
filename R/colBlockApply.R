@@ -181,7 +181,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
     limits <- cumsum(nrows)
     grid <- fragment_sparse_rows(x@i, x@p, limits)
 
-    last <- 1
+    last <- 0L
     for (i in seq_along(nrows)) {
         grid[[i]][[3]] <- c(nrows[i], limits[i])
         choice <- last + seq_len(nrows[i])
