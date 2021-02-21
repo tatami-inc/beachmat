@@ -5,9 +5,23 @@
 \section{Version 2.8.0}{\itemize{
 \item Improve the efficiency of sparse row subsetting in non-DelayedArray \code{rowBlockApply()}.
 
+\item Avoid overhead of \pkg{DelayedArray} block processing when DelayedArray is pristine and the type is supported.
+
 \item Migrated \code{whichNonZero()} from \pkg{scuttle}.
 
 \item Added \code{toCsparse()} to make it easier to convert SparseArraySeeds to CsparseMatrixes.
+}}
+
+\section{Version 2.6.0}{\itemize{
+\item Added version 3 of the C++ API.
+This relies on \pkg{DelayedArray} block processing to handle the various abstractions,
+and provides convenient C++ abstractions for the different input types.
+More methods for non-zero extraction are provided for sparse algorithms,
+and the class hierarchy handles flexibility of the input types rather than requiring user-side templating.
+
+\item Added the \code{colBlockApply()} and \code{rowBlockApply()} functions for more convenient and efficient column/row-block processing.
+
+\item Added doxygen documentation for the C++ API.
 }}
 
 \section{Version 2.0.0}{\itemize{
