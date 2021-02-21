@@ -2,6 +2,14 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.8.0}{\itemize{
+\item Improve the efficiency of sparse row subsetting in non-DelayedArray \code{rowBlockApply()}.
+
+\item Migrated \code{whichNonZero()} from \pkg{scuttle}.
+
+\item Added \code{toCsparse()} to make it easier to convert SparseArraySeeds to CsparseMatrixes.
+}}
+
 \section{Version 2.0.0}{\itemize{
 \item Converted beachmat into a header-only library to simplify linking, avoid ABI incompatibilities.
 

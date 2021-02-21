@@ -2,6 +2,7 @@
 
 export(colBlockApply)
 export(rowBlockApply)
+export(toCsparse)
 export(whichNonZero)
 exportMethods(whichNonZero)
 import(methods)

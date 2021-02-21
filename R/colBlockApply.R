@@ -6,7 +6,7 @@
 #' This can be of any class that respects the matrix contract.
 #' @param FUN A function that operates on columns or rows in \code{x},
 #' for \code{colBlockApply} and \code{rowBlockApply} respectively.
-#' Ordinary matrices, *gCMatrix or \linkS4class{SparseArraySeed} objects may be passed as the first argument.
+#' Ordinary matrices, \linkS4class{CsparseMatrix} or \linkS4class{SparseArraySeed} objects may be passed as the first argument.
 #' @param ... Further arguments to pass to \code{FUN}.
 #' @param grid An \linkS4class{ArrayGrid} object specifying how \code{x} should be split into blocks.
 #' For \code{colBlockApply} and \code{rowBlockApply}, blocks should consist of consecutive columns and rows, respectively.
@@ -62,6 +62,8 @@
 #'
 #' @seealso
 #' \code{\link{blockApply}}, for the original \pkg{DelayedArray} implementation.
+#'
+#' \code{\link{toCsparse}}, to convert SparseArraySeeds to CsparseMatrix objects prior to further processing in \code{FUN}. 
 #' 
 #' @export
 #' @importFrom DelayedArray getAutoBPPARAM
