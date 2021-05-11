@@ -10,6 +10,8 @@
 \item Migrated \code{whichNonZero()} from \pkg{scuttle}.
 
 \item Added \code{toCsparse()} to make it easier to convert SparseArraySeeds to CsparseMatrixes.
+
+\item Added \code{realizeFileBackedMatrix()} to, well, realize a DelayedMatrix with file-backed components.
 }}
 
 \section{Version 2.6.0}{\itemize{
