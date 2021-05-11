@@ -11,6 +11,7 @@
 #' @param grid An \linkS4class{ArrayGrid} object specifying how \code{x} should be split into blocks.
 #' For \code{colBlockApply} and \code{rowBlockApply}, blocks should consist of consecutive columns and rows, respectively.
 #' Alternatively, this can be set to \code{TRUE} or \code{FALSE}, see Details.
+#' @param coerce.sparse Logical scalar indicating whether blocks of a sparse \linkS4class{DelayedMatrix} \code{x} should be automatically coerced into \linkS4class{CsparseMatrix} objects. 
 #' @param BPPARAM A BiocParallelParam object from the \pkg{BiocParallel} package,
 #' specifying how parallelization should be performed across blocks.
 #'
@@ -38,6 +39,10 @@
 #' \item If \code{FALSE}, the function will choose a grid that covers the entire \code{x}.
 #' This is provided for completeness and is only really useful for debugging.
 #' }
+#'
+#' The default of \code{coerce.sparse=TRUE} will generate \linkS4class{dgCMatrix} objects during block processing of a sparse DelayedMatrix \code{x}.
+#' This is convenient as it avoids the need for \code{FUN} to specially handle \linkS4class{SparseArraySeed} objects.
+#' If the coercion is not desired (e.g., to preserve integer values in \code{x}), it can be disabled with \code{coerce.sparse=FALSE}.
 #' 
 #' @examples
 #' x <- matrix(runif(10000), ncol=10)
@@ -67,20 +72,20 @@
 #' 
 #' @export
 #' @importFrom DelayedArray getAutoBPPARAM
-colBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
-    .blockApply2(x, FUN=FUN, ..., grid=grid, BPPARAM=BPPARAM, beachmat_by_row=FALSE)
+colBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=getAutoBPPARAM()) {
+    .blockApply2(x, FUN=FUN, ..., grid=grid, coerce.sparse=coerce.sparse, BPPARAM=BPPARAM, beachmat_by_row=FALSE)
 }
 
 #' @export
 #' @rdname colBlockApply
 #' @importFrom DelayedArray getAutoBPPARAM
-rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
-    .blockApply2(x, FUN=FUN, ..., grid=grid, BPPARAM=BPPARAM, beachmat_by_row=TRUE)
+rowBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=getAutoBPPARAM()) {
+    .blockApply2(x, FUN=FUN, ..., grid=grid, coerce.sparse=coerce.sparse, BPPARAM=BPPARAM, beachmat_by_row=TRUE)
 }
 
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply DummyArrayGrid isPristine seed DelayedArray
-.blockApply2 <- function(x, FUN, ..., grid, BPPARAM, beachmat_by_row=FALSE) {
+.blockApply2 <- function(x, FUN, ..., grid, BPPARAM, coerce.sparse=TRUE, beachmat_by_row=FALSE) {
     if (is(x, "DelayedArray") && isPristine(x)) {
         cur.seed <- seed(x)
         if (.is_native(cur.seed)) {
@@ -98,7 +103,11 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         if (!is(grid, "ArrayGrid")) {
             grid <- .define_multiworker_grid(x, nworkers, beachmat_by_row=beachmat_by_row) 
         }
-        output <- blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
+        if (coerce.sparse) {
+            output <- blockApply(x, FUN=.sparse_helper, beachmat_internal_FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
+        } else {
+            output <- blockApply(x, FUN=FUN, ..., grid=grid, as.sparse=NA, BPPARAM=BPPARAM)
+        }
 
     } else {
         if (!is(grid, "ArrayGrid")) {
@@ -115,7 +124,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
         if (length(grid)==1L) {
             # Avoid overhead of block subsetting if there isn't any grid.
             frag.info <- list(grid, 1L, x)
-            output <- list(.helper(frag.info, beachmat_internal_FUN=FUN, ...))
+            output <- list(.viewport_helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
         } else {
             if (beachmat_by_row && .is_Csparse(x)) {
@@ -133,7 +142,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
                 output <- DelayedArray:::bplapply2(seq_along(grid), function(i) {
                     block <- .subset_matrix(x, grid[[i]], extra[[i]])
                     frag.info <- list(grid, i, block)
-                    .helper(frag.info, beachmat_internal_FUN=FUN, ...)
+                    .viewport_helper(frag.info, beachmat_internal_FUN=FUN, ...)
                 }, BPPARAM=BPPARAM)
 
             } else {
@@ -145,7 +154,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
                     block <- .subset_matrix(x, grid[[i]], extra[[i]])
                     fragments[[i]] <- list(grid, i, block)
                 }
-                output <- DelayedArray:::bplapply2(fragments, FUN=.helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
+                output <- DelayedArray:::bplapply2(fragments, FUN=.viewport_helper, beachmat_internal_FUN=FUN, ..., BPPARAM=BPPARAM)
             }
         }
     }
@@ -225,7 +234,13 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, BPPARAM=getAutoBPPARAM()) {
 }
 
 #' @importFrom DelayedArray set_grid_context
-.helper <- function(X, beachmat_internal_FUN, ...) {
+.viewport_helper <- function(X, beachmat_internal_FUN, ...) {
     set_grid_context(X[[1]], X[[2]])
     beachmat_internal_FUN(X[[3]], ...)
+}
+
+#' @importFrom DelayedArray set_grid_context effectiveGrid currentBlockId
+.sparse_helper <- function(beachmat_internal_x, beachmat_internal_FUN, ...) {
+    set_grid_context(effectiveGrid(), currentBlockId())
+    beachmat_internal_FUN(toCsparse(beachmat_internal_x), ...)
 }

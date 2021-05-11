@@ -5,9 +5,23 @@
 \alias{rowBlockApply}
 \title{Apply over blocks of columns or rows}
 \usage{
-colBlockApply(x, FUN, ..., grid = NULL, BPPARAM = getAutoBPPARAM())
+colBlockApply(
+  x,
+  FUN,
+  ...,
+  grid = NULL,
+  coerce.sparse = TRUE,
+  BPPARAM = getAutoBPPARAM()
+)
 
-rowBlockApply(x, FUN, ..., grid = NULL, BPPARAM = getAutoBPPARAM())
+rowBlockApply(
+  x,
+  FUN,
+  ...,
+  grid = NULL,
+  coerce.sparse = TRUE,
+  BPPARAM = getAutoBPPARAM()
+)
 }
 \arguments{
 \item{x}{A matrix-like object to be split into blocks and looped over.
@@ -15,13 +29,15 @@ This can be of any class that respects the matrix contract.}
 
 \item{FUN}{A function that operates on columns or rows in \code{x},
 for \code{colBlockApply} and \code{rowBlockApply} respectively.
-Ordinary matrices, *gCMatrix or \linkS4class{SparseArraySeed} objects may be passed as the first argument.}
+Ordinary matrices, \linkS4class{CsparseMatrix} or \linkS4class{SparseArraySeed} objects may be passed as the first argument.}
 
 \item{...}{Further arguments to pass to \code{FUN}.}
 
 \item{grid}{An \linkS4class{ArrayGrid} object specifying how \code{x} should be split into blocks.
 For \code{colBlockApply} and \code{rowBlockApply}, blocks should consist of consecutive columns and rows, respectively.
 Alternatively, this can be set to \code{TRUE} or \code{FALSE}, see Details.}
+
+\item{coerce.sparse}{Logical scalar indicating whether blocks of a sparse \linkS4class{DelayedMatrix} \code{x} should be automatically coerced into \linkS4class{CsparseMatrix} objects.}
 
 \item{BPPARAM}{A BiocParallelParam object from the \pkg{BiocParallel} package,
 specifying how parallelization should be performed across blocks.}
@@ -53,6 +69,10 @@ This avoids unnecessary copies of \code{x} and is best used when \code{FUN} itse
 \item If \code{FALSE}, the function will choose a grid that covers the entire \code{x}.
 This is provided for completeness and is only really useful for debugging.
 }
+
+The default of \code{coerce.sparse=TRUE} will generate \linkS4class{dgCMatrix} objects during block processing of a sparse DelayedMatrix \code{x}.
+This is convenient as it avoids the need for \code{FUN} to specially handle \linkS4class{SparseArraySeed} objects.
+If the coercion is not desired (e.g., to preserve integer values in \code{x}), it can be disabled with \code{coerce.sparse=FALSE}.
 }
 \examples{
 x <- matrix(runif(10000), ncol=10)
@@ -78,4 +98,6 @@ str(rowBlockApply(x, rowSums, BPPARAM=BPPARAM))
 }
 \seealso{
 \code{\link{blockApply}}, for the original \pkg{DelayedArray} implementation.
+
+\code{\link{toCsparse}}, to convert SparseArraySeeds to CsparseMatrix objects prior to further processing in \code{FUN}.
 }
