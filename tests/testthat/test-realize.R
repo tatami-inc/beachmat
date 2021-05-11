@@ -11,7 +11,7 @@ test_that("realizeFileBackedMatrix is a no-op for in-memory objects", {
 
     x1 <- x+1
     expect_identical(x1, realizeFileBackedMatrix(x1))
-    expect_identical(cbind(x, x), realizeFileBackedMatrix(BiocGenerics::cbind(x, x)))
+    expect_identical(BiocGenerics::cbind(x, x), realizeFileBackedMatrix(BiocGenerics::cbind(x, x)))
 
     y <- Matrix::rsparsematrix(50, 10, density=0.2)
     expect_identical(y, realizeFileBackedMatrix(y))

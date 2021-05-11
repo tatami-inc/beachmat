@@ -18,7 +18,8 @@ Suggests:
     knitr,
     rmarkdown,
     rcmdcheck,
-    BiocParallel
+    BiocParallel,
+    HDF5Array
 LinkingTo: Rcpp
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: Provides a consistent C++ class interface for reading from and 
