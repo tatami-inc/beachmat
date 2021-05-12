@@ -53,7 +53,8 @@ isFileBackedMatrix <- function(x) {
     # Figure out if any of the underlying seeds have a path() method.
     has.path <- tryCatch({
         seedApply(x, function(i) {
-            !is.null(selectMethod(path, class(i), optional=TRUE))
+            p <- try(path(i), silent=TRUE)
+            !is(p, "try-error")
         })
     }, error=function(e) {
         FALSE
