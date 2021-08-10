@@ -86,13 +86,21 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=ge
 #' @importFrom methods is
 #' @importFrom DelayedArray blockApply DummyArrayGrid isPristine seed DelayedArray
 .blockApply2 <- function(x, FUN, ..., grid, BPPARAM, coerce.sparse=TRUE, beachmat_by_row=FALSE) {
-    if (is(x, "DelayedArray") && isPristine(x)) {
-        cur.seed <- seed(x)
-        if (.is_native(cur.seed)) {
-            x <- cur.seed
+    if (is(x, "DelayedArray")) {
+        if (isPristine(x)) {
+            cur.seed <- seed(x)
+            output <- .sanitize_if_native(cur.seed)
+        } else {
+            output <- list(native=FALSE, csparse=FALSE, x=x)
         }
-    } 
-    native <- .is_native(x) 
+    } else {
+        output <- .sanitize_if_native(x)
+    }
+
+    native <- output$native
+    csparse <- output$csparse
+    x <- output$x
+
     nworkers <- if (is.null(BPPARAM)) 1L else BiocParallel::bpnworkers(BPPARAM)
 
     if (isFALSE(grid)) {
@@ -127,7 +135,7 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=ge
             output <- list(.viewport_helper(frag.info, beachmat_internal_FUN=FUN, ...))
 
         } else {
-            if (beachmat_by_row && .is_Csparse(x)) {
+            if (beachmat_by_row && csparse) {
                 # This predefines the indices for faster chunking later on:
                 # try rowBlockApply(y, rowSums, grid=TRUE) with and without this line.
                 extra <- .prepare_sparse_row_subset(x, grid)
@@ -178,15 +186,6 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=ge
     }
 }
 
-#' @importClassesFrom Matrix lgCMatrix dgCMatrix
-.is_Csparse <- function(x) {
-    is(x, "lgCMatrix") || is(x, "dgCMatrix")
-}
-
-.is_native <- function(x) {
-    is.matrix(x) || .is_Csparse(x)
-}
-
 .prepare_sparse_row_subset <- function(x, grid) {
     nrows <- dims(grid)[,1]
     limits <- cumsum(nrows)
@@ -201,6 +200,30 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=ge
     }
 
     grid
+}
+
+#' @importClassesFrom Matrix lgCMatrix dgCMatrix
+.sanitize_if_native <- function(x) {
+    native <- FALSE
+    csparse <- FALSE
+
+    if (is.matrix(x)) {
+        native <- TRUE
+    } else if (is(x, "dgCMatrix")) {
+        native <- TRUE
+        csparse <- TRUE
+        if (class(x)[1] != "dgCMatrix") {
+            x <- as(x, "dgCMatrix") # Avoid difficulties with subclasses.
+        }
+    } else if (is(x, "lgCMatrix")) {
+        native <- TRUE
+        csparse <- TRUE
+        if (class(x)[1] != "lgCMatrix") {
+            x <- as(x, "lgCMatrix") # Avoid difficulties with subclasses.
+        }
+    } 
+
+    list(native=native, csparse=csparse, x=x)
 }
 
 #' @useDynLib beachmat
