@@ -2,6 +2,10 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.14.0}{\itemize{
+\item Added the \pkg{tatami} C++ library for LinkingTo from other packages.
+}}
+
 \section{Version 2.8.0}{\itemize{
 \item Improve the efficiency of sparse row subsetting in non-DelayedArray \code{rowBlockApply()}.
 
