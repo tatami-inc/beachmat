@@ -3,3 +3,4 @@
 *.html
 inst/Checks/
 inst/include/source-*
+*.rds

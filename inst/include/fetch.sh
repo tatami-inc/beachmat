@@ -22,6 +22,24 @@ cp -r include/tatami/ ../tatami
 git checkout master
 cd -
 
+# Same process for raticate.
+
+if [ ! -e source-raticate ]
+then 
+    git clone https://github.com/LTLA/raticate source-raticate
+else 
+    cd source-raticate
+    git pull
+    cd -
+fi
+
+cd source-raticate
+git checkout 9746b1ce04ff6f8581e416dcd0d461522286998e
+rm -rf ../raticate
+cp -r include/raticate/ ../raticate
+git checkout master
+cd -
+
 # Same process for byteme.
 
 if [ ! -e source-byteme ]
