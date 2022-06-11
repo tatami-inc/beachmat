@@ -41,6 +41,9 @@ struct Parsed {
 /**
  * @cond
  */
+template<typename Data, typename Index>
+Parsed<Data, Index> parse(Rcpp::RObject, bool = false); // declaration for recursive use.
+
 inline std::string make_to_string(const Rcpp::RObject& str) {
     Rcpp::StringVector as_str(str);
     if (as_str.size()!=1) { 
