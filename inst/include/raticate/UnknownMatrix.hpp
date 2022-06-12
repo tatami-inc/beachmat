@@ -36,11 +36,13 @@ struct UnknownMatrixCore {
             Rcpp::Function fun = base["dim"];
             Rcpp::RObject output = fun(seed);
             if (output.sexp_type() != INTSXP) {
-                throw std::runtime_error("'dims' should return an integer vector");
+                auto ctype = get_class_name(original_seed);
+                throw std::runtime_error("'dim(<" + ctype + ">)' should return an integer vector");
             }
             Rcpp::IntegerVector dims(output);
             if (dims.size() != 2 || dims[0] < 0 || dims[1] < 0) {
-                throw std::runtime_error("'dims' should contain two non-negative integers");
+                auto ctype = get_class_name(original_seed);
+                throw std::runtime_error("'dim(<" + ctype + ">)' should contain two non-negative integers");
             }
             nrow = dims[0];
             ncol = dims[1];
@@ -50,7 +52,8 @@ struct UnknownMatrixCore {
             Rcpp::Function fun = delayed_env["is_sparse"];
             Rcpp::LogicalVector is_sparse = fun(seed);
             if (is_sparse.size() != 1) {
-                throw std::runtime_error("'is_sparse' should return a logical vector of length 1");
+                auto ctype = get_class_name(original_seed);
+                throw std::runtime_error("'is_sparse(<" + ctype + ">)' should return a logical vector of length 1");
             }
             sparse = (is_sparse[0] != 0);
         }
@@ -62,7 +65,8 @@ struct UnknownMatrixCore {
             if (needs_chunks) {
                 Rcpp::IntegerVector chunks(output);
                 if (chunks.size() != 2 || chunks[0] < 0 || chunks[1] < 0) {
-                    throw std::runtime_error("'chunks' should contain two non-negative integers");
+                    auto ctype = get_class_name(original_seed);
+                    throw std::runtime_error("'chunkdim(<" + ctype + ">)' should return a vector containing two non-negative integers");
                 }
                 chunk_nrow = chunks[0];
                 chunk_ncol = chunks[1];
@@ -74,7 +78,8 @@ struct UnknownMatrixCore {
             Rcpp::RObject output = fun(seed);
             Rcpp::IntegerVector spacing = output.slot("spacings");
             if (spacing.size() != 2 || spacing[1] < 0) {
-                throw std::runtime_error("'spacings' slot of 'colAutoGrid' output should contain two non-negative integers");
+                auto ctype = get_class_name(original_seed);
+                throw std::runtime_error("'spacings' slot of 'colAutoGrid(<" + ctype + ">)' should contain two non-negative integers");
             }
             block_ncol = spacing[1];
         }
@@ -84,7 +89,8 @@ struct UnknownMatrixCore {
             Rcpp::RObject output = fun(seed);
             Rcpp::IntegerVector spacing = output.slot("spacings");
             if (spacing.size() != 2 || spacing[0] < 0) {
-                throw std::runtime_error("'spacings' slot of 'rowAutoGrid' output should contain two non-negative integers");
+                auto ctype = get_class_name(original_seed);
+                throw std::runtime_error("'spacings' slot of 'rowAutoGrid(<" + ctype + ">)' should contain two non-negative integers");
             }
             block_nrow = spacing[0];
         }
@@ -176,19 +182,48 @@ public:
         return reset;
     }
 
+    template<class Object>
+    void check_quick_dense_dims(const Object& obj, size_t first, size_t last) const {
+        if (obj.size() != last - first) {
+            auto ctype = get_class_name(original_seed);
+            throw std::runtime_error("'extract_array(<" + ctype + ">)' returns incorrect dimensions");
+        }
+    }
+
     template<bool byrow>
     void quick_dense_extractor_raw(size_t i, Data* buffer, size_t first, size_t last) const {
         auto indices = create_quick_indices<byrow>(i, first, last);
         Rcpp::RObject val0 = dense_extractor(original_seed, indices);
+
         if (val0.sexp_type() == LGLSXP) {
             Rcpp::LogicalVector val(val0);
+            check_quick_dense_dims(val, first, last);
             std::copy(val.begin(), val.end(), buffer);
+
         } else if (val0.sexp_type() == INTSXP) {
             Rcpp::IntegerVector val(val0);
+            check_quick_dense_dims(val, first, last);
             std::copy(val.begin(), val.end(), buffer);
+
         } else {
             Rcpp::NumericVector val(val0);
+            check_quick_dense_dims(val, first, last);
             std::copy(val.begin(), val.end(), buffer);
+        }
+    }
+
+    template<bool byrow, bool sparse>
+    void check_buffered_dims(const tatami::Matrix<Data, Index>* parsed, const UnknownWorkspace* work) const {
+        size_t parsed_primary = (byrow ? parsed->nrow() : parsed->ncol());
+        size_t parsed_secondary = (byrow ? parsed->ncol() : parsed->nrow());
+        size_t expected_primary = work->primary_block_end - work->primary_block_start;
+        size_t expected_secondary = work->secondary_chunk_end - work->secondary_chunk_start;
+
+        if (parsed_primary != expected_primary || parsed_secondary != expected_secondary) {
+            auto ctype = get_class_name(original_seed);
+            throw std::runtime_error("'" + 
+                (sparse ? std::string("extract_sparse_array") : std::string("extract_array")) + 
+                "(<" + ctype + ">)' returns incorrect dimensions");
         }
     }
 
@@ -196,24 +231,62 @@ public:
     void buffered_dense_extractor_raw(size_t i, size_t first, size_t last, UnknownWorkspace* work) const {
         auto indices = create_rounded_indices<byrow>(i, first, last, work);
         Rcpp::RObject val0 = dense_extractor(original_seed, indices);
+
         auto parsed = parse_simple_matrix<Data, Index>(val0);
+        check_buffered_dims<byrow, false>(parsed.matrix.get(), work);
+
         work->buffer = parsed.matrix;
         work->contents = parsed.contents;
         work->bufwork = (work->buffer)->new_workspace(byrow);
     }
 
 public:
+    template<class Object>
+    void check_quick_sparse_dims(const Object& obj, size_t nnzero) const {
+        if (obj.size() != nnzero) {
+            auto ctype = get_class_name(original_seed);
+            throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' returns 'nzdata' of the wrong length");
+        }
+    }
+
     template<bool byrow>
     void quick_sparse_extractor_raw(size_t i, size_t* n, Data* vbuffer, Index* ibuffer, size_t first, size_t last) const {
         auto indices = create_quick_indices<byrow>(i, first, last);
         Rcpp::RObject val0 = sparse_extractor(original_seed, indices);
 
+        auto dims = parse_dims(val0.slot("dim"));
+        int NR = dims.first;
+        int NC = dims.second;
+        int primary = (byrow ? NR : NC);
+        int secondary = (byrow ? NC : NR);
+        if (primary != 1 || secondary != static_cast<int>(last - first)) {
+            auto ctype = get_class_name(original_seed);
+            throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' returns incorrect dimensions");
+        }
+
         {
-            Rcpp::IntegerMatrix indices = val0.slot("nzindex");
+            Rcpp::IntegerMatrix indices(Rcpp::RObject(val0.slot("nzindex")));
+            if (indices.ncol() != 2) {
+                auto ctype = get_class_name(original_seed);
+                throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' should return 'nzindex' with two columns"); 
+            }
+
             *n = indices.rows();
+            auto prim = indices.column(byrow ? 0 : 1);
+            for (auto p : prim) {
+                if (p != 1) {
+                    auto ctype = get_class_name(original_seed);
+                    throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' should returns out-of-range 'nzindex'");
+                }
+            }
+
             auto idx = indices.column(byrow ? 1 : 0);
             auto icopy = ibuffer;
             for (auto ix : idx) {
+                if (ix < 1 || ix > secondary) {
+                    auto ctype = get_class_name(original_seed);
+                    throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' should returns out-of-range 'nzindex'");
+                }
                 *icopy = ix + first - 1; // 0-based indices.
                 ++icopy;
             }
@@ -222,12 +295,17 @@ public:
         Rcpp::RObject data = val0.slot("nzdata");
         if (data.sexp_type() == LGLSXP) {
             Rcpp::LogicalVector val(data);
+            check_quick_sparse_dims(val, *n);
             std::copy(val.begin(), val.end(), vbuffer);
+
         } else if (data.sexp_type() == INTSXP) {
             Rcpp::IntegerVector val(data);
+            check_quick_sparse_dims(val, *n);
             std::copy(val.begin(), val.end(), vbuffer);
+
         } else {
             Rcpp::NumericVector val(data);
+            check_quick_sparse_dims(val, *n);
             std::copy(val.begin(), val.end(), vbuffer);
         }
 
@@ -238,7 +316,10 @@ public:
     void buffered_sparse_extractor_raw(size_t i, size_t first, size_t last, UnknownWorkspace* work) const {
         auto indices = create_rounded_indices<byrow>(i, first, last, work);
         auto val0 = sparse_extractor(original_seed, indices);
+
         auto parsed = parse_SparseArraySeed<Data, Index>(val0);
+        check_buffered_dims<byrow, true>(parsed.matrix.get(), work);
+
         work->buffer = parsed.matrix;
         work->contents = parsed.contents;
         work->bufwork = (work->buffer)->new_workspace(byrow);
@@ -279,9 +360,12 @@ struct UnknownEvaluator {
     const UnknownMatrixCore<Data, Index>* parent;
 
     bool parallel = false;
-    bool create_work = false;
     bool ready = false;
     bool finished = false;
+    std::string error;
+
+    bool create_work = false;
+    typename UnknownMatrixCore<Data, Index>::UnknownWorkspace** new_work;
 
 public:
     template<bool B>
@@ -334,8 +418,8 @@ public:
     }
 
 public:
-    void set(typename UnknownMatrixCore<Data, Index>::UnknownWorkspace* w, bool B) {
-        work = w;
+    void set(typename UnknownMatrixCore<Data, Index>::UnknownWorkspace** nw, bool B) {
+        new_work = nw;
         byrow = B;
         create_work = true;
         ready = true;
@@ -345,7 +429,7 @@ public:
 public:
     void harvest() {
         if (create_work) {
-            work = new typename UnknownMatrixCore<Data, Index>::UnknownWorkspace(byrow);
+            *new_work = new typename UnknownMatrixCore<Data, Index>::UnknownWorkspace(byrow);
         } else {
             if (!sparse) {
                 if (buffered) {
@@ -401,22 +485,37 @@ struct ParallelCoordinator {
     std::mutex rcpp_lock;
     std::condition_variable cv;
 
+    template<typename Data, typename Index>
+    struct OnMainExit {
+        UnknownEvaluator<Data, Index> copy;
+        OnMainExit() : copy(unknown_evaluator<Data, Index>()) {}
+        ~OnMainExit() {
+            auto& ex = unknown_evaluator<Data, Index>();
+            ex = copy;
+        }
+    };
+
     template<typename Data, typename Index, class Function>
     void run(size_t n, Function f, size_t nthreads) {
         // Acquire the evaluator lock to indicate that we're currently in a single
-        // parallel context. This avoids wacky messages from other calls to parallelize().
+        // parallel context. This avoids wacky messages from other calls to run().
         std::lock_guard<std::mutex> lk(coord_lock);
 
-        // Only parallelize if it's strictly necessary.
+        // This restores the state of the unknown evaluator to what it was
+        // before entry into this function, to enable nested calls to run().
         auto& ex = unknown_evaluator<Data, Index>();
-        auto prev_parallel = ex.parallel;
+        OnMainExit<Data, Index> copier;
+
+        // Only parallelize if it's strictly necessary.
         ex.parallel = (n > 1 && nthreads > 1);
+        ex.error = "";
 
         if (ex.parallel) {
             size_t jobs_per_worker = std::ceil(static_cast<double>(n) / nthreads);
             size_t start = 0;
             std::vector<std::thread> jobs;
             std::atomic_size_t ncomplete = 0;
+            std::vector<std::string> errors(nthreads);
 
             for (size_t w = 0; w < nthreads; ++w) {
                 size_t end = std::min(n, start + jobs_per_worker);
@@ -425,8 +524,17 @@ struct ParallelCoordinator {
                     break;
                 }
 
+                // Local scope, avoid shenanigans when 'w' increments.
+                size_t id = w;
+
                 jobs.emplace_back([&](size_t s, size_t e) -> void {
-                    f(s, e);
+                    try {
+                        f(s, e);
+                    } catch (std::exception& x) {
+                        // No throw here, we need to make sure we mark the
+                        // thread as being completed so that the main loop can quit.
+                        errors[id] = x.what();
+                    }
                     ncomplete++;
                     cv.notify_all();
                 }, start, end);
@@ -442,8 +550,14 @@ struct ParallelCoordinator {
                     break;
                 }
 
-                ex.harvest();
-             
+                try {
+                    ex.harvest();
+                } catch (std::exception& x) {
+                    // No throw, we need to make sure we notify the worker of (failed) completion.
+                    ex.finished = true;
+                    ex.error = x.what();
+                }
+
                 // Unlock before notifying, see https://en.cppreference.com/w/cpp/thread/condition_variable
                 lk.unlock();
                 cv.notify_all();
@@ -452,11 +566,15 @@ struct ParallelCoordinator {
             for (auto& job : jobs) {
                 job.join();
             }
+
+            for (auto err : errors) {
+                if (!err.empty()) {
+                    throw std::runtime_error(err);
+                }
+            }
         } else {
             f(0, n);
         }
-
-        ex.parallel = prev_parallel;
     }
 
     template<typename Data, typename Index, class ParallelFunction, class SerialFunction>
@@ -472,12 +590,28 @@ struct ParallelCoordinator {
         {
             std::unique_lock lk(rcpp_lock);
             cv.wait(lk, [&]{ return !ex.ready; });
-            pfun();
+
+            // We can throw here because we're not obliged to initiate
+            // discussion with the main thread; so it's not like we're
+            // going to be leaving the main thread in a hanging state.
+            if (!ex.error.empty()) {
+                throw std::runtime_error(ex.error);
+            }
+
+            try {
+                pfun();
+            } catch (std::exception& e) {
+                // Task assignment failed, so we make sure to reset to
+                // avoid partial assignment (and unblock all other workers).
+                ex.reset();
+                ex.error = e.what();
+                throw;
+            }
         }
 
         // Notifying everyone that there is a task. At this point,
         // ready = true and finished = false, so the waiting workers
-        // should not proceed.
+        // should not proceed; only the main thread should respond.
         cv.notify_all();
 
         // Checking that we get the finished result, and then we set
@@ -485,7 +619,12 @@ struct ParallelCoordinator {
         {
             std::unique_lock lk(rcpp_lock);
             cv.wait(lk, [&]{ return ex.finished; });
+
             ex.reset();
+            if (!ex.error.empty()) {
+                // Throwing after the reset so that other workers are not blocked.
+                throw std::runtime_error(ex.error);
+            }
         }
     }
 };
@@ -499,7 +638,7 @@ inline ParallelCoordinator& parallel_coordinator() {
 
 template<typename Data, typename Index>
 class UnknownMatrix : public tatami::Matrix<Data, Index> {
-public:    
+public:
     UnknownMatrix(Rcpp::RObject seed) : core(seed) {}
 
     size_t nrow() const {
@@ -530,7 +669,7 @@ public:
         auto& ex = unknown_evaluator<Data, Index>();
         par.template lock<Data, Index>(
             [&]() -> void {
-                ex.set(tmp, row);
+                ex.set(&tmp, row);
             },
             [&]() -> void {
                 tmp = new typename UnknownMatrixCore<Data, Index>::UnknownWorkspace(row);
