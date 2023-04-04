@@ -499,7 +499,7 @@ struct ParallelCoordinator {
     void run(size_t n, Function f, size_t nthreads) {
         // Acquire the evaluator lock to indicate that we're currently in a single
         // parallel context. This avoids wacky messages from other calls to run().
-        std::lock_guard<std::mutex> lk(coord_lock);
+        std::lock_guard<std::mutex> clk(coord_lock);
 
         // This restores the state of the unknown evaluator to what it was
         // before entry into this function, to enable nested calls to run().
@@ -521,7 +521,7 @@ struct ParallelCoordinator {
                 size_t end = std::min(n, start + jobs_per_worker);
                 if (start >= end) {
                     ncomplete++;
-                    break;
+                    continue;
                 }
 
                 // Local scope, avoid shenanigans when 'w' increments.
