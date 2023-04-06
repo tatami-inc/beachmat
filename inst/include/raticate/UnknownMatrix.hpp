@@ -556,6 +556,10 @@ struct ParallelCoordinator {
                     // No throw, we need to make sure we notify the worker of (failed) completion.
                     ex.finished = true;
                     ex.error = x.what();
+                } catch (...) {
+                    // Sometimes R throws these weird Rcpp::LongjumpException errors.
+                    ex.finished = true;
+                    ex.error = "failed extraction from the unknown matrix";
                 }
 
                 // Unlock before notifying, see https://en.cppreference.com/w/cpp/thread/condition_variable

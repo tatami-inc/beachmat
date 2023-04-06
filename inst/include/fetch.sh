@@ -34,7 +34,7 @@ else
 fi
 
 cd source-raticate
-git checkout 1f1138262f8e990fdd65c4550735a456ab43995c
+git checkout 615ecbd1a1bede9e643818185121eca8f860d845
 rm -rf ../raticate
 cp -r include/raticate/ ../raticate
 git checkout master
