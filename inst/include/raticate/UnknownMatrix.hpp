@@ -25,7 +25,7 @@ struct UnknownMatrixCore {
         original_seed(seed),
         delayed_env(Rcpp::Environment::namespace_env("DelayedArray")),
         dense_extractor(delayed_env["extract_array"]),
-        sparse_extractor(delayed_env["extract_sparse_array"])
+        sparse_extractor(delayed_env["OLD_extract_sparse_array"])
     {
         // We assume the constructor only occurs on the main thread, so we
         // won't bother locking things up. I'm also not sure that the
@@ -222,7 +222,7 @@ public:
         if (parsed_primary != expected_primary || parsed_secondary != expected_secondary) {
             auto ctype = get_class_name(original_seed);
             throw std::runtime_error("'" + 
-                (sparse ? std::string("extract_sparse_array") : std::string("extract_array")) + 
+                (sparse ? std::string("OLD_extract_sparse_array") : std::string("extract_array")) +
                 "(<" + ctype + ">)' returns incorrect dimensions");
         }
     }
@@ -245,7 +245,7 @@ public:
     void check_quick_sparse_dims(const Object& obj, size_t nnzero) const {
         if (obj.size() != nnzero) {
             auto ctype = get_class_name(original_seed);
-            throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' returns 'nzdata' of the wrong length");
+            throw std::runtime_error("'OLD_extract_sparse_array(<" + ctype + ">)' returns 'nzdata' of the wrong length");
         }
     }
 
@@ -261,14 +261,14 @@ public:
         int secondary = (byrow ? NC : NR);
         if (primary != 1 || secondary != static_cast<int>(last - first)) {
             auto ctype = get_class_name(original_seed);
-            throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' returns incorrect dimensions");
+            throw std::runtime_error("'OLD_extract_sparse_array(<" + ctype + ">)' returns incorrect dimensions");
         }
 
         {
             Rcpp::IntegerMatrix indices(Rcpp::RObject(val0.slot("nzindex")));
             if (indices.ncol() != 2) {
                 auto ctype = get_class_name(original_seed);
-                throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' should return 'nzindex' with two columns"); 
+                throw std::runtime_error("'OLD_extract_sparse_array(<" + ctype + ">)' should return 'nzindex' with two columns");
             }
 
             *n = indices.rows();
@@ -276,7 +276,7 @@ public:
             for (auto p : prim) {
                 if (p != 1) {
                     auto ctype = get_class_name(original_seed);
-                    throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' should returns out-of-range 'nzindex'");
+                    throw std::runtime_error("'OLD_extract_sparse_array(<" + ctype + ">)' should returns out-of-range 'nzindex'");
                 }
             }
 
@@ -285,7 +285,7 @@ public:
             for (auto ix : idx) {
                 if (ix < 1 || ix > secondary) {
                     auto ctype = get_class_name(original_seed);
-                    throw std::runtime_error("'extract_sparse_array(<" + ctype + ">)' should returns out-of-range 'nzindex'");
+                    throw std::runtime_error("'OLD_extract_sparse_array(<" + ctype + ">)' should returns out-of-range 'nzindex'");
                 }
                 *icopy = ix + first - 1; // 0-based indices.
                 ++icopy;
