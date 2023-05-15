@@ -33,8 +33,8 @@ namespace raticate {
  * It is assumed that the execution of any given job is independent of the next.
  */ 
 template<typename Data, typename Index, class Function>
-void parallelize(size_t njobs, Function fun, size_t nthreads) {
-    parallel_coordinator().template run<Data, Index>(njobs, fun, nthreads);
+void parallelize(Function fun, size_t njobs, size_t nthreads) {
+    parallel_coordinator().template run<Data, Index>(std::move(fun), njobs, nthreads);
 }
 
 }

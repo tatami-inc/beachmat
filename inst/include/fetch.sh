@@ -16,7 +16,7 @@ else
 fi
 
 cd source-tatami
-git checkout 965fdbfc6d23e71586ba0a89274b2e2a4afaa087
+git checkout ca5835b9d7f9fc544a342eff475a9ba645410ab1
 rm -rf ../tatami
 cp -r include/tatami/ ../tatami
 git checkout master
@@ -34,7 +34,7 @@ else
 fi
 
 cd source-raticate
-git checkout 615ecbd1a1bede9e643818185121eca8f860d845
+git checkout 7066ee0278682396c708ea4da7fa92b3a5181feb
 rm -rf ../raticate
 cp -r include/raticate/ ../raticate
 git checkout master

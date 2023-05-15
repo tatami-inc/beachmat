@@ -1,12 +1,14 @@
 #ifndef TATAMI_ARITH_SCALAR_HELPERS_H
 #define TATAMI_ARITH_SCALAR_HELPERS_H
 
+#include <limits>
+
 /**
  * @file arith_scalar_helpers.hpp
  *
- * Helper functions focusing on arithmetic operations with a scalar value,
- * to be used as the `OP` in the `DelayedIsometricOp` class.
+ * @brief Helper classes for scalar arithmetic operations.
  * 
+ * Classes defined here should be used as the `OP` in the `DelayedIsometricOp` class.
  */
 
 namespace tatami {
@@ -41,7 +43,18 @@ struct DelayedAddScalarHelper {
     /**
      * Addition is always assumed to discard structural sparsity, even when the scalar is zero.
      */
-    static const bool sparse = false;
+    static const bool sparse_ = false;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_= false;
+
 private:
     const T scalar;
 };
@@ -77,7 +90,18 @@ struct DelayedMultiplyScalarHelper {
      * Multiplication is always assumed to preserve structural sparsity.
      * Non-finite `scalar` values are not considered.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = true;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_= false;
+
 private:
     const T scalar;
 };
@@ -118,7 +142,18 @@ struct DelayedSubtractScalarHelper {
     /**
      * Subtraction is always assumed to discard structural sparsity, even when the scalar is zero.
      */
-    static const bool sparse = false;
+    static const bool sparse_ = false;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_= false;
+
 private:
     const T scalar;
 };
@@ -136,6 +171,7 @@ template<bool RIGHT, typename T = double>
 struct DelayedDivideScalarHelper { 
     /**
      * @param s Scalar value to use in the division.
+     * This should be non-zero.
      */
     DelayedDivideScalarHelper(T s) : scalar(s) {}
 
@@ -147,20 +183,39 @@ struct DelayedDivideScalarHelper {
      * @param val Matrix value to use in the division.
      *
      * @return `val` divided by the scalar if `RIGHT = true`, otherwise the scalar is divided by `val`.
+     * If `RIGHT = false` and `val = 0`, an infinite value is returned.
      */
     T operator()(size_t r, size_t c, T val) const { 
         if constexpr(RIGHT) {
             return val / scalar; 
         } else {
-            return scalar / val;
+            if (val) {
+                return scalar / val;
+            } else {
+                return std::numeric_limits<T>::infinity();
+            }
         }
     }
 
     /**
-     * Division is always assumed to preserve structural sparsity.
+     * Division on the right is always assumed to preserve structural sparsity.
      * Non-finite or zero `scalar` values are not considered here.
+     *
+     * Division of the scalar by the matrix value is assumed to discard structural sparsity,
+     * as any matrix zeros will yield an infinite value for a non-zero scalar.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = RIGHT;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_= false;
+
 private:
     const T scalar;
 };

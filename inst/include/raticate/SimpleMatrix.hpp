@@ -3,7 +3,7 @@
 
 #include "utils.hpp"
 #include "tatami/tatami.hpp"
-#include "tatami/ext/ArrayView.hpp"
+#include "tatami/utils/ArrayView.hpp"
 
 namespace raticate { 
 

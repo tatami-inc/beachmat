@@ -2,146 +2,120 @@
 #define TATAMI_STATS_SUMS_HPP
 
 #include "../base/Matrix.hpp"
-#include "apply.hpp"
+#include "utils.hpp"
 #include <vector>
 #include <numeric>
 
 /**
  * @file sums.hpp
  *
- * Compute row and column sums from a `tatami::Matrix`.
+ * @brief Compute row and column sums from a `tatami::Matrix`.
  */
 
 namespace tatami {
 
 namespace stats {
 
-template<typename O>
-struct SumFactory {
-public:
-    SumFactory(O* o, size_t d1, size_t d2) : output(o), dim(d1), otherdim(d2) {}
+/**
+ * @cond
+ */
+template<typename Output_, bool row_, typename Value_, typename Index_>
+std::vector<Output_> dimension_sums(const Matrix<Value_, Index_>* p, int threads) {
+    auto dim = (row_ ? p->nrow() : p->ncol());
+    std::vector<Output_> output(dim);
+    auto otherdim = (row_ ? p->ncol() : p->nrow());
+    const bool direct = p->prefer_rows() == row_;
 
-private:
-    O* output;
-    size_t dim, otherdim;
+    if (p->sparse()) {
+        if (direct) {
+            Options opt;
+            opt.sparse_extract_index = false;
+            parallelize([&](size_t, Index_ s, Index_ l) {
+                auto ext = consecutive_extractor<row_, true>(p, s, l, opt);
+                std::vector<Value_> vbuffer(otherdim);
+                for (Index_ i = s, e = s + l; i < e; ++i) {
+                    auto out = ext->fetch(i, vbuffer.data(), NULL);
+                    output[i] = std::accumulate(out.value, out.value + out.number, static_cast<Output_>(0));
+                }
+            }, dim, threads);
 
-public:
-    struct DenseDirect {
-        DenseDirect(O* o, size_t d2) : output(o), otherdim(d2) {}
-
-        template<typename V>
-        void compute(size_t i, const V* ptr) {
-            output[i] = std::accumulate(ptr, ptr + otherdim, static_cast<O>(0));
-        }
-    private:
-        O* output;
-        size_t otherdim;
-    };
-
-    DenseDirect dense_direct() {
-        return DenseDirect(output, otherdim);
-    }
-
-public:
-    struct SparseDirect {
-        SparseDirect(O* o) : output(o) {}
-
-        template<typename T, typename IDX>
-        void compute(size_t i, const SparseRange<T, IDX>& range) {
-            output[i] = std::accumulate(range.value, range.value + range.number, static_cast<O>(0));
-        }
-    private:
-        O* output;
-    };
-
-    SparseDirect sparse_direct() {
-        return SparseDirect(output);
-    }
-
-public:
-    struct DenseRunning {
-        DenseRunning(O* o, size_t d1) : output(o), dim(d1) {}
-
-        template<typename V>
-        void add(const V* ptr) {
-            for (size_t d = 0; d < dim; ++d) {
-                output[d] += ptr[d];
-            }
+        } else {
+            parallelize([&](size_t, Index_ s, Index_ l) {
+                auto ext = consecutive_extractor<!row_, true>(p, 0, otherdim, s, l);
+                auto len = ext->block_length;
+                std::vector<Value_> vbuffer(ext->block_length);
+                std::vector<Index_> ibuffer(ext->block_length);
+                for (Index_ i = 0; i < otherdim; ++i) {
+                    auto out = ext->fetch(i, vbuffer.data(), ibuffer.data());
+                    for (Index_ j = 0; j < out.number; ++j) {
+                        output[out.index[j]] += out.value[j];
+                    }
+                }
+            }, dim, threads);
         }
 
-        void finish() {}
-    private:
-        O* output;
-        size_t dim;
-    };
+    } else {
+        if (direct) {
+            parallelize([&](size_t, Index_ s, Index_ l) {
+                auto ext = consecutive_extractor<row_, false>(p, s, l);
+                std::vector<Value_> buffer(otherdim);
+                for (Index_ i = s, e = s + l; i < e; ++i) {
+                    auto out = ext->fetch(i, buffer.data());
+                    output[i] = std::accumulate(out, out + otherdim, static_cast<Output_>(0));
+                }
+            }, dim, threads);
 
-    DenseRunning dense_running() {
-        return DenseRunning(output, dim);
-    }
-
-    DenseRunning dense_running(size_t start, size_t end) {
-        return DenseRunning(output + start, end - start);
-    }
-
-public:
-    struct SparseRunning {
-        SparseRunning(O* o) : output(o) {}
-
-        template<typename T = double, typename IDX = int>
-        void add(const SparseRange<T, IDX>& range) {
-            for (size_t j = 0; j < range.number; ++j) {
-                output[range.index[j]] += range.value[j];
-            }
+        } else {
+            parallelize([&](size_t, Index_ s, Index_ l) {
+                auto ext = consecutive_extractor<!row_, false>(p, 0, otherdim, s, l);
+                std::vector<Value_> buffer(ext->block_length);
+                auto len = ext->block_length;
+                for (Index_ i = 0; i < otherdim; ++i) {
+                    auto out = ext->fetch(i, buffer.data());
+                    for (Index_ j = 0; j < len; ++j) {
+                        output[s + j] += out[j];
+                    }
+                }
+            }, dim, threads);
         }
-
-        void finish() {}
-    private:
-        O* output;
-    };
-
-    SparseRunning sparse_running() {
-        return SparseRunning(output);
     }
 
-    SparseRunning sparse_running(size_t start, size_t end) {
-        return SparseRunning(output);
-    }
-};
+    return output;
+}
+/**
+ * @endcond
+ */
 
 }
 
 /**
- * @tparam Output Type of the output value.
- * @tparam T Type of the matrix value, should be summable.
- * @tparam IDX Type of the row/column indices.
+ * @tparam Output_ Type of the output value.
+ * @tparam Value_ Type of the matrix value, should be summable.
+ * @tparam Index_ Type of the row/column indices.
  *
  * @param p Pointer to a `tatami::Matrix`.
+ * @param threads Number of threads to use.
  *
  * @return A vector of length equal to the number of columns, containing the column sums.
  */
-template<typename Output = double, typename T, typename IDX>
-std::vector<Output> column_sums(const Matrix<T, IDX>* p) {
-    std::vector<Output> output(p->ncol());
-    stats::SumFactory factory(output.data(), p->ncol(), p->nrow());
-    apply<1>(p, factory);
-    return output;
+template<typename Output_ = double, typename Value_, typename Index_>
+std::vector<Output_> column_sums(const Matrix<Value_, Index_>* p, int threads = 1) {
+    return stats::dimension_sums<Output_, false>(p, threads);
 }
 
 /**
- * @tparam Output Type of the output value.
- * @tparam T Type of the matrix value, should be summable.
- * @tparam IDX Type of the row/column indices.
+ * @tparam Output_ Type of the output value.
+ * @tparam Value_ Type of the matrix value, should be summable.
+ * @tparam Index_ Type of the row/column indices.
  *
  * @param p Pointer to a `tatami::Matrix`.
+ * @param threads Number of threads to use.
  *
  * @return A vector of length equal to the number of rows, containing the row sums.
  */
-template<typename Output = double, typename T, typename IDX>
-std::vector<Output> row_sums(const Matrix<T, IDX>* p) {
-    std::vector<Output> output(p->nrow());
-    stats::SumFactory factory(output.data(), p->nrow(), p->ncol());
-    apply<0>(p, factory);
-    return output;
+template<typename Output_ = double, typename Value_, typename Index_>
+std::vector<Output_> row_sums(const Matrix<Value_, Index_>* p, int threads = 1) {
+    return stats::dimension_sums<Output_, true>(p, threads);
 }
 
 }

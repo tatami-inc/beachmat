@@ -4,8 +4,9 @@
 /**
  * @file math_helpers.hpp
  *
- * Helper functions focusing on unary math operations,
- * to be used as the `OP` in the `DelayedIsometricOp` class.
+ * @brief Helpers for unary math operations.
+ *
+ * These classes should be used as the `OP` in the `DelayedIsometricOp` class.
  */
 
 #include <cmath>
@@ -31,7 +32,17 @@ struct DelayedAbsHelper {
     /**
      * Sparsity is always preserved.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = true;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_ = false;
 };
 
 /**
@@ -63,7 +74,17 @@ struct DelayedLogHelper {
     /**
      * Sparsity is always discarded
      */
-    static const bool sparse = false;
+    static const bool sparse_ = false;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_ = false;
 private:
     const double log_base;
 };
@@ -87,7 +108,17 @@ struct DelayedSqrtHelper {
     /**
      * Sparsity is always preserved.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = true;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_ = false;
 };
 
 /**
@@ -119,7 +150,17 @@ struct DelayedLog1pHelper {
     /**
      * Sparsity is always preserved.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = true;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_ = false;
 private:
     const double log_base;
 };
@@ -143,7 +184,17 @@ struct DelayedRoundHelper {
     /**
      * Sparsity is always preserved.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = true;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_ = false;
 };
 
 /**
@@ -165,7 +216,17 @@ struct DelayedExpHelper {
     /**
      * Sparsity is always discarded.
      */
-    static const bool sparse = false;
+    static const bool sparse_ = false;
+
+    /**
+     * This does not require row indices.
+     */
+    static const bool needs_row_ = false;
+
+    /**
+     * This does not require column indices.
+     */
+    static const bool needs_column_ = false;
 };
 
 }

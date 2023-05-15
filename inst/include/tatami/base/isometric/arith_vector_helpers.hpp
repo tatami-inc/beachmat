@@ -4,11 +4,14 @@
 /**
  * @file arith_vector_helpers.hpp
  *
- * Helper functions focusing on arithmetic operations with a vector parallel to the rows or columns,
- * to be used as the `OP` in the `DelayedIsometricOp` class.
+ * @brief Helper classes for vector arithmetic operations.
+ *
+ * These classes perform arithmetic operations with a vector parallel to the rows or columns.
+ * Classes defined here should be used as the `OP` in the `DelayedIsometricOp` class.
  */
 
 #include <vector>
+#include <limits>
 
 namespace tatami {
 
@@ -49,7 +52,18 @@ struct DelayedAddVectorHelper {
     /**
      * Addition is always assumed to discard structural sparsity, even when the added value is zero.
      */
-    static const bool sparse = false; 
+    static const bool sparse_ = false; 
+
+    /**
+     * This requires row indices if `MARGIN = 0`.
+     */
+    static const bool needs_row_ = MARGIN == 0;
+
+    /**
+     * This requires column indices if `MARGIN = 1`.
+     */
+    static const bool needs_column_ = MARGIN == 1;
+
 private:
     const V vec;
 };
@@ -111,7 +125,18 @@ struct DelayedSubtractVectorHelper {
     /**
      * Subtraction is always assumed to discard structural sparsity, even when the subtracted value is zero.
      */
-    static const bool sparse = false; 
+    static const bool sparse_ = false; 
+
+    /**
+     * This requires row indices if `MARGIN = 0`.
+     */
+    static const bool needs_row_ = MARGIN == 0;
+
+    /**
+     * This requires column indices if `MARGIN = 1`.
+     */
+    static const bool needs_column_ = MARGIN == 1;
+
 private:
     const V vec;
 };
@@ -162,7 +187,18 @@ struct DelayedMultiplyVectorHelper {
     /**
      * Multiplication is always assumed to preserve structural sparsity.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = true;
+
+    /**
+     * This requires row indices if `MARGIN = 0`.
+     */
+    static const bool needs_row_ = MARGIN == 0;
+
+    /**
+     * This requires column indices if `MARGIN = 1`.
+     */
+    static const bool needs_column_ = MARGIN == 1;
+
 private:
     const V vec;
 };
@@ -194,6 +230,7 @@ struct DelayedDivideVectorHelper {
     /**
      * @param v Vector of values to use for division.
      * This should be of length equal to the number of rows if `MARGIN = 0`, otherwise it should be of length equal to the number of columns.
+     * All values should be non-zero.
      */
     DelayedDivideVectorHelper(V v) : vec(std::move(v)) {}
 
@@ -210,22 +247,44 @@ struct DelayedDivideVectorHelper {
             if constexpr(RIGHT) {
                 return val / vec[r];
             } else {
-                return vec[r] / val;
+                if (val) {
+                    return vec[r] / val;
+                } else {
+                    return std::numeric_limits<double>::infinity();
+                }
             }
         } else {
             if constexpr(RIGHT) {
                 return val / vec[c];
             } else {
-                return vec[c] / val;
+                if (val) {
+                    return vec[c] / val;
+                } else {
+                    return std::numeric_limits<double>::infinity();
+                }
             }
         }
     }
 
     /**
-     * Division is always assumed to preserve structural sparsity.
+     * Division on the right is always assumed to preserve structural sparsity.
      * Non-finite or zero `scalar` values are not considered here.
+     *
+     * Division of the scalar by the matrix value is assumed to discard structural sparsity,
+     * as any matrix zeros will yield an infinite value for a non-zero scalar.
      */
-    static const bool sparse = true;
+    static const bool sparse_ = RIGHT;
+
+    /**
+     * This requires row indices if `MARGIN = 0`.
+     */
+    static const bool needs_row_ = MARGIN == 0;
+
+    /**
+     * This requires column indices if `MARGIN = 1`.
+     */
+    static const bool needs_column_ = MARGIN == 1;
+
 private:
     const V vec;
 };
