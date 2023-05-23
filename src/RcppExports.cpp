@@ -11,24 +11,24 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // apply_delayed_subset
-SEXP apply_delayed_subset(SEXP input, Rcpp::IntegerVector subset, bool row);
-RcppExport SEXP _beachmat_apply_delayed_subset(SEXP inputSEXP, SEXP subsetSEXP, SEXP rowSEXP) {
+SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row);
+RcppExport SEXP _beachmat_apply_delayed_subset(SEXP raw_inputSEXP, SEXP subsetSEXP, SEXP rowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type subset(subsetSEXP);
     Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_subset(input, subset, row));
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_subset(raw_input, subset, row));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_transpose
-SEXP apply_delayed_transpose(SEXP input);
-RcppExport SEXP _beachmat_apply_delayed_transpose(SEXP inputSEXP) {
+SEXP apply_delayed_transpose(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_transpose(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_transpose(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_transpose(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -44,39 +44,39 @@ BEGIN_RCPP
 END_RCPP
 }
 // apply_delayed_addition
-SEXP apply_delayed_addition(SEXP input, Rcpp::NumericVector val, bool row);
-RcppExport SEXP _beachmat_apply_delayed_addition(SEXP inputSEXP, SEXP valSEXP, SEXP rowSEXP) {
+SEXP apply_delayed_addition(SEXP raw_input, Rcpp::NumericVector val, bool row);
+RcppExport SEXP _beachmat_apply_delayed_addition(SEXP raw_inputSEXP, SEXP valSEXP, SEXP rowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
     Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_addition(input, val, row));
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_addition(raw_input, val, row));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_multiplication
-SEXP apply_delayed_multiplication(SEXP input, Rcpp::NumericVector val, bool row);
-RcppExport SEXP _beachmat_apply_delayed_multiplication(SEXP inputSEXP, SEXP valSEXP, SEXP rowSEXP) {
+SEXP apply_delayed_multiplication(SEXP raw_input, Rcpp::NumericVector val, bool row);
+RcppExport SEXP _beachmat_apply_delayed_multiplication(SEXP raw_inputSEXP, SEXP valSEXP, SEXP rowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
     Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_multiplication(input, val, row));
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_multiplication(raw_input, val, row));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_subtraction
-SEXP apply_delayed_subtraction(SEXP input, Rcpp::NumericVector val, bool right, bool row);
-RcppExport SEXP _beachmat_apply_delayed_subtraction(SEXP inputSEXP, SEXP valSEXP, SEXP rightSEXP, SEXP rowSEXP) {
+SEXP apply_delayed_subtraction(SEXP raw_input, Rcpp::NumericVector val, bool right, bool row);
+RcppExport SEXP _beachmat_apply_delayed_subtraction(SEXP raw_inputSEXP, SEXP valSEXP, SEXP rightSEXP, SEXP rowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
     Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
     Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_subtraction(input, val, right, row));
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_subtraction(raw_input, val, right, row));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -94,63 +94,63 @@ BEGIN_RCPP
 END_RCPP
 }
 // apply_delayed_log
-SEXP apply_delayed_log(SEXP input, double base);
-RcppExport SEXP _beachmat_apply_delayed_log(SEXP inputSEXP, SEXP baseSEXP) {
+SEXP apply_delayed_log(SEXP raw_input, double base);
+RcppExport SEXP _beachmat_apply_delayed_log(SEXP raw_inputSEXP, SEXP baseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< double >::type base(baseSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_log(input, base));
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_log(raw_input, base));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_log1p
-SEXP apply_delayed_log1p(SEXP input);
-RcppExport SEXP _beachmat_apply_delayed_log1p(SEXP inputSEXP) {
+SEXP apply_delayed_log1p(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_log1p(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_log1p(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_log1p(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_abs
-SEXP apply_delayed_abs(SEXP input);
-RcppExport SEXP _beachmat_apply_delayed_abs(SEXP inputSEXP) {
+SEXP apply_delayed_abs(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_abs(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_abs(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_abs(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_sqrt
-SEXP apply_delayed_sqrt(SEXP input);
-RcppExport SEXP _beachmat_apply_delayed_sqrt(SEXP inputSEXP) {
+SEXP apply_delayed_sqrt(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_sqrt(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_sqrt(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_sqrt(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_round
-SEXP apply_delayed_round(SEXP input);
-RcppExport SEXP _beachmat_apply_delayed_round(SEXP inputSEXP) {
+SEXP apply_delayed_round(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_round(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_round(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_round(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
 // apply_delayed_exp
-SEXP apply_delayed_exp(SEXP input);
-RcppExport SEXP _beachmat_apply_delayed_exp(SEXP inputSEXP) {
+SEXP apply_delayed_exp(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_exp(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_exp(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_exp(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -178,17 +178,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // initialize_sparse_matrix
-SEXP initialize_sparse_matrix(Rcpp::RObject x, Rcpp::RObject i, Rcpp::RObject p, int nrow, int ncol, bool byrow);
-RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP xSEXP, SEXP iSEXP, SEXP pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP) {
+SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RObject raw_p, int nrow, int ncol, bool byrow);
+RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP raw_xSEXP, SEXP raw_iSEXP, SEXP raw_pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Rcpp::RObject >::type x(xSEXP);
-    Rcpp::traits::input_parameter< Rcpp::RObject >::type i(iSEXP);
-    Rcpp::traits::input_parameter< Rcpp::RObject >::type p(pSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_x(raw_xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_i(raw_iSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_p(raw_pSEXP);
     Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
     Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
     Rcpp::traits::input_parameter< bool >::type byrow(byrowSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_sparse_matrix(x, i, p, nrow, ncol, byrow));
+    rcpp_result_gen = Rcpp::wrap(initialize_sparse_matrix(raw_x, raw_i, raw_p, nrow, ncol, byrow));
     return rcpp_result_gen;
 END_RCPP
 }

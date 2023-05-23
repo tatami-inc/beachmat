@@ -1,10 +1,13 @@
-#include "tatamize.h"
+#include "Rtatami.h"
 #include "Rcpp.h"
 #include "tatami/tatami.hpp"
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_subset(SEXP input, Rcpp::IntegerVector subset, bool row) {
-    auto shared = extract_NumericMatrix_shared(input);
+SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    const auto& shared = input->ptr;
+    output->original = input->original; // copying the reference to propagate GC protection.
 
     // Is this a contiguous block?
     bool consecutive = true;
@@ -19,160 +22,233 @@ SEXP apply_delayed_subset(SEXP input, Rcpp::IntegerVector subset, bool row) {
         int start = (subset.size() ? subset[0] - 1 : 0);
         int end = (subset.size() ? subset[subset.size() - 1] : 0);
         if (row) {
-            return new_MatrixChan(tatami::make_DelayedSubsetBlock<0>(shared, start, end));
+            output->ptr = tatami::make_DelayedSubsetBlock<0>(shared, start, end);
         } else {
-            return new_MatrixChan(tatami::make_DelayedSubsetBlock<1>(shared, start, end));
+            output->ptr = tatami::make_DelayedSubsetBlock<1>(shared, start, end);
+        }
+    } else {
+        // Otherwise, we get to 0-based indices. This eliminates the need
+        // to store 'subset', as we're making our own copy anyway.
+        std::vector<int> resub(subset.begin(), subset.end());
+        for (auto& x : resub) {
+            --x; 
+        } 
+
+        if (row) {
+            output->ptr = tatami::make_DelayedSubset<0>(shared, std::move(resub));
+        } else {
+            output->ptr = tatami::make_DelayedSubset<1>(shared, std::move(resub));
         }
     }
 
-    // Otherwise, we get to 1-based indices.
-    std::vector<int> resub(subset.begin(), subset.end());
-    for (auto& x : resub) {
-        --x; 
-    } 
-
-    if (row) {
-        return new_MatrixChan(tatami::make_DelayedSubset<0>(shared, std::move(resub)));
-    } else {
-        return new_MatrixChan(tatami::make_DelayedSubset<1>(shared, std::move(resub)));
-    }
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_transpose(SEXP input) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedTranspose(shared));
+SEXP apply_delayed_transpose(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedTranspose(input->ptr);
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_bind(Rcpp::List input, bool row) {
     std::vector<std::shared_ptr<tatami::NumericMatrix> > collected;
     collected.reserve(input.size());
+    Rcpp::List protectorate(input.size());
 
     for (size_t i = 0, end = input.size(); i < end; ++i) {
         Rcpp::RObject current = input[i];
-        collected.push_back(extract_NumericMatrix_shared(current));
+        Rtatami::BoundNumericPointer curptr(current);
+        protectorate[i] = curptr->original;
+        collected.push_back(curptr->ptr);
     }
 
+    auto output = Rtatami::new_BoundNumericMatrix();
     if (row) {
-        return new_MatrixChan(tatami::make_DelayedBind<0>(std::move(collected)));
+        output->ptr = tatami::make_DelayedBind<0>(std::move(collected));
     } else {
-        return new_MatrixChan(tatami::make_DelayedBind<1>(std::move(collected)));
+        output->ptr = tatami::make_DelayedBind<1>(std::move(collected));
     }
+
+    output->original = protectorate; // propagate protection for all child objects by copying references.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_addition(SEXP input, Rcpp::NumericVector val, bool row) {
-    auto shared = extract_NumericMatrix_shared(input);
+SEXP apply_delayed_addition(SEXP raw_input, Rcpp::NumericVector val, bool row) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto& shared = input->ptr;
+    Rcpp::List protectorate(2);
+    protectorate[0] = input->original;
+
+    auto output = Rtatami::new_BoundNumericMatrix();
     if (val.size() == 1) {
-        return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedAddScalarHelper(val[0])));
+        output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::DelayedAddScalarHelper(val[0]));
+    } else {
+        protectorate[1] = val;
+        tatami::ArrayView<double> view(static_cast<const double*>(val.begin()), val.size());
+        if (row) {
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedAddVectorHelper<0>(std::move(view)));
+        } else {
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedAddVectorHelper<1>(std::move(view)));
+        }
     }
 
-    if (row) {
-        return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedAddVectorHelper<0>(std::move(val))));
-    } else {
-        return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedAddVectorHelper<1>(std::move(val))));
-    }
+    output->original = protectorate; // propagate protection for all child objects by copying references.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_multiplication(SEXP input, Rcpp::NumericVector val, bool row) {
-    auto shared = extract_NumericMatrix_shared(input);
+SEXP apply_delayed_multiplication(SEXP raw_input, Rcpp::NumericVector val, bool row) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto& shared = input->ptr;
+    Rcpp::List protectorate(2);
+    protectorate[0] = input->original;
+
+    auto output = Rtatami::new_BoundNumericMatrix();
     if (val.size() == 1) {
-        return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedMultiplyScalarHelper(val[0])));
+        output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::DelayedMultiplyScalarHelper(val[0]));
+    } else {
+        protectorate[1] = val;
+        tatami::ArrayView<double> view(static_cast<const double*>(val.begin()), val.size());
+        if (row) {
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedMultiplyVectorHelper<0>(std::move(view)));
+        } else {
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedMultiplyVectorHelper<1>(std::move(view)));
+        }
     }
 
-    if (row) {
-        return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedMultiplyVectorHelper<0>(std::move(val))));
-    } else {
-        return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedMultiplyVectorHelper<1>(std::move(val))));
-    }
+    output->original = protectorate; // propagate protection for all child objects by copying references.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_subtraction(SEXP input, Rcpp::NumericVector val, bool right, bool row) {
-    auto shared = extract_NumericMatrix_shared(input);
+SEXP apply_delayed_subtraction(SEXP raw_input, Rcpp::NumericVector val, bool right, bool row) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto& shared = input->ptr;
+    Rcpp::List protectorate(2);
+    protectorate[0] = input->original;
+
+    auto output = Rtatami::new_BoundNumericMatrix();
     if (val.size() == 1) {
         if (right) {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedSubtractScalarHelper<true>(val[0])));
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::DelayedSubtractScalarHelper<true>(val[0]));
         } else {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedSubtractScalarHelper<false>(val[0])));
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::DelayedSubtractScalarHelper<false>(val[0]));
+        }
+
+    } else {
+        protectorate[1] = val;        
+        tatami::ArrayView<double> view(static_cast<const double*>(val.begin()), val.size());
+        if (right) {
+            if (row) {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<true, 0>(std::move(view)));
+            } else {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<true, 1>(std::move(view)));
+            }
+        } else {
+            if (row) {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<false, 0>(std::move(view)));
+            } else {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<false, 1>(std::move(view)));
+            }
         }
     }
 
-    if (right) {
-        if (row) {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<true, 0>(std::move(val))));
-        } else {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<true, 1>(std::move(val))));
-        }
-    } else {
-        if (row) {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<false, 0>(std::move(val))));
-        } else {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<false, 1>(std::move(val))));
-        }
-    }
+    output->original = protectorate; // propagate protection for all child objects by copying references.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_division(SEXP input, Rcpp::NumericVector val, bool right, bool row) {
-    auto shared = extract_NumericMatrix_shared(input);
+SEXP apply_delayed_division(SEXP raw_input, Rcpp::NumericVector val, bool right, bool row) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto& shared = input->ptr;
+    Rcpp::List protectorate(2);
+    protectorate[0] = input->original;
+
+    auto output = Rtatami::new_BoundNumericMatrix();
     if (val.size() == 1) {
         if (right) {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedDivideScalarHelper<true>(val[0])));
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::DelayedDivideScalarHelper<true>(val[0]));
         } else {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedDivideScalarHelper<false>(val[0])));
+            output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::DelayedDivideScalarHelper<false>(val[0]));
         }
-    }
 
-    if (right) {
-        if (row) {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<true, 0>(std::move(val))));
-        } else {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<true, 1>(std::move(val))));
-        }
     } else {
-        if (row) {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<false, 0>(std::move(val))));
+        protectorate[1] = val;        
+        tatami::ArrayView<double> view(static_cast<const double*>(val.begin()), val.size());
+        if (right) {
+            if (row) {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<true, 0>(std::move(view)));
+            } else {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<true, 1>(std::move(view)));
+            }
         } else {
-            return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<false, 1>(std::move(val))));
+            if (row) {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<false, 0>(std::move(view)));
+            } else {
+                output->ptr = tatami::make_DelayedIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<false, 1>(std::move(view)));
+            }
         }
     }
+
+    output->original = protectorate; // propagate protection for all child objects by copying references.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_log(SEXP input, double base) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedLogHelper(base)));
+SEXP apply_delayed_log(SEXP raw_input, double base) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedIsometricOp(input->ptr, tatami::DelayedLogHelper(base));
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_log1p(SEXP input) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedLog1pHelper<>()));
+SEXP apply_delayed_log1p(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedIsometricOp(input->ptr, tatami::DelayedLog1pHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_abs(SEXP input) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedAbsHelper<>()));
+SEXP apply_delayed_abs(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedIsometricOp(input->ptr, tatami::DelayedAbsHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_sqrt(SEXP input) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedSqrtHelper<>()));
+SEXP apply_delayed_sqrt(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedIsometricOp(input->ptr, tatami::DelayedSqrtHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_round(SEXP input) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedRoundHelper<>()));
+SEXP apply_delayed_round(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedIsometricOp(input->ptr, tatami::DelayedRoundHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP apply_delayed_exp(SEXP input) {
-    auto shared = extract_NumericMatrix_shared(input);
-    return new_MatrixChan(tatami::make_DelayedIsometricOp(shared, tatami::DelayedExpHelper<>()));
+SEXP apply_delayed_exp(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedIsometricOp(input->ptr, tatami::DelayedExpHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
 }
