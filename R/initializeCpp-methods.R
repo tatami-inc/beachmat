@@ -2,11 +2,30 @@
 setMethod("initializeCpp", "ANY", function(x, ...) initialize_unknown_matrix(x))
 
 #' @export
+setMethod("initializeCpp", "matrix", function(x, ...) initialize_dense_matrix(x, nrow(x), ncol(x)))
+
+#' @export
+setMethod("initializeCpp", "dgeMatrix", function(x, ...) initialize_dense_matrix(x@x, nrow(x), ncol(x)))
+
+#' @export
+setMethod("initializeCpp", "lgeMatrix", function(x, ...) initialize_dense_matrix(x@x, nrow(x), ncol(x)))
+
+####################################################################################
+####################################################################################
+
+#' @export
 #' @import Matrix
 setMethod("initializeCpp", "dgCMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@i, x@p, nrow(x), ncol(x), byrow=FALSE))
 
 #' @export
 setMethod("initializeCpp", "dgRMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@j, x@p, nrow(x), ncol(x), byrow=TRUE))
+
+#' @export
+#' @import Matrix
+setMethod("initializeCpp", "lgCMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@i, x@p, nrow(x), ncol(x), byrow=FALSE))
+
+#' @export
+setMethod("initializeCpp", "lgRMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@j, x@p, nrow(x), ncol(x), byrow=TRUE))
 
 ####################################################################################
 ####################################################################################

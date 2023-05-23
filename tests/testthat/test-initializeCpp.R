@@ -5,7 +5,11 @@ am_i_ok <- function(ref, ptr, exact=TRUE) {
     expect_identical(dim(ref), beachmat:::tatami_dim(ptr))
     test <- if (exact) expect_identical else expect_equal
     for (i in seq_len(ncol(ref))) {
-        test(ref[,i], beachmat:::tatami_column(ptr, i))
+        expected <- ref[,i]
+        if (!is.double(expected)) { 
+            expected <- as.double(expected) 
+        }
+        test(expected, beachmat:::tatami_column(ptr, i))
     }
 }
 
@@ -13,17 +17,56 @@ set.seed(1000)
 x <- Matrix::rsparsematrix(1000, 100, 0.1)
 y <- round(abs(x)*10)
 
-test_that("initialization works correctly with a dgCMatrix", {
-    ptr <- initializeCpp(y)
-    am_i_ok(y, ptr)
+test_that("initialization works correctly with dense matrices", {
+    dd <- as.matrix(y)
+    {
+        ptr <- initializeCpp(dd)
+        am_i_ok(dd, ptr)
+
+        dd2 <- dd
+        storage.mode(dd2) <- "integer"
+        ptr <- initializeCpp(dd2)
+        am_i_ok(dd2, ptr)
+
+        dd2 <- dd
+        storage.mode(dd2) <- "logical"
+        ptr <- initializeCpp(dd2)
+        am_i_ok(dd2, ptr)
+    }
+
+    de <- Matrix(dd)
+    {
+        ptr <- initializeCpp(de)
+        am_i_ok(de, ptr)
+
+        de2 <- de > 0
+        ptr <- initializeCpp(de2)
+        am_i_ok(de2, ptr)
+    }
 })
 
-test_that("initialization works correctly with a dgRMatrix", {
-    z <- new("dgRMatrix", x=y@x, j=y@i, p=y@p, Dim=rev(y@Dim))
-    ptr <- initializeCpp(z)
-    am_i_ok(z, ptr)
+test_that("initialization works correctly with sparse matrices", {
+    {
+        ptr <- initializeCpp(y)
+        am_i_ok(y, ptr)
+
+        z <- new("dgRMatrix", x=y@x, j=y@i, p=y@p, Dim=rev(y@Dim))
+        ptr <- initializeCpp(z)
+        am_i_ok(z, ptr)
+    }
+
+    {
+        y2 <- y != 0
+        ptr <- initializeCpp(y2)
+        am_i_ok(y2, ptr)
+
+        z2 <- new("lgRMatrix", x=y2@x, j=y2@i, p=y2@p, Dim=rev(y2@Dim))
+        ptr <- initializeCpp(z2)
+        am_i_ok(z2, ptr)
+    }
 })
 
+library(DelayedArray)
 test_that("initialization works correctly with DelayedArray", {
     z <- DelayedArray(y)
     ptr <- initializeCpp(z)

@@ -34,8 +34,8 @@ SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RO
     }
     Rcpp::IntegerVector i(raw_i);
 
-    if (raw_x.sexp_type() == INTSXP) {
-        Rcpp::IntegerVector x(raw_x);
+    if (raw_x.sexp_type() == LGLSXP) {
+        Rcpp::LogicalVector x(raw_x);
         output->ptr.reset(store_sparse_matrix<int>(std::move(x), std::move(i), std::move(p), nrow, ncol, byrow));
     } else if (raw_x.sexp_type() == REALSXP) {
         Rcpp::NumericVector x(raw_x);

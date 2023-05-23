@@ -2,10 +2,21 @@
 % Please edit documentation in R/AllGenerics.R
 \name{initializeCpp}
 \alias{initializeCpp}
+\alias{initializeCpp,ANY-method}
+\alias{initializeCpp,matrix-method}
+\alias{initializeCpp,dgeMatrix-method}
+\alias{initializeCpp,lgeMatrix-method}
 \alias{initializeCpp,dgCMatrix-method}
 \alias{initializeCpp,dgRMatrix-method}
-\alias{initializeCpp,H5SparseMatrixSeed-method}
-\alias{flushFileBasedCache}
+\alias{initializeCpp,lgCMatrix-method}
+\alias{initializeCpp,lgRMatrix-method}
+\alias{initializeCpp,DelayedMatrix-method}
+\alias{initializeCpp,DelayedAbind-method}
+\alias{initializeCpp,DelayedAperm-method}
+\alias{initializeCpp,DelayedSubset-method}
+\alias{initializeCpp,DelayedSetDimnames-method}
+\alias{initializeCpp,DelayedUnaryIsoOpWithArgs-method}
+\alias{initializeCpp,DelayedUnaryIsoOpStack-method}
 \title{Initialize matrix in C++ memory space}
 \usage{
 initializeCpp(x, ...)

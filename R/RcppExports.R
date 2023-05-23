@@ -25,8 +25,8 @@ apply_delayed_subtraction <- function(raw_input, val, right, row) {
     .Call('_beachmat_apply_delayed_subtraction', PACKAGE = 'beachmat', raw_input, val, right, row)
 }
 
-apply_delayed_division <- function(input, val, right, row) {
-    .Call('_beachmat_apply_delayed_division', PACKAGE = 'beachmat', input, val, right, row)
+apply_delayed_division <- function(raw_input, val, right, row) {
+    .Call('_beachmat_apply_delayed_division', PACKAGE = 'beachmat', raw_input, val, right, row)
 }
 
 apply_delayed_log <- function(raw_input, base) {
@@ -53,6 +53,10 @@ apply_delayed_exp <- function(raw_input) {
     .Call('_beachmat_apply_delayed_exp', PACKAGE = 'beachmat', raw_input)
 }
 
+initialize_dense_matrix <- function(raw_x, nrow, ncol) {
+    .Call('_beachmat_initialize_dense_matrix', PACKAGE = 'beachmat', raw_x, nrow, ncol)
+}
+
 fragment_sparse_rows <- function(i, p, limits) {
     .Call('_beachmat_fragment_sparse_rows', PACKAGE = 'beachmat', i, p, limits)
 }
@@ -65,16 +69,16 @@ initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow) {
     .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow)
 }
 
-tatami_dim <- function(input) {
-    .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', input)
+tatami_dim <- function(raw_input) {
+    .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', raw_input)
 }
 
-tatami_column <- function(input, i) {
-    .Call('_beachmat_tatami_column', PACKAGE = 'beachmat', input, i)
+tatami_column <- function(raw_input, i) {
+    .Call('_beachmat_tatami_column', PACKAGE = 'beachmat', raw_input, i)
 }
 
-tatami_row <- function(input, i) {
-    .Call('_beachmat_tatami_row', PACKAGE = 'beachmat', input, i)
+tatami_row <- function(raw_input, i) {
+    .Call('_beachmat_tatami_row', PACKAGE = 'beachmat', raw_input, i)
 }
 
 initialize_unknown_matrix <- function(input) {

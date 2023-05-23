@@ -81,15 +81,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // apply_delayed_division
-SEXP apply_delayed_division(SEXP input, Rcpp::NumericVector val, bool right, bool row);
-RcppExport SEXP _beachmat_apply_delayed_division(SEXP inputSEXP, SEXP valSEXP, SEXP rightSEXP, SEXP rowSEXP) {
+SEXP apply_delayed_division(SEXP raw_input, Rcpp::NumericVector val, bool right, bool row);
+RcppExport SEXP _beachmat_apply_delayed_division(SEXP raw_inputSEXP, SEXP valSEXP, SEXP rightSEXP, SEXP rowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
     Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
     Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_division(input, val, right, row));
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_division(raw_input, val, right, row));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -154,6 +154,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// initialize_dense_matrix
+SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol);
+RcppExport SEXP _beachmat_initialize_dense_matrix(SEXP raw_xSEXP, SEXP nrowSEXP, SEXP ncolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_x(raw_xSEXP);
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_dense_matrix(raw_x, nrow, ncol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fragment_sparse_rows
 Rcpp::List fragment_sparse_rows(Rcpp::IntegerVector i, Rcpp::IntegerVector p, Rcpp::IntegerVector limits);
 RcppExport SEXP _beachmat_fragment_sparse_rows(SEXP iSEXP, SEXP pSEXP, SEXP limitsSEXP) {
@@ -193,34 +205,34 @@ BEGIN_RCPP
 END_RCPP
 }
 // tatami_dim
-Rcpp::IntegerVector tatami_dim(SEXP input);
-RcppExport SEXP _beachmat_tatami_dim(SEXP inputSEXP) {
+Rcpp::IntegerVector tatami_dim(SEXP raw_input);
+RcppExport SEXP _beachmat_tatami_dim(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_dim(input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_dim(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
 // tatami_column
-Rcpp::NumericVector tatami_column(SEXP input, int i);
-RcppExport SEXP _beachmat_tatami_column(SEXP inputSEXP, SEXP iSEXP) {
+Rcpp::NumericVector tatami_column(SEXP raw_input, int i);
+RcppExport SEXP _beachmat_tatami_column(SEXP raw_inputSEXP, SEXP iSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_column(input, i));
+    rcpp_result_gen = Rcpp::wrap(tatami_column(raw_input, i));
     return rcpp_result_gen;
 END_RCPP
 }
 // tatami_row
-Rcpp::NumericVector tatami_row(SEXP input, int i);
-RcppExport SEXP _beachmat_tatami_row(SEXP inputSEXP, SEXP iSEXP) {
+Rcpp::NumericVector tatami_row(SEXP raw_input, int i);
+RcppExport SEXP _beachmat_tatami_row(SEXP raw_inputSEXP, SEXP iSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_row(input, i));
+    rcpp_result_gen = Rcpp::wrap(tatami_row(raw_input, i));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -249,6 +261,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_apply_delayed_sqrt", (DL_FUNC) &_beachmat_apply_delayed_sqrt, 1},
     {"_beachmat_apply_delayed_round", (DL_FUNC) &_beachmat_apply_delayed_round, 1},
     {"_beachmat_apply_delayed_exp", (DL_FUNC) &_beachmat_apply_delayed_exp, 1},
+    {"_beachmat_initialize_dense_matrix", (DL_FUNC) &_beachmat_initialize_dense_matrix, 3},
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},

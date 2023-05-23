@@ -23,7 +23,21 @@
 #' 
 #' @export
 #' @aliases
+#' initializeCpp
+#' initializeCpp,ANY-method
+#' initializeCpp,matrix-method
+#' initializeCpp,dgeMatrix-method
+#' initializeCpp,lgeMatrix-method
 #' initializeCpp,dgCMatrix-method
 #' initializeCpp,dgRMatrix-method
+#' initializeCpp,lgCMatrix-method
+#' initializeCpp,lgRMatrix-method
+#' initializeCpp,DelayedMatrix-method
+#' initializeCpp,DelayedAbind-method
+#' initializeCpp,DelayedAperm-method
+#' initializeCpp,DelayedSubset-method
+#' initializeCpp,DelayedSetDimnames-method
+#' initializeCpp,DelayedUnaryIsoOpWithArgs-method
+#' initializeCpp,DelayedUnaryIsoOpStack-method
 #' @import methods
 setGeneric("initializeCpp", function(x, ...) standardGeneric("initializeCpp"))
