@@ -47,13 +47,16 @@ public:
         return mat->sparse();
     }
 
+    double sparse_proportion() const {
+        return mat->sparse_proportion();
+    }
+
     bool prefer_rows() const {
         return !mat->prefer_rows();
     }
 
-    std::pair<double, double> dimension_preference () const {
-        auto temp = mat->dimension_preference();
-        return std::pair<double, double>(temp.second, temp.first);
+    double prefer_rows_proportion() const {
+        return 1 - mat->prefer_rows_proportion();
     }
 
     bool uses_oracle(bool row) const {
@@ -122,18 +125,28 @@ public:
 /**
  * A `make_*` helper function to enable partial template deduction of supplied types.
  *
- * @tparam Matrix_ A realized `Matrix` class, possibly one that is `const`.
+ * @tparam Value_ Type of matrix value.
+ * @tparam Index_ Type of index value.
  *
- * @param p Pointer to a `Matrix` instance.
+ * @param p Pointer to a (possibly `const`) `Matrix` instance.
  *
  * @return A pointer to a `DelayedTranspose` instance.
  */
-template<class Matrix_>
-std::shared_ptr<Matrix_> make_DelayedTranspose(std::shared_ptr<Matrix_> p) {
-    typedef typename Matrix_::value_type Value_;
-    typedef typename Matrix_::index_type Index_;
-    return std::shared_ptr<Matrix_>(new DelayedTranspose<Value_, Index_>(std::move(p)));
+template<typename Value_, typename Index_>
+std::shared_ptr<Matrix<Value_, Index_> > make_DelayedTranspose(std::shared_ptr<const Matrix<Value_, Index_> > p) {
+    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedTranspose<Value_, Index_>(std::move(p)));
 }
+
+/**
+ * @cond
+ */
+template<typename Value_, typename Index_>
+std::shared_ptr<Matrix<Value_, Index_> > make_DelayedTranspose(std::shared_ptr<Matrix<Value_, Index_> > p) {
+    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedTranspose<Value_, Index_>(std::move(p)));
+}
+/**
+ * @endcond
+ */
 
 }
 

@@ -5,6 +5,155 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// apply_delayed_subset
+SEXP apply_delayed_subset(SEXP input, Rcpp::IntegerVector subset, bool row);
+RcppExport SEXP _beachmat_apply_delayed_subset(SEXP inputSEXP, SEXP subsetSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type subset(subsetSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_subset(input, subset, row));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_transpose
+SEXP apply_delayed_transpose(SEXP input);
+RcppExport SEXP _beachmat_apply_delayed_transpose(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_transpose(input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_bind
+SEXP apply_delayed_bind(Rcpp::List input, bool row);
+RcppExport SEXP _beachmat_apply_delayed_bind(SEXP inputSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_bind(input, row));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_addition
+SEXP apply_delayed_addition(SEXP input, Rcpp::NumericVector val, bool row);
+RcppExport SEXP _beachmat_apply_delayed_addition(SEXP inputSEXP, SEXP valSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_addition(input, val, row));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_multiplication
+SEXP apply_delayed_multiplication(SEXP input, Rcpp::NumericVector val, bool row);
+RcppExport SEXP _beachmat_apply_delayed_multiplication(SEXP inputSEXP, SEXP valSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_multiplication(input, val, row));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_subtraction
+SEXP apply_delayed_subtraction(SEXP input, Rcpp::NumericVector val, bool right, bool row);
+RcppExport SEXP _beachmat_apply_delayed_subtraction(SEXP inputSEXP, SEXP valSEXP, SEXP rightSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
+    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_subtraction(input, val, right, row));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_division
+SEXP apply_delayed_division(SEXP input, Rcpp::NumericVector val, bool right, bool row);
+RcppExport SEXP _beachmat_apply_delayed_division(SEXP inputSEXP, SEXP valSEXP, SEXP rightSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type val(valSEXP);
+    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_division(input, val, right, row));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_log
+SEXP apply_delayed_log(SEXP input, double base);
+RcppExport SEXP _beachmat_apply_delayed_log(SEXP inputSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< double >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_log(input, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_log1p
+SEXP apply_delayed_log1p(SEXP input);
+RcppExport SEXP _beachmat_apply_delayed_log1p(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_log1p(input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_abs
+SEXP apply_delayed_abs(SEXP input);
+RcppExport SEXP _beachmat_apply_delayed_abs(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_abs(input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_sqrt
+SEXP apply_delayed_sqrt(SEXP input);
+RcppExport SEXP _beachmat_apply_delayed_sqrt(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_sqrt(input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_round
+SEXP apply_delayed_round(SEXP input);
+RcppExport SEXP _beachmat_apply_delayed_round(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_round(input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// apply_delayed_exp
+SEXP apply_delayed_exp(SEXP input);
+RcppExport SEXP _beachmat_apply_delayed_exp(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_exp(input));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fragment_sparse_rows
 Rcpp::List fragment_sparse_rows(Rcpp::IntegerVector i, Rcpp::IntegerVector p, Rcpp::IntegerVector limits);
 RcppExport SEXP _beachmat_fragment_sparse_rows(SEXP iSEXP, SEXP pSEXP, SEXP limitsSEXP) {
@@ -28,10 +177,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// initialize_sparse_matrix
+SEXP initialize_sparse_matrix(Rcpp::RObject x, Rcpp::RObject i, Rcpp::RObject p, int nrow, int ncol, bool byrow);
+RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP xSEXP, SEXP iSEXP, SEXP pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type i(iSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
+    Rcpp::traits::input_parameter< bool >::type byrow(byrowSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_sparse_matrix(x, i, p, nrow, ncol, byrow));
+    return rcpp_result_gen;
+END_RCPP
+}
+// initialize_unknown_matrix
+SEXP initialize_unknown_matrix(Rcpp::RObject input);
+RcppExport SEXP _beachmat_initialize_unknown_matrix(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_unknown_matrix(input));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_beachmat_apply_delayed_subset", (DL_FUNC) &_beachmat_apply_delayed_subset, 3},
+    {"_beachmat_apply_delayed_transpose", (DL_FUNC) &_beachmat_apply_delayed_transpose, 1},
+    {"_beachmat_apply_delayed_bind", (DL_FUNC) &_beachmat_apply_delayed_bind, 2},
+    {"_beachmat_apply_delayed_addition", (DL_FUNC) &_beachmat_apply_delayed_addition, 3},
+    {"_beachmat_apply_delayed_multiplication", (DL_FUNC) &_beachmat_apply_delayed_multiplication, 3},
+    {"_beachmat_apply_delayed_subtraction", (DL_FUNC) &_beachmat_apply_delayed_subtraction, 4},
+    {"_beachmat_apply_delayed_division", (DL_FUNC) &_beachmat_apply_delayed_division, 4},
+    {"_beachmat_apply_delayed_log", (DL_FUNC) &_beachmat_apply_delayed_log, 2},
+    {"_beachmat_apply_delayed_log1p", (DL_FUNC) &_beachmat_apply_delayed_log1p, 1},
+    {"_beachmat_apply_delayed_abs", (DL_FUNC) &_beachmat_apply_delayed_abs, 1},
+    {"_beachmat_apply_delayed_sqrt", (DL_FUNC) &_beachmat_apply_delayed_sqrt, 1},
+    {"_beachmat_apply_delayed_round", (DL_FUNC) &_beachmat_apply_delayed_round, 1},
+    {"_beachmat_apply_delayed_exp", (DL_FUNC) &_beachmat_apply_delayed_exp, 1},
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
+    {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},
+    {"_beachmat_initialize_unknown_matrix", (DL_FUNC) &_beachmat_initialize_unknown_matrix, 1},
     {NULL, NULL, 0}
 };
 
