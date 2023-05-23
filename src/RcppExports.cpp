@@ -192,6 +192,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tatami_dim
+Rcpp::IntegerVector tatami_dim(SEXP input);
+RcppExport SEXP _beachmat_tatami_dim(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_dim(input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tatami_column
+Rcpp::NumericVector tatami_column(SEXP input, int i);
+RcppExport SEXP _beachmat_tatami_column(SEXP inputSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_column(input, i));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tatami_row
+Rcpp::NumericVector tatami_row(SEXP input, int i);
+RcppExport SEXP _beachmat_tatami_row(SEXP inputSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_row(input, i));
+    return rcpp_result_gen;
+END_RCPP
+}
 // initialize_unknown_matrix
 SEXP initialize_unknown_matrix(Rcpp::RObject input);
 RcppExport SEXP _beachmat_initialize_unknown_matrix(SEXP inputSEXP) {
@@ -220,6 +252,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},
+    {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
+    {"_beachmat_tatami_column", (DL_FUNC) &_beachmat_tatami_column, 2},
+    {"_beachmat_tatami_row", (DL_FUNC) &_beachmat_tatami_row, 2},
     {"_beachmat_initialize_unknown_matrix", (DL_FUNC) &_beachmat_initialize_unknown_matrix, 1},
     {NULL, NULL, 0}
 };

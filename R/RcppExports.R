@@ -65,6 +65,18 @@ initialize_sparse_matrix <- function(x, i, p, nrow, ncol, byrow) {
     .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', x, i, p, nrow, ncol, byrow)
 }
 
+tatami_dim <- function(input) {
+    .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', input)
+}
+
+tatami_column <- function(input, i) {
+    .Call('_beachmat_tatami_column', PACKAGE = 'beachmat', input, i)
+}
+
+tatami_row <- function(input, i) {
+    .Call('_beachmat_tatami_row', PACKAGE = 'beachmat', input, i)
+}
+
 initialize_unknown_matrix <- function(input) {
     .Call('_beachmat_initialize_unknown_matrix', PACKAGE = 'beachmat', input)
 }

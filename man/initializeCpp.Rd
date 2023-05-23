@@ -32,7 +32,7 @@ As mentioned before, this initialization process is very cheap so there is no do
 x <- Matrix::rsparsematrix(1000, 100, 0.1)
 y <- round(abs(x))
 
-stuff <- initialize(y)
-str(stuff)
+stuff <- initializeCpp(y)
+stuff
 
 }

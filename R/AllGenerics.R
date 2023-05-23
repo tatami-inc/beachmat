@@ -25,7 +25,5 @@
 #' @aliases
 #' initializeCpp,dgCMatrix-method
 #' initializeCpp,dgRMatrix-method
-#' initializeCpp,H5SparseMatrixSeed-method
-#' flushFileBasedCache
 #' @import methods
 setGeneric("initializeCpp", function(x, ...) standardGeneric("initializeCpp"))
