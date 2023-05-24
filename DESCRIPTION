@@ -30,5 +30,5 @@ Description: Provides a consistent C++ class interface for reading from and
 License: GPL-3
 NeedsCompilation: yes
 VignetteBuilder: knitr
-SystemRequirements: C++11
-RoxygenNote: 7.1.1
+SystemRequirements: C++17
+RoxygenNote: 7.2.3

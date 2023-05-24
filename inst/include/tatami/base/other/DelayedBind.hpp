@@ -28,7 +28,7 @@ namespace tatami {
  * @tparam margin_ Dimension along which the combining is to occur.
  * If 0, the matrices are combined along the rows; if 1, the combining is applied along the columns.
  * @tparam Value_ Type of matrix value.
- * @tparam Data_ Type of index value.
+ * @tparam Index_ Type of index value.
  */
 template<int margin_, typename Value_, typename Index_>
 class DelayedBind : public Matrix<Value_, Index_> {
@@ -70,11 +70,16 @@ public:
             cumulative.resize(sofar + 1);
         }
 
+        double denom = 0;
         for (const auto& x : mats) {
-            if (!(x->sparse())) {
-                stored_sparse = false;
-                break;
-            }
+            double total = x->nrow() * x->ncol();
+            denom += total;
+            sparse_prop += total * x->sparse_proportion();
+            row_prop += total * x->prefer_rows_proportion();
+        }
+        if (denom) {
+            sparse_prop /= denom;
+            row_prop /= denom;
         }
 
         for (int d = 0; d < 2; ++d) {
@@ -85,14 +90,6 @@ public:
                     break;
                 }
             }
-        }
-
-        stored_dimension_preference.first = 0;
-        stored_dimension_preference.second = 0;
-        for (const auto& x : mats) {
-            auto current = x->dimension_preference();
-            stored_dimension_preference.first += current.first;
-            stored_dimension_preference.second += current.second;
         }
     }
 
@@ -105,8 +102,7 @@ private:
     std::vector<std::shared_ptr<const Matrix<Value_, Index_> > > mats;
     std::vector<Index_> cumulative;
 
-    bool stored_sparse = true;
-    std::pair<double, double> stored_dimension_preference;
+    double sparse_prop = 0, row_prop = 0;
     std::array<bool, 2> stored_uses_oracle;
 
 private:
@@ -144,16 +140,19 @@ public:
     }
 
     bool sparse() const {
-        return stored_sparse;
+        return sparse_prop > 0.5;
+    }
+
+    double sparse_proportion() const {
+        return sparse_prop;
     }
 
     bool prefer_rows() const {
-        const auto& dimpref = stored_dimension_preference;
-        return dimpref.first > dimpref.second;
+        return row_prop > 0.5;
     }
 
-    std::pair<double, double> dimension_preference() const {
-        return stored_dimension_preference;
+    double prefer_rows_proportion() const {
+        return row_prop;
     }
 
     bool uses_oracle(bool row) const {
@@ -726,15 +725,33 @@ public:
  *
  * @tparam margin_ Dimension along which the combining is to occur.
  * If 0, matrices are combined along the rows; if 1, matrices are combined to the columns.
- * @tparam Matrix_ A realized `Matrix` class, possibly const. 
+ * @tparam Value_ Type of matrix value.
+ * @tparam Index_ Type of index value.
  *
  * @param ps Pointers to `Matrix` objects.
  *
  * @return A pointer to a `DelayedBind` instance.
  */
-template<int margin_, class Matrix_>
-std::shared_ptr<Matrix_> make_DelayedBind(std::vector<std::shared_ptr<Matrix_> > ps) {
-    return std::shared_ptr<Matrix_>(new DelayedBind<margin_, typename Matrix_::value_type, typename Matrix_::index_type>(std::move(ps)));
+template<int margin_, typename Value_, typename Index_>
+std::shared_ptr<Matrix<Value_, Index_> > make_DelayedBind(std::vector<std::shared_ptr<Matrix<Value_, Index_> > > ps) {
+    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedBind<margin_, Value_, Index_>(std::move(ps)));
+}
+
+/**
+ * A `make_*` helper function to enable partial template deduction of supplied types.
+ *
+ * @tparam margin_ Dimension along which the combining is to occur.
+ * If 0, matrices are combined along the rows; if 1, matrices are combined to the columns.
+ * @tparam Value_ Type of matrix value.
+ * @tparam Index_ Type of index value.
+ *
+ * @param ps Pointers to `const` `Matrix` objects.
+ *
+ * @return A pointer to a `DelayedBind` instance.
+ */
+template<int margin_, typename Value_, typename Index_>
+std::shared_ptr<Matrix<Value_, Index_> > make_DelayedBind(std::vector<std::shared_ptr<const Matrix<Value_, Index_> > > ps) {
+    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedBind<margin_, Value_, Index_>(std::move(ps)));
 }
 
 }

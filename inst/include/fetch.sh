@@ -16,7 +16,7 @@ else
 fi
 
 cd source-tatami
-git checkout ca5835b9d7f9fc544a342eff475a9ba645410ab1
+git checkout fb428b53b8bfd642db09d71ac34c41351e492b70
 rm -rf ../tatami
 cp -r include/tatami/ ../tatami
 git checkout master
@@ -24,19 +24,37 @@ cd -
 
 # Same process for raticate.
 
-if [ ! -e source-raticate ]
+if [ ! -e source-tatami_r ]
 then 
-    git clone https://github.com/LTLA/raticate source-raticate
+    git clone https://github.com/tatami-inc/tatami_r source-tatami_r
 else 
-    cd source-raticate
+    cd source-tatami_r
     git pull
     cd -
 fi
 
-cd source-raticate
-git checkout 7066ee0278682396c708ea4da7fa92b3a5181feb
-rm -rf ../raticate
-cp -r include/raticate/ ../raticate
+cd source-tatami_r
+git checkout 57d2d982c4e609c448e4d53738ab00feaf3ad40c
+rm -rf ../tatami_r
+cp -r include/tatami_r/ ../tatami_r
+git checkout master
+cd -
+
+# Same process for manticore
+
+if [ ! -e source-manticore ]
+then 
+    git clone https://github.com/tatami-inc/manticore source-manticore
+else 
+    cd source-manticore
+    git pull
+    cd -
+fi
+
+cd source-manticore
+git checkout 313002dcea65ddb0fd334034f0f618626c736037
+rm -rf ../manticore
+cp -r include/manticore/ ../manticore
 git checkout master
 cd -
 

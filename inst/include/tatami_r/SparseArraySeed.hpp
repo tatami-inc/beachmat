@@ -1,14 +1,14 @@
-#ifndef RATICATE_SPARSEARRAYSEED_HPP
-#define RATICATE_SPARSEARRAYSEED_HPP
+#ifndef TATAMI_R_SPARSEARRAYSEED_HPP
+#define TATAMI_R_SPARSEARRAYSEED_HPP
 
 #include "utils.hpp"
 #include "tatami/tatami.hpp"
 #include <type_traits>
 
-namespace raticate { 
+namespace tatami_r { 
 
-template<typename Data = double, typename Index = int, class V>
-Parsed<Data, Index> parse_SparseArraySeed(Rcpp::RObject seed, const V& val) {
+template<typename Data_ = double, typename Index_ = int, class InputObject_>
+Parsed<Data_, Index_> parse_SparseArraySeed_internal(Rcpp::RObject seed, const InputObject_& val) {
     auto dims = parse_dims(seed.slot("dim"));
     int NR = dims.first;
     int NC = dims.second;
@@ -27,8 +27,8 @@ Parsed<Data, Index> parse_SparseArraySeed(Rcpp::RObject seed, const V& val) {
 
     std::vector<int> i(nnz);
     std::vector<size_t> p(NC + 1);
-    typedef typename std::remove_const<typename std::remove_reference<decltype(val[0])>::type>::type Value;
-    std::vector<Value> v(val.begin(), val.end());
+    typedef typename std::remove_const<typename std::remove_reference<decltype(val[0])>::type>::type Value_;
+    std::vector<Value_> v(val.begin(), val.end());
 
     if (nnz) {
         auto row_indices=temp_i.column(0);
@@ -89,9 +89,9 @@ Parsed<Data, Index> parse_SparseArraySeed(Rcpp::RObject seed, const V& val) {
         }
     }
 
-    Parsed<Data, Index> output;
+    Parsed<Data_, Index_> output;
     output.matrix.reset(
-        new tatami::CompressedSparseMatrix<false, Data, Index, decltype(v), decltype(i), decltype(p)>(
+        new tatami::CompressedSparseMatrix<false, Data_, Index_, decltype(v), decltype(i), decltype(p)>(
             NR, 
             NC, 
             std::move(v), 
@@ -103,20 +103,20 @@ Parsed<Data, Index> parse_SparseArraySeed(Rcpp::RObject seed, const V& val) {
     return output;
 }
 
-template<typename Data = double, typename Index = int>
-Parsed<Data, Index> parse_SparseArraySeed(Rcpp::RObject seed) {
+template<typename Data_ = double, typename Index_ = int>
+Parsed<Data_, Index_> parse_SparseArraySeed(Rcpp::RObject seed) {
     Rcpp::RObject vals(seed.slot("nzdata"));
 
-    Parsed<Data, Index> output;
+    Parsed<Data_, Index_> output;
     if (vals.sexp_type() == REALSXP) {
         Rcpp::NumericVector y(vals);
-        output = parse_SparseArraySeed<Data, Index>(seed, y);
+        output = parse_SparseArraySeed_internal<Data_, Index_>(seed, y);
     } else if (vals.sexp_type() == INTSXP) {
         Rcpp::IntegerVector y(vals);
-        output = parse_SparseArraySeed<Data, Index>(seed, y);
+        output = parse_SparseArraySeed_internal<Data_, Index_>(seed, y);
     } else if (vals.sexp_type() == LGLSXP) {
         Rcpp::LogicalVector y(vals);
-        output = parse_SparseArraySeed<Data, Index>(seed, y);
+        output = parse_SparseArraySeed_internal<Data_, Index_>(seed, y);
     }
 
     return output;
