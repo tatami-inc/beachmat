@@ -128,6 +128,52 @@ In general, we suggest calling `initializeCpp()` within package functions rather
 The external pointers should never be exposed to the user, as they do not behave like regular objects, e.g., they are not serializable.
 Fortunately, the `initializeCpp()` calls are very cheap and can be performed at the start of any R function that needs to do matrix operations in C++.
 
+# Enabling parallelization
+
+**tatami** calls are normally thread-safe, but if the `tatami::NumericMatrix` is constructed from an unsupported object, it needs to call R to extract the matrix contents.
+The R interpreter is strictly single-threaded, which requires some care when defining our chosen parallelization scheme.
+The easiest way to achieve parallelization is to use the `tatami::parallelize()` function:
+
+```{Rcpp}
+#include "Rtatami.h"
+#include <vector>
+#include <algorithm>
+
+// Not necessary in a package context, it's only used for this vignette:
+// [[Rcpp::depends(beachmat)]]
+
+// [[Rcpp::export(rng=false)]]
+Rcpp::NumericVector parallel_column_sums(Rcpp::RObject initmat, int nthreads) {
+    Rtatami::BoundNumericPointer parsed(initmat);
+    const auto& ptr = parsed->ptr;
+
+    auto NR = ptr->nrow();
+    auto NC = ptr->ncol();
+    Rcpp::NumericVector output(NC);
+
+    tatami::parallelize([&](int thread, int start, int length) {
+        std::vector<double> buffer(NR);
+        auto wrk = ptr->dense_column();
+        for (int i = start, end = start + length; i < end; ++i) {
+            auto extracted = wrk->fetch(i, buffer.data());
+            output[i] = std::accumulate(extracted, extracted + NR, 0.0);
+        }
+    }, NC, nthreads);
+
+    return output;
+}
+```
+
+Now we put it to work with 2 threads.
+Note that `tatami::parallelize()` (or specifically, the macros in `Rtatami.h`) will use the standard `<thread>` library to handle parallelization,
+so it will work even on toolchains that do not have OpenMP support.
+
+```{r}
+parallel_column_sums(ptr, 2)
+```
+
+More advanced users can check out the parallelization-related documentation in the [**tatami_r**](https://github.com/tatami-inc/tatami_r) repository. 
+
 # Session information {-}
 
 ```{r}
