@@ -12,6 +12,10 @@
 #include "manticore/manticore.hpp"
 #include <thread>
 #include <cmath>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <algorithm>
 
 /**
  * @file parallelize.hpp
