@@ -24,7 +24,11 @@ initializeCpp(x, ...)
 \arguments{
 \item{x}{A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.}
 
-\item{...}{Further arguments used by specific methods.}
+\item{...}{Further arguments used by specific methods.
+Common arguments include:
+\itemize{
+\item \code{memorize}, a logical scalar indicating whether to load the representation into memory - see \code{\link{checkMemoryCache}} for details.
+}}
 }
 \value{
 An external pointer to a C++ object containing a tatami matrix.

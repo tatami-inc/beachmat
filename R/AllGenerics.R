@@ -5,6 +5,10 @@
 #'
 #' @param x A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.
 #' @param ... Further arguments used by specific methods.
+#' Common arguments include:
+#' \itemize{
+#' \item \code{memorize}, a logical scalar indicating whether to load the representation into memory - see \code{\link{checkMemoryCache}} for details.
+#' }
 #'
 #' @return An external pointer to a C++ object containing a tatami matrix.
 #'
