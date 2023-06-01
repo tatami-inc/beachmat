@@ -265,3 +265,12 @@ test_that("initialization works correctly with other DelayedArray unary operatio
     ptr <- initializeCpp(z)
     am_i_ok(abs(x), ptr)
 })
+
+test_that("initialization works correctly with an unknown DelayedArray", {
+    library(HDF5Array)
+    mat <- matrix(rnorm(50), ncol=5)
+    mat2 <- as(mat, "HDF5Array")
+
+    ptr <- initializeCpp(mat2)
+    am_i_ok(mat, ptr)
+})
