@@ -81,6 +81,14 @@ tatami_row <- function(raw_input, i) {
     .Call('_beachmat_tatami_row', PACKAGE = 'beachmat', raw_input, i)
 }
 
+tatami_row_sums <- function(raw_input, threads) {
+    .Call('_beachmat_tatami_row_sums', PACKAGE = 'beachmat', raw_input, threads)
+}
+
+tatami_column_sums <- function(raw_input, threads) {
+    .Call('_beachmat_tatami_column_sums', PACKAGE = 'beachmat', raw_input, threads)
+}
+
 initialize_unknown_matrix <- function(input) {
     .Call('_beachmat_initialize_unknown_matrix', PACKAGE = 'beachmat', input)
 }

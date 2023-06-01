@@ -27,3 +27,17 @@ Rcpp::NumericVector tatami_row(SEXP raw_input, int i) {
     wrk->fetch_copy(i-1, static_cast<double*>(output.begin()));
     return output;
 }
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::NumericVector tatami_row_sums(SEXP raw_input, int threads) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto rs = tatami::row_sums(input->ptr.get(), threads);
+    return Rcpp::NumericVector(rs.begin(), rs.end());
+}
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto rs = tatami::column_sums(input->ptr.get(), threads);
+    return Rcpp::NumericVector(rs.begin(), rs.end());
+}

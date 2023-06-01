@@ -236,6 +236,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tatami_row_sums
+Rcpp::NumericVector tatami_row_sums(SEXP raw_input, int threads);
+RcppExport SEXP _beachmat_tatami_row_sums(SEXP raw_inputSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_row_sums(raw_input, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tatami_column_sums
+Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads);
+RcppExport SEXP _beachmat_tatami_column_sums(SEXP raw_inputSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_column_sums(raw_input, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // initialize_unknown_matrix
 SEXP initialize_unknown_matrix(Rcpp::RObject input);
 RcppExport SEXP _beachmat_initialize_unknown_matrix(SEXP inputSEXP) {
@@ -268,6 +290,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
     {"_beachmat_tatami_column", (DL_FUNC) &_beachmat_tatami_column, 2},
     {"_beachmat_tatami_row", (DL_FUNC) &_beachmat_tatami_row, 2},
+    {"_beachmat_tatami_row_sums", (DL_FUNC) &_beachmat_tatami_row_sums, 2},
+    {"_beachmat_tatami_column_sums", (DL_FUNC) &_beachmat_tatami_column_sums, 2},
     {"_beachmat_initialize_unknown_matrix", (DL_FUNC) &_beachmat_initialize_unknown_matrix, 1},
     {NULL, NULL, 0}
 };

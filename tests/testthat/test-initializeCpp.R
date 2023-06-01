@@ -11,6 +11,10 @@ am_i_ok <- function(ref, ptr, exact=TRUE) {
         }
         test(expected, beachmat:::tatami_column(ptr, i))
     }
+
+    # Checking for thread-correct processing.
+    expect_equal(beachmat:::tatami_row_sums(ptr, 2), Matrix::rowSums(ref))
+    expect_equal(beachmat:::tatami_column_sums(ptr, 2), Matrix::colSums(ref))
 }
 
 set.seed(1000)
