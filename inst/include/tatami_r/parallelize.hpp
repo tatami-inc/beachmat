@@ -32,6 +32,8 @@ namespace tatami_r {
  * @return Reference to a global `manticore::Executor`.
  */
 inline manticore::Executor& executor() {
+    // This should end up resolving to a single instance, even across dynamically linked libraries:
+    // https://stackoverflow.com/questions/52851239/local-static-variable-linkage-in-a-template-class-static-member-function
     static manticore::Executor mexec;
     return mexec;
 }
