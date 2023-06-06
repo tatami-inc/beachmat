@@ -75,35 +75,36 @@ setMethod("initializeCpp", "DelayedSetDimnames", function(x, ...) {
 ####################################################################################
 ####################################################################################
 
-supported.Ops <- c("+", "-", "*", "/")
+supported.Arith1 <- c("+", "*")
+supported.Arith2 <- c("-", "/")
+supported.Compare <- c("==", ">", "<", ">=", "<=", "!=")
+supported.Logic <- c("&", "|")
+supported.Ops <- c(supported.Arith1, supported.Arith2, supported.Compare, supported.Logic)
 
-.apply_delayed_arithmetic <- function(seed, op, val, right, row) {
-    if (op == "+") {
-        return(apply_delayed_addition(seed, val, row))
-    } else if (op == "*") {
-        return(apply_delayed_multiplication(seed, val, row))
-    } else if (op == "/") {
-        return(apply_delayed_division(seed, val, right, row))
-    } else if (op == "-") {
-        return(apply_delayed_subtraction(seed, val, right, row))
+reverse.Compare <- c("=="="==", ">"="<", "<"=">", ">="="<=", "<="=">=", "!="="!=")
+
+.apply_delayed_unary_ops <- function(seed, op, val, right, row, fail = TRUE) {
+    if (op %in% supported.Arith1) {
+        return(apply_delayed_associative_arithmetic(seed, val, row, op))
+    } else if (op %in% supported.Arith2) {
+        return(apply_delayed_nonassociative_arithmetic(seed, val, right, row, op))
+    } else if (op %in% supported.Compare) {
+        if (!right) { # need to flip the operation if the argument is not on the right.
+            op <- reverse.Compare[[op]]
+        }
+        return(apply_delayed_comparison(seed, val, row, op))
+    } else if (op %in% supported.Logic) {
+        return(apply_delayed_boolean(seed, val, row, op))
+    } else if (fail) {
+        stop("operation '", op, "' is currently not supported")
+    } else {
+        return(NULL)
     }
 }
 
 #' @export
 setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
     seed <- initializeCpp(x@seed, ...)
-
-    # Figuring out the identity of the operation.
-    chosen <- NULL
-    for (p in supported.Ops) {
-        if (identical(x@OP, get(p, envir=baseenv()))) {
-            chosen <- p
-            break
-        }
-    }
-    if (is.null(chosen)) {
-        stop("unknown operation in ", class(x))
-    }
 
     # Saving the left and right args. There should only be one or the other.
     # as the presence of both is not commutative.
@@ -121,7 +122,19 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
     }
     row <- along == 1L
 
-    .apply_delayed_arithmetic(seed, chosen, args, right, row)
+    # Figuring out the identity of the operation.
+    chosen <- NULL
+    for (p in supported.Ops) {
+        if (identical(x@OP, get(p, envir=baseenv()))) {
+            chosen <- p
+            break
+        }
+    }
+    if (is.null(chosen)) {
+        stop("unknown operation in ", class(x))
+    }
+
+    .apply_delayed_unary_ops(seed, chosen, args, right, row)
 })
 
 ####################################################################################
@@ -172,17 +185,18 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
                 if (generic == "+") {
                     return(seed)
                 } else if (generic == "-") {
-                    return(apply_delayed_multiplication(seed, -1, TRUE))
+                    return(apply_delayed_associative_arithmetic(seed, -1, TRUE, "*"))
                 } else {
                     stop("second argument can only be missing for unary '+' or '-'")
                 }
             } else {
                 right <- is(e1, "DelayedArray") # i.e., is the operation applied to the right of the seed?
                 val <- if (right) e2 else e1
-
-                # Just guessing that it's applied along the rows, if it's not a scalar.
-                return(.apply_delayed_arithmetic(seed, generic, val, right, TRUE))
+                return(.apply_delayed_unary_ops(seed, generic, val, right, TRUE, fail=FALSE))
             }
+
+        } else if (generic == "!") {
+            return(apply_delayed_boolean_not(seed))
         }
     }
 }
