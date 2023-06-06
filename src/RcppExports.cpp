@@ -10,6 +10,18 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// apply_delayed_binary_operation
+SEXP apply_delayed_binary_operation(SEXP left_input, SEXP right_input, std::string op);
+RcppExport SEXP _beachmat_apply_delayed_binary_operation(SEXP left_inputSEXP, SEXP right_inputSEXP, SEXP opSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type left_input(left_inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type right_input(right_inputSEXP);
+    Rcpp::traits::input_parameter< std::string >::type op(opSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_binary_operation(left_input, right_input, op));
+    return rcpp_result_gen;
+END_RCPP
+}
 // apply_delayed_associative_arithmetic
 SEXP apply_delayed_associative_arithmetic(SEXP raw_input, Rcpp::NumericVector val, bool row, std::string op);
 RcppExport SEXP _beachmat_apply_delayed_associative_arithmetic(SEXP raw_inputSEXP, SEXP valSEXP, SEXP rowSEXP, SEXP opSEXP) {
@@ -283,6 +295,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_beachmat_apply_delayed_binary_operation", (DL_FUNC) &_beachmat_apply_delayed_binary_operation, 3},
     {"_beachmat_apply_delayed_associative_arithmetic", (DL_FUNC) &_beachmat_apply_delayed_associative_arithmetic, 4},
     {"_beachmat_apply_delayed_nonassociative_arithmetic", (DL_FUNC) &_beachmat_apply_delayed_nonassociative_arithmetic, 5},
     {"_beachmat_apply_delayed_comparison", (DL_FUNC) &_beachmat_apply_delayed_comparison, 4},

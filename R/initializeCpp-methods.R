@@ -230,3 +230,32 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpStack", function(x, ...) {
     seed
 })
 
+####################################################################################
+####################################################################################
+
+#' @export
+setMethod("initializeCpp", "DelayedNaryIsoOp", function(x, ...) {
+    if (length(x@seeds) != 2) {
+        stop("expected exactly two seeds for 'DelayedNaryIsoOp'")
+    }
+    if (length(x@Rargs)) {
+        stop("expected no additional right arguments for 'DelayedNaryIsoOp'")
+    }
+
+    left <- initializeCpp(x@seeds[[1]], ...)
+    right <- initializeCpp(x@seeds[[2]], ...)
+
+    # Figuring out the identity of the operation.
+    chosen <- NULL
+    for (p in supported.Ops) {
+        if (identical(x@OP, get(p, envir=baseenv()))) {
+            chosen <- p
+            break
+        }
+    }
+    if (is.null(chosen)) {
+        stop("unknown operation in ", class(x))
+    }
+
+    apply_delayed_binary_operation(left, right, chosen)
+})

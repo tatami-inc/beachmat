@@ -17,6 +17,7 @@
 \alias{initializeCpp,DelayedSetDimnames-method}
 \alias{initializeCpp,DelayedUnaryIsoOpWithArgs-method}
 \alias{initializeCpp,DelayedUnaryIsoOpStack-method}
+\alias{initializeCpp,DelayedNaryIsoOp-method}
 \title{Initialize matrix in C++ memory space}
 \usage{
 initializeCpp(x, ...)

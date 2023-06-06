@@ -43,5 +43,6 @@
 #' initializeCpp,DelayedSetDimnames-method
 #' initializeCpp,DelayedUnaryIsoOpWithArgs-method
 #' initializeCpp,DelayedUnaryIsoOpStack-method
+#' initializeCpp,DelayedNaryIsoOp-method
 #' @import methods
 setGeneric("initializeCpp", function(x, ...) standardGeneric("initializeCpp"))
