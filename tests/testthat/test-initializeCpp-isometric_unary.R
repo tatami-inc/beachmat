@@ -278,7 +278,8 @@ test_that("initialization works correctly with DelayedArray rounding", {
     am_i_ok(round(ref), ptr)
 
     z <- round(x0, 2)
-    expect_error(initializeCpp(z), "digits = 0")
+    expect_warning(ptr <- initializeCpp(z), "digits = 0")
+    am_i_ok(round(ref, 2), ptr)
 })
 
 test_that("initialization works correctly with other DelayedArray unary operations", {

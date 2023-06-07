@@ -83,7 +83,7 @@ supported.Ops <- c(supported.Arith1, supported.Arith2, supported.Compare, suppor
 
 reverse.Compare <- c("=="="==", ">"="<", "<"=">", ">="="<=", "<="=">=", "!="="!=")
 
-.apply_delayed_unary_ops <- function(seed, op, val, right, row, fail = TRUE) {
+.apply_delayed_unary_ops <- function(seed, op, val, right, row) {
     if (op %in% supported.Arith1) {
         return(apply_delayed_associative_arithmetic(seed, val, row, op))
     } else if (op %in% supported.Arith2) {
@@ -95,8 +95,6 @@ reverse.Compare <- c("=="="==", ">"="<", "<"=">", ">="="<=", "<="=">=", "!="="!=
         return(apply_delayed_comparison(seed, val, row, op))
     } else if (op %in% supported.Logic) {
         return(apply_delayed_boolean(seed, val, row, op))
-    } else if (fail) {
-        stop("operation '", op, "' is currently not supported")
     } else {
         return(NULL)
     }
@@ -109,7 +107,7 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
     # Saving the left and right args. There should only be one or the other.
     # as the presence of both is not commutative.
     if (length(x@Rargs) + length(x@Largs) !=1) {
-        stop("'DelayedUnaryIsoApWithArgs' should operate on exactly one argument")
+        stop("'", class(x)[1], "' should operate on exactly one argument")
     }
 
     right <- length(x@Rargs) > 0
@@ -130,11 +128,15 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
             break
         }
     }
-    if (is.null(chosen)) {
-        stop("unknown operation in ", class(x))
-    }
 
-    .apply_delayed_unary_ops(seed, chosen, args, right, row)
+    if (is.null(chosen)) {
+        warning("unknown operation in '<", class(x)[1], ">@OP', falling back to an unknown matrix")
+        return(initialize_unknown_matrix(x))
+    } 
+
+    output <- .apply_delayed_unary_ops(seed, chosen, args, right, row)
+    stopifnot(!is.null(output))
+    output
 })
 
 ####################################################################################
@@ -144,66 +146,89 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
     envir <- environment(OP)
     generic <- envir$`.Generic`
 
-    if (!is.null(generic)) {
-        if (generic == "abs") {
-            return(apply_delayed_abs(seed))
-        } else if (generic == "sqrt") {
-            return(apply_delayed_sqrt(seed))
-        } else if (generic == "exp") {
-            return(apply_delayed_exp(seed))
-        } else if (generic == "log1p") {
-            return(apply_delayed_log1p(seed))
-        } else if (generic == "round") {
-            if (envir$digits != 0) {
-                stop("only 'digits = 0' support for delayed 'round' operations")
-            }
-            return(apply_delayed_round(seed))
+    if (is.null(generic)) {
+        # Special case for the general log().
+        if (isTRUE(all.equal(as.character(body(OP)), c("log", "a", "base")))) {
+            return(apply_delayed_log(seed, envir$base))
         }
-
-        log.base.support <- c(log2=2, log10=10)
-        if (generic %in% names(log.base.support)) {
-            return(apply_delayed_log(seed, log.base.support[[generic]]))
-        }
+        return(NULL)
     }
 
-    # Special case for the general case log.
-    if (isTRUE(all.equal(as.character(body(OP)), c("log", "a", "base")))) {
-        return(apply_delayed_log(seed, envir$base))
+    if (generic == "abs") {
+        return(apply_delayed_abs(seed))
     }
+
+    if (generic == "sqrt") {
+        return(apply_delayed_sqrt(seed))
+    }
+
+    if (generic == "exp") {
+        return(apply_delayed_exp(seed))
+    }
+
+    if (generic == "log1p") {
+        return(apply_delayed_log1p(seed))
+    }
+
+    if (generic == "round") {
+        if (envir$digits != 0) {
+            return("only 'digits = 0' are supported for delayed 'round'")
+        }
+        return(apply_delayed_round(seed))
+    }
+
+    log.base.support <- c(log2=2, log10=10)
+    if (generic %in% names(log.base.support)) {
+        return(apply_delayed_log(seed, log.base.support[[generic]]))
+    }
+
+    NULL
 }
 
 .unary_Ops <- function(seed, OP) {
     envir <- environment(OP)
     generic <- envir$`.Generic`
 
-    if (!is.null(generic)) {
-        if (generic %in% supported.Ops) {
-            e1 <- envir$e1
-            e2 <- envir$e2
-
-            if (missing(e2)) {
-                if (generic == "+") {
-                    return(seed)
-                } else if (generic == "-") {
-                    return(apply_delayed_associative_arithmetic(seed, -1, TRUE, "*"))
-                } else {
-                    stop("second argument can only be missing for unary '+' or '-'")
-                }
-            } else {
-                right <- is(e1, "DelayedArray") # i.e., is the operation applied to the right of the seed?
-                val <- if (right) e2 else e1
-                return(.apply_delayed_unary_ops(seed, generic, val, right, TRUE, fail=FALSE))
-            }
-
-        } else if (generic == "!") {
-            return(apply_delayed_boolean_not(seed))
-        }
+    if (is.null(generic)) {
+        return(NULL)
     }
+
+    if (generic == "!") {
+        return(apply_delayed_boolean_not(seed))
+    }
+
+    if (!(generic %in% supported.Ops)) {
+        return(NULL)
+    }
+
+    e1 <- envir$e1
+    e2 <- envir$e2
+
+    if (missing(e2)) {
+        if (generic == "+") {
+            return(seed)
+        } else if (generic == "-") {
+            return(apply_delayed_associative_arithmetic(seed, -1, TRUE, "*"))
+        } else {
+            stop("second argument can only be missing for unary '+' or '-'")
+        }
+    } 
+
+    # i.e., is the operation applied to the right of the seed?
+    right <- is(e1, "DelayedArray") 
+    val <- if (right) e2 else e1
+
+    # Just pretending that we're applying by rows; this should never happen,
+    # as vector operations are handled by DelayedUnaryIsoOpWithArgs.
+    output <- .apply_delayed_unary_ops(seed, generic, val, right, row=TRUE)
+    stopifnot(!is.null(output))
+    output
 }
 
 #' @export
 setMethod("initializeCpp", "DelayedUnaryIsoOpStack", function(x, ...) {
     seed <- initializeCpp(x@seed, ...)
+
     for (i in seq_along(x@OPS)) { 
         OP <- x@OPS[[i]]
         status <- FALSE 
@@ -222,8 +247,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpStack", function(x, ...) {
             }
         } 
 
-        if (!status) {
-            stop("unknown OPS[[", i, "]] function in ", class(x))
+        if (!status || is.character(seed)) {
+            msg <- if (is.character(seed)) seed else paste0("unsupported function in '<", class(x), ">@OPS[[", i, "]]'")
+            warning(msg, ", falling back to an unknown matrix")
+            return(initialize_unknown_matrix(x))
         }
     }
 
@@ -253,9 +280,13 @@ setMethod("initializeCpp", "DelayedNaryIsoOp", function(x, ...) {
             break
         }
     }
+
     if (is.null(chosen)) {
-        stop("unknown operation in ", class(x))
+        warning("unknown operation in '<", class(x)[1], ">@OP', falling back to an unknown matrix")
+        return(initialize_unknown_matrix(x))
     }
 
-    apply_delayed_binary_operation(left, right, chosen)
+    output <- apply_delayed_binary_operation(left, right, chosen)
+    stopifnot(!is.null(output))
+    output
 })
