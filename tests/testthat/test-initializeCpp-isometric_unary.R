@@ -310,6 +310,16 @@ test_that("initialization works correctly with DelayedArray nearest integer oper
     am_i_ok(trunc(x), ptr)
 })
 
+test_that("initialization works correctly with DelayedArray trigonometric operations", {
+    set.seed(1000)
+    a <- Matrix::rsparsematrix(1000, 100, 0.1, rand.x = function(n) signif(runif(n, min = -1, max = 1), 2))
+    a0 <- DelayedArray(a)
+
+    z <- acos(a0)
+    ptr <- initializeCpp(z)
+    am_i_ok(acos(a), ptr, exact=FALSE)
+})
+
 test_that("initialization works correctly with other DelayedArray unary operations", {
     z0 <- DelayedArray(y)
 
