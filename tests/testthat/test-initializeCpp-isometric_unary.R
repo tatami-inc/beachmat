@@ -248,8 +248,16 @@ test_that("initialization works correctly with vector boolean operations", {
     }
 })
 
-test_that("initialization works correctly with DelayedArray log-transforms", {
+test_that("initialization works correctly with DelayedArray exponential and log-transforms", {
     z0 <- DelayedArray(y)
+
+    z <- exp(z0)
+    ptr <- initializeCpp(z)
+    am_i_ok(exp(y), ptr, exact=FALSE)
+
+    z <- expm1(z0)
+    ptr <- initializeCpp(z)
+    am_i_ok(expm1(y), ptr, exact=FALSE)
 
     # Adding a value to make sure it's not log-zero.
     z <- log2(z0 + 2)
@@ -267,6 +275,10 @@ test_that("initialization works correctly with DelayedArray log-transforms", {
     z <- log(z0 + 2, 2.5)
     ptr <- initializeCpp(z)
     am_i_ok(log(y + 2, 2.5), ptr, exact=FALSE)
+
+    z <- log1p(z0)
+    ptr <- initializeCpp(z)
+    am_i_ok(log1p(y), ptr, exact=FALSE)
 })
 
 test_that("initialization works correctly with DelayedArray rounding", {
@@ -282,6 +294,22 @@ test_that("initialization works correctly with DelayedArray rounding", {
     am_i_ok(round(ref, 2), ptr)
 })
 
+test_that("initialization works correctly with DelayedArray nearest integer operations", {
+    x0 <- DelayedArray(x)
+
+    z <- ceiling(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(ceiling(x), ptr)
+
+    z <- floor(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(floor(x), ptr)
+
+    z <- trunc(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(trunc(x), ptr)
+})
+
 test_that("initialization works correctly with other DelayedArray unary operations", {
     z0 <- DelayedArray(y)
 
@@ -293,36 +321,9 @@ test_that("initialization works correctly with other DelayedArray unary operatio
     ptr <- initializeCpp(z)
     am_i_ok(-y, ptr)
 
-    z <- log1p(z0)
-    ptr <- initializeCpp(z)
-    am_i_ok(log1p(y), ptr, exact=FALSE)
-
     z <- sqrt(z0)
     ptr <- initializeCpp(z)
     am_i_ok(sqrt(y), ptr, exact=FALSE)
-
-    x0 <- DelayedArray(x)
-    z <- ceiling(x0)
-    ptr <- initializeCpp(z)
-    am_i_ok(ceiling(x), ptr)
-
-    x0 <- DelayedArray(x)
-    z <- floor(x0)
-    ptr <- initializeCpp(z)
-    am_i_ok(floor(x), ptr)
-
-    x0 <- DelayedArray(x)
-    z <- trunc(x0)
-    ptr <- initializeCpp(z)
-    am_i_ok(trunc(x), ptr)
-
-    z <- exp(z0)
-    ptr <- initializeCpp(z)
-    am_i_ok(exp(y), ptr, exact=FALSE)
-
-    z <- expm1(z0)
-    ptr <- initializeCpp(z)
-    am_i_ok(expm1(y), ptr, exact=FALSE)
 
     x0 <- DelayedArray(x)
     z <- abs(x0)
