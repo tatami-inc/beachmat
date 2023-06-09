@@ -41,6 +41,10 @@ apply_delayed_sqrt <- function(raw_input) {
     .Call('_beachmat_apply_delayed_sqrt', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_ceiling <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_ceiling', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_round <- function(raw_input) {
     .Call('_beachmat_apply_delayed_round', PACKAGE = 'beachmat', raw_input)
 }

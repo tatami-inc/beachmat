@@ -126,6 +126,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// apply_delayed_ceiling
+SEXP apply_delayed_ceiling(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_ceiling(SEXP raw_inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_ceiling(raw_input));
+    return rcpp_result_gen;
+END_RCPP
+}
 // apply_delayed_round
 SEXP apply_delayed_round(SEXP raw_input);
 RcppExport SEXP _beachmat_apply_delayed_round(SEXP raw_inputSEXP) {
@@ -317,6 +327,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_apply_delayed_log1p", (DL_FUNC) &_beachmat_apply_delayed_log1p, 1},
     {"_beachmat_apply_delayed_abs", (DL_FUNC) &_beachmat_apply_delayed_abs, 1},
     {"_beachmat_apply_delayed_sqrt", (DL_FUNC) &_beachmat_apply_delayed_sqrt, 1},
+    {"_beachmat_apply_delayed_ceiling", (DL_FUNC) &_beachmat_apply_delayed_ceiling, 1},
     {"_beachmat_apply_delayed_round", (DL_FUNC) &_beachmat_apply_delayed_round, 1},
     {"_beachmat_apply_delayed_exp", (DL_FUNC) &_beachmat_apply_delayed_exp, 1},
     {"_beachmat_apply_delayed_subset", (DL_FUNC) &_beachmat_apply_delayed_subset, 3},

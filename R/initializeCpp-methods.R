@@ -171,6 +171,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_sqrt(seed))
     }
 
+    if (generic == "ceiling") {
+        return(apply_delayed_ceiling(seed))
+    }
+
     if (generic == "exp") {
         return(apply_delayed_exp(seed))
     }
