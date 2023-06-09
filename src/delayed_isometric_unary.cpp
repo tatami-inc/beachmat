@@ -225,7 +225,7 @@ SEXP apply_delayed_log(SEXP raw_input, double base) {
 SEXP apply_delayed_log1p(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedLog1pHelper<>());
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedLog1pHelper<double>());
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -243,7 +243,7 @@ SEXP apply_delayed_abs(SEXP raw_input) {
 SEXP apply_delayed_sqrt(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedSqrtHelper<>());
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedSqrtHelper());
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -252,7 +252,7 @@ SEXP apply_delayed_sqrt(SEXP raw_input) {
 SEXP apply_delayed_round(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedRoundHelper<>());
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedRoundHelper());
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -261,7 +261,7 @@ SEXP apply_delayed_round(SEXP raw_input) {
 SEXP apply_delayed_exp(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedExpHelper<>());
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedExpHelper());
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
