@@ -206,6 +206,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// apply_delayed_asin
+SEXP apply_delayed_asin(SEXP raw_input);
+RcppExport SEXP _beachmat_apply_delayed_asin(SEXP raw_inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_asin(raw_input));
+    return rcpp_result_gen;
+END_RCPP
+}
 // apply_delayed_subset
 SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row);
 RcppExport SEXP _beachmat_apply_delayed_subset(SEXP raw_inputSEXP, SEXP subsetSEXP, SEXP rowSEXP) {
@@ -385,6 +395,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_apply_delayed_expm1", (DL_FUNC) &_beachmat_apply_delayed_expm1, 1},
     {"_beachmat_apply_delayed_acos", (DL_FUNC) &_beachmat_apply_delayed_acos, 1},
     {"_beachmat_apply_delayed_acosh", (DL_FUNC) &_beachmat_apply_delayed_acosh, 1},
+    {"_beachmat_apply_delayed_asin", (DL_FUNC) &_beachmat_apply_delayed_asin, 1},
     {"_beachmat_apply_delayed_subset", (DL_FUNC) &_beachmat_apply_delayed_subset, 3},
     {"_beachmat_apply_delayed_transpose", (DL_FUNC) &_beachmat_apply_delayed_transpose, 1},
     {"_beachmat_apply_delayed_bind", (DL_FUNC) &_beachmat_apply_delayed_bind, 2},
