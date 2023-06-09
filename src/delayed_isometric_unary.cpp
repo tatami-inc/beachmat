@@ -267,6 +267,15 @@ SEXP apply_delayed_floor(SEXP raw_input) {
 }
 
 //[[Rcpp::export(rng=false)]]
+SEXP apply_delayed_trunc(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedTruncHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
+}
+
+//[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_round(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();

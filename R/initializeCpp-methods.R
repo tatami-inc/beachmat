@@ -179,6 +179,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_floor(seed))
     }
 
+    if (generic == "trunc") {
+        return(apply_delayed_trunc(seed))
+    }
+
     if (generic == "exp") {
         return(apply_delayed_exp(seed))
     }
