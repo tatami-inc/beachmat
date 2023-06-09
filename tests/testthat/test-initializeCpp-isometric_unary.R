@@ -357,6 +357,10 @@ test_that("initialization works correctly with DelayedArray hyperbolic operation
     ptr <- initializeCpp(z)
     am_i_ok(cosh(x), ptr, exact=FALSE)
 
+    z <- tanh(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(tanh(x), ptr, exact=FALSE)
+
     z <- asinh(x0)
     ptr <- initializeCpp(z)
     am_i_ok(asinh(x), ptr, exact=FALSE)
