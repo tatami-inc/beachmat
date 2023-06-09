@@ -778,6 +778,57 @@ public:
      */
 };
 
+/**
+ * @brief Take the cos of a matrix entry.
+ */
+template<typename T = double>
+struct DelayedCosHelper {
+public:
+    /**
+     * @cond
+     */
+    static constexpr bool always_dense = true;
+
+    static constexpr bool always_sparse = false;
+
+    static constexpr bool needs_row = false;
+
+    static constexpr bool needs_column = false;
+    /**
+     * @endcond
+     */
+
+private:
+    template<typename Value_, typename Index_>
+    void core (Index_ length, Value_* buffer) const {
+    }
+
+public:
+    /**
+     * @cond
+     */
+    template<bool, typename Value_, typename Index_, typename ExtractType_>
+    void dense(Index_, ExtractType_, Index_ length, Value_* buffer) const {
+        for (Index_ i = 0; i < length; ++i) {
+            buffer[i] = std::cos(buffer[i]);
+        }
+    }
+
+    template<bool, typename Value_, typename Index_, typename ExtractType_>
+    void expanded(Index_, ExtractType_, Index_ length, Value_* buffer) const {
+        for (Index_ i = 0; i < length; ++i) {
+            if (buffer[i]) {
+                buffer[i] = std::cos(buffer[i]);
+            } else {
+                buffer[i] = 1;
+            }
+        }
+    }
+    /**
+     * @endcond
+     */
+};
+
 }
 
 #endif

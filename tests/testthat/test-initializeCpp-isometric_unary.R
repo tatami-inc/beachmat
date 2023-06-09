@@ -317,6 +317,10 @@ test_that("initialization works correctly with DelayedArray trigonometric operat
     a <- Matrix::rsparsematrix(1000, 100, 0.1, rand.x = function(n) signif(runif(n, min = -1, max = 1), 2))
     a0 <- DelayedArray(a)
 
+    z <- cos(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(cos(x), ptr, exact=FALSE)
+
     z <- asin(a0)
     ptr <- initializeCpp(z)
     am_i_ok(asin(a), ptr, exact=FALSE)
