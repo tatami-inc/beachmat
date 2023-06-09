@@ -320,6 +320,17 @@ test_that("initialization works correctly with DelayedArray trigonometric operat
     am_i_ok(acos(a), ptr, exact=FALSE)
 })
 
+test_that("initialization works correctly with DelayedArray hyperbolic operations", {
+    set.seed(1000)
+    a <- Matrix::rsparsematrix(1000, 100, 0.1, rand.x = function(n) signif(runif(n, min = -1, max = 1), 2))
+    a0 <- DelayedArray(a)
+
+    # Adding a value to make sure domain >= 1.
+    z <- acosh(a0 + 2)
+    ptr <- initializeCpp(z)
+    am_i_ok(acosh(a + 2), ptr, exact=FALSE)
+})
+
 test_that("initialization works correctly with other DelayedArray unary operations", {
     z0 <- DelayedArray(y)
 

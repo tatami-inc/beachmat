@@ -69,6 +69,10 @@ apply_delayed_acos <- function(raw_input) {
     .Call('_beachmat_apply_delayed_acos', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_acosh <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_acosh', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_subset <- function(raw_input, subset, row) {
     .Call('_beachmat_apply_delayed_subset', PACKAGE = 'beachmat', raw_input, subset, row)
 }
