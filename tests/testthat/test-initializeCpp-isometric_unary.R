@@ -325,6 +325,10 @@ test_that("initialization works correctly with DelayedArray trigonometric operat
     ptr <- initializeCpp(z)
     am_i_ok(cos(x), ptr, exact=FALSE)
 
+    z <- tan(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(tan(x), ptr, exact=FALSE)
+
     z <- asin(a0)
     ptr <- initializeCpp(z)
     am_i_ok(asin(a), ptr, exact=FALSE)
