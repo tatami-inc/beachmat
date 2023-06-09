@@ -640,6 +640,52 @@ public:
      */
 };
 
+/**
+ * @brief Take the asinh of a matrix entry.
+ */
+template<typename T = double>
+struct DelayedAsinhHelper {
+public:
+    /**
+     * @cond
+     */
+    static constexpr bool always_dense = false;
+
+    static constexpr bool always_sparse = true;
+
+    static constexpr bool needs_row = false;
+
+    static constexpr bool needs_column = false;
+    /**
+     * @endcond
+     */
+
+private:
+    template<typename Value_, typename Index_>
+    void core (Index_ length, Value_* buffer) const {
+        for (Index_ i = 0; i < length; ++i) {
+            buffer[i] = std::asinh(buffer[i]);
+        }
+    }
+
+public:
+    /**
+     * @cond
+     */
+    template<bool, typename Value_, typename Index_, typename ExtractType_>
+    void dense(Index_, ExtractType_, Index_ length, Value_* buffer) const {
+        core(length, buffer);
+    }
+
+    template<bool, typename Value_, typename Index_>
+    void sparse(Index_, Index_ number, Value_* buffer, const Index_*) const {
+        core(number, buffer);
+    }
+    /**
+     * @endcond
+     */
+};
+
 }
 
 #endif
