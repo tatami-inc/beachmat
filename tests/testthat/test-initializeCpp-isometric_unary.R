@@ -345,6 +345,10 @@ test_that("initialization works correctly with DelayedArray hyperbolic operation
     z <- acosh(a0 + 2)
     ptr <- initializeCpp(z)
     am_i_ok(acosh(a + 2), ptr, exact=FALSE)
+
+    z <- atanh(a0)
+    ptr <- initializeCpp(z)
+    am_i_ok(atanh(a), ptr, exact=FALSE)
 })
 
 test_that("initialization works correctly with other DelayedArray unary operations", {
