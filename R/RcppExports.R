@@ -113,6 +113,10 @@ apply_delayed_tanh <- function(raw_input) {
     .Call('_beachmat_apply_delayed_tanh', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_gamma <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_gamma', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_subset <- function(raw_input, subset, row) {
     .Call('_beachmat_apply_delayed_subset', PACKAGE = 'beachmat', raw_input, subset, row)
 }

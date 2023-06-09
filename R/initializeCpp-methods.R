@@ -243,6 +243,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_tanh(seed))
     }
 
+    if (generic == "gamma") {
+        return(apply_delayed_gamma(seed))
+    }
+
     if (generic == "round") {
         if (envir$digits != 0) {
             return("only 'digits = 0' are supported for delayed 'round'")

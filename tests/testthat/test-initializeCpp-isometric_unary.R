@@ -375,6 +375,14 @@ test_that("initialization works correctly with DelayedArray hyperbolic operation
     am_i_ok(atanh(a), ptr, exact=FALSE)
 })
 
+test_that("initialization works correctly with DelayedArray gamma operations", {
+    z0 <- DelayedArray(y)
+
+    z <- gamma(z0 + 0.1)
+    ptr <- initializeCpp(z)
+    am_i_ok(gamma(y + 0.1), ptr, exact=FALSE)
+})
+
 test_that("initialization works correctly with other DelayedArray unary operations", {
     z0 <- DelayedArray(y)
 
