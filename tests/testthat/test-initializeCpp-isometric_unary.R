@@ -320,6 +320,10 @@ test_that("initialization works correctly with other DelayedArray unary operatio
     ptr <- initializeCpp(z)
     am_i_ok(exp(y), ptr, exact=FALSE)
 
+    z <- expm1(z0)
+    ptr <- initializeCpp(z)
+    am_i_ok(expm1(y), ptr, exact=FALSE)
+
     x0 <- DelayedArray(x)
     z <- abs(x0)
     ptr <- initializeCpp(z)

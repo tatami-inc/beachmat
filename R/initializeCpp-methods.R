@@ -187,6 +187,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_exp(seed))
     }
 
+    if (generic == "expm1") {
+        return(apply_delayed_expm1(seed))
+    }
+
     if (generic == "log1p") {
         return(apply_delayed_log1p(seed))
     }

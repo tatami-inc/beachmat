@@ -61,6 +61,10 @@ apply_delayed_exp <- function(raw_input) {
     .Call('_beachmat_apply_delayed_exp', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_expm1 <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_expm1', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_subset <- function(raw_input, subset, row) {
     .Call('_beachmat_apply_delayed_subset', PACKAGE = 'beachmat', raw_input, subset, row)
 }
