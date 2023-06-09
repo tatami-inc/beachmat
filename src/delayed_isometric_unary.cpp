@@ -337,3 +337,12 @@ SEXP apply_delayed_asinh(SEXP raw_input) {
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
+
+//[[Rcpp::export(rng=false)]]
+SEXP apply_delayed_atan(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedAtanHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
+}

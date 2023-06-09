@@ -311,6 +311,8 @@ test_that("initialization works correctly with DelayedArray nearest integer oper
 })
 
 test_that("initialization works correctly with DelayedArray trigonometric operations", {
+    x0 <- DelayedArray(x)
+
     set.seed(1000)
     a <- Matrix::rsparsematrix(1000, 100, 0.1, rand.x = function(n) signif(runif(n, min = -1, max = 1), 2))
     a0 <- DelayedArray(a)
@@ -322,6 +324,10 @@ test_that("initialization works correctly with DelayedArray trigonometric operat
     z <- acos(a0)
     ptr <- initializeCpp(z)
     am_i_ok(acos(a), ptr, exact=FALSE)
+
+    z <- atan(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(atan(x), ptr, exact=FALSE)
 })
 
 test_that("initialization works correctly with DelayedArray hyperbolic operations", {
