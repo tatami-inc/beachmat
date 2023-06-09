@@ -101,6 +101,10 @@ apply_delayed_sin <- function(raw_input) {
     .Call('_beachmat_apply_delayed_sin', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_sinh <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_sinh', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_subset <- function(raw_input, subset, row) {
     .Call('_beachmat_apply_delayed_subset', PACKAGE = 'beachmat', raw_input, subset, row)
 }

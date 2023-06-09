@@ -382,3 +382,12 @@ SEXP apply_delayed_sin(SEXP raw_input) {
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
+
+//[[Rcpp::export(rng=false)]]
+SEXP apply_delayed_sinh(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedSinhHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
+}

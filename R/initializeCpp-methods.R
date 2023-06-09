@@ -231,6 +231,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_sin(seed))
     }
 
+    if (generic == "sinh") {
+        return(apply_delayed_sinh(seed))
+    }
+
     if (generic == "round") {
         if (envir$digits != 0) {
             return("only 'digits = 0' are supported for delayed 'round'")
