@@ -2,7 +2,6 @@
 #define MANTICORE_MANTICORE_HPP
 
 #include <mutex>
-#include <atomic>
 #include <condition_variable>
 #include <functional>
 
@@ -34,7 +33,7 @@ class Executor {
     std::condition_variable cv;
 
     size_t nthreads;
-    std::atomic_size_t ncomplete;
+    size_t ncomplete;
     std::string fallback_error;
     std::string error_message;
 
@@ -44,7 +43,7 @@ class Executor {
 
     bool initialized = false;
     bool done() const { 
-        return ncomplete.load() == nthreads;
+        return ncomplete == nthreads;
     }
 
 public:
@@ -80,7 +79,16 @@ public:
      * Set to `false` for more efficiency if this method is called before `listen()`.
      */
     void finish_thread(bool notify = true) {
-        ncomplete++;
+        // Lock everything before bumping ncomplete to avoid problems with
+        // simultaneous writes. We use a lock rather than an atomic variable to
+        // ensure that the change propagates correctly to the main thread when
+        // it calls done() after notification, otherwise the order of events
+        // across multiple threads is not guaranteed.
+        {
+            std::lock_guard lck(run_lock);
+            ++ncomplete;
+        }
+
         if (notify) {
             cv.notify_all(); // possibly trigger loop exit in listen(). 
         }
