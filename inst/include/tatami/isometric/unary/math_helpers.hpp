@@ -503,7 +503,7 @@ public:
 };
 
 /**
- * @brief Take the acos of a matrix entry.
+ * @brief Take the arc cosine of a matrix entry.
  */
 template<typename T = double>
 struct DelayedAcosHelper {
@@ -549,7 +549,7 @@ public:
 };
 
 /**
- * @brief Take the acosh of a matrix entry.
+ * @brief Take the inverse hyperbolic cosine of a matrix entry.
  */
 template<typename T = double>
 struct DelayedAcoshHelper {
@@ -595,7 +595,7 @@ public:
 };
 
 /**
- * @brief Take the asin of a matrix entry.
+ * @brief Take the arc sine of a matrix entry.
  */
 template<typename T = double>
 struct DelayedAsinHelper {
@@ -641,7 +641,7 @@ public:
 };
 
 /**
- * @brief Take the asinh of a matrix entry.
+ * @brief Take the inverse hyperbolic sine of a matrix entry.
  */
 template<typename T = double>
 struct DelayedAsinhHelper {
@@ -687,7 +687,7 @@ public:
 };
 
 /**
- * @brief Take the atan of a matrix entry.
+ * @brief Take the arc tangent of a matrix entry.
  */
 template<typename T = double>
 struct DelayedAtanHelper {
@@ -733,7 +733,7 @@ public:
 };
 
 /**
- * @brief Take the atanh of a matrix entry.
+ * @brief Take the inverse hyperbolic tangent of a matrix entry.
  */
 template<typename T = double>
 struct DelayedAtanhHelper {
@@ -779,7 +779,7 @@ public:
 };
 
 /**
- * @brief Take the cos of a matrix entry.
+ * @brief Take the cosine of a matrix entry.
  */
 template<typename T = double>
 struct DelayedCosHelper {
@@ -830,7 +830,7 @@ public:
 };
 
 /**
- * @brief Take the cosh of a matrix entry.
+ * @brief Take the hyperbolic cosine of a matrix entry.
  */
 template<typename T = double>
 struct DelayedCoshHelper {
@@ -874,6 +874,52 @@ public:
                 buffer[i] = 1;
             }
         }
+    }
+    /**
+     * @endcond
+     */
+};
+
+/**
+ * @brief Take the sine of a matrix entry.
+ */
+template<typename T = double>
+struct DelayedSinHelper {
+public:
+    /**
+     * @cond
+     */
+    static constexpr bool always_dense = false;
+
+    static constexpr bool always_sparse = true;
+
+    static constexpr bool needs_row = false;
+
+    static constexpr bool needs_column = false;
+    /**
+     * @endcond
+     */
+
+private:
+    template<typename Value_, typename Index_>
+    void core (Index_ length, Value_* buffer) const {
+        for (Index_ i = 0; i < length; ++i) {
+            buffer[i] = std::sin(buffer[i]);
+        }
+    }
+
+public:
+    /**
+     * @cond
+     */
+    template<bool, typename Value_, typename Index_, typename ExtractType_>
+    void dense(Index_, ExtractType_, Index_ length, Value_* buffer) const {
+        core(length, buffer);
+    }
+
+    template<bool, typename Value_, typename Index_>
+    void sparse(Index_, Index_ number, Value_* buffer, const Index_*) const {
+        core(number, buffer);
     }
     /**
      * @endcond
