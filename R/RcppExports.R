@@ -45,6 +45,10 @@ apply_delayed_ceiling <- function(raw_input) {
     .Call('_beachmat_apply_delayed_ceiling', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_floor <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_floor', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_round <- function(raw_input) {
     .Call('_beachmat_apply_delayed_round', PACKAGE = 'beachmat', raw_input)
 }

@@ -306,6 +306,11 @@ test_that("initialization works correctly with other DelayedArray unary operatio
     ptr <- initializeCpp(z)
     am_i_ok(ceiling(x), ptr)
 
+    x0 <- DelayedArray(x)
+    z <- floor(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(floor(x), ptr)
+
     z <- exp(z0)
     ptr <- initializeCpp(z)
     am_i_ok(exp(y), ptr, exact=FALSE)
