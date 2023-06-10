@@ -37,6 +37,10 @@ apply_delayed_abs <- function(raw_input) {
     .Call('_beachmat_apply_delayed_abs', PACKAGE = 'beachmat', raw_input)
 }
 
+apply_delayed_sign <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_sign', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_sqrt <- function(raw_input) {
     .Call('_beachmat_apply_delayed_sqrt', PACKAGE = 'beachmat', raw_input)
 }

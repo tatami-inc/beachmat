@@ -240,6 +240,15 @@ SEXP apply_delayed_abs(SEXP raw_input) {
 }
 
 //[[Rcpp::export(rng=false)]]
+SEXP apply_delayed_sign(SEXP raw_input) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr = tatami::make_DelayedUnaryIsometricOp(input->ptr, tatami::DelayedSignHelper<>());
+    output->original = input->original; // copying the reference to propagate GC protection.
+    return output;
+}
+
+//[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_sqrt(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();

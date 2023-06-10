@@ -388,6 +388,7 @@ test_that("initialization works correctly with DelayedArray gamma operations", {
 })
 
 test_that("initialization works correctly with other DelayedArray unary operations", {
+    x0 <- DelayedArray(x)
     z0 <- DelayedArray(y)
 
     z <- +z0 
@@ -402,8 +403,11 @@ test_that("initialization works correctly with other DelayedArray unary operatio
     ptr <- initializeCpp(z)
     am_i_ok(sqrt(y), ptr, exact=FALSE)
 
-    x0 <- DelayedArray(x)
     z <- abs(x0)
     ptr <- initializeCpp(z)
     am_i_ok(abs(x), ptr)
+
+    z <- sign(x0)
+    ptr <- initializeCpp(z)
+    am_i_ok(sign(x), ptr)
 })

@@ -167,6 +167,10 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_abs(seed))
     }
 
+    if (generic == "sign") {
+        return(apply_delayed_sign(seed))
+    }
+
     if (generic == "sqrt") {
         return(apply_delayed_sqrt(seed))
     }
