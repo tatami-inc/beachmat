@@ -1110,6 +1110,52 @@ public:
      */
 };
 
+/**
+ * @brief Take the logarithm of the gamma of a matrix entry.
+ */
+template<typename T = double>
+struct DelayedLgammaHelper {
+public:
+    /**
+     * @cond
+     */
+    static constexpr bool always_dense = true;
+
+    static constexpr bool always_sparse = false;
+
+    static constexpr bool needs_row = false;
+
+    static constexpr bool needs_column = false;
+    /**
+     * @endcond
+     */
+
+private:
+    template<typename Value_, typename Index_>
+    void core (Index_ length, Value_* buffer) const {
+        for (Index_ i = 0; i < length; ++i) {
+            buffer[i] = std::lgamma(buffer[i]);
+        }
+    }
+
+public:
+    /**
+     * @cond
+     */
+    template<bool, typename Value_, typename Index_, typename ExtractType_>
+    void dense(Index_, ExtractType_, Index_ length, Value_* buffer) const {
+        core(length, buffer);
+    }
+
+    template<bool, typename Value_, typename Index_, typename ExtractType_>
+    void expanded(Index_, ExtractType_, Index_ length, Value_* buffer) const {
+        core(length, buffer);
+    }
+    /**
+     * @endcond
+     */
+};
+
 }
 
 #endif
