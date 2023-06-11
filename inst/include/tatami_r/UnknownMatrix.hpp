@@ -4,7 +4,8 @@
 #include "Rcpp.h"
 #include "tatami/tatami.hpp"
 #include "SimpleMatrix.hpp"
-#include "SparseArraySeed.hpp"
+#include "SVT_SparseMatrix.hpp"
+#include "COO_SparseMatrix.hpp"
 
 #include <vector>
 #include <memory>
@@ -38,10 +39,11 @@ public:
      * This constructor should only be called in a serial context, as the (default) construction of **Rcpp** objects may call the R API.
      */
     UnknownMatrix(Rcpp::RObject seed, size_t cache = -1) : 
-        original_seed(seed),
+        original_seed(seed), 
         delayed_env(Rcpp::Environment::namespace_env("DelayedArray")),
         dense_extractor(delayed_env["extract_array"]),
-        sparse_extractor(delayed_env["OLD_extract_sparse_array"])
+        sparse_env(Rcpp::Environment::namespace_env("SparseArray")),
+        sparse_extractor(sparse_env["extract_sparse_array"])
     {
         // We assume the constructor only occurs on the main thread, so we
         // won't bother locking things up. I'm also not sure that the
@@ -115,7 +117,7 @@ private:
     Index_ chunk_nrow, chunk_ncol;
 
     Rcpp::RObject original_seed;
-    Rcpp::Environment delayed_env;
+    Rcpp::Environment delayed_env, sparse_env;
     Rcpp::Function dense_extractor, sparse_extractor;
 
 public:
@@ -395,7 +397,16 @@ private:
 
         if (internal_sparse) {
             auto val0 = sparse_extractor(original_seed, indices);
-            auto parsed = parse_SparseArraySeed<Value_, Index_>(val0, byrow_);
+
+            auto ctype = get_class_name(val0);
+            Parsed<Value_, Index_> parsed;
+            if (ctype == "SVT_SparseMatrix") {
+                parsed = parse_SVT_SparseMatrix<Value_, Index_>(val0);
+            } else if (ctype == "COO_SparseMatrix") {
+                parsed = parse_COO_SparseMatrix<Value_, Index_>(val0, byrow_);
+            } else {
+                throw std::runtime_error("unknown class '" + ctype + "' returned from 'extract_sparse_array()'");
+            }
             check_buffered_dims<byrow_, true, true>(parsed.matrix.get(), work);
 
             work->buffer = std::move(parsed.matrix);

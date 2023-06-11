@@ -1,5 +1,5 @@
-#ifndef TATAMI_R_SPARSEARRAYSEED_HPP
-#define TATAMI_R_SPARSEARRAYSEED_HPP
+#ifndef TATAMI_R_COO_SPARSE_MATRIX_HPP
+#define TATAMI_R_COO_SPARSE_MATRIX_HPP
 
 #include "utils.hpp"
 #include "tatami/tatami.hpp"
@@ -8,21 +8,21 @@
 namespace tatami_r { 
 
 template<typename Data_ = double, typename Index_ = int, class InputObject_>
-Parsed<Data_, Index_> parse_SparseArraySeed_internal(Rcpp::RObject seed, InputObject_ val, bool prefer_csr) {
+Parsed<Data_, Index_> parse_COO_SparseMatrix_internal(Rcpp::RObject seed, InputObject_ val, bool prefer_csr) {
     auto dims = parse_dims(seed.slot("dim"));
     int NR = dims.first;
     int NC = dims.second;
 
-    Rcpp::IntegerMatrix temp_i(Rcpp::RObject(seed.slot("nzindex")));
+    Rcpp::IntegerMatrix temp_i(Rcpp::RObject(seed.slot("nzcoo")));
     if (temp_i.ncol() != 2) {
         auto ctype = get_class_name(seed);
-        throw std::runtime_error(std::string("'nzindex' slot in a ") + ctype + " object should have two columns"); 
+        throw std::runtime_error(std::string("'nzcoo' slot in a ") + ctype + " object should have two columns"); 
     }
 
     const size_t nnz = temp_i.nrow();
     if (nnz != val.size()) {
         auto ctype = get_class_name(seed);
-        throw std::runtime_error(std::string("incompatible 'nzindex' and 'nzdata' lengths in a ") + ctype + " object"); 
+        throw std::runtime_error(std::string("incompatible 'nzcoo' and 'nzvals' lengths in a ") + ctype + " object"); 
     }
 
     auto row_indices = temp_i.column(0);
@@ -38,7 +38,7 @@ Parsed<Data_, Index_> parse_SparseArraySeed_internal(Rcpp::RObject seed, InputOb
         auto check_index = [&](int r, int c) -> void {
             if (r <= 0 || r > NR || c <= 0 || c > NC) {
                 auto ctype = get_class_name(seed);
-                throw std::runtime_error(std::string("'nzindex' out of bounds in a ") + ctype + " object");
+                throw std::runtime_error(std::string("'nzcoo' out of bounds in a ") + ctype + " object");
             }
         };
 
@@ -182,16 +182,19 @@ Parsed<Data_, Index_> parse_SparseArraySeed_internal(Rcpp::RObject seed, InputOb
 }
 
 template<typename Data_ = double, typename Index_ = int>
-Parsed<Data_, Index_> parse_SparseArraySeed(Rcpp::RObject seed, bool prefer_csr) {
-    Rcpp::RObject vals(seed.slot("nzdata"));
+Parsed<Data_, Index_> parse_COO_SparseMatrix(Rcpp::RObject seed, bool prefer_csr) {
+    Rcpp::RObject vals(seed.slot("nzvals"));
 
     Parsed<Data_, Index_> output;
     if (vals.sexp_type() == REALSXP) {
-        output = parse_SparseArraySeed_internal<Data_, Index_>(seed, Rcpp::NumericVector(vals), prefer_csr);
+        output = parse_COO_SparseMatrix_internal<Data_, Index_>(seed, Rcpp::NumericVector(vals), prefer_csr);
     } else if (vals.sexp_type() == INTSXP) {
-        output = parse_SparseArraySeed_internal<Data_, Index_>(seed, Rcpp::IntegerVector(vals), prefer_csr);
+        output = parse_COO_SparseMatrix_internal<Data_, Index_>(seed, Rcpp::IntegerVector(vals), prefer_csr);
     } else if (vals.sexp_type() == LGLSXP) {
-        output = parse_SparseArraySeed_internal<Data_, Index_>(seed, Rcpp::LogicalVector(vals), prefer_csr);
+        output = parse_COO_SparseMatrix_internal<Data_, Index_>(seed, Rcpp::LogicalVector(vals), prefer_csr);
+    } else {
+        auto ctype = get_class_name(seed);
+        throw std::runtime_error("unsupported SEXP type (" + std::to_string(vals.sexp_type()) + ") for a " + ctype + "object");
     }
 
     return output;

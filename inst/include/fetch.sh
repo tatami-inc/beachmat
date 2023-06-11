@@ -16,7 +16,7 @@ else
 fi
 
 cd source-tatami
-git checkout 05ba9b011279f900a019cbc255176646bd167b9f
+git checkout b9f983fcc3c78274aa1404ae554c0c2ae5dedcfc
 rm -rf ../tatami
 cp -r include/tatami/ ../tatami
 git checkout master
@@ -34,7 +34,7 @@ else
 fi
 
 cd source-tatami_r
-git checkout 8d28aeaa83994d3feeec2d1d86b4b3d9851b0ac0
+git checkout f7e0ca78fc178213ee0a4f00f49c81c38006de6b
 rm -rf ../tatami_r
 cp -r include/tatami_r/ ../tatami_r
 git checkout master
@@ -52,7 +52,7 @@ else
 fi
 
 cd source-manticore
-git checkout 3cf0c49e090179fcb2bbef9b55e011b3bc3c7c85
+git checkout 96a9fc13fa9a4c6e0d921d4dad9cea132256640d
 rm -rf ../manticore
 cp -r include/manticore/ ../manticore
 git checkout master
