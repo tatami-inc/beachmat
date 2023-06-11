@@ -54,6 +54,31 @@ test_that("initialization works correctly with sparse matrices", {
     }
 })
 
+test_that("initialization works correctly with SVT sparse matrices", {
+    library(SparseArray)
+
+    {
+        z <- as(y, "SVT_SparseMatrix")
+        ptr <- initializeCpp(z)
+        am_i_ok(y, ptr)
+    }
+
+    {
+        y2 <- y != 0
+        z <- as(y2, "SVT_SparseMatrix")
+        ptr <- initializeCpp(y2)
+        am_i_ok(y2, ptr)
+    }
+
+    {
+        y2 <- as.matrix(y)
+        storage.mode(y2) <- "integer"
+        z <- as(y2, "SVT_SparseMatrix")
+        ptr <- initializeCpp(y2)
+        am_i_ok(y2, ptr)
+    }
+})
+
 library(DelayedArray)
 test_that("initialization works correctly with DelayedArray", {
     z <- DelayedArray(y)

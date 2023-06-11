@@ -10,6 +10,7 @@
 \alias{initializeCpp,dgRMatrix-method}
 \alias{initializeCpp,lgCMatrix-method}
 \alias{initializeCpp,lgRMatrix-method}
+\alias{initializeCpp,SVT_SparseMatrix-method}
 \alias{initializeCpp,DelayedMatrix-method}
 \alias{initializeCpp,DelayedAbind-method}
 \alias{initializeCpp,DelayedAperm-method}

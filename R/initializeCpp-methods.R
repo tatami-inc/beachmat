@@ -75,6 +75,15 @@ setMethod("initializeCpp", "DelayedSetDimnames", function(x, ...) {
 ####################################################################################
 ####################################################################################
 
+#' @export
+#' @importClassesFrom SparseArray SVT_SparseMatrix
+setMethod("initializeCpp", "SVT_SparseMatrix", function(x, ...) {
+    initialize_SVT_SparseMatrix(nr=nrow(x), nc=ncol(x), x)
+})
+
+####################################################################################
+####################################################################################
+
 supported.Arith1 <- c("+", "*")
 supported.Arith2 <- c("-", "/")
 supported.Compare <- c("==", ">", "<", ">=", "<=", "!=")

@@ -229,6 +229,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// initialize_SVT_SparseMatrix
+SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed);
+RcppExport SEXP _beachmat_initialize_SVT_SparseMatrix(SEXP nrSEXP, SEXP ncSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type nr(nrSEXP);
+    Rcpp::traits::input_parameter< int >::type nc(ncSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_SVT_SparseMatrix(nr, nc, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tatami_dim
 Rcpp::IntegerVector tatami_dim(SEXP raw_input);
 RcppExport SEXP _beachmat_tatami_dim(SEXP raw_inputSEXP) {
@@ -314,6 +326,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},
+    {"_beachmat_initialize_SVT_SparseMatrix", (DL_FUNC) &_beachmat_initialize_SVT_SparseMatrix, 3},
     {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
     {"_beachmat_tatami_column", (DL_FUNC) &_beachmat_tatami_column, 2},
     {"_beachmat_tatami_row", (DL_FUNC) &_beachmat_tatami_row, 2},

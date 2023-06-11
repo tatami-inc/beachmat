@@ -9,6 +9,7 @@ Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.mo
 Imports: 
     methods,
     DelayedArray (>= 0.27.2),
+    SparseArray,
     BiocGenerics,
     Matrix,
     Rcpp

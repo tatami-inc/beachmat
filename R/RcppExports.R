@@ -77,6 +77,10 @@ initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow) {
     .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow)
 }
 
+initialize_SVT_SparseMatrix <- function(nr, nc, seed) {
+    .Call('_beachmat_initialize_SVT_SparseMatrix', PACKAGE = 'beachmat', nr, nc, seed)
+}
+
 tatami_dim <- function(raw_input) {
     .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', raw_input)
 }

@@ -36,6 +36,7 @@
 #' initializeCpp,dgRMatrix-method
 #' initializeCpp,lgCMatrix-method
 #' initializeCpp,lgRMatrix-method
+#' initializeCpp,SVT_SparseMatrix-method
 #' initializeCpp,DelayedMatrix-method
 #' initializeCpp,DelayedAbind-method
 #' initializeCpp,DelayedAperm-method
