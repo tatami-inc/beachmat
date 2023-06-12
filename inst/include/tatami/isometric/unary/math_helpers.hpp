@@ -59,7 +59,7 @@ public:
 };
 
 /**
- * @brief Take the signum of a matrix entry.
+ * @brief Take the sign of a matrix entry.
  */
 template<typename T = double>
 struct DelayedSignHelper {
@@ -82,7 +82,7 @@ private:
     template<typename Value_, typename Index_>
     void core (Index_ length, Value_* buffer) const {
         for (Index_ i = 0; i < length; ++i) {
-            buffer[i] = (T(0) < buffer[i]) - (buffer[i] < T(0));
+            buffer[i] = (static_cast<T>(0) < buffer[i]) - (buffer[i] < static_cast<T>(0));
         }
     }
 
@@ -471,11 +471,6 @@ public:
      * @endcond
      */
 
-private:
-    template<typename Value_, typename Index_>
-    void core (Index_ length, Value_* buffer) const {
-    }
-
 public:
     /**
      * @cond
@@ -844,11 +839,6 @@ public:
      * @endcond
      */
 
-private:
-    template<typename Value_, typename Index_>
-    void core (Index_ length, Value_* buffer) const {
-    }
-
 public:
     /**
      * @cond
@@ -894,11 +884,6 @@ public:
     /**
      * @endcond
      */
-
-private:
-    template<typename Value_, typename Index_>
-    void core (Index_ length, Value_* buffer) const {
-    }
 
 public:
     /**
