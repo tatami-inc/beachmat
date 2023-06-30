@@ -1,6 +1,7 @@
 # This checks the initialization procedure.
 # library(testthat); library(beachmat); source("setup.R"); source("test-initializeCpp-isometric_unary.R")
 
+library(DelayedArray)
 set.seed(1000)
 x <- Matrix::rsparsematrix(1000, 100, 0.1)
 y <- round(abs(x)*10)
@@ -31,6 +32,30 @@ test_that("initialization works correctly with scalar arithmetic", {
     z <- 10 / z0
     ptr <- initializeCpp(z)
     am_i_ok(10 / y, ptr)
+
+    z <- z0 ^ 2
+    ptr <- initializeCpp(z)
+    am_i_ok(y ^ 2, ptr)
+
+    z <- 2 ^ z0
+    ptr <- initializeCpp(z)
+    am_i_ok(2 ^ y, ptr)
+
+    z <- z0 %% 3
+    ptr <- initializeCpp(z)
+    am_i_ok(y %% 3, ptr)
+
+    z <- 3 %% z0
+    ptr <- initializeCpp(z)
+    am_i_ok(3 %% y, ptr)
+
+    z <- z0 %/% 7
+    ptr <- initializeCpp(z)
+    am_i_ok(y %/% 7, ptr)
+
+    z <- 11 %/% z0
+    ptr <- initializeCpp(z)
+    am_i_ok(11 %/% y, ptr)
 })
 
 test_that("initialization works correctly with vector arithmetic", {
@@ -62,6 +87,30 @@ test_that("initialization works correctly with vector arithmetic", {
         z <- vr / z0
         ptr <- initializeCpp(z)
         am_i_ok(vr / y, ptr)
+
+        z <- z0 ^ vr
+        ptr <- initializeCpp(z)
+        am_i_ok(y ^ vr, ptr)
+
+        z <- vr ^ z0
+        ptr <- initializeCpp(z)
+        am_i_ok(vr ^ y, ptr)
+
+        z <- z0 %% vr
+        ptr <- initializeCpp(z)
+        am_i_ok(y %% vr, ptr)
+
+        z <- vr %% z0
+        ptr <- initializeCpp(z)
+        am_i_ok(vr %% y, ptr)
+
+        z <- z0 %/% vr
+        ptr <- initializeCpp(z)
+        am_i_ok(y %/% vr, ptr)
+
+        z <- vr %/% z0
+        ptr <- initializeCpp(z)
+        am_i_ok(vr %/% y, ptr)
     }
 
     {
@@ -82,6 +131,18 @@ test_that("initialization works correctly with vector arithmetic", {
         z <- sweep(z0, 2, vc, "/")
         ptr <- initializeCpp(z)
         am_i_ok(t(t(y) / vc), ptr)
+
+        z <- sweep(z0, 2, vc, "%%")
+        ptr <- initializeCpp(z)
+        am_i_ok(t(t(y) %% vc), ptr)
+
+        z <- sweep(z0, 2, vc, "%/%")
+        ptr <- initializeCpp(z)
+        am_i_ok(t(t(y) %/% vc), ptr)
+
+        z <- sweep(z0, 2, vc, "^")
+        ptr <- initializeCpp(z)
+        am_i_ok(t(t(y) ^ vc), ptr)
     }
 })
 

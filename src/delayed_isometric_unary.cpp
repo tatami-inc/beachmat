@@ -50,6 +50,12 @@ void set_delayed_nonassociative_arithmetic_scalar(const std::shared_ptr<tatami::
         outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedSubtractScalarHelper<right_>(val));
     } else if (op == "/") {
         outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedDivideScalarHelper<right_>(val));
+    } else if (op == "%/%") {
+        outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedIntegerDivideScalarHelper<right_>(val));
+    } else if (op == "^") {
+        outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedPowerScalarHelper<right_>(val));
+    } else if (op == "%%") {
+        outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedModuloScalarHelper<right_>(val));
     } else {
         throw std::runtime_error("unknown non-associative arithmetic operation '" + op + "'");
     }
@@ -62,6 +68,12 @@ void set_delayed_nonassociative_arithmetic_vector(const std::shared_ptr<tatami::
         outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedSubtractVectorHelper<right_, margin_>(std::move(view)));
     } else if (op == "/") {
         outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedDivideVectorHelper<right_, margin_>(std::move(view)));
+    } else if (op == "%/%") {
+        outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedIntegerDivideVectorHelper<right_, margin_>(std::move(view)));
+    } else if (op == "^") {
+        outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedPowerVectorHelper<right_, margin_>(std::move(view)));
+    } else if (op == "%%") {
+        outptr = tatami::make_DelayedUnaryIsometricOp(shared, tatami::make_DelayedModuloVectorHelper<right_, margin_>(std::move(view)));
     } else {
         throw std::runtime_error("unknown non-associative arithmetic operation '" + op + "'");
     }

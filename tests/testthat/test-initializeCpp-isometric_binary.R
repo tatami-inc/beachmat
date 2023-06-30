@@ -27,6 +27,18 @@ test_that("initialization works correctly with binary arithmetic", {
     z <- z01 / z02
     ptr <- initializeCpp(z)
     am_i_ok(y1 / y2, ptr)
+
+    z <- z01 ^ z02
+    ptr <- initializeCpp(z)
+    am_i_ok(y1 ^ y2, ptr)
+
+    z <- z01 %% z02
+    ptr <- initializeCpp(z)
+    am_i_ok(y1 %% y2, ptr)
+
+    z <- z01 %/% z02
+    ptr <- initializeCpp(z)
+    am_i_ok(y1 %/% y2, ptr)
 })
 
 test_that("initialization works correctly with binary comparisons", {

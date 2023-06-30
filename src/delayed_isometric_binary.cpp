@@ -25,6 +25,15 @@ SEXP apply_delayed_binary_operation(SEXP left_input, SEXP right_input, std::stri
     } else if (op == "/") {
         output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryDivideHelper());
 
+    } else if (op == "%/%") {
+        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryIntegerDivideHelper());
+
+    } else if (op == "^") {
+        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryPowerHelper());
+
+    } else if (op == "%%") {
+        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryModuloHelper());
+
     } else if (op == "==") {
         output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryEqualHelper());
 

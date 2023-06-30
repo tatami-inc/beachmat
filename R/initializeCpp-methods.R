@@ -85,7 +85,7 @@ setMethod("initializeCpp", "SVT_SparseMatrix", function(x, ...) {
 ####################################################################################
 
 supported.Arith1 <- c("+", "*")
-supported.Arith2 <- c("-", "/")
+supported.Arith2 <- c("-", "/", "^", "%/%", "%%")
 supported.Compare <- c("==", ">", "<", ">=", "<=", "!=")
 supported.Logic <- c("&", "|")
 supported.Ops <- c(supported.Arith1, supported.Arith2, supported.Compare, supported.Logic)
