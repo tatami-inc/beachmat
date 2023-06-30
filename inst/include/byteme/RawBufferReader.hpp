@@ -1,5 +1,5 @@
-#ifndef BUFFIN_RAW_BUFFER_READER_HPP
-#define BUFFIN_RAW_BUFFER_READER_HPP
+#ifndef BYTEME_RAW_BUFFER_READER_HPP
+#define BYTEME_RAW_BUFFER_READER_HPP
 
 #include <algorithm>
 #include "Reader.hpp"
@@ -21,13 +21,24 @@ namespace byteme {
 class RawBufferReader : public Reader {
 public:
     /**
-     * @param buffer Buffer containing text.
+     * @param[in] buffer Pointer to an array of bytes, usually containing text.
      * @param length Length of the buffer.
      */
     RawBufferReader(const unsigned char* buffer, size_t length) : buffer_(buffer), len_(length) {}
 
-    bool operator()() {
-        return false;
+    /**
+     * @param[in] buffer Pointer to an array of bytes, usually containing text.
+     * @param length Length of the buffer.
+     */
+    RawBufferReader(const char* buffer, size_t length) : buffer_(reinterpret_cast<const unsigned char*>(buffer)), len_(length) {}
+
+public:
+    bool load() {
+        if (used) {
+            return false;
+        }
+        used = true;
+        return true;
     }
 
     const unsigned char* buffer() const {
@@ -41,6 +52,7 @@ public:
 private:
     const unsigned char* buffer_;
     size_t len_;
+    bool used = false;
 };
 
 }

@@ -22,7 +22,7 @@ Parsed<Data_, Index_> parse_COO_SparseMatrix_internal(Rcpp::RObject seed, InputO
     const size_t nnz = temp_i.nrow();
     if (nnz != val.size()) {
         auto ctype = get_class_name(seed);
-        throw std::runtime_error(std::string("incompatible 'nzcoo' and 'nzvals' lengths in a ") + ctype + " object"); 
+        throw std::runtime_error(std::string("incompatible 'nzcoo' and 'nzdata' lengths in a ") + ctype + " object"); 
     }
 
     auto row_indices = temp_i.column(0);
@@ -183,7 +183,7 @@ Parsed<Data_, Index_> parse_COO_SparseMatrix_internal(Rcpp::RObject seed, InputO
 
 template<typename Data_ = double, typename Index_ = int>
 Parsed<Data_, Index_> parse_COO_SparseMatrix(Rcpp::RObject seed, bool prefer_csr) {
-    Rcpp::RObject vals(seed.slot("nzvals"));
+    Rcpp::RObject vals(seed.slot("nzdata"));
 
     Parsed<Data_, Index_> output;
     if (vals.sexp_type() == REALSXP) {

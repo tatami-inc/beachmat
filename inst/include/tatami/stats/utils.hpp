@@ -25,28 +25,32 @@ namespace tatami {
  * @tparam Function_ Function to be applied for a contiguous range of tasks.
  * This should accept three arguments:
  * - `thread`, the thread number executing this task range.
+ *   This will be passed as a `size_t`.
  * - `task_start`, the start index of the task range.
+ *   This will be passed as a `Index_`.
  * - `task_length`, the number of tasks in the task range.
+ *   This will be passed as a `Index_`.
+ * @tparam Index_ Integer type for the number of tasks.
  *
  * @param fun Function that executes a contiguous range of tasks.
  * @param tasks Number of tasks.
  * @param threads Number of threads.
  */
-template<bool parallel_ = true, class Function_>
-void parallelize(Function_ fun, size_t tasks, size_t threads) {
+template<bool parallel_ = true, class Function_, typename Index_>
+void parallelize(Function_ fun, Index_ tasks, size_t threads) {
 #if defined(_OPENMP) || defined(TATAMI_CUSTOM_PARALLEL)
     if constexpr(parallel_) {
 
         if (threads > 1) {
 #ifndef TATAMI_CUSTOM_PARALLEL
-            size_t worker_size = std::ceil(static_cast<double>(tasks) / static_cast<double>(threads));
+            Index_ worker_size = (tasks / threads) + (tasks % threads > 0); // Ceiling of an integer division.
+            threads = (tasks / worker_size) + (tasks % worker_size > 0); // Set the actual number of required threads.
 
             #pragma omp parallel for num_threads(threads)
             for (size_t t = 0; t < threads; ++t) {
-                size_t start = worker_size * t, end = std::min(tasks, start + worker_size);
-                if (start < end) {
-                    fun(t, start, end - start);
-                }
+                Index_ start = worker_size * t; // Will not overflow due to the above recomputation of 'threads'.
+                Index_ remaining = tasks - start; // Must be positive, as otherwise 'tasks % worker_size = 0' and the iteration wouldn't even get here.
+                fun(t, start, std::min(remaining, worker_size)); // Use 'remaining' to avoid potential overflow from computing 'end = start + worker_size'.
             }
 #else
             TATAMI_CUSTOM_PARALLEL(std::move(fun), tasks, threads);

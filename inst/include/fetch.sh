@@ -16,13 +16,13 @@ else
 fi
 
 cd source-tatami
-git checkout b131ca16575c4dc928974f73391c00dc22ce676a
+git checkout 1d41b7ad277b235ea1e835c6424f6c98b799af1f
 rm -rf ../tatami
 cp -r include/tatami/ ../tatami
 git checkout master
 cd -
 
-# Same process for raticate.
+# Same process for tatami_r.
 
 if [ ! -e source-tatami_r ]
 then 
@@ -34,7 +34,7 @@ else
 fi
 
 cd source-tatami_r
-git checkout f7e0ca78fc178213ee0a4f00f49c81c38006de6b
+git checkout 775cc7ea8a7d9023bb665b9b2125c3beabb0f97a
 rm -rf ../tatami_r
 cp -r include/tatami_r/ ../tatami_r
 git checkout master
@@ -70,7 +70,7 @@ else
 fi
 
 cd source-byteme
-git checkout f9ed015693c45424aa2835d79fc8e58128a24c93
+git checkout 1baca1ffddfbf0cd71fa7e285554959e3a116911
 rm -rf ../byteme
 cp -r include/byteme/ ../byteme
 git checkout master

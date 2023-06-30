@@ -1,9 +1,10 @@
-#ifndef BUFFIN_PARSE_SOME_FILE_HPP
-#define BUFFIN_PARSE_SOME_FILE_HPP
+#ifndef BYTEME_SOME_FILE_READER_HPP
+#define BYTEME_SOME_FILE_READER_HPP
 
 #include "Reader.hpp"
 #include "RawFileReader.hpp"
 #include "GzipFileReader.hpp"
+#include "magic_numbers.hpp"
 #include <memory>
 #include <cstdio>
 
@@ -18,8 +19,8 @@ namespace byteme {
 /**
  * @brief Read a file that may or may not be Gzipped.
  *
- * This class will automatically detect whether `path` refers to a text file or a Gzip-compressed file, based on its header.
- * After that, it will dispatch appropriately to `parse_text_file()` or `parse_gzip_file()` respectively.
+ * This class will automatically detect whether `path` refers to a text file or a Gzip-compressed file, based on its initial magic numbers.
+ * After that, it will dispatch appropriately to `RawFileReader` or `GzipFileReader` respectively.
  */
 class SomeFileReader : public Reader {
 public:
@@ -31,11 +32,11 @@ public:
         unsigned char header[3];
         size_t read;
         {
-            RawFileReader::SelfClosingFILE file(path);
+            SelfClosingFILE file(path, "rb");
             read = std::fread(header, sizeof(unsigned char), 3, file.handle);
         }
 
-        if (read == 3 && static_cast<unsigned char>(header[0]) == 0x1f && static_cast<unsigned char>(header[1]) == 0x8b && static_cast<unsigned char>(header[2]) == 0x08) {
+        if (is_gzip(header, read)) {
             source.reset(new GzipFileReader(path, buffer_size));
         } else {
             source.reset(new RawFileReader(path, buffer_size));
@@ -48,8 +49,8 @@ public:
      */
     SomeFileReader(const std::string& path, size_t buffer_size = 65536) : SomeFileReader(path.c_str(), buffer_size) {}
 
-    bool operator()() {
-        return source->operator()();
+    bool load() {
+        return source->load();
     }
 
     const unsigned char* buffer() const {

@@ -18,23 +18,27 @@ public:
 
     /**
      * Read the next chunk of bytes from the input source. 
-     *
      * To read the entire source, this function should be called repeatedly until `false` is returned.
-     * Note that `buffer()` and `available()` may still be valid on the last invocation (i.e., the one that returns `false`),
-     * as some bytes may have been read before reaching the end of the file.
      *
-     * @return Boolean indicating whether there are still bytes remaining in the source.
+     * @return Boolean indicating whether the read was successful.
+     * If `false`, it can be assumed that the end of the source was reached.
      */
-    virtual bool operator()() = 0;
+    virtual bool load() = 0;
 
     /**
-     * @return Pointer to the start of an array containing the decompressed bytes.
+     * This method should only be called after `load()` has been called and returns `true`.
+     *
+     * @return Pointer to the start of an array containing the available bytes.
      * The number of available bytes is provided in `available()`.
      */
     virtual const unsigned char* buffer() const = 0;
 
     /**
-     * @return Number of decompressed bytes available in the `buffer()`.
+     * This method should only be called after `load()` has been called and returns `true`.
+     * The return value is generally expected to be positive; however, it is possible to return a zero.
+     * Note that zero values should not be interpreted as the end of the source, which is strictly only defined by `load()` returning `false`.
+     *
+     * @return Number of available bytes in `buffer()`.
      */
     virtual size_t available() const = 0;
 };
