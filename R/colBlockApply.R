@@ -258,12 +258,13 @@ rowBlockApply <- function(x, FUN, ..., grid=NULL, coerce.sparse=TRUE, BPPARAM=ge
 
 #' @importFrom DelayedArray set_grid_context
 .viewport_helper <- function(X, beachmat_internal_FUN, ...) {
-    set_grid_context(X[[1]], X[[2]])
+    set_grid_context(X[[1]], X[[2]], X[[1]][[X[[2]]]])
     beachmat_internal_FUN(X[[3]], ...)
 }
 
-#' @importFrom DelayedArray set_grid_context effectiveGrid currentBlockId
+#' @importFrom DelayedArray set_grid_context effectiveGrid currentBlockId currentViewport
 .sparse_helper <- function(beachmat_internal_x, beachmat_internal_FUN, ...) {
-    set_grid_context(effectiveGrid(), currentBlockId())
+    # Re-setting the grid context, just in case we moved to a different process without the previous settings.
+    set_grid_context(effectiveGrid(), currentBlockId(), currentViewport())
     beachmat_internal_FUN(toCsparse(beachmat_internal_x), ...)
 }
