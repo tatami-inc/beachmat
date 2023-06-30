@@ -163,22 +163,6 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(NULL)
     }
 
-    if (generic == "abs") {
-        return(apply_delayed_abs(seed))
-    }
-
-    if (generic == "sqrt") {
-        return(apply_delayed_sqrt(seed))
-    }
-
-    if (generic == "exp") {
-        return(apply_delayed_exp(seed))
-    }
-
-    if (generic == "log1p") {
-        return(apply_delayed_log1p(seed))
-    }
-
     if (generic == "round") {
         if (envir$digits != 0) {
             return("only 'digits = 0' are supported for delayed 'round'")
@@ -191,7 +175,7 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_log(seed, log.base.support[[generic]]))
     }
 
-    NULL
+    apply_delayed_unary_math(seed, generic)
 }
 
 .unary_Ops <- function(seed, OP) {

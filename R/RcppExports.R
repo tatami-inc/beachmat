@@ -29,24 +29,12 @@ apply_delayed_log <- function(raw_input, base) {
     .Call('_beachmat_apply_delayed_log', PACKAGE = 'beachmat', raw_input, base)
 }
 
-apply_delayed_log1p <- function(raw_input) {
-    .Call('_beachmat_apply_delayed_log1p', PACKAGE = 'beachmat', raw_input)
-}
-
-apply_delayed_abs <- function(raw_input) {
-    .Call('_beachmat_apply_delayed_abs', PACKAGE = 'beachmat', raw_input)
-}
-
-apply_delayed_sqrt <- function(raw_input) {
-    .Call('_beachmat_apply_delayed_sqrt', PACKAGE = 'beachmat', raw_input)
+apply_delayed_unary_math <- function(raw_input, op) {
+    .Call('_beachmat_apply_delayed_unary_math', PACKAGE = 'beachmat', raw_input, op)
 }
 
 apply_delayed_round <- function(raw_input) {
     .Call('_beachmat_apply_delayed_round', PACKAGE = 'beachmat', raw_input)
-}
-
-apply_delayed_exp <- function(raw_input) {
-    .Call('_beachmat_apply_delayed_exp', PACKAGE = 'beachmat', raw_input)
 }
 
 apply_delayed_subset <- function(raw_input, subset, row) {

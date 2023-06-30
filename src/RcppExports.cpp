@@ -96,33 +96,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// apply_delayed_log1p
-SEXP apply_delayed_log1p(SEXP raw_input);
-RcppExport SEXP _beachmat_apply_delayed_log1p(SEXP raw_inputSEXP) {
+// apply_delayed_unary_math
+SEXP apply_delayed_unary_math(SEXP raw_input, const std::string& op);
+RcppExport SEXP _beachmat_apply_delayed_unary_math(SEXP raw_inputSEXP, SEXP opSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_log1p(raw_input));
-    return rcpp_result_gen;
-END_RCPP
-}
-// apply_delayed_abs
-SEXP apply_delayed_abs(SEXP raw_input);
-RcppExport SEXP _beachmat_apply_delayed_abs(SEXP raw_inputSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_abs(raw_input));
-    return rcpp_result_gen;
-END_RCPP
-}
-// apply_delayed_sqrt
-SEXP apply_delayed_sqrt(SEXP raw_input);
-RcppExport SEXP _beachmat_apply_delayed_sqrt(SEXP raw_inputSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_sqrt(raw_input));
+    Rcpp::traits::input_parameter< const std::string& >::type op(opSEXP);
+    rcpp_result_gen = Rcpp::wrap(apply_delayed_unary_math(raw_input, op));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -133,16 +114,6 @@ BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     rcpp_result_gen = Rcpp::wrap(apply_delayed_round(raw_input));
-    return rcpp_result_gen;
-END_RCPP
-}
-// apply_delayed_exp
-SEXP apply_delayed_exp(SEXP raw_input);
-RcppExport SEXP _beachmat_apply_delayed_exp(SEXP raw_inputSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(apply_delayed_exp(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -314,11 +285,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_apply_delayed_boolean", (DL_FUNC) &_beachmat_apply_delayed_boolean, 4},
     {"_beachmat_apply_delayed_boolean_not", (DL_FUNC) &_beachmat_apply_delayed_boolean_not, 1},
     {"_beachmat_apply_delayed_log", (DL_FUNC) &_beachmat_apply_delayed_log, 2},
-    {"_beachmat_apply_delayed_log1p", (DL_FUNC) &_beachmat_apply_delayed_log1p, 1},
-    {"_beachmat_apply_delayed_abs", (DL_FUNC) &_beachmat_apply_delayed_abs, 1},
-    {"_beachmat_apply_delayed_sqrt", (DL_FUNC) &_beachmat_apply_delayed_sqrt, 1},
+    {"_beachmat_apply_delayed_unary_math", (DL_FUNC) &_beachmat_apply_delayed_unary_math, 2},
     {"_beachmat_apply_delayed_round", (DL_FUNC) &_beachmat_apply_delayed_round, 1},
-    {"_beachmat_apply_delayed_exp", (DL_FUNC) &_beachmat_apply_delayed_exp, 1},
     {"_beachmat_apply_delayed_subset", (DL_FUNC) &_beachmat_apply_delayed_subset, 3},
     {"_beachmat_apply_delayed_transpose", (DL_FUNC) &_beachmat_apply_delayed_transpose, 1},
     {"_beachmat_apply_delayed_bind", (DL_FUNC) &_beachmat_apply_delayed_bind, 2},
