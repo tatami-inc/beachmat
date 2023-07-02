@@ -5,6 +5,18 @@ apply_delayed_binary_operation <- function(left_input, right_input, op) {
     .Call('_beachmat_apply_delayed_binary_operation', PACKAGE = 'beachmat', left_input, right_input, op)
 }
 
+apply_delayed_log <- function(raw_input, base) {
+    .Call('_beachmat_apply_delayed_log', PACKAGE = 'beachmat', raw_input, base)
+}
+
+apply_delayed_unary_math <- function(raw_input, op) {
+    .Call('_beachmat_apply_delayed_unary_math', PACKAGE = 'beachmat', raw_input, op)
+}
+
+apply_delayed_round <- function(raw_input) {
+    .Call('_beachmat_apply_delayed_round', PACKAGE = 'beachmat', raw_input)
+}
+
 apply_delayed_associative_arithmetic <- function(raw_input, val, row, op) {
     .Call('_beachmat_apply_delayed_associative_arithmetic', PACKAGE = 'beachmat', raw_input, val, row, op)
 }
@@ -23,18 +35,6 @@ apply_delayed_boolean <- function(raw_input, val, row, op) {
 
 apply_delayed_boolean_not <- function(raw_input) {
     .Call('_beachmat_apply_delayed_boolean_not', PACKAGE = 'beachmat', raw_input)
-}
-
-apply_delayed_log <- function(raw_input, base) {
-    .Call('_beachmat_apply_delayed_log', PACKAGE = 'beachmat', raw_input, base)
-}
-
-apply_delayed_unary_math <- function(raw_input, op) {
-    .Call('_beachmat_apply_delayed_unary_math', PACKAGE = 'beachmat', raw_input, op)
-}
-
-apply_delayed_round <- function(raw_input) {
-    .Call('_beachmat_apply_delayed_round', PACKAGE = 'beachmat', raw_input)
 }
 
 apply_delayed_subset <- function(raw_input, subset, row) {
