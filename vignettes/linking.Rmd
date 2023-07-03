@@ -20,12 +20,12 @@ opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 
 The `r Biocpkg("beachmat")` package provides a C++ API to extract numeric data from matrix-like R objects,
 based on the matrix representations in the [**tatami**](https://github.com/tatami-inc/tatami) library.
-This enables Bioconductor packages to use C++ for high-performance processing of data stored in an abstract R matrix representation, including:
+This enables Bioconductor packages to use C++ for high-performance processing of data in arbitrary R matrices, including:
 
 - ordinary dense `matrix` objects
 - dense and sparse matrices from the `r CRANpkg("Matrix")` package
 - `DelayedMatrix` objects with delayed operations from the `r Biocpkg("DelayedArray")` package
-- and anything with a `DelayedArray::extract_array()` method.
+- and any abstract matrix-like object with a `DelayedArray::extract_array()` method.
 
 Where possible, `r Biocpkg("beachmat")` will map the R object to its C++ representation, bypassing the R interpreter to directly extract the matrix contents.
 This provides fast access by avoiding R-level evaluation, saves memory by avoiding block processing and memory allocations, and permits more fine-grained parallelization.
@@ -173,6 +173,30 @@ parallel_column_sums(ptr, 2)
 ```
 
 More advanced users can check out the parallelization-related documentation in the [**tatami_r**](https://github.com/tatami-inc/tatami_r) repository. 
+
+# Comparison to block processing
+
+The conventional approach to iterating over a matrix is to use `r Biocpkg("DelayedArray")`'s block processing mechanism, i.e., `DelayedArray::blockApply`.
+This is implemented completely in R and is convenient for developers as it can be used directly with any R function.
+However, its performance only goes so far, and several years of experience with its use has revealed a few shortcomings:
+
+- Looping over the blocks in R incurs some overhead from the interpreter.
+  In most cases, this difference is modest compared to the time spent in the user-defined function itself, but occasionally there are very noticeable performance issues.
+  For example, the extraction of each block is unable to re-use information from the extraction of the previous block, 
+  resulting in very slow iterations for some matrix types, e.g., when processing a compressed sparse column matrix using row-wise blocks.
+- When extracting rows or columns, each block processing iteration allocates a block that typically contains multiple rows or columns.
+  This allows for vectorized operations across the block but increases memory usage as the block must be realized into one of the standard formats.
+  Conversely, small blocks will increase the number of required iterations and the looping overhead.
+  This introduces an awkward tension between speed and memory efficiency that must be managed by the end user.
+- When parallelizing (e.g., with `r BiocPkg("BiocParallel")`), each worker process needs to holds its own block in memory for processing.
+  This exacerbates the speed/memory trade-off as the extra memory usage from block realization is effectively multiplied by the number of workers.
+  We have also observed that workers are rather reckless with their memory consumption as they do not consider the existence of other workers,
+  causing them to use more memory than expected and leading to OOM errors on resource-limited systems.
+
+Shifting the iteration into C++ with `r Biocpkg("beachmat")` avoids many of these issues.
+The looping overhead is effectively eliminated as the R interpreter is no longer involved.
+Only one row/column is extracted at a time for most `tatami::Matrix` classes, minimizing memory overhead and avoiding the need for manual block size management in most cases.
+Parallelization is also much easier with the standard `<thread>` library, as we do not need to spin up or fork to create a separate process.
 
 # Session information {-}
 
