@@ -188,7 +188,7 @@ However, its performance only goes so far, and several years of experience with 
   This allows for vectorized operations across the block but increases memory usage as the block must be realized into one of the standard formats.
   Conversely, small blocks will increase the number of required iterations and the looping overhead.
   This introduces an awkward tension between speed and memory efficiency that must be managed by the end user.
-- When parallelizing (e.g., with `r BiocPkg("BiocParallel")`), each worker process needs to holds its own block in memory for processing.
+- When parallelizing (e.g., with `r Biocpkg("BiocParallel")`), each worker process needs to holds its own block in memory for processing.
   This exacerbates the speed/memory trade-off as the extra memory usage from block realization is effectively multiplied by the number of workers.
   We have also observed that workers are rather reckless with their memory consumption as they do not consider the existence of other workers,
   causing them to use more memory than expected and leading to OOM errors on resource-limited systems.
