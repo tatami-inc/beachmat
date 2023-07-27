@@ -9,36 +9,15 @@ SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row) 
     const auto& shared = input->ptr;
     output->original = input->original; // copying the reference to propagate GC protection.
 
-    // Is this a contiguous block?
-    bool consecutive = true;
-    for (size_t i = 1, end = subset.size(); i < end; ++i) {
-        if (subset[i] - subset[i - 1] != 1) {
-            consecutive = false;
-            break;
-        }
-    }
+    std::vector<int> resub(subset.begin(), subset.end());
+    for (auto& x : resub) {
+        --x; 
+    } 
 
-    if (consecutive) {
-        int start = (subset.size() ? subset[0] - 1 : 0);
-        int end = (subset.size() ? subset[subset.size() - 1] : 0);
-        if (row) {
-            output->ptr = tatami::make_DelayedSubsetBlock<0>(shared, start, end);
-        } else {
-            output->ptr = tatami::make_DelayedSubsetBlock<1>(shared, start, end);
-        }
+    if (row) {
+        output->ptr = tatami::make_DelayedSubset<0>(shared, std::move(resub));
     } else {
-        // Otherwise, we get to 0-based indices. This eliminates the need
-        // to store 'subset', as we're making our own copy anyway.
-        std::vector<int> resub(subset.begin(), subset.end());
-        for (auto& x : resub) {
-            --x; 
-        } 
-
-        if (row) {
-            output->ptr = tatami::make_DelayedSubset<0>(shared, std::move(resub));
-        } else {
-            output->ptr = tatami::make_DelayedSubset<1>(shared, std::move(resub));
-        }
+        output->ptr = tatami::make_DelayedSubset<1>(shared, std::move(resub));
     }
 
     return output;
