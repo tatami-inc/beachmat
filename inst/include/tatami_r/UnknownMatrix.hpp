@@ -41,8 +41,8 @@ public:
     UnknownMatrix(Rcpp::RObject seed, size_t cache = -1) : 
         original_seed(seed), 
         delayed_env(Rcpp::Environment::namespace_env("DelayedArray")),
-        dense_extractor(delayed_env["extract_array"]),
         sparse_env(Rcpp::Environment::namespace_env("SparseArray")),
+        dense_extractor(delayed_env["extract_array"]),
         sparse_extractor(sparse_env["extract_sparse_array"])
     {
         // We assume the constructor only occurs on the main thread, so we

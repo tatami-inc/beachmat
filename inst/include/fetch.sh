@@ -8,7 +8,7 @@ set -u
 
 if [ ! -e source-tatami ]
 then 
-    git clone https://github.com/LTLA/tatami source-tatami
+    git clone https://github.com/tatami-inc/tatami source-tatami
 else 
     cd source-tatami
     git pull
@@ -16,7 +16,7 @@ else
 fi
 
 cd source-tatami
-git checkout 1d41b7ad277b235ea1e835c6424f6c98b799af1f
+git checkout d6cb42539e434efce7fd24cd5abcbb1c006f74f3
 rm -rf ../tatami
 cp -r include/tatami/ ../tatami
 git checkout master
@@ -34,7 +34,7 @@ else
 fi
 
 cd source-tatami_r
-git checkout 775cc7ea8a7d9023bb665b9b2125c3beabb0f97a
+git checkout 62ec62544ee1f309cb5164517a58fc4d0a3218d8
 rm -rf ../tatami_r
 cp -r include/tatami_r/ ../tatami_r
 git checkout master
