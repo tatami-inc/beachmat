@@ -20,7 +20,7 @@ Parsed<Data_, Index_> parse_COO_SparseMatrix_internal(Rcpp::RObject seed, InputO
     }
 
     const size_t nnz = temp_i.nrow();
-    if (nnz != val.size()) {
+    if (nnz != static_cast<size_t>(val.size())) {
         auto ctype = get_class_name(seed);
         throw std::runtime_error(std::string("incompatible 'nzcoo' and 'nzdata' lengths in a ") + ctype + " object"); 
     }

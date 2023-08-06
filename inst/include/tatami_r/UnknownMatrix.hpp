@@ -95,7 +95,7 @@ public:
         }
 
         cache_size = cache;
-        if (cache_size == -1) {
+        if (cache_size == static_cast<size_t>(-1)) {
             Rcpp::Function fun = delayed_env["getAutoBlockSize"];
             Rcpp::NumericVector output = fun();
             if (output.size() != 1 || output[0] < 0) {
@@ -179,8 +179,8 @@ private:
 
         // We define the number of chunks in the extracted block,
         // as well as the size of the extracted block itself.
-        Index_ max_block_size_in_chunks;
-        Index_ max_block_size_in_elements;
+        size_t max_block_size_in_chunks;
+        size_t max_block_size_in_elements;
 
         // No oracle, we just go for blocks.
         Index_ primary_block_start, primary_block_len;
@@ -317,8 +317,8 @@ private:
 
     template<bool byrow_, bool sparse_, bool sparse_err = sparse_>
     void check_buffered_dims(const tatami::Matrix<Value_, Index_>* parsed, const Workspace<sparse_>* work) const {
-        size_t parsed_primary = (byrow_ ? parsed->nrow() : parsed->ncol());
-        size_t parsed_secondary = (byrow_ ? parsed->ncol() : parsed->nrow());
+        Index_ parsed_primary = (byrow_ ? parsed->nrow() : parsed->ncol());
+        Index_ parsed_secondary = (byrow_ ? parsed->ncol() : parsed->nrow());
 
         if (parsed_primary != work->primary_block_len || parsed_secondary != work->secondary_len) {
             auto ctype = get_class_name(original_seed);
@@ -551,12 +551,12 @@ private:
             // Need to adjust the indices.
             if (output.index) {
                 if constexpr(selection_ == tatami::DimensionSelectionType::BLOCK) {
-                    for (size_t i = 0; i < output.number; ++i) {
+                    for (Index_ i = 0; i < output.number; ++i) {
                         ibuffer[i] = output.index[i] + this->block_start;
                     }
                     output.index = ibuffer;
                 } else if constexpr(selection_ == tatami::DimensionSelectionType::INDEX) {
-                    for (size_t i = 0; i < output.number; ++i) {
+                    for (Index_ i = 0; i < output.number; ++i) {
                         ibuffer[i] = this->indices[output.index[i]];
                     }
                     output.index = ibuffer;
