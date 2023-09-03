@@ -29,7 +29,7 @@ harvester() {
     cd -
 }
 
-harvester tatami https://github.com/tatami-inc/tatami v2.0.1
+harvester tatami https://github.com/tatami-inc/tatami v2.1.0
 harvester tatami_r https://github.com/tatami-inc/tatami_r v1.0.0
 harvester manticore https://github.com/tatami-inc/manticore v1.0.0
 harvester byteme https://github.com/LTLA/byteme v1.0.1
