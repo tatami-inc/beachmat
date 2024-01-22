@@ -33,7 +33,13 @@ setMethod("initializeCpp", "lgRMatrix", function(x, ...) initialize_sparse_matri
 #' @export
 #' @import DelayedArray 
 setMethod("initializeCpp", "DelayedMatrix", function(x, ...) {
-    initializeCpp(x@seed, ...)
+    tryCatch(
+        initializeCpp(x@seed, ...),
+        error=function(e) {
+            warning(gsub("\\s+$", "", errorCondition(e)), ", falling back to an unknown matrix")
+            initialize_unknown_matrix(x)
+        }
+    )
 })
 
 #' @export
@@ -139,8 +145,7 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
     }
 
     if (is.null(chosen)) {
-        warning("unknown operation in '<", class(x)[1], ">@OP', falling back to an unknown matrix")
-        return(initialize_unknown_matrix(x))
+        stop("unknown operation in '<", class(x)[1], ">@OP'")
     } 
 
     output <- .apply_delayed_unary_ops(seed, chosen, args, right, row)
@@ -165,7 +170,7 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
 
     if (generic == "round") {
         if (envir$digits != 0) {
-            return("only 'digits = 0' are supported for delayed 'round'")
+            stop("only 'digits = 0' are supported for delayed 'round'")
         }
         return(apply_delayed_round(seed))
     }
@@ -240,10 +245,8 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpStack", function(x, ...) {
             }
         } 
 
-        if (!status || is.character(seed)) {
-            msg <- if (is.character(seed)) seed else paste0("unsupported function in '<", class(x), ">@OPS[[", i, "]]'")
-            warning(msg, ", falling back to an unknown matrix")
-            return(initialize_unknown_matrix(x))
+        if (!status) {
+            stop("unsupported function in '<", class(x), ">@OPS[[", i, "]]'")
         }
     }
 
@@ -275,8 +278,7 @@ setMethod("initializeCpp", "DelayedNaryIsoOp", function(x, ...) {
     }
 
     if (is.null(chosen)) {
-        warning("unknown operation in '<", class(x)[1], ">@OP', falling back to an unknown matrix")
-        return(initialize_unknown_matrix(x))
+        stop("unknown operation in '<", class(x)[1], ">@OP'")
     }
 
     output <- apply_delayed_binary_operation(left, right, chosen)
