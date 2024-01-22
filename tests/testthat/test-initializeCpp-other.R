@@ -140,4 +140,11 @@ test_that("initialization works correctly with an unknown DelayedArray", {
 
     ptr <- initializeCpp(mat2)
     am_i_ok(mat, ptr)
+
+    # works in the sparse case.
+    mat <- DelayedArray(Matrix::rsparsematrix(100, 50, 0.1))
+    mat2 <- round(mat, digits=2)
+
+    expect_warning(ptr <- initializeCpp(mat2), "falling back")
+    am_i_ok(mat2, ptr)
 })

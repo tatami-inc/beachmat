@@ -41,9 +41,8 @@ public:
     UnknownMatrix(Rcpp::RObject seed, size_t cache = -1) : 
         original_seed(seed), 
         delayed_env(Rcpp::Environment::namespace_env("DelayedArray")),
-        sparse_env(Rcpp::Environment::namespace_env("SparseArray")),
         dense_extractor(delayed_env["extract_array"]),
-        sparse_extractor(sparse_env["extract_sparse_array"])
+        sparse_extractor(delayed_env["OLD_extract_sparse_array"])
     {
         // We assume the constructor only occurs on the main thread, so we
         // won't bother locking things up. I'm also not sure that the
@@ -117,7 +116,7 @@ private:
     Index_ chunk_nrow, chunk_ncol;
 
     Rcpp::RObject original_seed;
-    Rcpp::Environment delayed_env, sparse_env;
+    Rcpp::Environment delayed_env; 
     Rcpp::Function dense_extractor, sparse_extractor;
 
 public:
@@ -323,7 +322,7 @@ private:
         if (parsed_primary != work->primary_block_len || parsed_secondary != work->secondary_len) {
             auto ctype = get_class_name(original_seed);
             throw std::runtime_error("'" + 
-                (sparse_err ? std::string("extract_sparse_array") : std::string("extract_array")) + 
+                (sparse_err ? std::string("OLD_extract_sparse_array") : std::string("extract_array")) + 
                 "(<" + ctype + ">)' returns incorrect dimensions");
         }
     }
@@ -404,8 +403,10 @@ private:
                 parsed = parse_SVT_SparseMatrix<Value_, Index_>(val0);
             } else if (ctype == "COO_SparseMatrix") {
                 parsed = parse_COO_SparseMatrix<Value_, Index_>(val0, byrow_);
+            } else if (ctype == "SparseArraySeed") {
+                parsed = parse_COO_SparseMatrix<Value_, Index_>(val0, byrow_, /* legacy */ true);
             } else {
-                throw std::runtime_error("unknown class '" + ctype + "' returned from 'extract_sparse_array()'");
+                throw std::runtime_error("unknown class '" + ctype + "' returned from 'OLD_extract_sparse_array()'");
             }
             check_buffered_dims<byrow_, true, true>(parsed.matrix.get(), work);
 
