@@ -2,6 +2,9 @@
 setMethod("initializeCpp", "ANY", function(x, ...) initialize_unknown_matrix(x))
 
 #' @export
+setMethod("initializeCpp", "externalptr", function(x, ...) x)
+
+#' @export
 setMethod("initializeCpp", "matrix", function(x, ...) initialize_dense_matrix(x, nrow(x), ncol(x)))
 
 #' @export

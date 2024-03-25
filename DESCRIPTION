@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 2.19.1
-Date: 2024-01-22
+Version: 2.19.2
+Date: 2024-03-24
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
@@ -34,4 +34,4 @@ VignetteBuilder: knitr
 SystemRequirements: C++17
 URL: https://github.com/tatami-inc/beachmat
 BugReports: https://github.com/tatami-inc/beachmat/issues
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1

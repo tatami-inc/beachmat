@@ -148,3 +148,10 @@ test_that("initialization works correctly with an unknown DelayedArray", {
     expect_warning(ptr <- initializeCpp(mat2), "falling back")
     am_i_ok(mat2, ptr)
 })
+
+test_that("initialization no-ops correctly with its own output", {
+    dd <- as.matrix(y)
+    ptr <- initializeCpp(dd)
+    ptr2 <- initializeCpp(ptr)
+    am_i_ok(dd, ptr2)
+})

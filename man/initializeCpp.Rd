@@ -24,7 +24,8 @@
 initializeCpp(x, ...)
 }
 \arguments{
-\item{x}{A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.}
+\item{x}{A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.
+Alternatively, an external pointer from a previous call to \code{initializeCpp}, which is returned without modification.}
 
 \item{...}{Further arguments used by specific methods.
 Common arguments include:

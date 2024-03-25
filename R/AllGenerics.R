@@ -4,6 +4,7 @@
 #' This object simply references the R memory space and avoids making any copies of its own, so it can be cheaply re-created when needed inside each function.
 #'
 #' @param x A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.
+#' Alternatively, an external pointer from a previous call to \code{initializeCpp}, which is returned without modification.
 #' @param ... Further arguments used by specific methods.
 #' Common arguments include:
 #' \itemize{
