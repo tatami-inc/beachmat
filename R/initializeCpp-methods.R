@@ -39,7 +39,7 @@ setMethod("initializeCpp", "DelayedMatrix", function(x, ...) {
     tryCatch(
         initializeCpp(x@seed, ...),
         error=function(e) {
-            warning(gsub("\\s+$", "", errorCondition(e)), ", falling back to an unknown matrix")
+            warning(gsub("\\s+$", " ", e$message), ", falling back to an unknown matrix")
             initialize_unknown_matrix(x)
         }
     )
