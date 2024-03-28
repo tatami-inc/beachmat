@@ -4,6 +4,7 @@
 \alias{initializeCpp}
 \alias{initializeCpp,ANY-method}
 \alias{initializeCpp,matrix-method}
+\alias{initializeCpp,externalptr-method}
 \alias{initializeCpp,dgeMatrix-method}
 \alias{initializeCpp,lgeMatrix-method}
 \alias{initializeCpp,dgCMatrix-method}

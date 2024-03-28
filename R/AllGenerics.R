@@ -31,6 +31,7 @@
 #' initializeCpp
 #' initializeCpp,ANY-method
 #' initializeCpp,matrix-method
+#' initializeCpp,externalptr-method
 #' initializeCpp,dgeMatrix-method
 #' initializeCpp,lgeMatrix-method
 #' initializeCpp,dgCMatrix-method
