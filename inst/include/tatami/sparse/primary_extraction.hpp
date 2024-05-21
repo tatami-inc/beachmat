@@ -1,215 +1,135 @@
 #ifndef TATAMI_SPARSE_PRIMARY_EXTRACTION_HPP
 #define TATAMI_SPARSE_PRIMARY_EXTRACTION_HPP
 
-#include "utils.hpp"
-#include <utility>
+#include "../utils/has_data.hpp"
+
 #include <algorithm>
-#include "../utils/ElementType.hpp"
 
 namespace tatami {
 
 namespace sparse_utils {
 
-template<typename Index_, class IndexStorage_, class PointerStorage_>
-std::pair<size_t, size_t> extract_primary_dimension(Index_ i, const IndexStorage_& indices, const PointerStorage_& indptrs) {
-    auto lower = sparse_utils::get_lower_limit(indptrs, i);
-    return std::pair<size_t, size_t>(lower, sparse_utils::get_upper_limit(indices, indptrs, i) - lower);
-}
-
-template<typename Index_, class IndexStorage_, class PointerStorage_>
-std::pair<size_t, size_t> extract_primary_dimension(
-    Index_ i, 
-    Index_ start, 
-    Index_ length, 
-    const IndexStorage_& indices, 
-    const PointerStorage_& indptrs, 
-    std::vector<std::pair<size_t, size_t> >& cached) 
-{
-    bool do_cache = !cached.empty();
-    if (do_cache) {
-        auto val = cached[i];
-        if (val.first != static_cast<size_t>(-1)) {
-            return val;
-        }
-    }
-
-    auto iIt = indices.begin() + sparse_utils::get_lower_limit(indptrs, i);
-    auto eIt = indices.begin() + sparse_utils::get_upper_limit(indices, indptrs, i);
-
-    if (iIt != eIt) {
-        if (start > static_cast<Index_>(*iIt)) {
-            iIt = std::lower_bound(iIt, eIt, start);
-        } 
-
-        ElementType<IndexStorage_> last = start + length;
-
-        // Comparing the one-past-the-last requested index with the last observed index at 'eIt'.
-        // If the former is less than the latter, then we need to do a binary search.
-        // If greater than the latter, we restore 'eIt' to its original position.
-        // If equal, then the decremented 'eIt' is already the one-past-the-last index, so we keep it as-is.
-        --eIt;
-        if (last < *eIt) {
-            eIt = std::lower_bound(iIt, eIt, last);
-        } else if (last > *eIt) {
-            ++eIt;
-        }
-    }
-
-    size_t outstart = iIt - indices.begin();
-    size_t outlength = eIt - iIt;
-    if (do_cache) {
-        cached[i].first = outstart;
-        cached[i].second = outlength;
-    }
-
-    return std::make_pair(outstart, outlength);
-}
-
-template<class ValueStorage_, typename Value_, typename Index_>
-void transplant_primary_values(const ValueStorage_& values, const std::pair<size_t, size_t>& range, SparseRange<Value_, Index_>& output, Value_* out_values) {
-    if (out_values) {
-        if constexpr(has_data<Value_, ValueStorage_>::value) {
-            output.value = values.data() + range.first;
-        } else {
-            auto vIt = values.begin() + range.first;
-            std::copy(vIt, vIt + range.second, out_values);
-            output.value = out_values;
-        }
+template<class Storage_, typename Offset_, typename Data_>
+const Data_* extract_primary_vector(const Storage_& input, Offset_ offset, Offset_ delta, Data_* buffer) {
+    if constexpr(has_data<Data_, Storage_>::value) {
+        return input.data() + offset;
     } else {
-        output.value = NULL;
+        auto it = input.begin() + offset;
+        std::copy_n(it, delta, buffer);
+        return buffer;
     }
 }
 
-template<class IndexStorage_, typename Value_, typename Index_>
-void transplant_primary_indices(const IndexStorage_& indices, const std::pair<size_t, size_t>& range, SparseRange<Value_, Index_>& output, Index_* out_indices) {
-    if (out_indices) {
-        if constexpr(has_data<Index_, IndexStorage_>::value) {
-            output.index = indices.data() + range.first;
-        } else {
-            auto iIt = indices.begin() + range.first;
-            std::copy(iIt, iIt + range.second, out_indices);
-            output.index = out_indices;
-        }
-    } else {
-        output.index = NULL;
+template<class IndexIt_, typename Index_>
+void refine_primary_limits(IndexIt_& indices_start, IndexIt_& indices_end, Index_ extent, Index_ smallest, Index_ largest_plus_one) {
+    if (smallest) {
+        // Using custom comparator to ensure that we cast to Index_ for signedness-safe comparisons.
+        indices_start = std::lower_bound(indices_start, indices_end, smallest, [](Index_ a, Index_ b) -> bool { return a < b; });
+    }
+
+    if (largest_plus_one != extent) {
+        indices_end = std::lower_bound(indices_start, indices_end, largest_plus_one, [](Index_ a, Index_ b) -> bool { return a < b; });
     }
 }
 
-template<class ValueStorage_, class IndexStorage_, typename Value_, typename Index_>
-void transplant_primary_expanded(const ValueStorage_& values, const IndexStorage_& indices, const std::pair<size_t, size_t>& range, Value_* out_values, Index_ start, Index_ length) {
-    std::fill(out_values, out_values + length, static_cast<Value_>(0));
-    auto vIt = values.begin() + range.first;
-    auto iIt = indices.begin() + range.first;
-    for (size_t x = 0; x < range.second; ++x, ++vIt, ++iIt) {
-        out_values[*iIt - start] = *vIt;
-    }
-    return;
+template<class IndexIt_, typename Index_>
+void refine_primary_block_limits(IndexIt_& indices_start, IndexIt_& indices_end, Index_ extent, Index_ block_start, Index_ block_length) {
+    refine_primary_limits(indices_start, indices_end, extent, block_start, block_start + block_length);
 }
 
-template<typename Index_, class IndexStorage_, class PointerStorage_, class Store_>
-void primary_dimension(
-    Index_ i, 
-    const Index_* subset, 
-    Index_ length, 
-    const IndexStorage_& indices, 
-    const PointerStorage_& indptrs, 
-    std::vector<size_t>& cached, 
-    Store_& store) 
-{
-    if (!length) {
-        return;
-    }
+template<typename Index_>
+class RetrievePrimarySubsetDense {
+public:
+    RetrievePrimarySubsetDense(const std::vector<Index_>& subset, Index_ extent) : my_extent(extent) {
+        if (!subset.empty()) {
+            my_offset = subset.front();
+            my_lastp1 = subset.back() + 1;
+            size_t alloc = my_lastp1 - my_offset;
+            my_present.resize(alloc);
 
-    auto iIt = indices.begin() + sparse_utils::get_lower_limit(indptrs, i);
-    auto eIt = indices.begin() + sparse_utils::get_upper_limit(indices, indptrs, i);
+            // Starting off at 1 to ensure that 0 is still a marker for
+            // absence. It should be fine as subset.size() should fit inside
+            // Index_ (otherwise nrow()/ncol() would give the wrong answer).
+            Index_ counter = 1; 
 
-    if (indices[0]) { // Only jumping ahead if the start is non-zero.
-        bool do_cache = !cached.empty();
-        if (do_cache) {
-            if (cached[i] != static_cast<size_t>(-1)) { // retrieving the jump from cache, if we came here before.
-                iIt += cached[i];
-            } else {
-                auto iIt2 = std::lower_bound(iIt, eIt, subset[0]);
-                cached[i] = iIt2 - iIt;
-                iIt = iIt2;
+            for (auto s : subset) {
+                my_present[s - my_offset] = counter;
+                ++counter;
             }
-        } else {
-            iIt = std::lower_bound(iIt, eIt, subset[0]);
         }
-    } 
-
-    if (iIt == eIt) {
-        return;
     }
-
-    Index_ counter = 0;
-    while (counter < length) {
-        ElementType<IndexStorage_> current = subset[counter];
-
-        while (iIt != eIt && current > *iIt) {
-            ++iIt;
-        }
-        if (iIt == eIt) {
-            break;
-        }
-
-        if (current == *iIt) {
-            store.add(current, iIt - indices.begin());
-        } else {
-            store.skip(current);
-        }
-        ++counter;
-    }
-
-    return;
-}
-
-// Potential classes to use as Store_ in the primary_dimension() indexed extractor.
-template<typename Value_, typename Index_, class ValueStorage_>
-struct SimpleRawStore {
-    SimpleRawStore(const ValueStorage_& iv, Value_* ov, Index_* oi) : in_values(iv), out_values(ov), out_indices(oi) {}
 
 private:
-    const ValueStorage_& in_values;
-    Value_* out_values;
-    Index_* out_indices;
+    Index_ my_extent;
+    std::vector<Index_> my_present;
+    Index_ my_offset = 0;
+    Index_ my_lastp1 = 0;
 
 public:
-    Index_ n = 0;
+    template<class IndexIt_, class Store_>
+    void populate(IndexIt_ indices_start, IndexIt_ indices_end, Store_ store) const {
+        if (my_present.empty()) {
+            return;
+        }
 
-    void add(Index_ i, size_t ptr) {
-        ++n;
-        if (out_indices) {
-            *out_indices = i;
-            ++out_indices;
+        // Limiting the iteration to its boundaries based on the first and last subset index.
+        auto original_start = indices_start;
+        refine_primary_limits(indices_start, indices_end, my_extent, my_offset, my_lastp1);
+
+        size_t counter = indices_start - original_start;
+        for (; indices_start != indices_end; ++indices_start, ++counter) {
+            auto ix = *indices_start;
+            auto shift = my_present[ix - my_offset];
+            if (shift) {
+                store(shift - 1, counter);
+            }
         }
-        if (out_values) {
-            *out_values = in_values[ptr];
-            ++out_values;
-        }
-        return;
     }
-
-    void skip(Index_) {} 
 };
 
-template<typename Value_, typename Index_, class ValueStorage_>
-struct SimpleExpandedStore {
-    SimpleExpandedStore(const ValueStorage_& iv, Value_* ov) : in_values(iv), out_values(ov) {}
-
-private:
-    const ValueStorage_& in_values;
-    Value_* out_values;
-
+template<typename Index_>
+class RetrievePrimarySubsetSparse {
 public:
-    void add(Index_, size_t ptr) {
-        *out_values = in_values[ptr];
-        ++out_values;
-        return;
+    RetrievePrimarySubsetSparse(const std::vector<Index_>& subset, Index_ extent) : my_extent(extent) {
+        if (!subset.empty()) {
+            my_offset = subset.front();
+            my_lastp1 = subset.back() + 1;
+            size_t alloc = my_lastp1 - my_offset;
+            my_present.resize(alloc);
+
+            // Unlike the dense case, this is a simple present/absent signal,
+            // as we don't need to map each structural non-zero back onto its 
+            // corresponding location on a dense vector.
+            for (auto s : subset) {
+                my_present[s - my_offset] = 1;
+            }
+        }
     }
 
-    void skip(Index_) {
-        ++out_values;
+private:
+    Index_ my_extent;
+    std::vector<unsigned char> my_present;
+    Index_ my_offset = 0;
+    Index_ my_lastp1 = 0;
+
+public:
+    template<class IndexIt_, class Store_>
+    void populate(IndexIt_ indices_start, IndexIt_ indices_end, Store_ store) const {
+        if (my_present.empty()) {
+            return;
+        }
+
+        // Limiting the iteration to its boundaries based on the first and last subset index.
+        auto original_start = indices_start;
+        refine_primary_limits(indices_start, indices_end, my_extent, my_offset, my_lastp1);
+
+        size_t counter = indices_start - original_start;
+        for (; indices_start != indices_end; ++indices_start, ++counter) {
+            auto ix = *indices_start;
+            if (my_present[ix - my_offset]) {
+                store(counter, ix);
+            }
+        }
     }
 };
 

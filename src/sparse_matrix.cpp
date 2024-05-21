@@ -9,14 +9,8 @@ tatami::NumericMatrix* store_sparse_matrix(XVector_ x, Rcpp::IntegerVector i, Rc
     tatami::ArrayView<T_> x_view(static_cast<const T_*>(x.begin()), x.size());
     tatami::ArrayView<int> i_view(static_cast<const int*>(i.begin()), i.size());
     tatami::ArrayView<int> p_view(static_cast<const int*>(p.begin()), p.size());
-
-    if (byrow) {
-        typedef tatami::CompressedSparseMatrix<true, double, int, decltype(x_view), decltype(i_view), decltype(p_view)> SparseMat;
-        return new SparseMat(nrow, ncol, std::move(x_view), std::move(i_view), std::move(p_view), false);
-    } else {
-        typedef tatami::CompressedSparseMatrix<false, double, int, decltype(x_view), decltype(i_view), decltype(p_view)> SparseMat;
-        return new SparseMat(nrow, ncol, std::move(x_view), std::move(i_view), std::move(p_view), false);
-    }
+    typedef tatami::CompressedSparseMatrix<double, int, decltype(x_view), decltype(i_view), decltype(p_view)> SparseMat;
+    return new SparseMat(nrow, ncol, std::move(x_view), std::move(i_view), std::move(p_view), byrow, false);
 }
 
 //[[Rcpp::export(rng=false)]]

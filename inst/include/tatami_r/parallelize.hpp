@@ -65,7 +65,7 @@ void parallelize(Function_ fun, size_t njobs, size_t nthreads) {
     auto& mexec = executor();
     mexec.initialize(nthreads, "failed to execute R command");
 
-    size_t jobs_per_worker = std::ceil(static_cast<double>(njobs) / nthreads);
+    size_t jobs_per_worker = (njobs / nthreads) + (njobs % nthreads > 0);
     size_t start = 0;
 
     std::vector<std::thread> runners;
@@ -73,11 +73,11 @@ void parallelize(Function_ fun, size_t njobs, size_t nthreads) {
     std::vector<std::string> errors(nthreads);
 
     for (size_t w = 0; w < nthreads; ++w) {
-        size_t end = std::min(njobs, start + jobs_per_worker);
-        if (start >= end) {
+        if (start == njobs) {
             mexec.finish_thread(false);
             continue;
         }
+        size_t end = start + std::min(njobs - start, jobs_per_worker);
 
         runners.emplace_back([&](size_t id, size_t s, size_t l) -> void {
             try {
@@ -90,7 +90,7 @@ void parallelize(Function_ fun, size_t njobs, size_t nthreads) {
             mexec.finish_thread();
         }, w, start, end - start);
 
-        start += jobs_per_worker;
+        start = end;
     }
 
     mexec.listen();

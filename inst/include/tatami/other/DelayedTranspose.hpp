@@ -18,7 +18,7 @@ namespace tatami {
  * @brief Delayed transposition of a matrix.
  *
  * Implements delayed transposition of a matrix.
- * This operation is "delayed" in that it is only evaluated on request, e.g., with `row()` or friends.
+ * This operation is "delayed" in that it is only evaluated during data extraction.
  *
  * @tparam Value_ Type of matrix value.
  * @tparam Index_ Type of index value.
@@ -27,122 +27,132 @@ template<typename Value_, typename Index_>
 class DelayedTranspose : public Matrix<Value_, Index_> {
 public:
     /**
-     * @param p Pointer to the underlying (pre-transpose) matrix.
+     * @param matrix Pointer to the underlying (pre-transpose) matrix.
      */
-    DelayedTranspose(std::shared_ptr<const Matrix<Value_, Index_> > p) : mat(std::move(p)) {}
+    DelayedTranspose(std::shared_ptr<const Matrix<Value_, Index_> > matrix) : my_matrix(std::move(matrix)) {}
 
 private:
-    std::shared_ptr<const Matrix<Value_, Index_> > mat;
+    std::shared_ptr<const Matrix<Value_, Index_> > my_matrix;
 
 public:
     Index_ nrow() const {
-        return mat->ncol();
+        return my_matrix->ncol();
     }
 
     Index_ ncol() const {
-        return mat->nrow();
+        return my_matrix->nrow();
     }
 
-    bool sparse() const {
-        return mat->sparse();
+    bool is_sparse() const {
+        return my_matrix->is_sparse();
     }
 
-    double sparse_proportion() const {
-        return mat->sparse_proportion();
+    double is_sparse_proportion() const {
+        return my_matrix->is_sparse_proportion();
     }
 
     bool prefer_rows() const {
-        return !mat->prefer_rows();
+        return !my_matrix->prefer_rows();
     }
 
     double prefer_rows_proportion() const {
-        return 1 - mat->prefer_rows_proportion();
+        return 1 - my_matrix->prefer_rows_proportion();
     }
 
     bool uses_oracle(bool row) const {
-        return mat->uses_oracle(!row);
+        return my_matrix->uses_oracle(!row);
     }
 
-    using Matrix<Value_, Index_>::dense_row;
+    using Matrix<Value_, Index_>::dense;
 
-    using Matrix<Value_, Index_>::dense_column;
+    using Matrix<Value_, Index_>::sparse;
 
-    using Matrix<Value_, Index_>::sparse_row;
-
-    using Matrix<Value_, Index_>::sparse_column;
-
+    /********************
+     *** Myopic dense ***
+     ********************/
 public:
-    std::unique_ptr<FullDenseExtractor<Value_, Index_> > dense_row(const Options& opt) const {
-        return mat->dense_column(opt);
+    std::unique_ptr<MyopicDenseExtractor<Value_, Index_> > dense(bool row, const Options& opt) const {
+        return my_matrix->dense(!row, opt);
     }
 
-    std::unique_ptr<BlockDenseExtractor<Value_, Index_> > dense_row(Index_ block_start, Index_ block_length, const Options& opt) const {
-        return mat->dense_column(block_start, block_length, opt);
+    std::unique_ptr<MyopicDenseExtractor<Value_, Index_> > dense(bool row, Index_ block_start, Index_ block_length, const Options& opt) const {
+        return my_matrix->dense(!row, block_start, block_length, opt);
     }
 
-    std::unique_ptr<IndexDenseExtractor<Value_, Index_> > dense_row(std::vector<Index_> indices, const Options& opt) const {
-        return mat->dense_column(std::move(indices), opt);
+    std::unique_ptr<MyopicDenseExtractor<Value_, Index_> > dense(bool row, VectorPtr<Index_> indices_ptr, const Options& opt) const {
+        return my_matrix->dense(!row, std::move(indices_ptr), opt);
     }
 
-    std::unique_ptr<FullDenseExtractor<Value_, Index_> > dense_column(const Options& opt) const {
-        return mat->dense_row(opt);
-    }
-
-    std::unique_ptr<BlockDenseExtractor<Value_, Index_> > dense_column(Index_ block_start, Index_ block_length, const Options& opt) const {
-        return mat->dense_row(block_start, block_length, opt);
-    }
-
-    std::unique_ptr<IndexDenseExtractor<Value_, Index_> > dense_column(std::vector<Index_> indices, const Options& opt) const {
-        return mat->dense_row(std::move(indices), opt);
-    }
-
+    /*********************
+     *** Myopic sparse ***
+     *********************/
 public:
-    std::unique_ptr<FullSparseExtractor<Value_, Index_> > sparse_row(const Options& opt) const {
-        return mat->sparse_column(opt);
+    std::unique_ptr<MyopicSparseExtractor<Value_, Index_> > sparse(bool row, const Options& opt) const {
+        return my_matrix->sparse(!row, opt);
     }
 
-    std::unique_ptr<BlockSparseExtractor<Value_, Index_> > sparse_row(Index_ block_start, Index_ block_length, const Options& opt) const {
-        return mat->sparse_column(block_start, block_length, opt);
+    std::unique_ptr<MyopicSparseExtractor<Value_, Index_> > sparse(bool row, Index_ block_start, Index_ block_length, const Options& opt) const {
+        return my_matrix->sparse(!row, block_start, block_length, opt);
     }
 
-    std::unique_ptr<IndexSparseExtractor<Value_, Index_> > sparse_row(std::vector<Index_> indices, const Options& opt) const {
-        return mat->sparse_column(std::move(indices), opt);
+    std::unique_ptr<MyopicSparseExtractor<Value_, Index_> > sparse(bool row, VectorPtr<Index_> indices_ptr, const Options& opt) const {
+        return my_matrix->sparse(!row, std::move(indices_ptr), opt);
     }
 
-    std::unique_ptr<FullSparseExtractor<Value_, Index_> > sparse_column(const Options& opt) const {
-        return mat->sparse_row(opt);
+    /**********************
+     *** Oracular dense ***
+     **********************/
+public:
+    std::unique_ptr<OracularDenseExtractor<Value_, Index_> > dense(bool row, std::shared_ptr<const Oracle<Index_> > oracle, const Options& opt) const {
+        return my_matrix->dense(!row, std::move(oracle), opt);
     }
 
-    std::unique_ptr<BlockSparseExtractor<Value_, Index_> > sparse_column(Index_ block_start, Index_ block_length, const Options& opt) const {
-        return mat->sparse_row(block_start, block_length, opt);
+    std::unique_ptr<OracularDenseExtractor<Value_, Index_> > dense(bool row, std::shared_ptr<const Oracle<Index_> > oracle, Index_ block_start, Index_ block_length, const Options& opt) const {
+        return my_matrix->dense(!row, std::move(oracle), block_start, block_length, opt);
     }
 
-    std::unique_ptr<IndexSparseExtractor<Value_, Index_> > sparse_column(std::vector<Index_> indices, const Options& opt) const {
-        return mat->sparse_row(std::move(indices), opt);
+    std::unique_ptr<OracularDenseExtractor<Value_, Index_> > dense(bool row, std::shared_ptr<const Oracle<Index_> > oracle, VectorPtr<Index_> indices_ptr, const Options& opt) const {
+        return my_matrix->dense(!row, std::move(oracle), std::move(indices_ptr), opt);
+    }
+
+    /***********************
+     *** Oracular sparse ***
+     ***********************/
+public:
+    std::unique_ptr<OracularSparseExtractor<Value_, Index_> > sparse(bool row, std::shared_ptr<const Oracle<Index_> > oracle, const Options& opt) const {
+        return my_matrix->sparse(!row, std::move(oracle), opt);
+    }
+
+    std::unique_ptr<OracularSparseExtractor<Value_, Index_> > sparse(bool row, std::shared_ptr<const Oracle<Index_> > oracle, Index_ block_start, Index_ block_length, const Options& opt) const {
+        return my_matrix->sparse(!row, std::move(oracle), block_start, block_length, opt);
+    }
+
+    std::unique_ptr<OracularSparseExtractor<Value_, Index_> > sparse(bool row, std::shared_ptr<const Oracle<Index_> > oracle, VectorPtr<Index_> indices, const Options& opt) const {
+        return my_matrix->sparse(!row, std::move(oracle), std::move(indices), opt);
     }
 };
 
 /**
- * A `make_*` helper function to enable partial template deduction of supplied types.
+ * A `make_*` helper function to enable partial template deduction of supplied types during delayed transposition.
  *
  * @tparam Value_ Type of matrix value.
  * @tparam Index_ Type of index value.
  *
- * @param p Pointer to a (possibly `const`) `Matrix` instance.
+ * @param matrix Pointer to a (possibly `const`) `Matrix` instance.
  *
  * @return A pointer to a `DelayedTranspose` instance.
  */
 template<typename Value_, typename Index_>
-std::shared_ptr<Matrix<Value_, Index_> > make_DelayedTranspose(std::shared_ptr<const Matrix<Value_, Index_> > p) {
-    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedTranspose<Value_, Index_>(std::move(p)));
+std::shared_ptr<Matrix<Value_, Index_> > make_DelayedTranspose(std::shared_ptr<const Matrix<Value_, Index_> > matrix) {
+    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedTranspose<Value_, Index_>(std::move(matrix)));
 }
 
 /**
  * @cond
  */
 template<typename Value_, typename Index_>
-std::shared_ptr<Matrix<Value_, Index_> > make_DelayedTranspose(std::shared_ptr<Matrix<Value_, Index_> > p) {
-    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedTranspose<Value_, Index_>(std::move(p)));
+std::shared_ptr<Matrix<Value_, Index_> > make_DelayedTranspose(std::shared_ptr<Matrix<Value_, Index_> > matrix) {
+    return std::shared_ptr<Matrix<Value_, Index_> >(new DelayedTranspose<Value_, Index_>(std::move(matrix)));
 }
 /**
  * @endcond
