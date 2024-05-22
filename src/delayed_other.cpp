@@ -14,12 +14,7 @@ SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row) 
         --x; 
     } 
 
-    if (row) {
-        output->ptr = tatami::make_DelayedSubset<0>(shared, std::move(resub));
-    } else {
-        output->ptr = tatami::make_DelayedSubset<1>(shared, std::move(resub));
-    }
-
+    output->ptr = tatami::make_DelayedSubset(shared, std::move(resub), row);
     return output;
 }
 
@@ -46,12 +41,7 @@ SEXP apply_delayed_bind(Rcpp::List input, bool row) {
     }
 
     auto output = Rtatami::new_BoundNumericMatrix();
-    if (row) {
-        output->ptr = tatami::make_DelayedBind<0>(std::move(collected));
-    } else {
-        output->ptr = tatami::make_DelayedBind<1>(std::move(collected));
-    }
-
+    output->ptr = tatami::make_DelayedBind(std::move(collected), row);
     output->original = protectorate; // propagate protection for all child objects by copying references.
     return output;
 }

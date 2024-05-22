@@ -14,49 +14,49 @@ SEXP apply_delayed_binary_operation(SEXP left_input, SEXP right_input, std::stri
 
     auto output = Rtatami::new_BoundNumericMatrix();
     if (op == "+") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryAddHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricAdd());
 
     } else if (op == "-") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinarySubtractHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricSubtract());
 
     } else if (op == "*") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryMultiplyHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricMultiply());
 
     } else if (op == "/") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryDivideHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricDivide());
 
     } else if (op == "%/%") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryIntegerDivideHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricIntegerDivide());
 
     } else if (op == "^") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryPowerHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricPower());
 
     } else if (op == "%%") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryModuloHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricModulo());
 
     } else if (op == "==") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryEqualHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricEqual());
 
     } else if (op == "!=") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryNotEqualHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricNotEqual());
 
     } else if (op == ">") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryGreaterThanHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricGreaterThan());
 
     } else if (op == "<") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryLessThanHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricLessThan());
 
     } else if (op == ">=") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryGreaterThanOrEqualHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricGreaterThanOrEqual());
 
     } else if (op == "<=") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryLessThanOrEqualHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricLessThanOrEqual());
 
     } else if (op == "&") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryBooleanAndHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricBooleanAnd());
 
     } else if (op == "|") {
-        output->ptr = tatami::make_DelayedBinaryIsometricOp(left_shared, right_shared, tatami::make_DelayedBinaryBooleanOrHelper());
+        output->ptr = tatami::make_DelayedBinaryIsometricOperation(left_shared, right_shared, tatami::make_DelayedBinaryIsometricBooleanOr());
 
     } else {
         throw std::runtime_error("unknown delayed binary operation '" + op + "'");

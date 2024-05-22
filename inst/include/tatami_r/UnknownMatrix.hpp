@@ -3,20 +3,35 @@
 
 #include "Rcpp.h"
 #include "tatami/tatami.hpp"
-#include "SimpleMatrix.hpp"
-#include "SVT_SparseMatrix.hpp"
-#include "COO_SparseMatrix.hpp"
+#include "dense_extractor.hpp"
+#include "sparse_extractor.hpp"
 
 #include <vector>
 #include <memory>
 #include <string>
 #include <stdexcept>
-#include <unordered_map>
-#include <unordered_set>
 
 #include "parallelize.hpp"
 
 namespace tatami_r {
+
+/**
+ * @brief Options for data extraction from an `UnknownMatrix`.
+ */
+struct UnknownMatrixOptions {
+    /**
+     * Size of the cache, in bytes.
+     * If -1, this is determined from `DelayedArray::getAutoBlockSize()`.
+     */
+    size_t maximum_cache_size = -1;
+
+    /**
+     * Whether to automatically enforce a minimum size for the cache, regardless of `maximum_cache_size`.
+     * This minimum is chosen to ensure that all chunks overlapping one row (or a slice/subset thereof) can be retained in memory,
+     * so that the same chunks are not repeatedly re-read from disk when iterating over consecutive rows/columns of the matrix.
+     */
+    bool require_minimum_cache = true;
+};
 
 /**
  * @brief Unknown matrix-like object in R.
@@ -26,23 +41,25 @@ namespace tatami_r {
  *
  * Pull data out of an unknown matrix-like object by calling methods from the [**DelayedArray**](https://bioconductor.org/packages/DelayedArray) package via **Rcpp**.
  * This effectively extends **tatami** to work with any abstract numeric matrix that might be consumed by an R function.
- * Note that this class should only be constructed in a serial context, and some additional effort is required to deal with parallelization of its methods; see `executor()` for more details.
+ * 
+ * Instances of class should only be constructed and destroyed in a serial context, specifically on the same thread running R itself. 
+ * Calls to its methods may be parallelized but some additional effort is required to serialize calls to the R API; see `executor()` for more details.
  */
-template<typename Value_, typename Index_>
+template<typename Value_, typename Index_, typename CachedValue_ = Value_, typename CachedIndex_ = Index_>
 class UnknownMatrix : public tatami::Matrix<Value_, Index_> {
 public:
     /**
-     * @param seed A matrix-like R object.
-     * @param cache Size of the cache, in bytes.
-     * If -1, this is determined from `DelayedArray::getAutoBlockSize()`.
-     *
      * This constructor should only be called in a serial context, as the (default) construction of **Rcpp** objects may call the R API.
+     *
+     * @param seed A matrix-like R object.
+     * @param opt Extraction options.
      */
-    UnknownMatrix(Rcpp::RObject seed, size_t cache = -1) : 
-        original_seed(seed), 
-        delayed_env(Rcpp::Environment::namespace_env("DelayedArray")),
-        dense_extractor(delayed_env["extract_array"]),
-        sparse_extractor(delayed_env["OLD_extract_sparse_array"])
+    UnknownMatrix(Rcpp::RObject seed, const UnknownMatrixOptions& opt) : 
+        my_original_seed(seed), 
+        my_delayed_env(Rcpp::Environment::namespace_env("DelayedArray")),
+        my_sparse_env(Rcpp::Environment::namespace_env("SparseArray")),
+        my_dense_extractor(my_delayed_env["extract_array"]),
+        my_sparse_extractor(my_sparse_env["extract_sparse_array"])
     {
         // We assume the constructor only occurs on the main thread, so we
         // won't bother locking things up. I'm also not sure that the
@@ -53,95 +70,199 @@ public:
             Rcpp::Function fun = base["dim"];
             Rcpp::RObject output = fun(seed);
             if (output.sexp_type() != INTSXP) {
-                auto ctype = get_class_name(original_seed);
+                auto ctype = get_class_name(my_original_seed);
                 throw std::runtime_error("'dim(<" + ctype + ">)' should return an integer vector");
             }
             Rcpp::IntegerVector dims(output);
             if (dims.size() != 2 || dims[0] < 0 || dims[1] < 0) {
-                auto ctype = get_class_name(original_seed);
+                auto ctype = get_class_name(my_original_seed);
                 throw std::runtime_error("'dim(<" + ctype + ">)' should contain two non-negative integers");
             }
 
-            internal_nrow = dims[0];
-            internal_ncol = dims[1];
+            my_nrow = dims[0];
+            my_ncol = dims[1];
         }
 
         {
-            Rcpp::Function fun = delayed_env["is_sparse"];
+            Rcpp::Function fun = my_delayed_env["is_sparse"];
             Rcpp::LogicalVector is_sparse = fun(seed);
             if (is_sparse.size() != 1) {
-                auto ctype = get_class_name(original_seed);
+                auto ctype = get_class_name(my_original_seed);
                 throw std::runtime_error("'is_sparse(<" + ctype + ">)' should return a logical vector of length 1");
             }
-            internal_sparse = (is_sparse[0] != 0);
+            my_sparse = (is_sparse[0] != 0);
         }
 
         {
-            Rcpp::Function fun = delayed_env["chunkdim"];
-            Rcpp::RObject output = fun(seed);
-            if (output == R_NilValue) {
-                chunk_nrow = 1;
-                chunk_ncol = 1;
+            my_row_chunk_map.resize(my_nrow);
+            my_col_chunk_map.resize(my_ncol);
+
+            Rcpp::Function fun = my_delayed_env["chunkGrid"];
+            Rcpp::RObject grid = fun(seed);
+
+            if (grid == R_NilValue) {
+                my_row_max_chunk_size = 1;
+                my_col_max_chunk_size = 1;
+                std::iota(my_row_chunk_map.begin(), my_row_chunk_map.end(), static_cast<Index_>(0));
+                std::iota(my_col_chunk_map.begin(), my_col_chunk_map.end(), static_cast<Index_>(0));
+                my_row_chunk_ticks.resize(my_nrow + 1);
+                std::iota(my_row_chunk_ticks.begin(), my_row_chunk_ticks.end(), static_cast<Index_>(0));
+                my_col_chunk_ticks.resize(my_ncol + 1);
+                std::iota(my_col_chunk_ticks.begin(), my_col_chunk_ticks.end(), static_cast<Index_>(0));
+
+                // Both dense and sparse inputs are implicitly column-major, so
+                // if there isn't chunking information to the contrary, we'll
+                // favor extraction of the columns.
+                my_prefer_rows = false;
+
             } else {
-                Rcpp::IntegerVector chunks(output);
-                if (chunks.size() != 2 || chunks[0] < 0 || chunks[1] < 0) {
-                    auto ctype = get_class_name(original_seed);
-                    throw std::runtime_error("'chunkdim(<" + ctype + ">)' should return two non-negative integers");
+                auto grid_cls = get_class_name(grid);
+
+                if (grid_cls == "RegularArrayGrid") {
+                    Rcpp::IntegerVector spacings(Rcpp::RObject(grid.slot("spacings")));
+                    if (spacings.size() != 2) {
+                        auto ctype = get_class_name(seed);
+                        throw std::runtime_error("'chunkGrid(<" + ctype + ">)@spacings' should be an integer vector of length 2 with non-negative values");
+                    }
+
+                    auto populate = [](Index_ extent, Index_ spacing, std::vector<Index_>& map, std::vector<Index_>& ticks) {
+                        if (spacing == 0) {
+                            ticks.push_back(0);
+                        } else {
+                            ticks.reserve((extent / spacing) + (extent % spacing > 0) + 1);
+                            Index_ start = 0;
+                            ticks.push_back(start);
+                            while (start != extent) {
+                                auto to_fill = std::min(spacing, extent - start);
+                                std::fill_n(map.begin() + start, to_fill, ticks.size() - 1);
+                                start += to_fill;
+                                ticks.push_back(start);
+                            }
+                        }
+                    };
+
+                    my_row_max_chunk_size = spacings[0];
+                    populate(my_nrow, my_row_max_chunk_size, my_row_chunk_map, my_row_chunk_ticks);
+                    my_col_max_chunk_size = spacings[1];
+                    populate(my_ncol, my_col_max_chunk_size, my_col_chunk_map, my_col_chunk_ticks);
+
+                } else if (grid_cls == "ArbitraryArrayGrid") {
+                    Rcpp::List ticks(Rcpp::RObject(grid.slot("tickmarks")));
+                    if (ticks.size() != 2) {
+                        auto ctype = get_class_name(seed);
+                        throw std::runtime_error("'chunkGrid(<" + ctype + ">)@tickmarks' should return a list of length 2");
+                    }
+
+                    auto populate = [](Index_ extent, const Rcpp::IntegerVector& ticks, std::vector<Index_>& map, std::vector<Index_>& new_ticks, Index_& max_chunk_size) {
+                        if (ticks.size() == 0 || ticks[ticks.size() - 1] != static_cast<int>(extent)) {
+                            throw std::runtime_error("invalid ticks returned by 'chunkGrid'");
+                        }
+                        new_ticks.resize(ticks.size() + 1);
+                        std::copy(ticks.begin(), ticks.end(), new_ticks.begin() + 1);
+
+                        max_chunk_size = 0;
+                        int start = 0;
+                        map.resize(extent);
+                        Index_ counter = 0;
+
+                        for (auto t : ticks) {
+                            if (t < start) {
+                                throw std::runtime_error("invalid ticks returned by 'chunkGrid'");
+                            }
+                            Index_ to_fill = t - start;
+                            if (to_fill > max_chunk_size) {
+                                max_chunk_size = to_fill;
+                            }
+                            std::fill_n(map.begin() + start, to_fill, counter);
+                            ++counter;
+                            start = t;
+                        }
+                    };
+
+                    Rcpp::IntegerVector first(ticks[0]);
+                    populate(my_nrow, first, my_row_chunk_map, my_row_chunk_ticks, my_row_max_chunk_size);
+                    Rcpp::IntegerVector second(ticks[1]);
+                    populate(my_ncol, second, my_col_chunk_map, my_col_chunk_ticks, my_col_max_chunk_size);
+
+                } else {
+                    auto ctype = get_class_name(seed);
+                    throw std::runtime_error("instance of unknown class '" + grid_cls + "' returned by 'chunkGrid(<" + ctype + ">)");
                 }
-                chunk_nrow = chunks[0];
-                chunk_ncol = chunks[1];
+
+                // Choose the dimension that requires pulling out fewer chunks.
+                auto chunks_per_row = my_col_chunk_ticks.size() - 1;
+                auto chunks_per_col = my_row_chunk_ticks.size() - 1;
+                my_prefer_rows = chunks_per_row <= chunks_per_col;
             }
         }
 
-        cache_size = cache;
-        if (cache_size == static_cast<size_t>(-1)) {
-            Rcpp::Function fun = delayed_env["getAutoBlockSize"];
-            Rcpp::NumericVector output = fun();
-            if (output.size() != 1 || output[0] < 0) {
+        my_cache_size_in_bytes = opt.maximum_cache_size;
+        my_require_minimum_cache = opt.require_minimum_cache;
+        if (my_cache_size_in_bytes == static_cast<size_t>(-1)) {
+            Rcpp::Function fun = my_delayed_env["getAutoBlockSize"];
+            Rcpp::NumericVector bsize = fun();
+            if (bsize.size() != 1 || bsize[0] < 0) {
                 throw std::runtime_error("'getAutoBlockSize()' should return a non-negative number of bytes");
             }
-            cache_size = output[0];
+            my_cache_size_in_bytes = bsize[0];
         }
-
-        auto chunks_per_row = static_cast<double>(internal_ncol) / chunk_ncol;
-        auto chunks_per_col = static_cast<double>(internal_nrow) / chunk_nrow;
-        internal_prefer_rows = chunks_per_row <= chunks_per_col;
     }
 
+    /**
+     * This constructor overload uses the default `Options()`.
+     * Again, it should only be called in a serial context, as the (default) construction of **Rcpp** objects may call the R API.
+     *
+     * @param seed A matrix-like R object.
+     */
+    UnknownMatrix(Rcpp::RObject seed) : UnknownMatrix(std::move(seed), UnknownMatrixOptions()) {}
+
 private:
-    Index_ internal_nrow, internal_ncol;
-    bool internal_sparse, internal_prefer_rows;
+    Index_ my_nrow, my_ncol;
+    bool my_sparse, my_prefer_rows;
 
-    size_t cache_size;
-    Index_ chunk_nrow, chunk_ncol;
+    std::vector<Index_> my_row_chunk_map, my_col_chunk_map;
+    std::vector<Index_> my_row_chunk_ticks, my_col_chunk_ticks;
 
-    Rcpp::RObject original_seed;
-    Rcpp::Environment delayed_env; 
-    Rcpp::Function dense_extractor, sparse_extractor;
+    // To decide how many chunks to store in the cache, we pretend the largest
+    // chunk is a good representative. This is a bit suboptimal for irregular
+    // chunks but the LruSlabCache class doesn't have a good way of dealing
+    // with this right now. The fundamental problem is that variable slabs will
+    // either (i) all reach the maximum allocation eventually, if slabs are
+    // reused, or (ii) require lots of allocations, if slabs are not reused, or
+    // (iii) require manual defragmentation, if slabs are reused in a manner
+    // that avoids inflation to the maximum allocation.
+    Index_ my_row_max_chunk_size, my_col_max_chunk_size;
+
+    size_t my_cache_size_in_bytes;
+    bool my_require_minimum_cache;
+
+    Rcpp::RObject my_original_seed;
+    Rcpp::Environment my_delayed_env, my_sparse_env;
+    Rcpp::Function my_dense_extractor, my_sparse_extractor;
 
 public:
     Index_ nrow() const {
-        return internal_nrow;
+        return my_nrow;
     }
 
     Index_ ncol() const {
-        return internal_ncol;
+        return my_ncol;
     }
 
-    bool sparse() const {
-        return internal_sparse;
+    bool is_sparse() const {
+        return my_sparse;
     }
 
-    double sparse_proportion() const {
-        return static_cast<double>(internal_sparse);
+    double is_sparse_proportion() const {
+        return static_cast<double>(my_sparse);
     }
 
     bool prefer_rows() const {
-        return internal_prefer_rows;
+        return my_prefer_rows;
     }
 
     double prefer_rows_proportion() const {
-        return static_cast<double>(internal_prefer_rows);
+        return static_cast<double>(my_prefer_rows);
     }
 
     bool uses_oracle(bool) const {
@@ -149,476 +270,251 @@ public:
     }
 
 private:
-    template<bool sparse_>
-    struct Workspace {
-        Workspace(Index_ full) {
-            secondary_indices = R_NilValue;
-            secondary_len = full;
+    Index_ max_primary_chunk_length(bool row) const {
+        return (row ? my_row_max_chunk_size : my_col_max_chunk_size);
+    }
+
+    Index_ secondary_dim(bool row) const {
+        return (row ? my_ncol : my_nrow);
+    }
+
+    const std::vector<Index_>& chunk_ticks(bool row) const {
+        if (row) {
+            return my_row_chunk_ticks;
+        } else {
+            return my_col_chunk_ticks;
         }
+    }
 
-        Workspace(Index_ start, Index_ length) {
-            secondary_indices = create_consecutive_indices(start, length);
-            secondary_len = length;
+    const std::vector<Index_>& chunk_map(bool row) const {
+        if (row) {
+            return my_row_chunk_map;
+        } else {
+            return my_col_chunk_map;
         }
+    }
 
-        Workspace(const std::vector<Index_>& indices) {
-            Rcpp::IntegerVector temp(indices.begin(), indices.end());
-            for (auto& x : temp) { ++x; } // 1-based
-            secondary_indices = temp;
-            secondary_len = indices.size();
-        }
-
-    public:
-        Rcpp::RObject secondary_indices;
-        Index_ secondary_len;
-
-        std::shared_ptr<tatami::Matrix<Value_, Index_> > buffer;
-        std::shared_ptr<tatami::Extractor<tatami::DimensionSelectionType::FULL, sparse_, Value_, Index_> > bufextractor;
-        Rcpp::RObject contents;
-
-        // We define the number of chunks in the extracted block,
-        // as well as the size of the extracted block itself.
-        size_t max_block_size_in_chunks;
-        size_t max_block_size_in_elements;
-
-        // No oracle, we just go for blocks.
-        Index_ primary_block_start, primary_block_len;
-
-        // With an oracle, we try to make some better decisions.
-        tatami::OracleStream<Index_> prediction_stream;
-        std::unordered_map<Index_, Index_> mapping;
-        std::unordered_set<Index_> used_chunks;
-        std::vector<Index_> unique_predictions;
-        size_t predictions_used = 0, predictions_made = 0;
-    };
-
+    /********************
+     *** Myopic dense ***
+     ********************/
 private:
-    static std::pair<Index_, Index_> round_indices(Index_ i, Index_ interval, Index_ max) {
-        Index_ new_first = (i / interval) * interval;
-        Index_ new_last = std::min(max, new_first + interval);
-        return std::make_pair(new_first, new_last - new_first);
-    }
+    template<
+        bool oracle_, 
+        template <bool, bool, typename, typename, typename> class FromDense_,
+        template <bool, bool, typename, typename, typename, typename> class FromSparse_,
+        typename ... Args_
+    >
+    std::unique_ptr<tatami::DenseExtractor<oracle_, Value_, Index_> > populate_dense_internal(bool row, Index_ non_target_length, tatami::MaybeOracle<oracle_, Index_> oracle, Args_&& ... args) const {
+        std::unique_ptr<tatami::DenseExtractor<oracle_, Value_, Index_> > output;
 
-    static Rcpp::IntegerVector create_consecutive_indices(Index_ start, Index_ length) {
-        Rcpp::IntegerVector out(length);
-        std::iota(out.begin(), out.end(), start + 1); // 1-based
-        return out;
-    }
+        Index_ max_target_chunk_length = max_primary_chunk_length(row);
+        tatami_chunked::SlabCacheStats stats(max_target_chunk_length, non_target_length, my_cache_size_in_bytes, sizeof(CachedValue_), my_require_minimum_cache);
 
-    template<bool byrow_, bool sparse_>
-    Rcpp::List create_rounded_indices(Index_ i, Workspace<sparse_>* work) const {
-        Rcpp::List indices(2);
-        if constexpr(byrow_) {
-            auto row_rounded = round_indices(i, work->max_block_size_in_elements, internal_nrow);
-            work->primary_block_start = row_rounded.first;
-            work->primary_block_len = row_rounded.second;
-            indices[0] = create_consecutive_indices(row_rounded.first, row_rounded.second);
-            indices[1] = work->secondary_indices;
-        } else {
-            auto col_rounded = round_indices(i, work->max_block_size_in_elements, internal_ncol);
-            work->primary_block_start = col_rounded.first;
-            work->primary_block_len = col_rounded.second;
-            indices[0] = work->secondary_indices;
-            indices[1] = create_consecutive_indices(col_rounded.first, col_rounded.second);
-        }
-        return indices;
-    }
+        const auto& map = chunk_map(row);
+        const auto& ticks = chunk_ticks(row);
+        bool solo = (stats.max_slabs_in_cache == 0);
 
-    template<bool byrow_>
-    Index_ chunk_dim() const {
-        if constexpr(byrow_) {
-            return chunk_nrow;
-        } else {
-            return chunk_ncol;
-        }
-    }
-
-    template<bool byrow_, bool sparse_>
-    Rcpp::List create_next_indices(Workspace<sparse_>* work) const {
-        auto& up = work->unique_predictions;
-        auto& map = work->mapping;
-        auto& used = work->used_chunks;
-        up.clear();
-        map.clear();
-        used.clear();
-
-        auto& stream = work->prediction_stream;
-        work->predictions_used = 0;
-        auto& made = work->predictions_made;
-        made = 0;
-        size_t max_predictions = work->max_block_size_in_elements * 10;
-        auto cdim = chunk_dim<byrow_>();
-
-        for (size_t i = 0; i < max_predictions; ++i) {
-            Index_ current;
-            if (!stream.next(current)) {
-                break;
-            }
-
-            auto it = map.find(current);
-            if (it == map.end()) {
-                // If the chunking is non-trivial, we quit when the cached
-                // number of chunks is reached. This is equivalent to only
-                // loading an element from a chunk if we're sure that we can
-                // cache the entire chunk (even if we don't actually load the
-                // entire chunk), so as to avoid running out of space halfway
-                // through the chunk and requiring another read of the same
-                // chunk in the next set of predictions.
-                if (cdim > 1) {
-                    Index_ chunk = current / cdim;
-                    auto uIt = used.find(chunk);
-                    if (uIt == used.end()) {
-                        if (used.size() == work->max_block_size_in_chunks) {
-                            stream.back();
-                            break;
-                        }
-                        used.insert(chunk);
-                    }
-
-                } else if (map.size() == work->max_block_size_in_elements) {
-                    stream.back();
-                    break;                    
-                }
-
-                map[current] = up.size();
-                up.push_back(current);
-            }
-
-            ++made;
-        }
-
-        // Creating sorted, 1-based indices to use in the DelayedArray extractors.
-        if (!std::is_sorted(up.begin(), up.end())) {
-            std::sort(up.begin(), up.end());
-            Index_ counter = 0;
-            for (auto x : up) {
-                map[x] = counter;
-                ++counter;
-            }
-        }
-
-        Rcpp::IntegerVector primary_indices(up.begin(), up.end());
-        for (auto& x : primary_indices) { 
-            ++x;
-        }
-        work->primary_block_len = primary_indices.size();
-
-        Rcpp::List indices(2);
-        if constexpr(byrow_) {
-            indices[0] = std::move(primary_indices);
-            indices[1] = work->secondary_indices;
-        } else {
-            indices[0] = work->secondary_indices;
-            indices[1] = std::move(primary_indices);
-        }
-        return indices;
-    }
-
-    template<bool byrow_, bool sparse_, bool sparse_err = sparse_>
-    void check_buffered_dims(const tatami::Matrix<Value_, Index_>* parsed, const Workspace<sparse_>* work) const {
-        Index_ parsed_primary = (byrow_ ? parsed->nrow() : parsed->ncol());
-        Index_ parsed_secondary = (byrow_ ? parsed->ncol() : parsed->nrow());
-
-        if (parsed_primary != work->primary_block_len || parsed_secondary != work->secondary_len) {
-            auto ctype = get_class_name(original_seed);
-            throw std::runtime_error("'" + 
-                (sparse_err ? std::string("OLD_extract_sparse_array") : std::string("extract_array")) + 
-                "(<" + ctype + ">)' returns incorrect dimensions");
-        }
-    }
-
-    template<bool sparse_>
-    static bool needs_reset(Index_ i, const Workspace<sparse_>* work) {
-        if (work->buffer != nullptr) {
-            if (i >= work->primary_block_start && i < work->primary_block_start + work->primary_block_len) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-private:
-    template<bool byrow_, class Function_>
-    void run_dense_extractor(Index_ i, const tatami::Options& options, Workspace<false>* work, Function_ index_creator) const {
 #ifdef TATAMI_R_PARALLELIZE_UNKNOWN 
         // This involves some Rcpp initializations, so we lock it just in case.
         auto& mexec = executor();
         mexec.run([&]() -> void {
 #endif
 
-        auto indices = index_creator(i, work);
-        Rcpp::RObject val0 = dense_extractor(original_seed, indices);
-        auto parsed = parse_simple_matrix<Value_, Index_>(val0);
-        work->contents = std::move(parsed.contents);
-        work->buffer = std::move(parsed.matrix);
+        if (!my_sparse) {
+            if (solo) {
+                typedef FromDense_<true, oracle_, Value_, Index_, CachedValue_> ShortDense;
+                output.reset(new ShortDense(my_original_seed, my_dense_extractor, row, std::move(oracle), std::forward<Args_>(args)..., ticks, map, stats));
+            } else {
+                typedef FromDense_<false, oracle_, Value_, Index_, CachedValue_> ShortDense;
+                output.reset(new ShortDense(my_original_seed, my_dense_extractor, row, std::move(oracle), std::forward<Args_>(args)..., ticks, map, stats));
+            }
+        } else {
+            if (solo) {
+                typedef FromSparse_<true, oracle_, Value_, Index_, CachedValue_, CachedIndex_> ShortSparse;
+                output.reset(new ShortSparse(my_original_seed, my_sparse_extractor, row, std::move(oracle), std::forward<Args_>(args)..., max_target_chunk_length, ticks, map, stats));
+            } else {
+                typedef FromSparse_<false, oracle_, Value_, Index_, CachedValue_, CachedIndex_> ShortSparse;
+                output.reset(new ShortSparse(my_original_seed, my_sparse_extractor, row, std::move(oracle), std::forward<Args_>(args)..., max_target_chunk_length, ticks, map, stats));
+            }
+        }
 
 #ifdef TATAMI_R_PARALLELIZE_UNKNOWN 
         });
 #endif
 
-        check_buffered_dims<byrow_, false>(work->buffer.get(), work);
-        work->bufextractor = tatami::new_extractor<byrow_, false>(work->buffer.get(), options);
+        return output;
     }
 
-    template<bool byrow_>
-    const Value_* run_dense_extractor(Index_ i, Value_* buffer, const tatami::Options& options, Workspace<false>* work) const {
-        if (work->prediction_stream.active()) {
-            if (work->predictions_used == work->predictions_made) {
-                run_dense_extractor<byrow_>(i, options, work, [&](Index_, Workspace<false>* work2) -> Rcpp::List { 
-                    return this->create_next_indices<byrow_>(work2);
-                });
-            }
-            i = work->mapping.find(i)->second;
-            ++work->predictions_used;
-
-        } else {
-            if (needs_reset(i, work)) {
-                run_dense_extractor<byrow_>(i, options, work, [&](Index_ i2, Workspace<false>* work2) -> Rcpp::List { 
-                    return this->create_rounded_indices<byrow_>(i2, work2);
-                });
-            }
-            i -= work->primary_block_start;
-        }
-
-        // Forcing a copy to avoid a possible reference to a transient buffer inside 'work->buffer'.
-        return work->bufextractor->fetch_copy(i, buffer);
+    template<bool oracle_>
+    std::unique_ptr<tatami::DenseExtractor<oracle_, Value_, Index_> > populate_dense(bool row, tatami::MaybeOracle<oracle_, Index_> ora, const tatami::Options&) const {
+        Index_ non_target_dim = secondary_dim(row);
+        return populate_dense_internal<oracle_, UnknownMatrix_internal::DenseFull, UnknownMatrix_internal::DensifiedSparseFull>(row, non_target_dim, std::move(ora), non_target_dim);
     }
 
-    template<bool byrow_, class Function_>
-    void run_sparse_extractor(Index_ i, const tatami::Options& options, Workspace<true>* work, Function_ index_creator) const {
+    template<bool oracle_>
+    std::unique_ptr<tatami::DenseExtractor<oracle_, Value_, Index_> > populate_dense(bool row, tatami::MaybeOracle<oracle_, Index_> ora, Index_ block_start, Index_ block_length, const tatami::Options&) const {
+        return populate_dense_internal<oracle_, UnknownMatrix_internal::DenseBlock, UnknownMatrix_internal::DensifiedSparseBlock>(row, block_length, std::move(ora), block_start, block_length);
+    }
+
+    template<bool oracle_>
+    std::unique_ptr<tatami::DenseExtractor<oracle_, Value_, Index_> > populate_dense(bool row, tatami::MaybeOracle<oracle_, Index_> ora, tatami::VectorPtr<Index_> indices_ptr, const tatami::Options&) const {
+        Index_ nidx = indices_ptr->size();
+        return populate_dense_internal<oracle_, UnknownMatrix_internal::DenseIndexed, UnknownMatrix_internal::DensifiedSparseIndexed>(row, nidx, std::move(ora), std::move(indices_ptr));
+    }
+
+public:
+    std::unique_ptr<tatami::MyopicDenseExtractor<Value_, Index_> > dense(bool row, const tatami::Options& opt) const {
+        return populate_dense<false>(row, false, opt); 
+    }
+
+    std::unique_ptr<tatami::MyopicDenseExtractor<Value_, Index_> > dense(bool row, Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
+        return populate_dense<false>(row, false, block_start, block_length, opt); 
+    }
+
+    std::unique_ptr<tatami::MyopicDenseExtractor<Value_, Index_> > dense(bool row, tatami::VectorPtr<Index_> indices_ptr, const tatami::Options& opt) const {
+        return populate_dense<false>(row, false, std::move(indices_ptr), opt); 
+    }
+
+    /**********************
+     *** Oracular dense ***
+     **********************/
+public:
+    std::unique_ptr<tatami::OracularDenseExtractor<Value_, Index_> > dense(bool row, std::shared_ptr<const tatami::Oracle<Index_> > ora, const tatami::Options& opt) const {
+        return populate_dense<true>(row, std::move(ora), opt); 
+    }
+
+    std::unique_ptr<tatami::OracularDenseExtractor<Value_, Index_> > dense(bool row, std::shared_ptr<const tatami::Oracle<Index_> > ora, Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
+        return populate_dense<true>(row, std::move(ora), block_start, block_length, opt); 
+    }
+
+    std::unique_ptr<tatami::OracularDenseExtractor<Value_, Index_> > dense(bool row, std::shared_ptr<const tatami::Oracle<Index_> > ora, tatami::VectorPtr<Index_> indices_ptr, const tatami::Options& opt) const {
+        return populate_dense<true>(row, std::move(ora), std::move(indices_ptr), opt); 
+    }
+
+    /*********************
+     *** Myopic sparse ***
+     *********************/
+public:
+    template<
+        bool oracle_, 
+        template<bool, bool, typename, typename, typename, typename> class FromSparse_,
+        typename ... Args_
+    >
+    std::unique_ptr<tatami::SparseExtractor<oracle_, Value_, Index_> > populate_sparse_internal(
+        bool row,
+        Index_ non_target_length, 
+        tatami::MaybeOracle<oracle_, Index_> oracle, 
+        const tatami::Options& opt, 
+        Args_&& ... args) 
+    const {
+        std::unique_ptr<tatami::SparseExtractor<oracle_, Value_, Index_> > output;
+
+        Index_ max_target_chunk_length = max_primary_chunk_length(row);
+        tatami_chunked::SlabCacheStats stats(
+            max_target_chunk_length,
+            non_target_length, 
+            my_cache_size_in_bytes, 
+            (opt.sparse_extract_index ? sizeof(CachedIndex_) : 0) + (opt.sparse_extract_value ? sizeof(CachedValue_) : 0),
+            my_require_minimum_cache
+        );
+
+        const auto& map = chunk_map(row);
+        const auto& ticks = chunk_ticks(row);
+        bool needs_value = opt.sparse_extract_value;
+        bool needs_index = opt.sparse_extract_index;
+        bool solo = stats.max_slabs_in_cache == 0;
+
 #ifdef TATAMI_R_PARALLELIZE_UNKNOWN 
         // This involves some Rcpp initializations, so we lock it just in case.
         auto& mexec = executor();
         mexec.run([&]() -> void {
 #endif
 
-        auto indices = index_creator(i, work);
-
-        if (internal_sparse) {
-            auto val0 = sparse_extractor(original_seed, indices);
-
-            auto ctype = get_class_name(val0);
-            Parsed<Value_, Index_> parsed;
-            if (ctype == "SVT_SparseMatrix") {
-                parsed = parse_SVT_SparseMatrix<Value_, Index_>(val0);
-            } else if (ctype == "COO_SparseMatrix") {
-                parsed = parse_COO_SparseMatrix<Value_, Index_>(val0, byrow_);
-            } else if (ctype == "SparseArraySeed") {
-                parsed = parse_COO_SparseMatrix<Value_, Index_>(val0, byrow_, /* legacy */ true);
-            } else {
-                throw std::runtime_error("unknown class '" + ctype + "' returned from 'OLD_extract_sparse_array()'");
-            }
-            check_buffered_dims<byrow_, true, true>(parsed.matrix.get(), work);
-
-            work->buffer = std::move(parsed.matrix);
-            work->contents = std::move(parsed.contents);
+        if (solo) {
+            typedef FromSparse_<true, oracle_, Value_, Index_, CachedValue_, CachedIndex_> ShortSparse;
+            output.reset(new ShortSparse(my_original_seed, my_sparse_extractor, row, std::move(oracle), std::forward<Args_>(args)..., max_target_chunk_length, ticks, map, stats, needs_value, needs_index));
         } else {
-            auto val0 = dense_extractor(original_seed, indices);
-            auto parsed = parse_simple_matrix<Value_, Index_>(val0);
-            check_buffered_dims<byrow_, true, false>(parsed.matrix.get(), work);
-
-            work->buffer = std::move(parsed.matrix);
-            work->contents = std::move(parsed.contents);
+            typedef FromSparse_<false, oracle_, Value_, Index_, CachedValue_, CachedIndex_> ShortSparse;
+            output.reset(new ShortSparse(my_original_seed, my_sparse_extractor, row, std::move(oracle), std::forward<Args_>(args)..., max_target_chunk_length, ticks, map, stats, needs_value, needs_index));
         }
 
 #ifdef TATAMI_R_PARALLELIZE_UNKNOWN 
         });
 #endif
 
-        work->bufextractor = tatami::new_extractor<byrow_, true>(work->buffer.get(), options);
+        return output;
     }
 
-    template<bool byrow_>
-    tatami::SparseRange<Value_, Index_> run_sparse_extractor(Index_ i, Value_* vbuffer, Index_* ibuffer, const tatami::Options& options, Workspace<true>* work) const {
-        if (work->prediction_stream.active()) {
-            if (work->predictions_used == work->predictions_made) {
-                run_sparse_extractor<byrow_>(i, options, work, [&](Index_, Workspace<true>* work2) -> Rcpp::List { 
-                    return this->create_next_indices<byrow_>(work2);
-                });
-            }
-            i = work->mapping.find(i)->second;
-            ++work->predictions_used;
+    template<bool oracle_>
+    std::unique_ptr<tatami::SparseExtractor<oracle_, Value_, Index_> > populate_sparse(bool row, tatami::MaybeOracle<oracle_, Index_> ora, const tatami::Options& opt) const {
+        Index_ non_target_dim = secondary_dim(row);
+        return populate_sparse_internal<oracle_, UnknownMatrix_internal::SparseFull>(row, non_target_dim, std::move(ora), opt, non_target_dim); 
+    }
 
+    template<bool oracle_>
+    std::unique_ptr<tatami::SparseExtractor<oracle_, Value_, Index_> > populate_sparse(bool row, tatami::MaybeOracle<oracle_, Index_> ora, Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
+        return populate_sparse_internal<oracle_, UnknownMatrix_internal::SparseBlock>(row, block_length, std::move(ora), opt, block_start, block_length);
+    }
+
+    template<bool oracle_>
+    std::unique_ptr<tatami::SparseExtractor<oracle_, Value_, Index_> > populate_sparse(bool row, tatami::MaybeOracle<oracle_, Index_> ora, tatami::VectorPtr<Index_> indices_ptr, const tatami::Options& opt) const {
+        Index_ nidx = indices_ptr->size();
+        return populate_sparse_internal<oracle_, UnknownMatrix_internal::SparseIndexed>(row, nidx, std::move(ora), opt, std::move(indices_ptr));
+    }
+
+public:
+    std::unique_ptr<tatami::MyopicSparseExtractor<Value_, Index_> > sparse(bool row, const tatami::Options& opt) const {
+        if (!my_sparse) {
+            return std::make_unique<tatami::FullSparsifiedWrapper<false, Value_, Index_> >(dense(row, opt), secondary_dim(row), opt);
         } else {
-            if (needs_reset(i, work)) {
-                run_sparse_extractor<byrow_>(i, options, work, [&](Index_ i2, Workspace<true>* work2) -> Rcpp::List { 
-                    return this->create_rounded_indices<byrow_>(i2, work2);
-                });
-            }
-            i -= work->primary_block_start;
+            return populate_sparse<false>(row, false, opt); 
         }
-
-        // Forcing a copy to avoid a possible reference to a transient buffer inside 'work->buffer'.
-        return work->bufextractor->fetch_copy(i, vbuffer, ibuffer);
     }
 
-private:
-    template<bool byrow_, tatami::DimensionSelectionType selection_, bool sparse_>
-    struct UnknownExtractor : public tatami::Extractor<selection_, sparse_, Value_, Index_> {
-        template<typename ... Args_>
-        static auto setup_workspace(Args_&&... args) {
-            Workspace<sparse_>* tmp;
-
-#ifdef TATAMI_R_PARALLELIZE_UNKNOWN 
-            // This involves some Rcpp initializations, so we lock it just in case.
-            auto& mexec = executor();
-            mexec.run([&]() -> void {
-#endif
-            tmp = new Workspace<sparse_>(std::forward<Args_>(args)...);
-#ifdef TATAMI_R_PARALLELIZE_UNKNOWN 
-            });
-#endif
-
-            return tmp;
+    std::unique_ptr<tatami::MyopicSparseExtractor<Value_, Index_> > sparse(bool row, Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
+        if (!my_sparse) {
+            return std::make_unique<tatami::BlockSparsifiedWrapper<false, Value_, Index_> >(dense(row, block_start, block_length, opt), block_start, block_length, opt);
+        } else {
+            return populate_sparse<false>(row, false, block_start, block_length, opt); 
         }
+    }
 
-        static void define_block_size(const UnknownMatrix<Value_, Index_>* parent, Index_ len, Workspace<sparse_>& work) {
-            double cache_elements = static_cast<double>(parent->cache_size) / (static_cast<double>(len) * static_cast<double>(sizeof(Value_)));
-            auto chunk_dim = parent->template chunk_dim<byrow_>();
-            work.max_block_size_in_chunks = std::max(1.0, std::floor(cache_elements / chunk_dim));
-            work.max_block_size_in_elements = work.max_block_size_in_chunks * chunk_dim;
+    std::unique_ptr<tatami::MyopicSparseExtractor<Value_, Index_> > sparse(bool row, tatami::VectorPtr<Index_> indices_ptr, const tatami::Options& opt) const {
+        if (!my_sparse) {
+            auto index_copy = indices_ptr;
+            return std::make_unique<tatami::IndexSparsifiedWrapper<false, Value_, Index_> >(dense(row, std::move(indices_ptr), opt), std::move(index_copy), opt);
+        } else {
+            return populate_sparse<false>(row, false, std::move(indices_ptr), opt); 
         }
+    }
 
-        UnknownExtractor(const UnknownMatrix<Value_, Index_>* p) : parent(p) { 
-            if constexpr(selection_ == tatami::DimensionSelectionType::FULL) {
-                this->full_length = byrow_ ? p->internal_ncol : p->internal_nrow;
-                work.reset(setup_workspace(this->full_length));
-                define_block_size(parent, this->full_length, *work);
-            }
-        }
-
-        UnknownExtractor(const UnknownMatrix<Value_, Index_>* p, Index_ start, Index_ length) : parent(p) {
-            if constexpr(selection_ == tatami::DimensionSelectionType::BLOCK) {
-                this->block_start = start;
-                this->block_length = length;
-                work.reset(setup_workspace(start, length));
-                define_block_size(parent, this->block_length, *work);
-            }
-        }
-
-        UnknownExtractor(const UnknownMatrix<Value_, Index_>* p, std::vector<Index_> idx) : parent(p) {
-            if constexpr(selection_ == tatami::DimensionSelectionType::INDEX) {
-                indices = std::move(idx);
-                this->index_length = indices.size();
-                work.reset(setup_workspace(indices));
-                define_block_size(parent, this->index_length, *work);
-            }
-        }
-
-        const Index_* index_start() const {
-            if constexpr(selection_ == tatami::DimensionSelectionType::INDEX) {
-                return indices.data();
-            } else {
-                return NULL;
-            }
-        }
-
-        void set_oracle(std::unique_ptr<tatami::Oracle<Index_> > o) {
-            work->prediction_stream.set(std::move(o));
-            return;
-        }
-
-    protected:
-        const UnknownMatrix<Value_, Index_>* parent;
-        std::unique_ptr<Workspace<sparse_> > work;
-        typename std::conditional<selection_ == tatami::DimensionSelectionType::INDEX, std::vector<Index_>, bool>::type indices;
-    };
-
-private:
-    template<bool byrow_, tatami::DimensionSelectionType selection_>
-    struct DenseUnknownExtractor : public UnknownExtractor<byrow_, selection_, false> {
-        template<typename ... Args_>
-        DenseUnknownExtractor(const UnknownMatrix<Value_, Index_>* p, tatami::Options opt, Args_&&... args) : 
-            UnknownExtractor<byrow_, selection_, false>(p, std::forward<Args_>(args)...), options(std::move(opt)) {}
-
-        const Value_* fetch(Index_ i, Value_* buffer) {
-            return this->parent->template run_dense_extractor<byrow_>(i, buffer, options, this->work.get());
-        }
-
-    private:
-        tatami::Options options;
-    };
-
-private:
-    template<bool byrow_, tatami::DimensionSelectionType selection_>
-    struct SparseUnknownExtractor : public UnknownExtractor<byrow_, selection_, true> {
-        template<typename ... Args_>
-        SparseUnknownExtractor(const UnknownMatrix<Value_, Index_>* p, tatami::Options opt, Args_&&... args) : 
-            UnknownExtractor<byrow_, selection_, true>(p, std::forward<Args_>(args)...), options(std::move(opt)) {}
-
-        tatami::SparseRange<Value_, Index_> fetch(Index_ i, Value_* vbuffer, Index_* ibuffer) {
-            auto output = this->parent->template run_sparse_extractor<byrow_>(i, vbuffer, ibuffer, options, this->work.get());
-
-            // Need to adjust the indices.
-            if (output.index) {
-                if constexpr(selection_ == tatami::DimensionSelectionType::BLOCK) {
-                    for (Index_ i = 0; i < output.number; ++i) {
-                        ibuffer[i] = output.index[i] + this->block_start;
-                    }
-                    output.index = ibuffer;
-                } else if constexpr(selection_ == tatami::DimensionSelectionType::INDEX) {
-                    for (Index_ i = 0; i < output.number; ++i) {
-                        ibuffer[i] = this->indices[output.index[i]];
-                    }
-                    output.index = ibuffer;
-                }
-            }
-
-            return output;
-        }
-
-    private:
-        tatami::Options options;
-    };
-
+    /**********************
+     *** Oracular sparse ***
+     **********************/
 public:
-    std::unique_ptr<tatami::FullDenseExtractor<Value_, Index_> > dense_row(const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::FullDenseExtractor<Value_, Index_> >(new DenseUnknownExtractor<true, tatami::DimensionSelectionType::FULL>(this, opt));
+    std::unique_ptr<tatami::OracularSparseExtractor<Value_, Index_> > sparse(bool row, std::shared_ptr<const tatami::Oracle<Index_> > ora, const tatami::Options& opt) const {
+        if (!my_sparse) {
+            return std::make_unique<tatami::FullSparsifiedWrapper<true, Value_, Index_> >(dense(row, std::move(ora), opt), secondary_dim(row), opt);
+        } else {
+            return populate_sparse<true>(row, std::move(ora), opt); 
+        }
     }
 
-    std::unique_ptr<tatami::BlockDenseExtractor<Value_, Index_> > dense_row(Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::BlockDenseExtractor<Value_, Index_> >(new DenseUnknownExtractor<true, tatami::DimensionSelectionType::BLOCK>(this, opt, block_start, block_length));
+    std::unique_ptr<tatami::OracularSparseExtractor<Value_, Index_> > sparse(bool row, std::shared_ptr<const tatami::Oracle<Index_> > ora, Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
+        if (!my_sparse) {
+            return std::make_unique<tatami::BlockSparsifiedWrapper<true, Value_, Index_> >(dense(row, std::move(ora), block_start, block_length, opt), block_start, block_length, opt);
+        } else {
+            return populate_sparse<true>(row, std::move(ora), block_start, block_length, opt); 
+        }
     }
 
-    std::unique_ptr<tatami::IndexDenseExtractor<Value_, Index_> > dense_row(std::vector<Index_> indices, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::IndexDenseExtractor<Value_, Index_> >(new DenseUnknownExtractor<true, tatami::DimensionSelectionType::INDEX>(this, opt, std::move(indices)));
-    }
-
-    std::unique_ptr<tatami::FullDenseExtractor<Value_, Index_> > dense_column(const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::FullDenseExtractor<Value_, Index_> >(new DenseUnknownExtractor<false, tatami::DimensionSelectionType::FULL>(this, opt));
-    }
-
-    std::unique_ptr<tatami::BlockDenseExtractor<Value_, Index_> > dense_column(Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::BlockDenseExtractor<Value_, Index_> >(new DenseUnknownExtractor<false, tatami::DimensionSelectionType::BLOCK>(this, opt, block_start, block_length));
-    }
-
-    std::unique_ptr<tatami::IndexDenseExtractor<Value_, Index_> > dense_column(std::vector<Index_> indices, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::IndexDenseExtractor<Value_, Index_> >(new DenseUnknownExtractor<false, tatami::DimensionSelectionType::INDEX>(this, opt, std::move(indices)));
-    }
-
-public:
-    std::unique_ptr<tatami::FullSparseExtractor<Value_, Index_> > sparse_row(const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::FullSparseExtractor<Value_, Index_> >(new SparseUnknownExtractor<true, tatami::DimensionSelectionType::FULL>(this, opt));
-    }
-
-    std::unique_ptr<tatami::BlockSparseExtractor<Value_, Index_> > sparse_row(Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::BlockSparseExtractor<Value_, Index_> >(new SparseUnknownExtractor<true, tatami::DimensionSelectionType::BLOCK>(this, opt, block_start, block_length));
-    }
-
-    std::unique_ptr<tatami::IndexSparseExtractor<Value_, Index_> > sparse_row(std::vector<Index_> indices, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::IndexSparseExtractor<Value_, Index_> >(new SparseUnknownExtractor<true, tatami::DimensionSelectionType::INDEX>(this, opt, std::move(indices)));
-    }
-
-    std::unique_ptr<tatami::FullSparseExtractor<Value_, Index_> > sparse_column(const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::FullSparseExtractor<Value_, Index_> >(new SparseUnknownExtractor<false, tatami::DimensionSelectionType::FULL>(this, opt));
-    }
-
-    std::unique_ptr<tatami::BlockSparseExtractor<Value_, Index_> > sparse_column(Index_ block_start, Index_ block_length, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::BlockSparseExtractor<Value_, Index_> >(new SparseUnknownExtractor<false, tatami::DimensionSelectionType::BLOCK>(this, opt, block_start, block_length));
-    }
-
-    std::unique_ptr<tatami::IndexSparseExtractor<Value_, Index_> > sparse_column(std::vector<Index_> indices, const tatami::Options& opt) const {
-        return std::unique_ptr<tatami::IndexSparseExtractor<Value_, Index_> >(new SparseUnknownExtractor<false, tatami::DimensionSelectionType::INDEX>(this, opt, std::move(indices)));
+    std::unique_ptr<tatami::OracularSparseExtractor<Value_, Index_> > sparse(bool row, std::shared_ptr<const tatami::Oracle<Index_> > ora, tatami::VectorPtr<Index_> indices_ptr, const tatami::Options& opt) const {
+        if (!my_sparse) {
+            auto index_copy = indices_ptr;
+            return std::make_unique<tatami::IndexSparsifiedWrapper<true, Value_, Index_> >(dense(row, std::move(ora), std::move(indices_ptr), opt), std::move(index_copy), opt);
+        } else {
+            return populate_sparse<true>(row, std::move(ora), std::move(indices_ptr), opt); 
+        }
     }
 };
 
