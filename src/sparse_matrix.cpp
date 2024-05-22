@@ -16,28 +16,33 @@ tatami::NumericMatrix* store_sparse_matrix(XVector_ x, Rcpp::IntegerVector i, Rc
 //[[Rcpp::export(rng=false)]]
 SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RObject raw_p, int nrow, int ncol, bool byrow) {
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->original = Rcpp::List::create(raw_x, raw_i, raw_p); // holding references to all R objects used here.
+    Rcpp::List store(3);
 
     if (raw_p.sexp_type() != INTSXP) {
         throw std::runtime_error("'p' vector should be integer");
     }
     Rcpp::IntegerVector p(raw_p);
+    store[0] = p;
 
     if (raw_i.sexp_type() != INTSXP) {
         throw std::runtime_error("'i' vector should be integer");
     }
     Rcpp::IntegerVector i(raw_i);
+    store[1] = i;
 
     if (raw_x.sexp_type() == LGLSXP) {
         Rcpp::LogicalVector x(raw_x);
+        store[2] = x;
         output->ptr.reset(store_sparse_matrix<int>(std::move(x), std::move(i), std::move(p), nrow, ncol, byrow));
     } else if (raw_x.sexp_type() == REALSXP) {
         Rcpp::NumericVector x(raw_x);
+        store[2] = x;
         output->ptr.reset(store_sparse_matrix<double>(std::move(x), std::move(i), std::move(p), nrow, ncol, byrow));
     } else {
         throw std::runtime_error("'x' vector should be integer or real");
     }
 
+    output->original = store; // holding references to all R objects created here, to avoid GC.
     return output;
 }
 
@@ -50,15 +55,9 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed) {
     std::vector<tatami::ArrayView<double> > values_d;
     std::vector<tatami::ArrayView<int> > values_i;
 
-    // Creating buffers of all-1 values so that we can create views on it,
-    // whenever we encounter lacunar leaf nodes.
-    Rcpp::IntegerVector alloc_i;
-    Rcpp::NumericVector alloc_d;
-
     std::string type = Rcpp::as<std::string>(seed.slot("type"));
-    bool use_double = false;
-    if (type == "double") {
-        use_double = true;
+    bool use_double = (type == "double");
+    if (use_double) {
         values_d.reserve(nc);
     } else if (type == "integer" || type == "logical") {
         values_i.reserve(nc);
@@ -66,46 +65,60 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed) {
         throw std::runtime_error("unsupported type '" + type + "' for a SVT_SparseMatrix");
     }
 
+    // Setting up buffers of all-1 values so that we can create views on it
+    // whenever we encounter lacunar leaf nodes.
+    Rcpp::IntegerVector alloc_i;
+    Rcpp::NumericVector alloc_d;
+
+    auto handle_ones = [&](size_t nnz) {
+        if (use_double) {
+            if (static_cast<int>(alloc_d.size()) != nr) {
+                alloc_d = Rcpp::IntegerVector(nr);
+                std::fill(alloc_d.begin(), alloc_d.end(), 1);
+            }
+            values_d.emplace_back(static_cast<const double*>(alloc_d.begin()), nnz);
+        } else {
+            if (static_cast<int>(alloc_i.size()) != nr) {
+                alloc_i = Rcpp::IntegerVector(nr);
+                std::fill(alloc_i.begin(), alloc_i.end(), 1);
+            }
+            values_i.emplace_back(static_cast<const int*>(alloc_i.begin()), nnz);
+        }
+    };
+
+    // Storing everything that we take a view on to avoid GC. It may not be
+    // enough to store a reference to the top-level seed, as there might be
+    // some ALTREP magic happening under the hood to realize each vector.
+    Rcpp::List store_i(nc), store_v(nc);
+
     tatami_r::parse_SVT_SparseMatrix(seed, [&](int c, const Rcpp::IntegerVector& curindices, bool all_ones, const auto& curvalues) {
         indices.emplace_back(static_cast<const int*>(curindices.begin()), curindices.size());
-
-        typedef tatami::ElementType<decltype(curvalues)> StoredValue;
-        constexpr bool is_int = std::is_same<StoredValue, int>::value;
+        store_i[c] = curindices;
 
         if (all_ones) {
-            if constexpr(is_int) {
-                if (static_cast<int>(alloc_i.size()) != nc) {
-                    alloc_i = Rcpp::IntegerVector(nc);
-                    std::fill(alloc_i.begin(), alloc_i.end(), 1);
-                }
-                values_i.emplace_back(static_cast<const int*>(alloc_i.begin()), curindices.size());
-
-            } else {
-                if (static_cast<int>(alloc_d.size()) != nc) {
-                    alloc_d = Rcpp::IntegerVector(nc);
-                    std::fill(alloc_d.begin(), alloc_d.end(), 1);
-                }
-                values_d.emplace_back(static_cast<const double*>(alloc_d.begin()), curindices.size());
-            }
-
+            handle_ones(curindices.size());
         } else {
+            typedef tatami::ElementType<decltype(curvalues)> StoredValue;
+            constexpr bool is_int = std::is_same<StoredValue, int>::value;
             if (is_int == use_double) {
                 throw std::runtime_error("unexpected value vector type for a SVT_SparseMatrix of type '" + type + "'");
             }
+
             if constexpr(is_int) {
                 values_i.emplace_back(static_cast<const int*>(curvalues.begin()), curvalues.size());
             } else {
                 values_d.emplace_back(static_cast<const double*>(curvalues.begin()), curvalues.size());
             }
+            store_v[c] = curvalues;
         }
     });
 
-    output->original = Rcpp::List::create(seed, alloc_i, alloc_d);
     if (use_double) {
         output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices)));
     } else {
         output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices)));
     }
+    output->original = Rcpp::List::create(store_i, store_v, alloc_i, alloc_d);
 
     return output;
 }
