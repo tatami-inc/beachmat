@@ -29,9 +29,9 @@ harvester() {
     cd -
 }
 
-harvester tatami https://github.com/tatami-inc/tatami master
-harvester tatami_r https://github.com/tatami-inc/tatami_r master
-harvester tatami_stats https://github.com/tatami-inc/tatami_stats master
-harvester manticore https://github.com/tatami-inc/manticore v1.0.1
+harvester tatami https://github.com/tatami-inc/tatami v3.0.0
+harvester tatami_r https://github.com/tatami-inc/tatami_r v2.0.0
+harvester tatami_stats https://github.com/tatami-inc/tatami_stats v1.0.0
+harvester manticore https://github.com/tatami-inc/manticore v1.0.2
 harvester byteme https://github.com/LTLA/byteme v1.0.1
-harvester tatami_chunked https://github.com/tatami-inc/tatami_chunked master
+harvester tatami_chunked https://github.com/tatami-inc/tatami_chunked v2.0.0
