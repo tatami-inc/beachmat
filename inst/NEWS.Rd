@@ -2,6 +2,11 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.22.0}{\itemize{
+\item Updated to the latest version of the \pkg{tatami} library (3.0.0).
+Also updated the associated libraries (\pkg{tatami_chunked} and \pkg{tatami_r}) and added the new \pkg{tatami_stats} library.
+}}
+
 \section{Version 2.14.0}{\itemize{
 \item Added the \pkg{tatami} C++ library for LinkingTo from other packages.
 }}
