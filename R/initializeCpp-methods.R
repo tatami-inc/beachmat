@@ -10,6 +10,14 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
         }
     }
 
+    if (is(x, "WrapperArraySeed")) {
+        # Pass-through some known no-op matrices - in this case, from
+        # alabaster.matrix. Ideally we'd attach the package to the class
+        # attribute before testing, but we keep it loose here so that we
+        # can handle the class of the same name in GNE-internal packages.
+        return(initializeCpp(x@seed, ...))
+    }
+
     initialize_unknown_matrix(x)
 })
 

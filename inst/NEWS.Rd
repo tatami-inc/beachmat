@@ -7,6 +7,8 @@
 Also updated the associated libraries (\pkg{tatami_chunked} and \pkg{tatami_r}) and added the new \pkg{tatami_stats} library.
 
 \item Automatically attempt to use \pkg{beachmat.hdf5} (if installed) when encountering the various \pkg{HDF5Array} classes.
+
+\item Minor optimization when dealing with some known no-op matrices, e.g., \code{WrapperArraySeed} objects from \pkg{alabaster.matrix}.
 }}
 
 \section{Version 2.14.0}{\itemize{
