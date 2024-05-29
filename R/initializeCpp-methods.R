@@ -1,6 +1,19 @@
+is_class_package <- function(x, package, classes) {
+    if (isNamespaceLoaded(package)) {
+        for (cls in classes) {
+            attr(cls, "package") <- package
+            if (is(x, cls)) {
+                return(TRUE)
+            }
+        }
+    }
+
+    FALSE
+}
+
 #' @export
 setMethod("initializeCpp", "ANY", function(x, ...) {
-    if (is(x, "HDF5ArraySeed") || is(x, "H5SparseMatrixSeed")) {
+    if (is_class_package(x, "HDF5Array", c("HDF5ArraySeed", "H5SparseMatrixSeed"))) {
         # Automatically use beachmat.hdf5 if it's available.  We check that
         # beachmat.hdf5 is not already loaded to avoid infinite loops in case
         # beachmat.hdf5 does NOT support the listed classes (so requiring the
@@ -10,11 +23,8 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
         }
     }
 
-    if (is(x, "WrapperArraySeed")) {
-        # Pass-through some known no-op matrices - in this case, from
-        # alabaster.matrix. Ideally we'd attach the package to the class
-        # attribute before testing, but we keep it loose here so that we
-        # can handle the class of the same name in GNE-internal packages.
+    if (is_class_package(x, "alabaster.matrix", "WrapperArraySeed")) {
+        # Pass-through some known no-op matrices from alabaster.matrix.
         return(initializeCpp(x@seed, ...))
     }
 
