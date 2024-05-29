@@ -28,6 +28,15 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
         return(initializeCpp(x@seed, ...))
     }
 
+    # We also provide a lightweight hook to support skipping of classes in
+    # other packages (mostly legacy GNE-internal gunk) that don't want to
+    # import beachmat just to define a no-op initializeCpp() method.
+    for (cls in getOption("beachmat.noop.wrappers", character(0))) {
+        if (is(x, cls)) {
+            return(initializeCpp(x@seed, ...))
+        }
+    }
+
     initialize_unknown_matrix(x)
 })
 
