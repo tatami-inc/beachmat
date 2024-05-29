@@ -263,6 +263,24 @@ test_that("initialization works correctly with vector comparisons", {
     }
 })
 
+test_that("initialization works correctly with type transformations", {
+    x <- Matrix::rsparsematrix(1000, 100, 0.1)
+    y <- as.matrix(round(abs(x)*10))
+
+    for (from in c("logical", "integer", "double")) {
+        copy <- y
+        storage.mode(copy) <- from
+
+        # We don't have native support for coercion to raw... whatever.
+        for (to in c("logical", "integer", "double")) {
+            z <- DelayedArray(copy)
+            type(z) <- to
+            expect_warning(ptr <- initializeCpp(z), NA)
+            am_i_ok(z, ptr)
+        }
+    }
+})
+
 test_that("initialization works correctly with scalar boolean operations", {
     z0 <- DelayedArray(y)
 

@@ -237,6 +237,33 @@ setMethod("initializeCpp", "DelayedUnaryIsoOpWithArgs", function(x, ...) {
         return(apply_delayed_boolean_not(seed))
     }
 
+    if (generic == "type<-") {
+        target.type <- envir$value
+        src.type <- type(envir$x)
+
+        ranking <- c("logical", "raw", "integer", "double")
+        target.i <- which(ranking == target.type)
+        src.i <- which(ranking == src.type)
+        if (length(target.i) == 0L || length(src.i) == 0L) {
+            return(NULL)
+        }
+
+        if (target.i >= src.i) {
+            return(seed)
+        }
+
+        if (target.type == "integer") {
+            # source type must be a wider type, so we truncate.
+            return(apply_delayed_unary_math(seed, "trunc"))
+        } else if (target.type == "logical") {
+            # TODO: add a better 'not-not' method to coerce values to binary.
+            return(apply_delayed_boolean(seed, val=TRUE, row=TRUE, op="&")) 
+        } else {
+            # Raw not supported yet.
+            return(NULL)
+        }
+    }
+
     if (!(generic %in% supported.Ops)) {
         return(NULL)
     }
