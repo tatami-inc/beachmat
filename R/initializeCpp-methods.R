@@ -1,5 +1,17 @@
 #' @export
-setMethod("initializeCpp", "ANY", function(x, ...) initialize_unknown_matrix(x))
+setMethod("initializeCpp", "ANY", function(x, ...) {
+    if (is(x, "HDF5ArraySeed") || is(x, "H5SparseMatrixSeed")) {
+        # Automatically use beachmat.hdf5 if it's available.  We check that
+        # beachmat.hdf5 is not already loaded to avoid infinite loops in case
+        # beachmat.hdf5 does NOT support the listed classes (so requiring the
+        # namespace would not add any more methods for meaningful dispatch).
+        if (!isNamespaceLoaded("beachmat.hdf5") && requireNamespace("beachmat.hdf5", quietly=TRUE)) {
+            return(initializeCpp(x, ...))
+        }
+    }
+
+    initialize_unknown_matrix(x)
+})
 
 #' @export
 setMethod("initializeCpp", "externalptr", function(x, ...) x)

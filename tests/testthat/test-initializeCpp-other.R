@@ -133,7 +133,7 @@ test_that("initialization works correctly with DelayedArray combining", {
     am_i_ok(cbind(y, y2), ptr)
 })
 
-test_that("initialization works correctly with an unknown DelayedArray", {
+test_that("initialization works correctly with the HDF5Arrays", {
     library(HDF5Array)
     mat <- matrix(rnorm(50), ncol=5)
     mat2 <- as(mat, "HDF5Array")
@@ -141,7 +141,20 @@ test_that("initialization works correctly with an unknown DelayedArray", {
     ptr <- initializeCpp(mat2)
     am_i_ok(mat, ptr)
 
-    # works in the sparse case.
+    # Package is automatically loaded to expose the specialized methods. 
+    expect_true(isNamespaceLoaded("beachmat.hdf5"))
+})
+
+test_that("initialization works correctly with an unknown DelayedArray", {
+    # Trying with a solid RLE matrix, which we probably won't
+    # support because it's tedious to perform random access. 
+    mat <- RleArray(Rle(sample(10, 200, replace=TRUE)), c(20, 10))
+    expect_s4_class(mat@seed, "SolidRleArraySeed")
+
+    ptr <- initializeCpp(mat)
+    am_i_ok(mat, ptr)
+
+    # Trying with an unsupported operation.
     mat <- DelayedArray(Matrix::rsparsematrix(100, 50, 0.1))
     mat2 <- round(mat, digits=2)
 

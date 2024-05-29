@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 2.21.1
-Date: 2024-05-22
+Version: 2.21.2
+Date: 2024-05-28
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
@@ -20,7 +20,8 @@ Suggests:
     rmarkdown,
     rcmdcheck,
     BiocParallel,
-    HDF5Array
+    HDF5Array,
+    beachmat.hdf5
 LinkingTo: Rcpp
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: 
