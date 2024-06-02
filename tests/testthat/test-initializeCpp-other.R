@@ -22,12 +22,12 @@ test_that("initialization works correctly with dense matrices", {
         am_i_ok(dd2, ptr)
     }
 
-    de <- Matrix::Matrix(dd)
+    de <- Matrix::Matrix(dd, sparse=FALSE)
     {
         ptr <- initializeCpp(de)
         am_i_ok(de, ptr)
 
-        de2 <- de > 0
+        de2 <- de > 0 # with logical
         ptr <- initializeCpp(de2)
         am_i_ok(de2, ptr)
     }

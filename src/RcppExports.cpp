@@ -162,6 +162,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// initialize_dense_matrix_from_vector
+SEXP initialize_dense_matrix_from_vector(Rcpp::RObject raw_x, int nrow, int ncol);
+RcppExport SEXP _beachmat_initialize_dense_matrix_from_vector(SEXP raw_xSEXP, SEXP nrowSEXP, SEXP ncolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_x(raw_xSEXP);
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_dense_matrix_from_vector(raw_x, nrow, ncol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fragment_sparse_rows
 Rcpp::List fragment_sparse_rows(Rcpp::IntegerVector i, Rcpp::IntegerVector p, Rcpp::IntegerVector limits);
 RcppExport SEXP _beachmat_fragment_sparse_rows(SEXP iSEXP, SEXP pSEXP, SEXP limitsSEXP) {
@@ -291,6 +303,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_apply_delayed_transpose", (DL_FUNC) &_beachmat_apply_delayed_transpose, 1},
     {"_beachmat_apply_delayed_bind", (DL_FUNC) &_beachmat_apply_delayed_bind, 2},
     {"_beachmat_initialize_dense_matrix", (DL_FUNC) &_beachmat_initialize_dense_matrix, 3},
+    {"_beachmat_initialize_dense_matrix_from_vector", (DL_FUNC) &_beachmat_initialize_dense_matrix_from_vector, 3},
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},

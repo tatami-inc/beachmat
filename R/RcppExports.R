@@ -53,6 +53,10 @@ initialize_dense_matrix <- function(raw_x, nrow, ncol) {
     .Call('_beachmat_initialize_dense_matrix', PACKAGE = 'beachmat', raw_x, nrow, ncol)
 }
 
+initialize_dense_matrix_from_vector <- function(raw_x, nrow, ncol) {
+    .Call('_beachmat_initialize_dense_matrix_from_vector', PACKAGE = 'beachmat', raw_x, nrow, ncol)
+}
+
 fragment_sparse_rows <- function(i, p, limits) {
     .Call('_beachmat_fragment_sparse_rows', PACKAGE = 'beachmat', i, p, limits)
 }

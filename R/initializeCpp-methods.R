@@ -47,10 +47,10 @@ setMethod("initializeCpp", "externalptr", function(x, ...) x)
 setMethod("initializeCpp", "matrix", function(x, ...) initialize_dense_matrix(x, nrow(x), ncol(x)))
 
 #' @export
-setMethod("initializeCpp", "dgeMatrix", function(x, ...) initialize_dense_matrix(x@x, nrow(x), ncol(x)))
+setMethod("initializeCpp", "dgeMatrix", function(x, ...) initialize_dense_matrix_from_vector(x@x, nrow(x), ncol(x)))
 
 #' @export
-setMethod("initializeCpp", "lgeMatrix", function(x, ...) initialize_dense_matrix(x@x, nrow(x), ncol(x)))
+setMethod("initializeCpp", "lgeMatrix", function(x, ...) initialize_dense_matrix_from_vector(x@x, nrow(x), ncol(x)))
 
 ####################################################################################
 ####################################################################################

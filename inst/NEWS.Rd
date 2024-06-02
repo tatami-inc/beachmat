@@ -11,6 +11,8 @@ Also updated the associated libraries (\pkg{tatami_chunked} and \pkg{tatami_r}) 
 \item Minor optimization when dealing with some known no-op matrices, e.g., \code{WrapperArraySeed} objects from \pkg{alabaster.matrix}.
 
 \item Map delayed type coercions from \code{type<-} to their corresponding native representations (or no-ops).
+
+\item Bugfix for \code{initializeCpp()} to work properly with dense \pkg{Matrix} instances.
 }}
 
 \section{Version 2.14.0}{\itemize{
