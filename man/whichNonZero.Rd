@@ -2,34 +2,14 @@
 % Please edit documentation in R/whichNonZero.R
 \name{whichNonZero}
 \alias{whichNonZero}
-\alias{whichNonZero,ANY-method}
-\alias{whichNonZero,TsparseMatrix-method}
-\alias{whichNonZero,CsparseMatrix-method}
-\alias{whichNonZero,SparseArraySeed-method}
-\alias{whichNonZero,DelayedMatrix-method}
 \title{Find non-zero entries of a matrix}
 \usage{
 whichNonZero(x, ...)
-
-\S4method{whichNonZero}{ANY}(x, ...)
-
-\S4method{whichNonZero}{TsparseMatrix}(x, ...)
-
-\S4method{whichNonZero}{CsparseMatrix}(x, ...)
-
-\S4method{whichNonZero}{SparseArraySeed}(x, ...)
-
-\S4method{whichNonZero}{DelayedMatrix}(x, BPPARAM = NULL, ...)
 }
 \arguments{
 \item{x}{A numeric matrix-like object, usually sparse in content if not in representation.}
 
-\item{...}{For the generic, additional arguments to pass to the specific methods.
-
-For the methods, additional arguments that are currently ignored.}
-
-\item{BPPARAM}{A BiocParallelParam object from the \pkg{BiocParallel} package controlling how parallelization should be performed.
-Only used when \code{x} is a \linkS4class{DelayedMatrix} object; defaults to no parallelization.}
+\item{...}{Further arguments, ignored.}
 }
 \value{
 A list containing \code{i}, an integer vector of the row indices of all non-zero entries;
@@ -37,8 +17,7 @@ A list containing \code{i}, an integer vector of the row indices of all non-zero
 and \code{x}, a (usually atomic) vector of the values of the non-zero entries.
 }
 \description{
-Finds the non-zero entries of a matrix in the most efficient manner for each matrix representation.
-Not sure there's much more to say here.
+This function is soft-deprecated; users are advised to use \code{\link{nzwhich}} and \code{\link{nzvals}} instead.
 }
 \examples{
 x <- Matrix::rsparsematrix(1e6, 1e6, 0.000001)

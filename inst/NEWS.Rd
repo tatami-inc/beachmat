@@ -13,6 +13,8 @@ Also updated the associated libraries (\pkg{tatami_chunked} and \pkg{tatami_r}) 
 \item Map delayed type coercions from \code{type<-} to their corresponding native representations (or no-ops).
 
 \item Bugfix for \code{initializeCpp()} to work properly with dense \pkg{Matrix} instances.
+
+\item Soft-deprecated \code{whichNonZero()} in favor of \pkg{SparseArray}'s new \code{nzwhich()} and \code{nzvals()} functions.
 }}
 
 \section{Version 2.14.0}{\itemize{
