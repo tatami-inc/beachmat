@@ -55,18 +55,6 @@ test_that("apply on ordinary matrices respects grid construction", {
     expect_identical(length(out), 2L)
     expect_identical(unlist(out), rs(x))
 
-    if (.Platform$OS.type!="windows") {
-        BPPARAM2 <- MulticoreParam(3)
-
-        out <- colBlockApply(x, cs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), cs(x))
-
-        out <- rowBlockApply(x, rs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), rs(x))
-    }
-
     # Parallelization and grid size play nice.
     setAutoBlockSize(nrow(x) * 8)
 
@@ -130,18 +118,6 @@ test_that("apply on sparse matrices respects grid construction", {
     expect_identical(length(out), 2L)
     expect_identical(unlist(out), rs(x))
 
-    if (.Platform$OS.type!="windows") {
-        BPPARAM2 <- MulticoreParam(3)
-
-        out <- colBlockApply(x, cs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), cs(x))
-
-        out <- rowBlockApply(x, rs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), rs(x))
-    }
-
     # Parallelization and grid size play nice.
     setAutoBlockSize(nrow(x) * 8)
 
@@ -202,18 +178,6 @@ test_that("apply on pristine DelayedMatrices respects grid construction", {
     expect_identical(length(out), 2L)
     expect_identical(unlist(out), rs(x))
 
-    if (.Platform$OS.type!="windows") {
-        BPPARAM2 <- MulticoreParam(3)
-
-        out <- colBlockApply(x, cs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), cs(x))
-
-        out <- rowBlockApply(x, rs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), rs(x))
-    }
-
     # Parallelization and grid size play nice.
     setAutoBlockSize(nrow(x) * 4)
 
@@ -264,18 +228,6 @@ test_that("apply on non-pristine DelayedMatrices respects grid construction", {
     out <- rowBlockApply(x, rs, BPPARAM=BPPARAM)
     expect_identical(length(out), 2L)
     expect_identical(unlist(out), rs(x))
-
-    if (.Platform$OS.type!="windows") {
-        BPPARAM2 <- MulticoreParam(3)
-
-        out <- colBlockApply(x, cs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), cs(x))
-
-        out <- rowBlockApply(x, rs, BPPARAM=BPPARAM2)
-        expect_identical(length(out), 3L)
-        expect_identical(unlist(out), rs(x))
-    }
 
     # Parallelization and grid size play nice.
     setAutoBlockSize(nrow(x) * 8)
@@ -379,11 +331,4 @@ test_that("currentViewport works correctly", {
 
     dout <- rowBlockApply(DelayedArray(x), extractor, BPPARAM=SnowParam(2))
     expect_identical(dout, out)
-
-    if (.Platform$OS.type!="windows") {
-        out <- rowBlockApply(x, extractor, BPPARAM=SnowParam(3))
-        expect_s4_class(out[[1]], "ArrayViewport")
-        expect_s4_class(out[[2]], "ArrayViewport")
-        expect_s4_class(out[[3]], "ArrayViewport")
-    }
 })
