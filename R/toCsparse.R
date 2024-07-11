@@ -5,7 +5,7 @@
 #' @param x Any object produced by block processing with \code{\link{colBlockApply}} or \code{\link{rowBlockApply}}.
 #' This can be a matrix, sparse matrix or a two-dimensional \linkS4class{SparseArraySeed}.
 #'
-#' @return \code{x} is returned unless it was a \linkS4class{SparseArraySeed},
+#' @return \code{x} is returned unless it is one of the \pkg{DelayedArray} sparse matrix classes,
 #' in which case an appropriate \linkS4class{CsparseMatrix} object is returned instead.
 #'
 #' @details 
@@ -24,7 +24,7 @@
 #'
 #' @export
 toCsparse <- function(x) {
-    if (is(x, "SparseArraySeed")) {
+    if (is(x, "SparseArraySeed") || is(x, "SVT_SparseArray") || is(x, "COO_SparseArray")) {
         x <- as(x, "sparseMatrix")
     }
     x

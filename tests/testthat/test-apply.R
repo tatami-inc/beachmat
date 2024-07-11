@@ -300,30 +300,30 @@ test_that("apply preserves sparsity in sparse DelayedMatrices", {
     # Only one matrix emitted.
     out <- colBlockApply(x, identity, coerce.sparse=FALSE)
     expect_identical(length(out), 1L)
-    expect_true(is(out[[1]], "SparseArraySeed"))
+    expect_s4_class(out[[1]], "SVT_SparseArray")
 
     out <- rowBlockApply(x, identity, coerce.sparse=FALSE)
     expect_identical(length(out), 1L)
-    expect_true(is(out[[1]], "SparseArraySeed"))
+    expect_s4_class(out[[1]], "SVT_SparseArray")
 
     # Coercion to a dgCMatrix works as expected.
     out2 <- colBlockApply(x, identity)
     expect_identical(out2, lapply(out, as, Class="dgCMatrix"))
 
-    sas <- DelayedArray(SparseArraySeed(nzindex=cbind(1:10, 1:10), 1:10, dim=c(10, 10)))
+    sas <- DelayedArray(COO_SparseArray(nzcoo=cbind(1:10, 1:10), 1:10, dim=c(10, 10)))
     out2 <- colBlockApply(sas, identity)
     expect_identical(out2, list(as(seed(sas), "dgCMatrix")))
 
-    # Works with multiple matrices.
+    # Works with multiple threads. 
     BPPARAM <- SnowParam(2)
 
-    out <- colBlockApply(x, identity, BPPARAM=BPPARAM, coerce.sparse=FALSE)
+    out <- colBlockApply(x, identity, BPPARAM=BPPARAM)
     expect_identical(length(out), 2L)
-    expect_true(all(vapply(out, is, class="SparseArraySeed", FUN.VALUE=TRUE)))
+    expect_true(all(vapply(out, is, class="dgCMatrix", FUN.VALUE=TRUE)))
 
     out <- rowBlockApply(x, identity, BPPARAM=BPPARAM, coerce.sparse=FALSE)
     expect_identical(length(out), 2L)
-    expect_true(all(vapply(out, is, class="SparseArraySeed", FUN.VALUE=TRUE)))
+    expect_true(all(vapply(out, is, class="SVT_SparseArray", FUN.VALUE=TRUE)))
 })
 
 test_that("logical aliases work as expected", {

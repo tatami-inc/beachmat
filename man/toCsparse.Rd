@@ -11,7 +11,7 @@ toCsparse(x)
 This can be a matrix, sparse matrix or a two-dimensional \linkS4class{SparseArraySeed}.}
 }
 \value{
-\code{x} is returned unless it was a \linkS4class{SparseArraySeed},
+\code{x} is returned unless it is one of the \pkg{DelayedArray} sparse matrix classes,
 in which case an appropriate \linkS4class{CsparseMatrix} object is returned instead.
 }
 \description{
