@@ -35,3 +35,4 @@ harvester tatami_stats https://github.com/tatami-inc/tatami_stats v1.0.0
 harvester manticore https://github.com/tatami-inc/manticore v1.0.2
 harvester byteme https://github.com/LTLA/byteme v1.0.1
 harvester tatami_chunked https://github.com/tatami-inc/tatami_chunked v2.0.0
+harvester tatami_mult https://github.com/tatami-inc/tatami_mult v0.1.0

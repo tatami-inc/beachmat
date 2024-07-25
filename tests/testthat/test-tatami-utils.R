@@ -181,3 +181,23 @@ test_that("binary works as expected", {
     expect_equal(tatami.dim(bin), dim(x1))
     expect_equal(tatami.row(bin, 1), x1[1,] + x2[1,])
 })
+
+test_that("matrix multiplication works as expected", {
+    ptr1 <- initializeCpp(x1)
+
+    vec <- runif(ncol(x1))
+    expect_equal(tatami.multiply(ptr1, vec, right=TRUE, num.threads=1), as.vector(x1 %*% vec))
+
+    vec <- runif(nrow(x1))
+    expect_equal(tatami.multiply(ptr1, vec, right=FALSE, num.threads=1), as.vector(rbind(vec) %*% x1))
+
+    mat <- matrix(runif(ncol(x1) * 3), ncol = 3)
+    expect_equal(tatami.multiply(ptr1, mat, right=TRUE, num.threads=1), as.matrix(x1 %*% mat))
+    ptr2 <- initializeCpp(mat)
+    expect_equal(tatami.multiply(ptr1, ptr2, right=TRUE, num.threads=1), as.matrix(x1 %*% mat))
+
+    mat <- matrix(runif(nrow(x1) * 3), nrow = 3)
+    expect_equal(tatami.multiply(ptr1, mat, right=FALSE, num.threads=1), as.matrix(mat %*% x1))
+    ptr2 <- initializeCpp(mat)
+    expect_equal(tatami.multiply(ptr1, ptr2, right=FALSE, num.threads=1), as.matrix(mat %*% x1))
+})

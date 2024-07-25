@@ -105,6 +105,18 @@ tatami_realize <- function(raw_input, threads) {
     .Call('_beachmat_tatami_realize', PACKAGE = 'beachmat', raw_input, threads)
 }
 
+tatami_multiply_vector <- function(raw_input, other, right, num_threads) {
+    .Call('_beachmat_tatami_multiply_vector', PACKAGE = 'beachmat', raw_input, other, right, num_threads)
+}
+
+tatami_multiply_columns <- function(raw_input, other, right, num_threads) {
+    .Call('_beachmat_tatami_multiply_columns', PACKAGE = 'beachmat', raw_input, other, right, num_threads)
+}
+
+tatami_multiply_matrix <- function(raw_input, more_input, right, num_threads) {
+    .Call('_beachmat_tatami_multiply_matrix', PACKAGE = 'beachmat', raw_input, more_input, right, num_threads)
+}
+
 initialize_unknown_matrix <- function(input) {
     .Call('_beachmat_initialize_unknown_matrix', PACKAGE = 'beachmat', input)
 }

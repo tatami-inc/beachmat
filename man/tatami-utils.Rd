@@ -21,6 +21,7 @@
 \alias{tatami.is.sparse}
 \alias{tatami.prefer.rows}
 \alias{tatami.realize}
+\alias{tatami.multiply}
 \title{Tatami utilities}
 \usage{
 tatami.bind(xs, by.row)
@@ -60,6 +61,8 @@ tatami.is.sparse(x)
 tatami.prefer.rows(x)
 
 tatami.realize(x, num.threads)
+
+tatami.multiply(x, val, right, num.threads)
 }
 \arguments{
 \item{xs}{A list of pointers produced by \code{\link{initializeCpp}}.
@@ -88,12 +91,27 @@ These should be 1-based row or column indices depending on \code{by.row}.}
 \item For \code{tatami.binary}, this may be any operation in \link{Arith}, \link{Compare} or \link{Logic}.
 }}
 
-\item{val}{Value to be used in the operation with the matrix.
-This may be a scalar, in which case the operation uses that scalar for all entries of the matrix;
-a vector of length equal to the number of rows, where each value is used for the operation with the corresponding row when \code{by.row=TRUE};
-or a vector of length equal to the number of column, where each value is used operation with the corresponding column when \code{by.row=FALSE}.}
+\item{val}{For \code{tatami.arith}, \code{tatami.compare} and \code{tatami.logic}, the value to be used in the operation specified by \code{op}. 
+This may be a:
+\itemize{
+\item Numeric scalar, which is used in the operation for all entries of the matrix.
+\item Numeric vector of length equal to the number of rows, where each value is used in the operation with the corresponding row when \code{by.row=TRUE}.
+\item Numeric vector of length equal to the number of column, where each value is used with the corresponding column when \code{by.row=FALSE}.
+}
 
-\item{right}{Logical scalar indicating that \code{val} is on the right-hand side of the operation.}
+For \code{tatami.multiply}, the value to be used in the matrix multiplication.
+This may be a:
+\itemize{
+\item Numeric vector of length equal to the number of columns of \code{x} (if \code{right=FALSE}) or rows (otherwise).
+\item Numeric matrix with number of rows equal to the number of columns of \code{x} (if \code{right=FALSE}) or rows (otherwise).
+\item Pointer produced by \code{\link{initializeCpp}}, 
+referencing a matrix with number of rows equal to the number of columns of \code{x} (if \code{right=FALSE}) or rows (otherwise).
+}}
+
+\item{right}{For \code{tatami.arith} and \code{tatami.compare}, 
+a logical scalar indicating that \code{val} is on the right-hand side of the operation.
+
+For \code{tatami.multiply}, a logical scalar indicating that \code{val} is on the right-hand side of the multiplication.}
 
 \item{base}{Numeric scalar specifying the base of the log-transformation.}
 
@@ -117,6 +135,8 @@ For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector contai
 
 For \code{tatami.realize}, a numeric matrix or \linkS4class{dgCMatrix} with the matrix contents.
 The exact class depends on whether \code{x} refers to a sparse matrix. 
+
+For \code{tatami.multiply}, a numeric matrix containing the matrix product of \code{x} and \code{other}.
 
 For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 }
