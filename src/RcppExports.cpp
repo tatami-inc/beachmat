@@ -234,6 +234,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tatami_is_sparse
+Rcpp::LogicalVector tatami_is_sparse(SEXP raw_input);
+RcppExport SEXP _beachmat_tatami_is_sparse(SEXP raw_inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_is_sparse(raw_input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tatami_prefer_rows
+Rcpp::LogicalVector tatami_prefer_rows(SEXP raw_input);
+RcppExport SEXP _beachmat_tatami_prefer_rows(SEXP raw_inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_prefer_rows(raw_input));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tatami_column
 Rcpp::NumericVector tatami_column(SEXP raw_input, int i);
 RcppExport SEXP _beachmat_tatami_column(SEXP raw_inputSEXP, SEXP iSEXP) {
@@ -278,6 +298,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tatami_realize
+SEXP tatami_realize(SEXP raw_input, int threads);
+RcppExport SEXP _beachmat_tatami_realize(SEXP raw_inputSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_realize(raw_input, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // initialize_unknown_matrix
 SEXP initialize_unknown_matrix(Rcpp::RObject input);
 RcppExport SEXP _beachmat_initialize_unknown_matrix(SEXP inputSEXP) {
@@ -309,10 +340,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},
     {"_beachmat_initialize_SVT_SparseMatrix", (DL_FUNC) &_beachmat_initialize_SVT_SparseMatrix, 3},
     {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
+    {"_beachmat_tatami_is_sparse", (DL_FUNC) &_beachmat_tatami_is_sparse, 1},
+    {"_beachmat_tatami_prefer_rows", (DL_FUNC) &_beachmat_tatami_prefer_rows, 1},
     {"_beachmat_tatami_column", (DL_FUNC) &_beachmat_tatami_column, 2},
     {"_beachmat_tatami_row", (DL_FUNC) &_beachmat_tatami_row, 2},
     {"_beachmat_tatami_row_sums", (DL_FUNC) &_beachmat_tatami_row_sums, 2},
     {"_beachmat_tatami_column_sums", (DL_FUNC) &_beachmat_tatami_column_sums, 2},
+    {"_beachmat_tatami_realize", (DL_FUNC) &_beachmat_tatami_realize, 2},
     {"_beachmat_initialize_unknown_matrix", (DL_FUNC) &_beachmat_initialize_unknown_matrix, 1},
     {NULL, NULL, 0}
 };

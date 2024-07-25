@@ -77,6 +77,14 @@ tatami_dim <- function(raw_input) {
     .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', raw_input)
 }
 
+tatami_is_sparse <- function(raw_input) {
+    .Call('_beachmat_tatami_is_sparse', PACKAGE = 'beachmat', raw_input)
+}
+
+tatami_prefer_rows <- function(raw_input) {
+    .Call('_beachmat_tatami_prefer_rows', PACKAGE = 'beachmat', raw_input)
+}
+
 tatami_column <- function(raw_input, i) {
     .Call('_beachmat_tatami_column', PACKAGE = 'beachmat', raw_input, i)
 }
@@ -91,6 +99,10 @@ tatami_row_sums <- function(raw_input, threads) {
 
 tatami_column_sums <- function(raw_input, threads) {
     .Call('_beachmat_tatami_column_sums', PACKAGE = 'beachmat', raw_input, threads)
+}
+
+tatami_realize <- function(raw_input, threads) {
+    .Call('_beachmat_tatami_realize', PACKAGE = 'beachmat', raw_input, threads)
 }
 
 initialize_unknown_matrix <- function(input) {

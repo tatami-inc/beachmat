@@ -38,9 +38,16 @@
 #' @return 
 #' For \code{tatami.dim}, an integer vector containing the dimensions of the matrix.
 #'
+#' For \code{tatami.is.sparse}, a logical scalar indicating whether the matrix is sparse.
+#'
+#' For \code{tatami.prefer.rows}, a logical scalar indicating whether the matrix prefers iteration by row.
+#'
 #' For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
 #'
 #' For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+#'
+#' For \code{tatami.realize}, a numeric matrix or \linkS4class{dgCMatrix} with the matrix contents.
+#' The exact class depends on whether \code{x} refers to a sparse matrix. 
 #' 
 #' For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 #'
@@ -163,4 +170,22 @@ tatami.row.sums <- function(x, num.threads) {
 #' @rdname tatami-utils
 tatami.column.sums <- function(x, num.threads) {
     tatami_column_sums(x, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.is.sparse <- function(x) {
+    tatami_is_sparse(x)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.prefer.rows <- function(x) {
+    tatami_prefer_rows(x)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.realize <- function(x, num.threads) {
+    tatami_realize(x, num.threads)
 }

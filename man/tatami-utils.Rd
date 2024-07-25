@@ -18,6 +18,9 @@
 \alias{tatami.column}
 \alias{tatami.row.sums}
 \alias{tatami.column.sums}
+\alias{tatami.is.sparse}
+\alias{tatami.prefer.rows}
+\alias{tatami.realize}
 \title{Tatami utilities}
 \usage{
 tatami.bind(xs, by.row)
@@ -51,6 +54,12 @@ tatami.column(x, i)
 tatami.row.sums(x, num.threads)
 
 tatami.column.sums(x, num.threads)
+
+tatami.is.sparse(x)
+
+tatami.prefer.rows(x)
+
+tatami.realize(x, num.threads)
 }
 \arguments{
 \item{xs}{A list of pointers produced by \code{\link{initializeCpp}}.
@@ -98,9 +107,16 @@ referencing a matrix of the same dimensions as \code{x}.}
 \value{
 For \code{tatami.dim}, an integer vector containing the dimensions of the matrix.
 
+For \code{tatami.is.sparse}, a logical scalar indicating whether the matrix is sparse.
+
+For \code{tatami.prefer.rows}, a logical scalar indicating whether the matrix prefers iteration by row.
+
 For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
 
 For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+
+For \code{tatami.realize}, a numeric matrix or \linkS4class{dgCMatrix} with the matrix contents.
+The exact class depends on whether \code{x} refers to a sparse matrix. 
 
 For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 }
