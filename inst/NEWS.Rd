@@ -15,6 +15,11 @@ Also updated the associated libraries (\pkg{tatami_chunked} and \pkg{tatami_r}) 
 \item Bugfix for \code{initializeCpp()} to work properly with dense \pkg{Matrix} instances.
 
 \item Soft-deprecated \code{whichNonZero()} in favor of \pkg{SparseArray}'s new \code{nzwhich()} and \code{nzvals()} functions.
+
+\item Exported \code{tatami.*} utilities for manipulating already-initialized pointers from \code{initializeCpp()}.
+This includes all of the delayed operation wrappers, some previously internal functions for extracting matrix data,
+a new function for realizing the matrix into a standard R representation,
+and a new function for matrix multiplication.
 }}
 
 \section{Version 2.14.0}{\itemize{
