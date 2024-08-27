@@ -197,7 +197,7 @@ SEXP apply_delayed_boolean(SEXP raw_input, Rcpp::LogicalVector val, bool row, st
 SEXP apply_delayed_boolean_not(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::make_DelayedUnaryIsometricBooleanNot<>());
+    output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::make_DelayedUnaryIsometricBooleanNot());
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
