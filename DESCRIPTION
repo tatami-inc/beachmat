@@ -22,7 +22,9 @@ Suggests:
     BiocParallel,
     HDF5Array,
     beachmat.hdf5
-LinkingTo: Rcpp
+LinkingTo:
+    Rcpp,
+    assorthead
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: 
     Provides a consistent C++ class interface for reading from a variety of commonly used matrix types. 

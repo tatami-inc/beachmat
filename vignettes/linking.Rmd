@@ -57,7 +57,7 @@ This requires addition of `Rcpp` to the `Imports` field of the `DESCRIPTION` fil
 
 - Linking to `r Biocpkg("beachmat")` is as simple as writing:
 
-        LinkingTo: Rcpp, beachmat
+        LinkingTo: Rcpp, assorthead, beachmat
 
     ... in the `DESCRIPTION` file. 
 
