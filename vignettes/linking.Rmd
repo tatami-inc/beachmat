@@ -57,7 +57,7 @@ This requires addition of `Rcpp` to the `Imports` field of the `DESCRIPTION` fil
 
 - Linking to `r Biocpkg("beachmat")` is as simple as writing:
 
-        LinkingTo: Rcpp, beachmat
+        LinkingTo: Rcpp, assorthead, beachmat
 
     ... in the `DESCRIPTION` file. 
 
@@ -95,7 +95,7 @@ Let's just say we want to compute column sums - a simple implementation might lo
 #include <algorithm>
 
 // Not necessary in a package context, it's only used for this vignette:
-// [[Rcpp::depends(beachmat)]]
+// [[Rcpp::depends(beachmat, assorthead)]]
 
 // [[Rcpp::export(rng=false)]]
 Rcpp::NumericVector column_sums(Rcpp::RObject initmat) {
@@ -140,7 +140,7 @@ The easiest way to achieve parallelization is to use the `tatami::parallelize()`
 #include <algorithm>
 
 // Not necessary in a package context, it's only used for this vignette:
-// [[Rcpp::depends(beachmat)]]
+// [[Rcpp::depends(beachmat, assorthead)]]
 
 // [[Rcpp::export(rng=false)]]
 Rcpp::NumericVector parallel_column_sums(Rcpp::RObject initmat, int nthreads) {

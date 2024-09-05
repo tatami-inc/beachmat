@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 2.21.5
-Date: 2024-07-25
+Version: 2.21.6
+Date: 2024-08-26
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
@@ -22,7 +22,9 @@ Suggests:
     BiocParallel,
     HDF5Array,
     beachmat.hdf5
-LinkingTo: Rcpp
+LinkingTo:
+    Rcpp,
+    assorthead
 biocViews: DataRepresentation, DataImport, Infrastructure
 Description: 
     Provides a consistent C++ class interface for reading from a variety of commonly used matrix types. 
