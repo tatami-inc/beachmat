@@ -2,16 +2,16 @@
 % Please edit documentation in R/toCsparse.R
 \name{toCsparse}
 \alias{toCsparse}
-\title{Convert a SparseArraySeed to a CsparseMatrix}
+\title{Convert a SparseMatrix to a CsparseMatrix}
 \usage{
 toCsparse(x)
 }
 \arguments{
 \item{x}{Any object produced by block processing with \code{\link{colBlockApply}} or \code{\link{rowBlockApply}}.
-This can be a matrix, sparse matrix or a two-dimensional \linkS4class{SparseArraySeed}.}
+This can be a matrix, sparse matrix or a \linkS4class{SparseMatrix} object from the \pkg{SparseArray} package.}
 }
 \value{
-\code{x} is returned unless it is one of the \pkg{DelayedArray} sparse matrix classes,
+\code{x} is returned unless it is a \pkg{SparseMatrix} object from the \pkg{SparseArray} package,
 in which case an appropriate \linkS4class{CsparseMatrix} object is returned instead.
 }
 \description{
@@ -19,13 +19,13 @@ Exactly what it says in the title.
 }
 \details{
 This is intended for use inside functions to be passed to \code{\link{colBlockApply}} or \code{\link{rowBlockApply}}.
-The idea is to pre-process blocks for user-defined functions that don't know how to deal with SparseArraySeed objects,
+The idea is to pre-process blocks for user-defined functions that don't know how to deal with SparseMatrix objects,
 which is often the case for R-defined functions that do not benefit from \pkg{beachmat}'s C++ abstraction.
 }
 \examples{
-library(DelayedArray)
-out <- SparseArraySeed(c(10, 10), 
-    nzindex=cbind(1:10, sample(10)),
+library(SparseArray)
+out <- COO_SparseArray(c(10, 10),
+    nzcoo=cbind(1:10, sample(10)),
     nzdata=runif(10))
 toCsparse(out)
 

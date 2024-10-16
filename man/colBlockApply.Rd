@@ -29,7 +29,7 @@ This can be of any class that respects the matrix contract.}
 
 \item{FUN}{A function that operates on columns or rows in \code{x},
 for \code{colBlockApply} and \code{rowBlockApply} respectively.
-Ordinary matrices, \linkS4class{CsparseMatrix} or \linkS4class{SparseArraySeed} objects may be passed as the first argument.}
+Ordinary matrices, \linkS4class{CsparseMatrix} or \linkS4class{SparseMatrix} objects may be passed as the first argument.}
 
 \item{...}{Further arguments to pass to \code{FUN}.}
 
@@ -71,7 +71,7 @@ This is provided for completeness and is only really useful for debugging.
 }
 
 The default of \code{coerce.sparse=TRUE} will generate \linkS4class{dgCMatrix} objects during block processing of a sparse DelayedMatrix \code{x}.
-This is convenient as it avoids the need for \code{FUN} to specially handle \linkS4class{SparseArraySeed} objects.
+This is convenient as it avoids the need for \code{FUN} to specially handle \linkS4class{SparseMatrix} objects from the \pkg{SparseArray} package.
 If the coercion is not desired (e.g., to preserve integer values in \code{x}), it can be disabled with \code{coerce.sparse=FALSE}.
 }
 \examples{
@@ -99,5 +99,5 @@ str(rowBlockApply(x, rowSums, BPPARAM=BPPARAM))
 \seealso{
 \code{\link{blockApply}}, for the original \pkg{DelayedArray} implementation.
 
-\code{\link{toCsparse}}, to convert SparseArraySeeds to CsparseMatrix objects prior to further processing in \code{FUN}.
+\code{\link{toCsparse}}, to convert SparseMatrix objects to CsparseMatrix objects prior to further processing in \code{FUN}.
 }

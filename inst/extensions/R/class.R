@@ -42,7 +42,7 @@ setMethod("[", "AaronMatrix", function(x, i, j, ..., drop = TRUE) {
 })
 
 #' @export
-#' @importFrom DelayedArray type
+#' @importFrom BiocGenerics type
 setMethod("type", "AaronMatrix", function(x) typeof(x@data))
 
 #' @importFrom Rcpp sourceCpp
