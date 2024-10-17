@@ -24,8 +24,8 @@
 #'
 #' @export
 toCsparse <- function(x) {
-    if (is(x, "SparseArraySeed") || is(x, "SVT_SparseArray") || is(x, "COO_SparseArray")) {
-        x <- as(x, "sparseMatrix")
+    if (is(x, "SparseArraySeed") || is(x, "SparseArray")) {
+        x <- as(x, "CsparseMatrix")
     }
     x
 }
