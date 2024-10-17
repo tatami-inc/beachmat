@@ -19,7 +19,7 @@ opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
 # Overview 
 
 The `r Biocpkg("beachmat")` package provides a C++ API to extract numeric data from matrix-like R objects,
-based on the matrix representations in the [**tatami**](https://github.com/tatami-inc/tatami) library.
+based on the matrix representations in the [**tatami**](https://github.com/tatami-inc/tatami/) library.
 This enables Bioconductor packages to use C++ for high-performance processing of data in arbitrary R matrices, including:
 
 - ordinary dense `matrix` objects
@@ -85,7 +85,7 @@ browseURL(system.file("include", "Rtatami.h", package="beachmat"))
 ```
 
 Now we can write a function that uses **tatami** to operate on `ptr`.
-All functionality described in **tatami**'s [documentation](https://tatami-inc.github.io/tatami) can be used here;
+All functionality described in **tatami**'s [documentation](https://tatami-inc.github.io/tatami/) can be used here;
 the only `r Biocpkg("beachmat")`-specific factor is that developers should include the `Rtatami.h` header first (which takes care of the **tatami** headers).
 Let's just say we want to compute column sums - a simple implementation might look like this:
 
