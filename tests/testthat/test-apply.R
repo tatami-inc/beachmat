@@ -262,9 +262,9 @@ test_that("apply preserves sparsity in sparse DelayedMatrices", {
     out2 <- colBlockApply(x, identity)
     expect_identical(out2, lapply(out, as, Class="dgCMatrix"))
 
-    sas <- DelayedArray(COO_SparseArray(nzcoo=cbind(1:10, 1:10), 1:10, dim=c(10, 10)))
-    out2 <- colBlockApply(sas, identity)
-    expect_identical(out2, list(as(seed(sas), "dgCMatrix")))
+    x2 <- DelayedArray(COO_SparseArray(nzcoo=cbind(1:10, 1:10), 1:10, dim=c(10, 10)))
+    out2 <- colBlockApply(x2, identity)
+    expect_identical(out2, list(as(seed(x2), "dgCMatrix")))
 
     # Works with multiple threads. 
     BPPARAM <- SnowParam(2)

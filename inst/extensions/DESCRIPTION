@@ -4,7 +4,7 @@ Date: 2019-03-10
 Title: Test whether we can extend beachmat properly
 Author: Aaron Lun <alun@wehi.edu.au>
 Maintainer: Aaron Lun <alun@wehi.edu.au>
-Imports: Rcpp, methods, DelayedArray
+Imports: Rcpp, methods, BiocGenerics
 Suggests: beachmat, devtools, testthat
 Description: For testing beachmat extension settings.
 License: GPL-3
