@@ -1,6 +1,6 @@
 Package: beachmat
-Version: 2.21.8
-Date: 2024-10-17
+Version: 2.21.9
+Date: 2024-10-25
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Encoding: UTF-8
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),

@@ -66,7 +66,7 @@ test_that("initialization works correctly with SVT sparse matrices", {
     {
         y2 <- y != 0
         z <- as(y2, "SVT_SparseMatrix")
-        ptr <- initializeCpp(y2)
+        ptr <- initializeCpp(z)
         am_i_ok(y2, ptr)
     }
 
@@ -74,7 +74,17 @@ test_that("initialization works correctly with SVT sparse matrices", {
         y2 <- as.matrix(y)
         storage.mode(y2) <- "integer"
         z <- as(y2, "SVT_SparseMatrix")
-        ptr <- initializeCpp(y2)
+        ptr <- initializeCpp(z)
+        am_i_ok(y2, ptr)
+    }
+
+    {
+        y2 <- y
+        y2[,c(1, 100)] <- 0
+        z <- as(y2, "SVT_SparseMatrix")
+        expect_null(z@SVT[[1]])
+        expect_null(z@SVT[[100]])
+        ptr <- initializeCpp(z)
         am_i_ok(y2, ptr)
     }
 })
