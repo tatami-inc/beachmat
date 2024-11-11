@@ -6,10 +6,7 @@
 #' @param x A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.
 #' Alternatively, an external pointer from a previous call to \code{initializeCpp}, which is returned without modification.
 #' @param ... Further arguments used by specific methods.
-#' Common arguments include:
-#' \itemize{
-#' \item \code{memorize}, a logical scalar indicating whether to load the representation into memory - see \code{\link{checkMemoryCache}} for details.
-#' }
+#' For example, \code{hdf5.realize} can be used in \pkg{beachmat.hdf5} to load a HDF5-backed matrix into memory.
 #'
 #' @return An external pointer to a C++ object containing a tatami matrix.
 #'
