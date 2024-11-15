@@ -2,8 +2,8 @@
 
 |Build|Status|
 |-----|----|
-| Bioc-release | [![](https://bioconductor.org/shields/build/release/bioc/beachmat.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/beachmat) |
-| Bioc-devel   | [![](https://bioconductor.org/shields/build/devel/bioc/beachmat.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/beachmat) | 
+| [Bioc-release](https://bioconductor.org/packages/release/bioc/html/beachmat.html) | [![](https://bioconductor.org/shields/build/release/bioc/beachmat.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/beachmat) |
+| [Bioc-devel](https://bioconductor.org/packages/devel/bioc/html/beachmat.html) | [![](https://bioconductor.org/shields/build/devel/bioc/beachmat.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/beachmat) | 
 
 This package provides a consistent C++ class interface for reading a variety of R matrix types,
 based on the [**tatami**](https://github.com/tatami-inc/tatami/) C++ library for matrix representations.
