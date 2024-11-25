@@ -44,30 +44,30 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
 setMethod("initializeCpp", "externalptr", function(x, ...) x)
 
 #' @export
-setMethod("initializeCpp", "matrix", function(x, ...) initialize_dense_matrix(x, nrow(x), ncol(x)))
+setMethod("initializeCpp", "matrix", function(x, .check.na = TRUE, ...) initialize_dense_matrix(x, nrow(x), ncol(x), check_na=.check.na))
 
 #' @export
-setMethod("initializeCpp", "dgeMatrix", function(x, ...) initialize_dense_matrix_from_vector(x@x, nrow(x), ncol(x)))
+setMethod("initializeCpp", "dgeMatrix", function(x, ...) initialize_dense_matrix_from_vector(x@x, nrow(x), ncol(x), check_na=FALSE))
 
 #' @export
-setMethod("initializeCpp", "lgeMatrix", function(x, ...) initialize_dense_matrix_from_vector(x@x, nrow(x), ncol(x)))
+setMethod("initializeCpp", "lgeMatrix", function(x, .check.na = TRUE, ...) initialize_dense_matrix_from_vector(x@x, nrow(x), ncol(x), check_na=.check.na))
 
 ####################################################################################
 ####################################################################################
 
 #' @export
 #' @import Matrix
-setMethod("initializeCpp", "dgCMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@i, x@p, nrow(x), ncol(x), byrow=FALSE))
+setMethod("initializeCpp", "dgCMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@i, x@p, nrow(x), ncol(x), byrow=FALSE, check_na=FALSE))
 
 #' @export
-setMethod("initializeCpp", "dgRMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@j, x@p, nrow(x), ncol(x), byrow=TRUE))
+setMethod("initializeCpp", "dgRMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@j, x@p, nrow(x), ncol(x), byrow=TRUE, check_na=FALSE))
 
 #' @export
 #' @import Matrix
-setMethod("initializeCpp", "lgCMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@i, x@p, nrow(x), ncol(x), byrow=FALSE))
+setMethod("initializeCpp", "lgCMatrix", function(x, .check.na = TRUE, ...) initialize_sparse_matrix(x@x, x@i, x@p, nrow(x), ncol(x), byrow=FALSE, check_na=.check.na))
 
 #' @export
-setMethod("initializeCpp", "lgRMatrix", function(x, ...) initialize_sparse_matrix(x@x, x@j, x@p, nrow(x), ncol(x), byrow=TRUE))
+setMethod("initializeCpp", "lgRMatrix", function(x, .check.na = TRUE, ...) initialize_sparse_matrix(x@x, x@j, x@p, nrow(x), ncol(x), byrow=TRUE, check_na=.check.na))
 
 ####################################################################################
 ####################################################################################
@@ -125,8 +125,8 @@ setMethod("initializeCpp", "DelayedSetDimnames", function(x, ...) {
 
 #' @export
 #' @importClassesFrom SparseArray SVT_SparseMatrix
-setMethod("initializeCpp", "SVT_SparseMatrix", function(x, ...) {
-    initialize_SVT_SparseMatrix(nr=nrow(x), nc=ncol(x), x)
+setMethod("initializeCpp", "SVT_SparseMatrix", function(x, .check.na = TRUE, ...) {
+    initialize_SVT_SparseMatrix(nr=nrow(x), nc=ncol(x), x, check_na = .check.na)
 })
 
 ####################################################################################

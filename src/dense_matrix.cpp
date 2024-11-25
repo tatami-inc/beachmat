@@ -7,7 +7,7 @@
 #include "na_cast.h"
 
 //[[Rcpp::export(rng=false)]]
-SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol) {
+SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol, bool check_na) {
     auto output = Rtatami::new_BoundNumericMatrix();
 
     if (raw_x.sexp_type() == INTSXP) {
@@ -15,7 +15,7 @@ SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol) {
         output->original = x; // Hold reference to avoid GC, in case of allocations to create 'x', e.g., for ALTREP.
         tatami::ArrayView<int> x_view(static_cast<const int*>(x.begin()), x.size());
         output->ptr.reset(new tatami::DenseColumnMatrix<double, int, decltype(x_view)>(nrow, ncol, std::move(x_view)));
-        if (has_na_integer(x)) {
+        if (check_na && has_na_integer(x)) {
             auto masked = delayed_cast_na_integer(std::move(output->ptr)); 
             output->ptr = std::move(masked);
         }
@@ -25,7 +25,7 @@ SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol) {
         output->original = x;
         tatami::ArrayView<int> x_view(static_cast<const int*>(x.begin()), x.size());
         output->ptr.reset(new tatami::DenseColumnMatrix<double, int, decltype(x_view)>(nrow, ncol, std::move(x_view)));
-        if (has_na_logical(x)) {
+        if (check_na && has_na_logical(x)) {
             auto masked = delayed_cast_na_logical(std::move(output->ptr)); 
             output->ptr = std::move(masked);
         }
@@ -44,7 +44,7 @@ SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol) {
 }
 
 //[[Rcpp::export(rng=false)]]
-SEXP initialize_dense_matrix_from_vector(Rcpp::RObject raw_x, int nrow, int ncol) {
+SEXP initialize_dense_matrix_from_vector(Rcpp::RObject raw_x, int nrow, int ncol, bool check_na) {
     auto output = Rtatami::new_BoundNumericMatrix();
 
     if (raw_x.sexp_type() == LGLSXP) {
@@ -52,7 +52,7 @@ SEXP initialize_dense_matrix_from_vector(Rcpp::RObject raw_x, int nrow, int ncol
         output->original = x;
         tatami::ArrayView<int> x_view(static_cast<const int*>(x.begin()), x.size());
         output->ptr.reset(new tatami::DenseColumnMatrix<double, int, decltype(x_view)>(nrow, ncol, std::move(x_view)));
-        if (has_na_logical(x)) {
+        if (check_na && has_na_logical(x)) {
             auto masked = delayed_cast_na_logical(std::move(output->ptr)); 
             output->ptr = std::move(masked);
         }

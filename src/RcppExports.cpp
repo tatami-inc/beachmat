@@ -151,26 +151,28 @@ BEGIN_RCPP
 END_RCPP
 }
 // initialize_dense_matrix
-SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol);
-RcppExport SEXP _beachmat_initialize_dense_matrix(SEXP raw_xSEXP, SEXP nrowSEXP, SEXP ncolSEXP) {
+SEXP initialize_dense_matrix(Rcpp::RObject raw_x, int nrow, int ncol, bool check_na);
+RcppExport SEXP _beachmat_initialize_dense_matrix(SEXP raw_xSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP check_naSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_x(raw_xSEXP);
     Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
     Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_dense_matrix(raw_x, nrow, ncol));
+    Rcpp::traits::input_parameter< bool >::type check_na(check_naSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_dense_matrix(raw_x, nrow, ncol, check_na));
     return rcpp_result_gen;
 END_RCPP
 }
 // initialize_dense_matrix_from_vector
-SEXP initialize_dense_matrix_from_vector(Rcpp::RObject raw_x, int nrow, int ncol);
-RcppExport SEXP _beachmat_initialize_dense_matrix_from_vector(SEXP raw_xSEXP, SEXP nrowSEXP, SEXP ncolSEXP) {
+SEXP initialize_dense_matrix_from_vector(Rcpp::RObject raw_x, int nrow, int ncol, bool check_na);
+RcppExport SEXP _beachmat_initialize_dense_matrix_from_vector(SEXP raw_xSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP check_naSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_x(raw_xSEXP);
     Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
     Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_dense_matrix_from_vector(raw_x, nrow, ncol));
+    Rcpp::traits::input_parameter< bool >::type check_na(check_naSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_dense_matrix_from_vector(raw_x, nrow, ncol, check_na));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -198,8 +200,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // initialize_sparse_matrix
-SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RObject raw_p, int nrow, int ncol, bool byrow);
-RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP raw_xSEXP, SEXP raw_iSEXP, SEXP raw_pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP) {
+SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RObject raw_p, int nrow, int ncol, bool byrow, bool check_na);
+RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP raw_xSEXP, SEXP raw_iSEXP, SEXP raw_pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP, SEXP check_naSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::RObject >::type raw_x(raw_xSEXP);
@@ -208,19 +210,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
     Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
     Rcpp::traits::input_parameter< bool >::type byrow(byrowSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_sparse_matrix(raw_x, raw_i, raw_p, nrow, ncol, byrow));
+    Rcpp::traits::input_parameter< bool >::type check_na(check_naSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_sparse_matrix(raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na));
     return rcpp_result_gen;
 END_RCPP
 }
 // initialize_SVT_SparseMatrix
-SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed);
-RcppExport SEXP _beachmat_initialize_SVT_SparseMatrix(SEXP nrSEXP, SEXP ncSEXP, SEXP seedSEXP) {
+SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed, bool check_na);
+RcppExport SEXP _beachmat_initialize_SVT_SparseMatrix(SEXP nrSEXP, SEXP ncSEXP, SEXP seedSEXP, SEXP check_naSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type nr(nrSEXP);
     Rcpp::traits::input_parameter< int >::type nc(ncSEXP);
     Rcpp::traits::input_parameter< Rcpp::RObject >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_SVT_SparseMatrix(nr, nc, seed));
+    Rcpp::traits::input_parameter< bool >::type check_na(check_naSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_SVT_SparseMatrix(nr, nc, seed, check_na));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -372,12 +376,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_apply_delayed_subset", (DL_FUNC) &_beachmat_apply_delayed_subset, 3},
     {"_beachmat_apply_delayed_transpose", (DL_FUNC) &_beachmat_apply_delayed_transpose, 1},
     {"_beachmat_apply_delayed_bind", (DL_FUNC) &_beachmat_apply_delayed_bind, 2},
-    {"_beachmat_initialize_dense_matrix", (DL_FUNC) &_beachmat_initialize_dense_matrix, 3},
-    {"_beachmat_initialize_dense_matrix_from_vector", (DL_FUNC) &_beachmat_initialize_dense_matrix_from_vector, 3},
+    {"_beachmat_initialize_dense_matrix", (DL_FUNC) &_beachmat_initialize_dense_matrix, 4},
+    {"_beachmat_initialize_dense_matrix_from_vector", (DL_FUNC) &_beachmat_initialize_dense_matrix_from_vector, 4},
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
-    {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 6},
-    {"_beachmat_initialize_SVT_SparseMatrix", (DL_FUNC) &_beachmat_initialize_SVT_SparseMatrix, 3},
+    {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 7},
+    {"_beachmat_initialize_SVT_SparseMatrix", (DL_FUNC) &_beachmat_initialize_SVT_SparseMatrix, 4},
     {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
     {"_beachmat_tatami_is_sparse", (DL_FUNC) &_beachmat_tatami_is_sparse, 1},
     {"_beachmat_tatami_prefer_rows", (DL_FUNC) &_beachmat_tatami_prefer_rows, 1},

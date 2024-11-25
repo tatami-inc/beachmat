@@ -49,12 +49,12 @@ apply_delayed_bind <- function(input, row) {
     .Call('_beachmat_apply_delayed_bind', PACKAGE = 'beachmat', input, row)
 }
 
-initialize_dense_matrix <- function(raw_x, nrow, ncol) {
-    .Call('_beachmat_initialize_dense_matrix', PACKAGE = 'beachmat', raw_x, nrow, ncol)
+initialize_dense_matrix <- function(raw_x, nrow, ncol, check_na) {
+    .Call('_beachmat_initialize_dense_matrix', PACKAGE = 'beachmat', raw_x, nrow, ncol, check_na)
 }
 
-initialize_dense_matrix_from_vector <- function(raw_x, nrow, ncol) {
-    .Call('_beachmat_initialize_dense_matrix_from_vector', PACKAGE = 'beachmat', raw_x, nrow, ncol)
+initialize_dense_matrix_from_vector <- function(raw_x, nrow, ncol, check_na) {
+    .Call('_beachmat_initialize_dense_matrix_from_vector', PACKAGE = 'beachmat', raw_x, nrow, ncol, check_na)
 }
 
 fragment_sparse_rows <- function(i, p, limits) {
@@ -65,12 +65,12 @@ sparse_subset_index <- function(starts, newp) {
     .Call('_beachmat_sparse_subset_index', PACKAGE = 'beachmat', starts, newp)
 }
 
-initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow) {
-    .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow)
+initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na) {
+    .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na)
 }
 
-initialize_SVT_SparseMatrix <- function(nr, nc, seed) {
-    .Call('_beachmat_initialize_SVT_SparseMatrix', PACKAGE = 'beachmat', nr, nc, seed)
+initialize_SVT_SparseMatrix <- function(nr, nc, seed, check_na) {
+    .Call('_beachmat_initialize_SVT_SparseMatrix', PACKAGE = 'beachmat', nr, nc, seed, check_na)
 }
 
 tatami_dim <- function(raw_input) {

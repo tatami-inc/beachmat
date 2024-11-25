@@ -46,11 +46,15 @@ test_that("initialization works correctly with dense matrices containing NAs", {
         storage.mode(dd2) <- "integer"
         ptr <- initializeCpp(dd2)
         am_i_ok(dd2, ptr)
+        ptr <- initializeCpp(dd2, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
 
         dd2 <- dd
         storage.mode(dd2) <- "logical"
         ptr <- initializeCpp(dd2)
         am_i_ok(dd2, ptr)
+        ptr <- initializeCpp(dd2, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
     }
 
     de <- Matrix::Matrix(dd, sparse=FALSE)
@@ -61,6 +65,8 @@ test_that("initialization works correctly with dense matrices containing NAs", {
         de2 <- de > 0 # with logical
         ptr <- initializeCpp(de2)
         am_i_ok(de2, ptr)
+        ptr <- initializeCpp(de2, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
     }
 })
 
@@ -102,10 +108,14 @@ test_that("initialization works correctly with sparse matrices containing NAs", 
         y2 <- y != 0
         ptr <- initializeCpp(y2)
         am_i_ok(y2, ptr)
+        ptr <- initializeCpp(y2, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
 
         z2 <- new("lgRMatrix", x=y2@x, j=y2@i, p=y2@p, Dim=rev(y2@Dim))
         ptr <- initializeCpp(z2)
         am_i_ok(z2, ptr)
+        ptr <- initializeCpp(z2, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
     }
 })
 
@@ -158,6 +168,8 @@ test_that("initialization works correctly with SVT sparse matrices containing NA
         z <- as(y2, "SVT_SparseMatrix")
         ptr <- initializeCpp(z)
         am_i_ok(y2, ptr)
+        ptr <- initializeCpp(z, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
     }
 
     {
@@ -166,6 +178,8 @@ test_that("initialization works correctly with SVT sparse matrices containing NA
         z <- as(y2, "SVT_SparseMatrix")
         ptr <- initializeCpp(z)
         am_i_ok(y2, ptr)
+        ptr <- initializeCpp(z, .check.na=FALSE)
+        expect_equal(tatami.column(ptr, 1)[1], -2^31)
     }
 })
 

@@ -5,7 +5,13 @@
 #'
 #' @param x A matrix-like object, typically from the \pkg{Matrix} or \pkg{DelayedArray} packages.
 #' Alternatively, an external pointer from a previous call to \code{initializeCpp}, which is returned without modification.
-#' @param ... Further arguments used by specific methods.
+#' @param ... Further arguments used by specific methods, such as:
+#' \itemize{
+#' \item \code{.check.na}, a logical vector indicating whether to check for \code{NA} values in integer and logical matrices.
+#' If \code{TRUE} (the default), any \code{NA}s are cast to their double-precision equivalents when reading from the tatami matrix.
+#' This can be set to \code{FALSE} to improve performance if the caller does not care about correctly handling \code{NA}s in \code{x}.
+#' }
+#' Fields should generally be prefixed by the matrix type, to avoid conflicts with arguments from other packages.
 #' For example, \code{hdf5.realize} can be used in \pkg{beachmat.hdf5} to load a HDF5-backed matrix into memory.
 #'
 #' @return An external pointer to a C++ object containing a tatami matrix.
