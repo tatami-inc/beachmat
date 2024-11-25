@@ -4,13 +4,15 @@
 #include <limits>
 #include <type_traits>
 
+#include "na_cast.h"
+
 template<typename T_, typename XVector_>
 tatami::NumericMatrix* store_sparse_matrix(XVector_ x, Rcpp::IntegerVector i, Rcpp::IntegerVector p, int nrow, int ncol, bool byrow) {
     tatami::ArrayView<T_> x_view(static_cast<const T_*>(x.begin()), x.size());
     tatami::ArrayView<int> i_view(static_cast<const int*>(i.begin()), i.size());
     tatami::ArrayView<int> p_view(static_cast<const int*>(p.begin()), p.size());
     typedef tatami::CompressedSparseMatrix<double, int, decltype(x_view), decltype(i_view), decltype(p_view)> SparseMat;
-    return new SparseMat(nrow, ncol, std::move(x_view), std::move(i_view), std::move(p_view), byrow, false);
+    return new SparseMat(nrow, ncol, std::move(x_view), std::move(i_view), std::move(p_view), byrow, /* check = */ false);
 }
 
 //[[Rcpp::export(rng=false)]]
@@ -34,10 +36,16 @@ SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RO
         Rcpp::LogicalVector x(raw_x);
         store[2] = x;
         output->ptr.reset(store_sparse_matrix<int>(std::move(x), std::move(i), std::move(p), nrow, ncol, byrow));
+        if (has_na_logical(x)) {
+            auto masked = delayed_cast_na_logical(std::move(output->ptr)); 
+            output->ptr = std::move(masked);
+        }
+
     } else if (raw_x.sexp_type() == REALSXP) {
         Rcpp::NumericVector x(raw_x);
         store[2] = x;
         output->ptr.reset(store_sparse_matrix<double>(std::move(x), std::move(i), std::move(p), nrow, ncol, byrow));
+
     } else {
         throw std::runtime_error("'x' vector should be integer or real");
     }
@@ -73,6 +81,7 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed) {
     // enough to store a reference to the top-level seed, as there might be
     // some ALTREP magic happening under the hood to realize each vector.
     Rcpp::List store_i(nc), store_v(nc);
+    bool needs_na_cast = false;
 
     tatami_r::parse_SVT_SparseMatrix(seed, [&](int c, const Rcpp::IntegerVector& curindices, bool all_ones, const auto& curvalues) {
         indices[c] = tatami::ArrayView<int>(static_cast<const int*>(curindices.begin()), curindices.size());
@@ -101,6 +110,15 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed) {
 
             if constexpr(is_int) {
                 values_i[c] = tatami::ArrayView<int>(static_cast<const int*>(curvalues.begin()), curvalues.size());
+                if (curvalues.sexp_type() == INTSXP) {
+                    if (!needs_na_cast && has_na_integer(curvalues)) {
+                        needs_na_cast = true;
+                    }
+                } else {
+                    if (!needs_na_cast && has_na_logical(curvalues)) {
+                        needs_na_cast = true;
+                    }
+                }
             } else {
                 values_d[c] = tatami::ArrayView<double>(static_cast<const double*>(curvalues.begin()), curvalues.size());
             }
@@ -112,8 +130,19 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed) {
         output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices)));
     } else {
         output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices)));
+        if (type == "integer") {
+            if (needs_na_cast) {
+                auto masked = delayed_cast_na_integer(std::move(output->ptr)); 
+                output->ptr = std::move(masked);
+            }
+        } else if (type == "logical") {
+            if (needs_na_cast) {
+                auto masked = delayed_cast_na_logical(std::move(output->ptr)); 
+                output->ptr = std::move(masked);
+            }
+        }
     }
-    output->original = Rcpp::List::create(store_i, store_v, alloc_i, alloc_d);
 
+    output->original = Rcpp::List::create(store_i, store_v, alloc_i, alloc_d);
     return output;
 }

@@ -33,6 +33,37 @@ test_that("initialization works correctly with dense matrices", {
     }
 })
 
+test_that("initialization works correctly with dense matrices containing NAs", {
+    dd <- as.matrix(y)
+    dd[1] <- NA
+    dd[length(dd)] <- NA
+
+    {
+        ptr <- initializeCpp(dd)
+        am_i_ok(dd, ptr)
+
+        dd2 <- dd
+        storage.mode(dd2) <- "integer"
+        ptr <- initializeCpp(dd2)
+        am_i_ok(dd2, ptr)
+
+        dd2 <- dd
+        storage.mode(dd2) <- "logical"
+        ptr <- initializeCpp(dd2)
+        am_i_ok(dd2, ptr)
+    }
+
+    de <- Matrix::Matrix(dd, sparse=FALSE)
+    {
+        ptr <- initializeCpp(de)
+        am_i_ok(de, ptr)
+
+        de2 <- de > 0 # with logical
+        ptr <- initializeCpp(de2)
+        am_i_ok(de2, ptr)
+    }
+})
+
 test_that("initialization works correctly with sparse matrices", {
     {
         ptr <- initializeCpp(y)
@@ -54,9 +85,32 @@ test_that("initialization works correctly with sparse matrices", {
     }
 })
 
-test_that("initialization works correctly with SVT sparse matrices", {
-    library(SparseArray)
+test_that("initialization works correctly with sparse matrices containing NAs", {
+    y[1] <- NA
+    y[length(y)] <- NA
 
+    {
+        ptr <- initializeCpp(y)
+        am_i_ok(y, ptr)
+
+        z <- new("dgRMatrix", x=y@x, j=y@i, p=y@p, Dim=rev(y@Dim))
+        ptr <- initializeCpp(z)
+        am_i_ok(z, ptr)
+    }
+
+    {
+        y2 <- y != 0
+        ptr <- initializeCpp(y2)
+        am_i_ok(y2, ptr)
+
+        z2 <- new("lgRMatrix", x=y2@x, j=y2@i, p=y2@p, Dim=rev(y2@Dim))
+        ptr <- initializeCpp(z2)
+        am_i_ok(z2, ptr)
+    }
+})
+
+library(SparseArray)
+test_that("initialization works correctly with SVT sparse matrices", {
     {
         z <- as(y, "SVT_SparseMatrix")
         ptr <- initializeCpp(z)
@@ -84,6 +138,32 @@ test_that("initialization works correctly with SVT sparse matrices", {
         z <- as(y2, "SVT_SparseMatrix")
         expect_null(z@SVT[[1]])
         expect_null(z@SVT[[100]])
+        ptr <- initializeCpp(z)
+        am_i_ok(y2, ptr)
+    }
+})
+
+test_that("initialization works correctly with SVT sparse matrices containing NAs", {
+    y[1] <- NA
+    y[length(y)] <- NA
+
+    {
+        z <- as(y, "SVT_SparseMatrix")
+        ptr <- initializeCpp(z)
+        am_i_ok(y, ptr)
+    }
+
+    {
+        y2 <- y != 0
+        z <- as(y2, "SVT_SparseMatrix")
+        ptr <- initializeCpp(z)
+        am_i_ok(y2, ptr)
+    }
+
+    {
+        y2 <- as.matrix(y)
+        storage.mode(y2) <- "integer"
+        z <- as(y2, "SVT_SparseMatrix")
         ptr <- initializeCpp(z)
         am_i_ok(y2, ptr)
     }

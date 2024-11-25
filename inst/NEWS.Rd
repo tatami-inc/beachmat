@@ -2,6 +2,10 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.24.0}{\itemize{
+\item Automatically cast integer/logical NAs to their double equivalents in the matrices wrapped by \code{initializeCpp()}.
+}}
+
 \section{Version 2.22.0}{\itemize{
 \item Moved all C++ libraries to the \pkg{assorthead} package.
 This uses the latest versions of the \pkg{tatami} framework.
