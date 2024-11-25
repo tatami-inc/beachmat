@@ -127,9 +127,9 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed) {
     });
 
     if (use_double) {
-        output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices)));
+        output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices), false));
     } else {
-        output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices)));
+        output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices), false));
         if (type == "integer") {
             if (needs_na_cast) {
                 auto masked = delayed_cast_na_integer(std::move(output->ptr)); 
