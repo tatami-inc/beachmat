@@ -23,7 +23,7 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
         }
     }
 
-    if (is_class_package(x, "alabaster.matrix", "WrapperArraySeed")) {
+    if (is_class_package(x, "alabaster.matrix", c("WrapperArraySeed", "ReloadedArraySeed"))) {
         # Pass-through some known no-op matrices from alabaster.matrix.
         return(initializeCpp(x@seed, ...))
     }
