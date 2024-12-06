@@ -41,6 +41,7 @@
 #' initializeCpp,dgRMatrix-method
 #' initializeCpp,lgCMatrix-method
 #' initializeCpp,lgRMatrix-method
+#' initializeCpp,ConstantArraySeed-method
 #' initializeCpp,SVT_SparseMatrix-method
 #' initializeCpp,DelayedMatrix-method
 #' initializeCpp,DelayedAbind-method

@@ -119,6 +119,13 @@ test_that("initialization works correctly with sparse matrices containing NAs", 
     }
 })
 
+library(DelayedArray)
+test_that("initialization works correctly with constant matrices", {
+    y <- ConstantArray(c(10, 20), 3.5) 
+    ptr <- initializeCpp(y)
+    am_i_ok(y, ptr)
+})
+
 library(SparseArray)
 test_that("initialization works correctly with SVT sparse matrices", {
     {

@@ -5,6 +5,8 @@
 \section{Version 2.24.0}{\itemize{
 \item Automatically cast integer/logical NAs to their double equivalents in the matrices wrapped by \code{initializeCpp()}.
 This can be disabled by setting \code{.check.na=FALSE}.
+
+\item Added a \code{initializeCpp()} method for the ConstantArraySeed class. 
 }}
 
 \section{Version 2.22.0}{\itemize{

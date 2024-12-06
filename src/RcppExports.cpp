@@ -10,6 +10,18 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// initialize_constant_matrix
+SEXP initialize_constant_matrix(int nrow, int ncol, double val);
+RcppExport SEXP _beachmat_initialize_constant_matrix(SEXP nrowSEXP, SEXP ncolSEXP, SEXP valSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
+    Rcpp::traits::input_parameter< double >::type val(valSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_constant_matrix(nrow, ncol, val));
+    return rcpp_result_gen;
+END_RCPP
+}
 // apply_delayed_binary_operation
 SEXP apply_delayed_binary_operation(SEXP left_input, SEXP right_input, std::string op);
 RcppExport SEXP _beachmat_apply_delayed_binary_operation(SEXP left_inputSEXP, SEXP right_inputSEXP, SEXP opSEXP) {
@@ -364,6 +376,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_beachmat_initialize_constant_matrix", (DL_FUNC) &_beachmat_initialize_constant_matrix, 3},
     {"_beachmat_apply_delayed_binary_operation", (DL_FUNC) &_beachmat_apply_delayed_binary_operation, 3},
     {"_beachmat_apply_delayed_log", (DL_FUNC) &_beachmat_apply_delayed_log, 2},
     {"_beachmat_apply_delayed_unary_math", (DL_FUNC) &_beachmat_apply_delayed_unary_math, 2},

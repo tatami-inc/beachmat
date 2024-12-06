@@ -124,6 +124,15 @@ setMethod("initializeCpp", "DelayedSetDimnames", function(x, ...) {
 ####################################################################################
 
 #' @export
+#' @importClassesFrom DelayedArray ConstantMatrix
+setMethod("initializeCpp", "ConstantArraySeed", function(x, ...) {
+    initialize_constant_matrix(x@dim[1], x@dim[2], x@value)
+})
+
+####################################################################################
+####################################################################################
+
+#' @export
 #' @importClassesFrom SparseArray SVT_SparseMatrix
 setMethod("initializeCpp", "SVT_SparseMatrix", function(x, .check.na = TRUE, ...) {
     initialize_SVT_SparseMatrix(nr=nrow(x), nc=ncol(x), x, check_na = .check.na)
