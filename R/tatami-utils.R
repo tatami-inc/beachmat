@@ -61,6 +61,8 @@
 #'
 #' For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
 #'
+#' For \code{tatami.row.nan.counts} or \code{tatami.column.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
+#'
 #' For \code{tatami.realize}, a numeric matrix or \linkS4class{dgCMatrix} with the matrix contents.
 #' The exact class depends on whether \code{x} refers to a sparse matrix. 
 #' 
@@ -187,6 +189,18 @@ tatami.row.sums <- function(x, num.threads) {
 #' @rdname tatami-utils
 tatami.column.sums <- function(x, num.threads) {
     tatami_column_sums(x, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.row.nan.counts <- function(x, num.threads) {
+    tatami_row_nan_counts(x, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.column.nan.counts <- function(x, num.threads) {
+    tatami_column_nan_counts(x, num.threads)
 }
 
 #' @export

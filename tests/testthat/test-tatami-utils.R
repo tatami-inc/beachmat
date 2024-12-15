@@ -201,3 +201,16 @@ test_that("matrix multiplication works as expected", {
     ptr2 <- initializeCpp(mat)
     expect_equal(tatami.multiply(ptr1, ptr2, right=FALSE, num.threads=1), as.matrix(mat %*% x1))
 })
+
+test_that("NaN counting works as expected", {
+    copy <- x1
+    copy[1,1] <- NaN
+    copy[2,5] <- NA
+    copy[10,5] <- NA
+    copy[11,3] <- NA
+    copy[11,9] <- NA
+
+    ptr <- initializeCpp(copy)
+    expect_equal(tatami.row.nan.counts(ptr, 1), rowSums(is.na(copy)))
+    expect_equal(tatami.column.nan.counts(ptr, 1), colSums(is.na(copy)))
+})
