@@ -23,6 +23,13 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
         }
     }
 
+    if (is_class_package(x, "TileDBArray", "TileDBArraySeed")) {
+        # Same for the TileDB matrices.
+        if (!isNamespaceLoaded("beachmat.tiledb") && requireNamespace("beachmat.tiledb", quietly=TRUE)) {
+            return(initializeCpp(x, ...))
+        }
+    }
+
     if (is_class_package(x, "alabaster.matrix", c("WrapperArraySeed", "ReloadedArraySeed"))) {
         # Pass-through some known no-op matrices from alabaster.matrix.
         return(initializeCpp(x@seed, ...))

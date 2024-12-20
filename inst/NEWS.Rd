@@ -7,6 +7,8 @@
 This can be disabled by setting \code{.check.na=FALSE}.
 
 \item Added a \code{initializeCpp()} method for the ConstantArraySeed class. 
+
+\item Using a \code{TileDBArraySeed} in \code{initializeCpp()} now automatically dispatches to \pkg{beachmat.tiledb}.
 }}
 
 \section{Version 2.22.0}{\itemize{
