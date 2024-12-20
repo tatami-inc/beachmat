@@ -36,7 +36,7 @@ SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RO
         Rcpp::LogicalVector x(raw_x);
         store[2] = x;
         output->ptr.reset(store_sparse_matrix<int>(std::move(x), std::move(i), std::move(p), nrow, ncol, byrow));
-        if (check_na && has_na_logical(x)) {
+        if (check_na) {
             auto masked = delayed_cast_na_logical(std::move(output->ptr)); 
             output->ptr = std::move(masked);
         }
@@ -81,7 +81,6 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed, bool check_
     // enough to store a reference to the top-level seed, as there might be
     // some ALTREP magic happening under the hood to realize each vector.
     Rcpp::List store_i(nc), store_v(nc);
-    bool needs_na_cast = false;
 
     tatami_r::parse_SVT_SparseMatrix(seed, [&](int c, const Rcpp::IntegerVector& curindices, bool all_ones, const auto& curvalues) {
         indices[c] = tatami::ArrayView<int>(static_cast<const int*>(curindices.begin()), curindices.size());
@@ -110,17 +109,6 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed, bool check_
 
             if constexpr(is_int) {
                 values_i[c] = tatami::ArrayView<int>(static_cast<const int*>(curvalues.begin()), curvalues.size());
-                if (check_na && !needs_na_cast) {
-                    if (curvalues.sexp_type() == INTSXP) {
-                        if (has_na_integer(curvalues)) {
-                            needs_na_cast = true;
-                        }
-                    } else {
-                        if (has_na_logical(curvalues)) {
-                            needs_na_cast = true;
-                        }
-                    }
-                }
             } else {
                 values_d[c] = tatami::ArrayView<double>(static_cast<const double*>(curvalues.begin()), curvalues.size());
             }
@@ -133,7 +121,7 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed, bool check_
         output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices), false));
     } else {
         output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices), false));
-        if (check_na && needs_na_cast) {
+        if (check_na) {
             if (type == "integer") {
                 auto masked = delayed_cast_na_integer(std::move(output->ptr)); 
                 output->ptr = std::move(masked);
