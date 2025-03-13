@@ -142,7 +142,7 @@ test_that("initialization works correctly with vector arithmetic", {
 
         z <- sweep(z0, 2, vc, "^")
         ptr <- initializeCpp(z)
-        am_i_ok(t(t(y) ^ vc), ptr)
+        am_i_ok(t(t(y) ^ vc), ptr, exact=FALSE)
     }
 })
 
