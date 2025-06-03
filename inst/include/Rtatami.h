@@ -52,6 +52,19 @@ inline BoundNumericPointer new_BoundNumericMatrix() {
     return Rcpp::XPtr<BoundNumericMatrix>(new BoundNumericMatrix, true); 
 }
 
+/**
+ * Set or unset the parallel executor.
+ * 
+ * @param ptr An external pointer created by `beachmat::getExecutor()`, or NULL to unset the existing executor.
+ */
+inline void set_executor(SEXP ptr) {
+    if (ptr == R_NilValue) {
+        tatami_r::set_executor(NULL);
+    } else {
+        tatami_r::set_executor(Rcpp::XPtr<manticore::Executor>(ptr).get());
+    }
+} 
+
 }
 
 #endif

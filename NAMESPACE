@@ -3,6 +3,7 @@
 export(checkMemoryCache)
 export(colBlockApply)
 export(flushMemoryCache)
+export(getExecutor)
 export(initializeCpp)
 export(isFileBackedMatrix)
 export(realizeFileBackedMatrix)

@@ -143,6 +143,12 @@ The easiest way to achieve parallelization is to use the `tatami::parallelize()`
 // [[Rcpp::depends(beachmat, assorthead)]]
 
 // [[Rcpp::export(rng=false)]]
+SEXP setup_parallel_executor(SEXP executor) {
+    Rtatami::set_executor(executor);
+    return R_NilValue;
+}
+
+// [[Rcpp::export(rng=false)]]
 Rcpp::NumericVector parallel_column_sums(Rcpp::RObject initmat, int nthreads) {
     Rtatami::BoundNumericPointer parsed(initmat);
     const auto& ptr = parsed->ptr;
@@ -162,6 +168,15 @@ Rcpp::NumericVector parallel_column_sums(Rcpp::RObject initmat, int nthreads) {
 
     return output;
 }
+```
+
+We first make sure that we have enabled the thread-safe protection around the R interpreter. 
+In a package context, this would done in an `.onLoad()`, but we can just call the setup function right here:
+
+```{r, results="hide"}
+# .onLoad <- function(libname, pkgname) {
+    setup_parallel_executor(beachmat::getExecutor())
+# }
 ```
 
 Now we put it to work with 2 threads.

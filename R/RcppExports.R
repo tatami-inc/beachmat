@@ -69,6 +69,10 @@ sparse_subset_index <- function(starts, newp) {
     .Call('_beachmat_sparse_subset_index', PACKAGE = 'beachmat', starts, newp)
 }
 
+get_executor <- function() {
+    .Call('_beachmat_get_executor', PACKAGE = 'beachmat')
+}
+
 initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na) {
     .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na)
 }

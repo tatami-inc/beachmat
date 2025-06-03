@@ -211,6 +211,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_executor
+SEXP get_executor();
+RcppExport SEXP _beachmat_get_executor() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    rcpp_result_gen = Rcpp::wrap(get_executor());
+    return rcpp_result_gen;
+END_RCPP
+}
 // initialize_sparse_matrix
 SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RObject raw_p, int nrow, int ncol, bool byrow, bool check_na);
 RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP raw_xSEXP, SEXP raw_iSEXP, SEXP raw_pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP, SEXP check_naSEXP) {
@@ -415,6 +424,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_initialize_dense_matrix_from_vector", (DL_FUNC) &_beachmat_initialize_dense_matrix_from_vector, 4},
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
+    {"_beachmat_get_executor", (DL_FUNC) &_beachmat_get_executor, 0},
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 7},
     {"_beachmat_initialize_SVT_SparseMatrix", (DL_FUNC) &_beachmat_initialize_SVT_SparseMatrix, 4},
     {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
