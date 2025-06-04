@@ -2,6 +2,12 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.26.0}{\itemize{
+\item Added the \code{getExecutor()} and \code{Rtatami::set_executor()} functions.
+This ensures that unknown matrices are parallelized safely in downstream packages. 
+Also updated instructions for developers to set the parallel executor in their \code{.onLoad()}. 
+}}
+
 \section{Version 2.24.0}{\itemize{
 \item Automatically cast integer/logical NAs to their double equivalents in the matrices wrapped by \code{initializeCpp()}.
 This can be disabled by setting \code{.check.na=FALSE}.
