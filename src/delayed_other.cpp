@@ -2,6 +2,9 @@
 #include "Rcpp.h"
 #include "tatami/tatami.hpp"
 
+#include <vector>
+#include <memory>
+
 //[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row) {
     Rtatami::BoundNumericPointer input(raw_input);
@@ -22,7 +25,7 @@ SEXP apply_delayed_subset(SEXP raw_input, Rcpp::IntegerVector subset, bool row) 
 SEXP apply_delayed_transpose(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedTranspose(input->ptr);
+    output->ptr.reset(new tatami::DelayedTranspose<double, int>(input->ptr));
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -33,7 +36,7 @@ SEXP apply_delayed_bind(Rcpp::List input, bool row) {
     collected.reserve(input.size());
     Rcpp::List protectorate(input.size());
 
-    for (size_t i = 0, end = input.size(); i < end; ++i) {
+    for (decltype(input.size()) i = 0, end = input.size(); i < end; ++i) {
         Rcpp::RObject current = input[i];
         Rtatami::BoundNumericPointer curptr(current);
         protectorate[i] = curptr->original;
@@ -41,7 +44,7 @@ SEXP apply_delayed_bind(Rcpp::List input, bool row) {
     }
 
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedBind(std::move(collected), row);
+    output->ptr.reset(new tatami::DelayedBind<double, int>(std::move(collected), row));
     output->original = protectorate; // propagate protection for all child objects by copying references.
     return output;
 }

@@ -3,11 +3,15 @@
 #include "tatami/tatami.hpp"
 #include "Rmath.h"
 
+#include <memory>
+#include <string>
+#include <stdexcept>
+
 //[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_log(SEXP raw_input, double base) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricLog(base));
+    output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(input->ptr, std::make_shared<tatami::DelayedUnaryIsometricLogHelper<double, double, int, double> >(base)));
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -15,75 +19,74 @@ SEXP apply_delayed_log(SEXP raw_input, double base) {
 //[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_unary_math(SEXP raw_input, const std::string& op) {
     Rtatami::BoundNumericPointer input(raw_input);
-    auto output = Rtatami::new_BoundNumericMatrix();
+    auto iptr = input->ptr;
 
+    std::shared_ptr<tatami::DelayedUnaryIsometricOperationHelper<double, double, int> > opptr;
     if (op == "abs") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAbs<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricAbsHelper<double, double, int>);
     } else if (op == "sign") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricSign<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricSignHelper<double, double, int>);
     } else if (op == "sqrt") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricSqrt<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricSqrtHelper<double, double, int>);
     } else if (op == "floor") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricFloor<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricFloorHelper<double, double, int>);
     } else if (op == "ceiling") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricCeiling<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricCeilingHelper<double, double, int>);
     } else if (op == "trunc") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricTrunc<>());
-
+        opptr.reset(new tatami::DelayedUnaryIsometricTruncHelper<double, double, int>);
     } else if (op == "exp") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricExp<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricExpHelper<double, double, int>);
     } else if (op == "expm1") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricExpm1<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricExpm1Helper<double, double, int>);
     } else if (op == "log1p") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricLog1p<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricLog1pHelper<double, double, int, double>);
     } else if (op == "cos") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricCos<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricCosHelper<double, double, int>);
     } else if (op == "sin") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricSin<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricSinHelper<double, double, int>);
     } else if (op == "tan") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricTan<>());
-    } else if (op == "cospi") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(
-            tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::make_DelayedUnaryIsometricMultiplyScalar(M_PI)),
-            tatami::DelayedUnaryIsometricCos<>()
+        opptr.reset(new tatami::DelayedUnaryIsometricTanHelper<double, double, int>);
+    } else if (op == "cospi" || op == "sinpi" || op == "tanpi") {
+        auto tmp_ptr = std::make_shared<tatami::DelayedUnaryIsometricOperation<double, double, int> >(
+            std::move(iptr),
+            std::make_shared<tatami::DelayedUnaryIsometricMultiplyScalarHelper<double, double, int, double> >(M_PI)
         );
-    } else if (op == "sinpi") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(
-            tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::make_DelayedUnaryIsometricMultiplyScalar(M_PI)),
-            tatami::DelayedUnaryIsometricSin<>()
-        );
-    } else if (op == "tanpi") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(
-            tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::make_DelayedUnaryIsometricMultiplyScalar(M_PI)),
-            tatami::DelayedUnaryIsometricTan<>()
-        );
+        iptr = std::move(tmp_ptr);
+        if (op == "cospi") {
+            opptr.reset(new tatami::DelayedUnaryIsometricCosHelper<double, double, int>);
+        } else if (op == "sinpi") {
+            opptr.reset(new tatami::DelayedUnaryIsometricSinHelper<double, double, int>);
+        } else {
+            opptr.reset(new tatami::DelayedUnaryIsometricTanHelper<double, double, int>);
+        }
     } else if (op == "acos") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAcos<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricAcosHelper<double, double, int>());
     } else if (op == "asin") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAsin<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricAsinHelper<double, double, int>());
     } else if (op == "atan") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAtan<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricAtanHelper<double, double, int>());
     } else if (op == "cosh") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricCosh<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricCoshHelper<double, double, int>());
     } else if (op == "sinh") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricSinh<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricSinhHelper<double, double, int>());
     } else if (op == "tanh") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricTanh<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricTanhHelper<double, double, int>());
     } else if (op == "acosh") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAcosh<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricAcoshHelper<double, double, int>());
     } else if (op == "asinh") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAsinh<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricAsinhHelper<double, double, int>());
     } else if (op == "atanh") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricAtanh<>());
-
+        opptr.reset(new tatami::DelayedUnaryIsometricAtanhHelper<double, double, int>());
     } else if (op == "lgamma") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricLgamma<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricLgammaHelper<double, double, int>());
     } else if (op == "gamma") {
-        output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricGamma<>());
+        opptr.reset(new tatami::DelayedUnaryIsometricGammaHelper<double, double, int>());
     } else {
         return(R_NilValue);
     }
 
+    auto output = Rtatami::new_BoundNumericMatrix();
+    output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(std::move(iptr), std::move(opptr)));
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -92,7 +95,7 @@ SEXP apply_delayed_unary_math(SEXP raw_input, const std::string& op) {
 SEXP apply_delayed_round(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr = tatami::make_DelayedUnaryIsometricOperation(input->ptr, tatami::DelayedUnaryIsometricRound<>());
+    output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(input->ptr, std::make_shared<tatami::DelayedUnaryIsometricRoundHelper<double, double, int> >()));
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }

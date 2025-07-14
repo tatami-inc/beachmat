@@ -1,8 +1,10 @@
 #include "Rtatami.h"
 
-#include <cstdint>
-#include <limits>
 #include <type_traits>
+#include <string>
+#include <stdexcept>
+#include <vector>
+#include <algorithm>
 
 #include "na_cast.h"
 
@@ -118,9 +120,9 @@ SEXP initialize_SVT_SparseMatrix(int nr, int nc, Rcpp::RObject seed, bool check_
     });
 
     if (use_double) {
-        output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices), false));
+        output->ptr.reset(new tatami::FragmentedSparseMatrix<double, int, decltype(values_d), decltype(indices)>(nr, nc, std::move(values_d), std::move(indices), false, false));
     } else {
-        output->ptr.reset(new tatami::FragmentedSparseColumnMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices), false));
+        output->ptr.reset(new tatami::FragmentedSparseMatrix<double, int, decltype(values_i), decltype(indices)>(nr, nc, std::move(values_i), std::move(indices), false, false));
         if (check_na) {
             if (type == "integer") {
                 auto masked = delayed_cast_na_integer(std::move(output->ptr)); 

@@ -3,6 +3,10 @@
 #include "tatami_stats/tatami_stats.hpp"
 #include "tatami_mult/tatami_mult.hpp"
 
+#include <vector>
+#include <cstddef>
+#include <stdexcept>
+
 //[[Rcpp::export(rng=false)]]
 Rcpp::IntegerVector tatami_dim(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
@@ -96,16 +100,17 @@ SEXP tatami_realize(SEXP raw_input, int threads) {
         const auto& store_v = frag.value;
         const auto& store_i = frag.index;
 
-        size_t primary = shared->ncol();
-        Rcpp::IntegerVector output_p(primary + 1);
-        for (size_t p = 0; p < primary; ++p) {
+        auto primary = shared->ncol();
+        Rcpp::IntegerVector output_p(sanisizer::sum<decltype(std::declval<Rcpp::IntegerVector>().size())>(primary, 1));
+        for (decltype(primary) p = 0; p < primary; ++p) {
             output_p[p + 1] = output_p[p] + store_v[p].size();
         }
 
-        Rcpp::NumericVector output_v(output_p[primary]);
-        Rcpp::IntegerVector output_i(output_p[primary]);
-        size_t offset = 0;
-        for (size_t p = 0; p < primary; ++p) {
+        auto last_p = output_p[primary];
+        auto output_v = sanisizer::create<Rcpp::NumericVector>(last_p);
+        auto output_i = sanisizer::create<Rcpp::IntegerVector>(last_p);
+        decltype(last_p) offset = 0;
+        for (decltype(primary) p = 0; p < primary; ++p) {
             std::copy(store_v[p].begin(), store_v[p].end(), output_v.begin() + offset);
             std::copy(store_i[p].begin(), store_i[p].end(), output_i.begin() + offset);
             offset += store_v[p].size();
@@ -133,14 +138,14 @@ Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector o
     tatami_mult::Options opt;
     opt.num_threads = num_threads; 
     if (right) {
-        if (static_cast<int>(other.size()) != shared->ncol()) {
+        if (!sanisizer::is_equal(other.size(), shared->ncol())) {
             throw std::runtime_error("length of vector does not match the number of columns of 'x'");
         }
         Rcpp::NumericVector output(shared->nrow());
         tatami_mult::multiply(*shared, static_cast<const double*>(other.begin()), static_cast<double*>(output.begin()), opt);
         return output;
     } else {
-        if (static_cast<int>(other.size()) != shared->nrow()) {
+        if (!sanisizer::is_equal(other.size(), shared->nrow())) {
             throw std::runtime_error("length of vector does not match the number of rows of 'x'");
         }
         Rcpp::NumericVector output(shared->ncol());
@@ -158,19 +163,23 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
     opt.num_threads = num_threads; 
 
     if (right) {
-        size_t common_dim = other.rows();
-        if (common_dim != static_cast<size_t>(shared->ncol())) {
+        auto common_dim = other.rows();
+        if (!sanisizer::is_equal(common_dim, shared->ncol())) {
             throw std::runtime_error("rows of 'vals' does not match the number of columns of 'x'");
         }
 
-        size_t num_other = other.cols();
-        size_t out_nrow = shared->nrow();
-        Rcpp::NumericMatrix output(out_nrow, num_other);
-        std::vector<double*> other_ptrs(num_other), out_ptrs(num_other);
-        size_t other_offset = 0, out_offset = 0;
-        for (size_t o = 0; o < num_other; ++o, other_offset += common_dim, out_offset += out_nrow) {
-            out_ptrs[o] = output.begin() + out_offset;
-            other_ptrs[o] = other.begin() + other_offset;
+        auto num_other = other.cols();
+        auto out_nrow = shared->nrow();
+        sanisizer::product<std::size_t>(out_nrow, num_other); // check outside the loop so that we can do unsafe products inside the loop.
+        Rcpp::NumericMatrix output(sanisizer::cast<decltype(num_other)>(out_nrow), num_other);
+
+        auto other_ptrs = sanisizer::create<std::vector<const double*> >(num_other);
+        auto out_ptrs = sanisizer::create<std::vector<double*> >(num_other);
+        double* outptr = output.begin();
+        const double* otherptr = other.begin();
+        for (decltype(num_other) o = 0; o < num_other; ++o) {
+            out_ptrs[o] = outptr + sanisizer::product_unsafe<std::size_t>(o, out_nrow);
+            other_ptrs[o] = otherptr + sanisizer::product_unsafe<std::size_t>(o, common_dim);
         }
 
         tatami_mult::multiply(*shared, other_ptrs, out_ptrs, opt);
@@ -179,19 +188,23 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
     } else {
         // In this case, we assume that 'other' is in its transposed form so that we get
         // column-major access to what was previously the rows in the original matrix.
-        size_t common_dim = other.rows();
-        if (common_dim != static_cast<size_t>(shared->nrow())) {
+        auto common_dim = other.rows();
+        if (!sanisizer::is_equal(common_dim, shared->nrow())) {
             throw std::runtime_error("columns of 'vals' does not match the number of rows of 'x'");
         }
 
-        size_t num_other = other.cols();
-        size_t out_nrow = shared->ncol();
-        Rcpp::NumericMatrix output(out_nrow, num_other); // also transposed, so that we can write conveniently to a column-major format.
-        std::vector<double*> other_ptrs(num_other), out_ptrs(num_other);
-        size_t other_offset = 0, out_offset = 0;
-        for (size_t o = 0; o < num_other; ++o, other_offset += common_dim, out_offset += out_nrow) {
-            out_ptrs[o] = output.begin() + out_offset;
-            other_ptrs[o] = other.begin() + other_offset;
+        auto num_other = other.cols();
+        auto out_nrow = shared->ncol();
+        sanisizer::product<std::size_t>(out_nrow, num_other); // check outside the loop so that we can do unsafe products inside the loop.
+        Rcpp::NumericMatrix output(sanisizer::cast<decltype(num_other)>(out_nrow), num_other); // also transposed, so that we can write conveniently to a column-major format.
+
+        auto other_ptrs = sanisizer::create<std::vector<const double*> >(num_other);
+        auto out_ptrs = sanisizer::create<std::vector<double*> >(num_other);
+        double* outptr = output.begin();
+        const double* otherptr = other.begin();
+        for (decltype(num_other) o = 0; o < num_other; ++o) {
+            out_ptrs[o] = outptr + sanisizer::product_unsafe<std::size_t>(o, out_nrow);
+            other_ptrs[o] = otherptr + sanisizer::product_unsafe<std::size_t>(o, common_dim);
         }
 
         tatami_mult::multiply(other_ptrs, *shared, out_ptrs, opt);
