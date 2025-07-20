@@ -17,7 +17,7 @@ A list containing \code{i}, an integer vector of the row indices of all non-zero
 and \code{x}, a (usually atomic) vector of the values of the non-zero entries.
 }
 \description{
-This function is soft-deprecated; users are advised to use \code{\link{nzwhich}} and \code{\link{nzvals}} instead.
+This function is soft-deprecated; users are advised to use \code{\link[SparseArray]{nzwhich}} and \code{\link[SparseArray]{nzvals}} instead.
 }
 \examples{
 x <- Matrix::rsparsematrix(1e6, 1e6, 0.000001)

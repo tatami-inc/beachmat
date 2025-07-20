@@ -25,7 +25,8 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
 
     if (is_class_package(x, "TileDBArray", "TileDBArraySeed")) {
         # Same for the TileDB matrices.
-        if (!isNamespaceLoaded("beachmat.tiledb") && requireNamespace("beachmat.tiledb", quietly=TRUE)) {
+        pkg <- "beachmat.tiledb" # hide this to avoid warnings about requireNamespace() from static analysis during CHECK.
+        if (!isNamespaceLoaded(pkg) && requireNamespace(pkg, quietly=TRUE)) {
             return(initializeCpp(x, ...))
         }
     }

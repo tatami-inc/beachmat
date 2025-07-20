@@ -10,10 +10,10 @@ realizeFileBackedMatrix(x)
 isFileBackedMatrix(x)
 }
 \arguments{
-\item{x}{A \linkS4class{DelayedMatrix} object.}
+\item{x}{A \link[DelayedArray]{DelayedMatrix} object.}
 }
 \value{
-For \code{realizeFileBackedMatrix}, an ordinary matrix or a \linkS4class{dgCMatrix}, depending on whether \code{\link{is_sparse}(x)}.
+For \code{realizeFileBackedMatrix}, an ordinary matrix or a dgCMatrix, depending on whether \code{\link[DelayedArray]{is_sparse}(x)}.
 
 For \code{isFileBackedMatrix}, a logical scalar indicating whether \code{x} has file-backed components.
 }
@@ -21,7 +21,7 @@ For \code{isFileBackedMatrix}, a logical scalar indicating whether \code{x} has 
 Realize a file-backed DelayedMatrix into its corresponding in-memory format.
 }
 \details{
-A file-backed matrix representation is recognized based on whether it has a \code{\link{path}} method for any one of its seeds. 
+A file-backed matrix representation is recognized based on whether it has a \code{\link[DelayedArray]{path}} method for any one of its seeds. 
 If so, and the \code{"beachmat.realizeFileBackedMatrix"} option is not \code{FALSE}, we will load it into memory.
 This is intended for DelayedMatrix objects that have already been subsetted (e.g., to highly variable genes),
 which can be feasibly loaded into memory for rapid calculations.

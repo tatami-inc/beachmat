@@ -1,6 +1,6 @@
 #' Find non-zero entries of a matrix
 #'
-#' This function is soft-deprecated; users are advised to use \code{\link{nzwhich}} and \code{\link{nzvals}} instead.
+#' This function is soft-deprecated; users are advised to use \code{\link[SparseArray]{nzwhich}} and \code{\link[SparseArray]{nzvals}} instead.
 #' 
 #' @param x A numeric matrix-like object, usually sparse in content if not in representation.
 #' @param ... Further arguments, ignored.

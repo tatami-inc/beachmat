@@ -141,7 +141,7 @@ For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector contai
 
 For \code{tatami.row.nan.counts} or \code{tatami.column.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
 
-For \code{tatami.realize}, a numeric matrix or \linkS4class{dgCMatrix} with the matrix contents.
+For \code{tatami.realize}, a numeric matrix or dgCMatrix with the matrix contents.
 The exact class depends on whether \code{x} refers to a sparse matrix. 
 
 For \code{tatami.multiply}, a numeric matrix containing the matrix product of \code{x} and \code{other}.

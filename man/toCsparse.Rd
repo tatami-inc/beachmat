@@ -8,11 +8,11 @@ toCsparse(x)
 }
 \arguments{
 \item{x}{Any object produced by block processing with \code{\link{colBlockApply}} or \code{\link{rowBlockApply}}.
-This can be a matrix, sparse matrix or a \linkS4class{SparseMatrix} object from the \pkg{SparseArray} package.}
+This can be a matrix, sparse matrix or a \link[SparseArray]{SparseMatrix} object.}
 }
 \value{
-\code{x} is returned unless it is a \pkg{SparseMatrix} object from the \pkg{SparseArray} package,
-in which case an appropriate \linkS4class{CsparseMatrix} object is returned instead.
+\code{x} is returned unless it is a \link[SparseArray]{SparseMatrix} object,
+in which case an appropriate CsparseMatrix object is returned instead.
 }
 \description{
 Exactly what it says in the title.
