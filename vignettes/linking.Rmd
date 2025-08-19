@@ -64,7 +64,8 @@ This requires addition of `Rcpp` to the `Imports` field of the `DESCRIPTION` fil
 # Reading matrix data
 
 Given an arbitrary matrix-like object, we create its C++ representation using the `initializeCpp()` function.
-This process is very cheap as no data is copied, so the C++ object only holds views on the memory allocated and owned by R itself. 
+The C++ object only holds views on the memory allocated and owned by R itself. 
+As such, initialization is very cheap as no data is copied.
 
 ```{r}
 # Mocking up some kind of matrix-like object.
@@ -73,10 +74,10 @@ x <- round(rsparsematrix(1000, 10, 0.2))
 
 # Initializing it in C++.
 library(beachmat)
-ptr <- initializeCpp(x)
+init <- initializeCpp(x)
 ```
 
-`ptr` now refers to a `BoundNumericMatrix` object, the composition of which can be found in the `Rtatami.h` header.
+`init` now refers to a `BoundNumericMatrix` object, the composition of which can be found in the `Rtatami.h` header.
 Of particular relevance is the `ptr` member, which contains a pointer to a `tatami::NumericMatrix` object derived from the argument to `initializeCpp()`.
 Developers can read the documentation in the header file for more details:
 
@@ -84,7 +85,7 @@ Developers can read the documentation in the header file for more details:
 browseURL(system.file("include", "Rtatami.h", package="beachmat"))
 ```
 
-Now we can write a function that uses **tatami** to operate on `ptr`.
+Now we can write a function that uses **tatami** to operate on `init`.
 All functionality described in **tatami**'s [documentation](https://tatami-inc.github.io/tatami/) can be used here;
 the only `r Biocpkg("beachmat")`-specific factor is that developers should include the `Rtatami.h` header first (which takes care of the **tatami** headers).
 Let's just say we want to compute column sums - a simple implementation might look like this:
@@ -118,20 +119,20 @@ Rcpp::NumericVector column_sums(Rcpp::RObject initmat) {
 ```
 
 Let's compile this function with `r CRANpkg("Rcpp")` and put it to work.
-We can just pass in the `ptr` that we created earlier:
+We can just pass in the `init` that we created earlier:
 
 ```{r}
-column_sums(ptr)
+column_sums(init)
 ```
 
 In general, we suggest calling `initializeCpp()` within package functions rather than asking users to call it themselves.
-The external pointers should never be exposed to the user, as they do not behave like regular objects, e.g., they are not serializable.
-Fortunately, the `initializeCpp()` calls are very cheap and can be performed at the start of any R function that needs to do matrix operations in C++.
+The external pointers should never be exposed to the user as they do not behave like regular objects, e.g., they are not serializable.
+Fortunately, the `initializeCpp()` calls are very cheap and can be performed at the start of any R function that needs to operate on the matrix in C++.
 
 # Enabling parallelization
 
 **tatami** calls are normally thread-safe, but if the `tatami::NumericMatrix` is constructed from an unsupported object, it needs to call R to extract the matrix contents.
-The R interpreter is strictly single-threaded, which requires some care when defining our chosen parallelization scheme.
+The R interpreter is strictly single-threaded, which requires some care when writing our parallel sections.
 The easiest way to achieve parallelization is to use the `tatami::parallelize()` function:
 
 ```{Rcpp}
@@ -139,7 +140,8 @@ The easiest way to achieve parallelization is to use the `tatami::parallelize()`
 #include <vector>
 #include <algorithm>
 
-// Not necessary in a package context, it's only used for this vignette:
+// This attribute list is not necessary in a package context,
+// it's only used to allow this vignette to compile properly:
 // [[Rcpp::depends(beachmat, assorthead)]]
 
 // [[Rcpp::export(rng=false)]]
@@ -170,7 +172,7 @@ Rcpp::NumericVector parallel_column_sums(Rcpp::RObject initmat, int nthreads) {
 }
 ```
 
-We first make sure that we have enabled the thread-safe protection around the R interpreter. 
+Before we call our parallel function, we make sure that we have enabled the thread-safe protection around the R interpreter. 
 In a package context, this would done in an `.onLoad()`, but we can just call the setup function right here:
 
 ```{r, results="hide"}
@@ -179,19 +181,19 @@ In a package context, this would done in an `.onLoad()`, but we can just call th
 # }
 ```
 
-Now we put it to work with 2 threads.
+Now we put it to work with 2 threads on our previously-initialized matrix.
 Note that `tatami::parallelize()` (or specifically, the macros in `Rtatami.h`) will use the standard `<thread>` library to handle parallelization,
 so it will work even on toolchains that do not have OpenMP support.
 
 ```{r}
-parallel_column_sums(ptr, 2)
+parallel_column_sums(init, 2)
 ```
 
 More advanced users can check out the parallelization-related documentation in the [**tatami_r**](https://github.com/tatami-inc/tatami_r) repository. 
 
 # Comparison to block processing
 
-The conventional approach to iterating over a matrix is to use `r Biocpkg("DelayedArray")`'s block processing mechanism, i.e., `DelayedArray::blockApply`.
+The conventional approach to iterating over a generic matrix in Bioconductor is to use `r Biocpkg("DelayedArray")`'s block processing mechanism, i.e., `DelayedArray::blockApply`.
 This is implemented completely in R and is convenient for developers as it can be used directly with any R function.
 However, its performance only goes so far, and several years of experience with its use has revealed a few shortcomings:
 
@@ -212,6 +214,8 @@ Shifting the iteration into C++ with `r Biocpkg("beachmat")` avoids many of thes
 The looping overhead is effectively eliminated as the R interpreter is no longer involved.
 Only one row/column is extracted at a time for most `tatami::Matrix` classes, minimizing memory overhead and avoiding the need for manual block size management in most cases.
 Parallelization is also much easier with the standard `<thread>` library, as we do not need to spin up or fork to create a separate process.
+
+As an aside, if an unsupported matrix class is supplied to `initializeCpp()`, `r Biocpkg("beachmat")` will fall back to block processing for data extraction.
 
 # Session information {-}
 

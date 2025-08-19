@@ -12,14 +12,14 @@
 #' For \code{flushMemoryCache}, all existing cached objects are removed and \code{NULL} is invisibly returned.
 #'
 #' @details
-#' For representations where data extraction is costly (e.g., from file), \code{\link{initializeCpp}} methods may provide a \code{memorize=} option.
-#' Setting this to \code{TRUE} will load the entire matrix into memory, effectively paying a one-time up-front cost to improve efficiency for downstream operations that pass through the matrix multiple times.
+#' For representations where data extraction is costly (e.g., from file), \code{\link{initializeCpp}} methods may consider realizing the entire matrix into memory.
+#' This effectively pays a one-time up-front cost to improve efficiency for downstream operations that pass through the matrix multiple times.
 #'
-#' If this option is provided, \code{initializeCpp} methods are expected to cache the in-memory instance using \code{checkMemoryCache}.
+#' If such an option is enabled, \code{initializeCpp} methods are expected to cache the in-memory instance using \code{checkMemoryCache}.
 #' This ensures that all subsequent calls to the same \code{initializeCpp} method will return the same instance, avoiding redundant memory loads when the same matrix is used in multiple functions.
 #'
-#' Of course, this process saves time at the expense of increased memory usage.
-#' If too many instances are being cached, they can be cleared from memory using the \code{flushMemoryCache} function.
+#' Of course, this process comes at the expense of increased memory usage.
+#' If too many instances are stored in the cache, they can be cleared from memory using the \code{flushMemoryCache} function.
 #'
 #' @author Aaron Lun
 #' @examples
@@ -44,6 +44,9 @@
 #' 
 #' # Flushing the cache.
 #' flushMemoryCache()
+#'
+#' @seealso
+#' The \code{hdf5.realize=} and \code{tiledb.realize=} options in the \code{initializeCpp} methods of \pkg{beachmat.hdf5} and \pkg{beachmat.tiledb}.
 #'
 #' @name checkMemoryCache
 NULL

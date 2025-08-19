@@ -54,6 +54,8 @@ inline BoundNumericPointer new_BoundNumericMatrix() {
 
 /**
  * Set or unset the parallel executor.
+ * This needs to be defined in every package's shared library and called upon package load,
+ * to ensure that the R interpreter can be safely executed within that package's parallel sections.
  * 
  * @param ptr An external pointer created by `beachmat::getExecutor()`, or NULL to unset the existing executor.
  */

@@ -35,7 +35,7 @@ Alternatively, an external pointer from a previous call to \code{initializeCpp},
 If \code{TRUE} (the default), any \code{NA}s are cast to their double-precision equivalents when reading from the tatami matrix.
 This can be set to \code{FALSE} to improve performance if the caller knows that \code{x} does not contain \code{NA}s.
 }
-Fields should generally be prefixed by the matrix type, to avoid conflicts with arguments from other packages.
+If a \code{initializeCpp} method accepts additional arguments, the names of those argument should generally be prefixed by the matrix type to avoid conflicts between different methods.
 For example, \code{hdf5.realize} can be used in \pkg{beachmat.hdf5} to load a HDF5-backed matrix into memory.}
 }
 \value{
@@ -47,8 +47,8 @@ This object simply references the R memory space and avoids making any copies of
 }
 \details{
 Do not attempt to serialize the return value; it contains a pointer to external memory, and will not be valid after a save/load cycle.
-Users should not be exposed to the returned pointers; rather, developers should call \code{initialize} at the start to obtain a C++ object for further processing.
-As mentioned before, this initialization process is very cheap so there is no downside from just recreating the object within each function body.
+Users should not be exposed to the returned pointers; rather, developers should call \code{initializeCpp} at the start to obtain a C++ object for further processing.
+The initialization process should be cheap so there is no downside from just recreating the object within each function body.
 }
 \examples{
 # Mocking up a count matrix:
