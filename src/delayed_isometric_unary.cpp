@@ -120,7 +120,6 @@ SEXP apply_delayed_nonassociative_arithmetic(SEXP raw_input, Rcpp::NumericVector
 //[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_comparison(SEXP raw_input, Rcpp::NumericVector val, bool row, std::string op) {
     Rtatami::BoundNumericPointer input(raw_input);
-    const auto& shared = input->ptr;
     Rcpp::List protectorate(2);
     protectorate[0] = input->original;
 
@@ -171,7 +170,6 @@ SEXP apply_delayed_comparison(SEXP raw_input, Rcpp::NumericVector val, bool row,
 //[[Rcpp::export(rng=false)]]
 SEXP apply_delayed_boolean(SEXP raw_input, Rcpp::LogicalVector val, bool row, std::string op) {
     Rtatami::BoundNumericPointer input(raw_input);
-    const auto& shared = input->ptr;
     Rcpp::List protectorate(2);
     protectorate[0] = input->original;
 
