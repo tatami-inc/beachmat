@@ -1,5 +1,5 @@
 Package: beachmat
-Version: 2.25.5
+Version: 2.26.0
 Date: 2025-08-19
 Title: Compiling Bioconductor to Handle Each Matrix Type
 Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email = "infinite.monkeys.with.keyboards@gmail.com"),
