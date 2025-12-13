@@ -2,6 +2,11 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.28.0}{\itemize{
+\item Added the \code{.unknown.action=} option to \code{initializeCpp()},
+to determine whether to print a message, warning or error when using the unknown matrix fallback.
+}}
+
 \section{Version 2.26.0}{\itemize{
 \item Added the \code{getExecutor()} and \code{Rtatami::set_executor()} functions.
 This ensures that unknown matrices are parallelized safely in downstream packages. 

@@ -262,15 +262,23 @@ test_that("initialization works correctly with an unknown DelayedArray", {
     mat <- RleArray(Rle(sample(10, 200, replace=TRUE)), c(20, 10))
     expect_s4_class(mat@seed, "SolidRleArraySeed")
 
-    ptr <- initializeCpp(mat)
+    expect_message(ptr <- initializeCpp(mat), "using unknown")
     am_i_ok(mat, ptr)
+
+    expect_warning(ptr <- initializeCpp(mat, .unknown.action="warn"), "using unknown")
+    expect_error(ptr <- initializeCpp(mat, .unknown.action="error"), "unknown")
+    expect_message(ptr <- initializeCpp(mat, .unknown.action="none"), NA)
 
     # Trying with an unsupported operation.
     mat <- DelayedArray(Matrix::rsparsematrix(100, 50, 0.1))
     mat2 <- round(mat, digits=2)
 
-    expect_warning(ptr <- initializeCpp(mat2), "falling back")
+    expect_message(ptr <- initializeCpp(mat2), "using unknown")
     am_i_ok(mat2, ptr)
+
+    expect_warning(ptr <- initializeCpp(mat2, .unknown.action="warn"), "using unknown")
+    expect_error(ptr <- initializeCpp(mat2, .unknown.action="error"), "are supported for delayed 'round'")
+    expect_message(ptr <- initializeCpp(mat2, .unknown.action="none"), NA)
 })
 
 test_that("initialization no-ops correctly with its own output", {

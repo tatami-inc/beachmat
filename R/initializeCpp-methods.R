@@ -12,14 +12,14 @@ is_class_package <- function(x, package, classes) {
 }
 
 #' @export
-setMethod("initializeCpp", "ANY", function(x, ...) {
+setMethod("initializeCpp", "ANY", function(x, .unknown.action="message", ...) {
     if (is_class_package(x, "HDF5Array", c("HDF5ArraySeed", "H5SparseMatrixSeed"))) {
         # Automatically use beachmat.hdf5 if it's available.  We check that
         # beachmat.hdf5 is not already loaded to avoid infinite loops in case
         # beachmat.hdf5 does NOT support the listed classes (so requiring the
         # namespace would not add any more methods for meaningful dispatch).
         if (!isNamespaceLoaded("beachmat.hdf5") && requireNamespace("beachmat.hdf5", quietly=TRUE)) {
-            return(initializeCpp(x, ...))
+            return(initializeCpp(x, .unknown.action=.unknown.action, ...))
         }
     }
 
@@ -27,13 +27,13 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
         # Same for the TileDB matrices.
         pkg <- "beachmat.tiledb" # hide this to avoid warnings about requireNamespace() from static analysis during CHECK.
         if (!isNamespaceLoaded(pkg) && requireNamespace(pkg, quietly=TRUE)) {
-            return(initializeCpp(x, ...))
+            return(initializeCpp(x, .unknown.action=.unknown.action, ...))
         }
     }
 
     if (is_class_package(x, "alabaster.matrix", c("WrapperArraySeed", "ReloadedArraySeed"))) {
         # Pass-through some known no-op matrices from alabaster.matrix.
-        return(initializeCpp(x@seed, ...))
+        return(initializeCpp(x@seed, .unknown.action=.unknown.action, ...))
     }
 
     # We also provide a lightweight hook to support skipping of classes in
@@ -41,10 +41,21 @@ setMethod("initializeCpp", "ANY", function(x, ...) {
     # import beachmat just to define a no-op initializeCpp() method.
     for (cls in getOption("beachmat.noop.wrappers", character(0))) {
         if (is(x, cls)) {
-            return(initializeCpp(x@seed, ...))
+            return(initializeCpp(x@seed, .unknown.action=.unknown.action, ...))
         }
     }
 
+    .unknown.action <- match.arg(.unknown.action, c("none", "message", "warn", "error"))
+    if (.unknown.action == "error") {
+        stop("unknown matrix class '", class(x)[1], "'")
+    } else if (.unknown.action != "none") {
+        msg <- paste("using unknown matrix fallback for '", class(x)[1], "'")
+        if (.unknown.action == "message") {
+            message(msg)
+        } else {
+            warning(msg)
+        }
+    }
     initialize_unknown_matrix(x)
 })
 
@@ -82,11 +93,21 @@ setMethod("initializeCpp", "lgRMatrix", function(x, .check.na = TRUE, ...) initi
 
 #' @export
 #' @import DelayedArray 
-setMethod("initializeCpp", "DelayedMatrix", function(x, ...) {
+setMethod("initializeCpp", "DelayedMatrix", function(x, .unknown.action="message", ...) {
     tryCatch(
-        initializeCpp(x@seed, ...),
+        initializeCpp(x@seed, .unknown.action=.unknown.action, ...),
         error=function(e) {
-            warning(gsub("\\s+$", " ", e$message), ", falling back to an unknown matrix")
+            .unknown.action <- match.arg(.unknown.action, c("none", "message", "warn", "error"))
+            if (.unknown.action == "error") {
+                stop(e)
+            } else if (.unknown.action != "none") {
+                msg <- paste0(gsub("\\s+$", " ", e$message), ", using unknown matrix fallback for '", class(x)[1], "'")
+                if (.unknown.action == "message") {
+                    message(msg)
+                } else {
+                    warning(msg)
+                }
+            }
             initialize_unknown_matrix(x)
         }
     )

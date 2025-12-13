@@ -7,9 +7,11 @@
 #' Alternatively, an external pointer from a previous call to \code{initializeCpp}, which is returned without modification.
 #' @param ... Further arguments used by specific methods, such as:
 #' \itemize{
-#' \item \code{.check.na}, a logical vector indicating whether to check for \code{NA} values in integer and logical matrices.
+#' \item \code{.check.na}, a boolean indicating whether to check for \code{NA} values in integer and logical matrices.
 #' If \code{TRUE} (the default), any \code{NA}s are cast to their double-precision equivalents when reading from the tatami matrix.
 #' This can be set to \code{FALSE} to improve performance if the caller knows that \code{x} does not contain \code{NA}s.
+#' \item \code{.unknown.action}, a string specifying the action to take upon encountering a matrix with no known \pkg{tatami} representation.
+#' This should be one of \code{"message"}, \code{"warn"}, \code{"error"}, or \code{"none"}. 
 #' }
 #' If a \code{initializeCpp} method accepts additional arguments, the names of those argument should generally be prefixed by the matrix type to avoid conflicts between different methods.
 #' For example, \code{hdf5.realize} can be used in \pkg{beachmat.hdf5} to load a HDF5-backed matrix into memory.
