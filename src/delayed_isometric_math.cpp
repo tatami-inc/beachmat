@@ -11,7 +11,13 @@
 SEXP apply_delayed_log(SEXP raw_input, double base) {
     Rtatami::BoundNumericPointer input(raw_input);
     auto output = Rtatami::new_BoundNumericMatrix();
-    output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(input->ptr, std::make_shared<tatami::DelayedUnaryIsometricLogHelper<double, double, int, double> >(base)));
+    if (base == 2) {
+        output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(input->ptr, std::make_shared<tatami::DelayedUnaryIsometricLog2Helper<double, double, int> >()));
+    } else if (base == 10) {
+        output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(input->ptr, std::make_shared<tatami::DelayedUnaryIsometricLog10Helper<double, double, int> >()));
+    } else {
+        output->ptr.reset(new tatami::DelayedUnaryIsometricOperation<double, double, int>(input->ptr, std::make_shared<tatami::DelayedUnaryIsometricCustomLogHelper<double, double, int, double> >(base)));
+    }
     output->original = input->original; // copying the reference to propagate GC protection.
     return output;
 }
@@ -39,7 +45,7 @@ SEXP apply_delayed_unary_math(SEXP raw_input, const std::string& op) {
     } else if (op == "expm1") {
         opptr.reset(new tatami::DelayedUnaryIsometricExpm1Helper<double, double, int>);
     } else if (op == "log1p") {
-        opptr.reset(new tatami::DelayedUnaryIsometricLog1pHelper<double, double, int, double>);
+        opptr.reset(new tatami::DelayedUnaryIsometricLog1pHelper<double, double, int>);
     } else if (op == "cos") {
         opptr.reset(new tatami::DelayedUnaryIsometricCosHelper<double, double, int>);
     } else if (op == "sin") {
