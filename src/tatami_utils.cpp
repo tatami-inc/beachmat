@@ -32,6 +32,10 @@ Rcpp::LogicalVector tatami_prefer_rows(SEXP raw_input) {
 Rcpp::NumericVector tatami_column(SEXP raw_input, int i) {
     Rtatami::BoundNumericPointer input(raw_input);
     const auto& shared = input->ptr;
+
+    if (i < 1 || i > shared->ncol()) {
+        throw std::runtime_error("column'i' is out of range");
+    }
     auto wrk = shared->dense_column();
 
     Rcpp::NumericVector output(shared->nrow());
@@ -45,6 +49,10 @@ Rcpp::NumericVector tatami_column(SEXP raw_input, int i) {
 Rcpp::NumericVector tatami_row(SEXP raw_input, int i) {
     Rtatami::BoundNumericPointer input(raw_input);
     const auto& shared = input->ptr;
+
+    if (i < 1 || i > shared->nrow()) {
+        throw std::runtime_error("row 'i' is out of range");
+    }
     auto wrk = shared->dense_row();
 
     Rcpp::NumericVector output(shared->ncol());
@@ -56,6 +64,10 @@ Rcpp::NumericVector tatami_row(SEXP raw_input, int i) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_row_sums(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::sums::Options opt;
     opt.num_threads = threads;
@@ -65,6 +77,10 @@ Rcpp::NumericVector tatami_row_sums(SEXP raw_input, int threads) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::sums::Options opt;
     opt.num_threads = threads;
@@ -74,6 +90,10 @@ Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_row_medians(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::medians::Options opt;
     opt.num_threads = threads;
@@ -83,6 +103,10 @@ Rcpp::NumericVector tatami_row_medians(SEXP raw_input, int threads) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_column_medians(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::medians::Options opt;
     opt.num_threads = threads;
@@ -92,6 +116,10 @@ Rcpp::NumericVector tatami_column_medians(SEXP raw_input, int threads) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_row_nan_counts(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::counts::nan::Options opt;
     opt.num_threads = threads;
@@ -101,6 +129,10 @@ Rcpp::NumericVector tatami_row_nan_counts(SEXP raw_input, int threads) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_column_nan_counts(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::counts::nan::Options opt;
     opt.num_threads = threads;
@@ -110,6 +142,10 @@ Rcpp::NumericVector tatami_column_nan_counts(SEXP raw_input, int threads) {
 
 //[[Rcpp::export(rng=false)]]
 SEXP tatami_realize(SEXP raw_input, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     const auto& shared = input->ptr;
 
@@ -149,12 +185,16 @@ SEXP tatami_realize(SEXP raw_input, int threads) {
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector other, bool right, int num_threads) {
+Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector other, bool right, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     const auto& shared = input->ptr;
 
     tatami_mult::Options opt;
-    opt.num_threads = num_threads; 
+    opt.num_threads = threads; 
     if (right) {
         if (!sanisizer::is_equal(other.size(), shared->ncol())) {
             throw std::runtime_error("length of vector does not match the number of columns of 'x'");
@@ -173,12 +213,16 @@ Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector o
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix other, bool right, int num_threads) {
+Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix other, bool right, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     const auto& shared = input->ptr;
 
     tatami_mult::Options opt;
-    opt.num_threads = num_threads; 
+    opt.num_threads = threads; 
 
     if (right) {
         auto common_dim = other.rows();
@@ -231,7 +275,11 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_multiply_matrix(SEXP raw_input, SEXP more_input, bool right, int num_threads) {
+Rcpp::NumericVector tatami_multiply_matrix(SEXP raw_input, SEXP more_input, bool right, int threads) {
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
     Rtatami::BoundNumericPointer input(raw_input);
     Rtatami::BoundNumericPointer input2(more_input);
 
@@ -243,7 +291,7 @@ Rcpp::NumericVector tatami_multiply_matrix(SEXP raw_input, SEXP more_input, bool
     }
 
     tatami_mult::Options opt;
-    opt.num_threads = num_threads; 
+    opt.num_threads = threads; 
     Rcpp::NumericMatrix output(shared->nrow(), shared2->ncol());
     tatami_mult::multiply(*shared, *shared2, static_cast<double*>(output.begin()), opt);
 
