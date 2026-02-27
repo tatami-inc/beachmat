@@ -109,6 +109,14 @@ tatami_column_sums <- function(raw_input, threads) {
     .Call('_beachmat_tatami_column_sums', PACKAGE = 'beachmat', raw_input, threads)
 }
 
+tatami_row_medians <- function(raw_input, threads) {
+    .Call('_beachmat_tatami_row_medians', PACKAGE = 'beachmat', raw_input, threads)
+}
+
+tatami_column_medians <- function(raw_input, threads) {
+    .Call('_beachmat_tatami_column_medians', PACKAGE = 'beachmat', raw_input, threads)
+}
+
 tatami_row_nan_counts <- function(raw_input, threads) {
     .Call('_beachmat_tatami_row_nan_counts', PACKAGE = 'beachmat', raw_input, threads)
 }

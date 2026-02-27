@@ -61,6 +61,8 @@
 #'
 #' For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
 #'
+#' For \code{tatami.row.medians} or \code{tatami.column.medians}, a numeric vector containing the row or column medians, respectively.
+#'
 #' For \code{tatami.row.nan.counts} or \code{tatami.column.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
 #'
 #' For \code{tatami.realize}, a numeric matrix or dgCMatrix with the matrix contents.
@@ -189,6 +191,18 @@ tatami.row.sums <- function(x, num.threads) {
 #' @rdname tatami-utils
 tatami.column.sums <- function(x, num.threads) {
     tatami_column_sums(x, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.row.medians <- function(x, num.threads) {
+    tatami_row_medians(x, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.column.medians <- function(x, num.threads) {
+    tatami_column_medians(x, num.threads)
 }
 
 #' @export

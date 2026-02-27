@@ -73,6 +73,24 @@ Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads) {
 }
 
 //[[Rcpp::export(rng=false)]]
+Rcpp::NumericVector tatami_row_medians(SEXP raw_input, int threads) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    tatami_stats::medians::Options opt;
+    opt.num_threads = threads;
+    auto rm = tatami_stats::medians::by_row(input->ptr.get(), opt);
+    return Rcpp::NumericVector(rm.begin(), rm.end());
+}
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::NumericVector tatami_column_medians(SEXP raw_input, int threads) {
+    Rtatami::BoundNumericPointer input(raw_input);
+    tatami_stats::medians::Options opt;
+    opt.num_threads = threads;
+    auto cm = tatami_stats::medians::by_column(input->ptr.get(), opt);
+    return Rcpp::NumericVector(cm.begin(), cm.end());
+}
+
+//[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_row_nan_counts(SEXP raw_input, int threads) {
     Rtatami::BoundNumericPointer input(raw_input);
     tatami_stats::counts::nan::Options opt;

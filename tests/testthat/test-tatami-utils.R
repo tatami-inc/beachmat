@@ -35,6 +35,18 @@ test_that("basic methods work as expected", {
     expect_equal(tatami.realize(dptr1, 1), y1)
 })
 
+test_that("dimwise medians work as expected with a more interesting dense matrix", {
+    mat <- matrix(runif(1000), 25, 40)
+    ptr <- initializeCpp(mat)
+
+    rref <- apply(mat, 1, median)
+    expect_equal(tatami.row.medians(ptr, 1), rref)
+    expect_equal(tatami.row.medians(ptr, 2), rref)
+    cref <- apply(mat, 2, median)
+    expect_equal(tatami.column.medians(ptr, 1), cref)
+    expect_equal(tatami.column.medians(ptr, 2), cref)
+})
+
 test_that("bind works as expected", {
     ptr1 <- initializeCpp(x1)
     ptr2 <- initializeCpp(x2)

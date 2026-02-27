@@ -18,6 +18,8 @@
 \alias{tatami.column}
 \alias{tatami.row.sums}
 \alias{tatami.column.sums}
+\alias{tatami.row.medians}
+\alias{tatami.column.medians}
 \alias{tatami.row.nan.counts}
 \alias{tatami.column.nan.counts}
 \alias{tatami.is.sparse}
@@ -57,6 +59,10 @@ tatami.column(x, i)
 tatami.row.sums(x, num.threads)
 
 tatami.column.sums(x, num.threads)
+
+tatami.row.medians(x, num.threads)
+
+tatami.column.medians(x, num.threads)
 
 tatami.row.nan.counts(x, num.threads)
 
@@ -138,6 +144,8 @@ For \code{tatami.prefer.rows}, a logical scalar indicating whether the matrix pr
 For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
 
 For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+
+For \code{tatami.row.medians} or \code{tatami.column.medians}, a numeric vector containing the row or column medians, respectively.
 
 For \code{tatami.row.nan.counts} or \code{tatami.column.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
 

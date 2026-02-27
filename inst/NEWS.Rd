@@ -5,6 +5,8 @@
 \section{Version 2.28.0}{\itemize{
 \item Added the \code{.unknown.action=} option to \code{initializeCpp()},
 to determine whether to print a message, warning or error when using the unknown matrix fallback.
+
+\item Added \code{tatami.row.medians()} and \code{tatami.column.medians()} to compute the row- and column-wise medians.
 }}
 
 \section{Version 2.26.0}{\itemize{
