@@ -49,7 +49,7 @@ setMethod("initializeCpp", "ANY", function(x, .unknown.action="message", ...) {
     if (.unknown.action == "error") {
         stop("unknown matrix class '", class(x)[1], "'")
     } else if (.unknown.action != "none") {
-        msg <- paste("using unknown matrix fallback for '", class(x)[1], "'")
+        msg <- paste0("using unknown matrix fallback for '", class(x)[1], "'")
         if (.unknown.action == "message") {
             message(msg)
         } else {
