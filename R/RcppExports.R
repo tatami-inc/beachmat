@@ -93,40 +93,24 @@ tatami_prefer_rows <- function(raw_input) {
     .Call('_beachmat_tatami_prefer_rows', PACKAGE = 'beachmat', raw_input)
 }
 
-tatami_column <- function(raw_input, i) {
-    .Call('_beachmat_tatami_column', PACKAGE = 'beachmat', raw_input, i)
+tatami_get <- function(raw_input, i, row) {
+    .Call('_beachmat_tatami_get', PACKAGE = 'beachmat', raw_input, i, row)
 }
 
-tatami_row <- function(raw_input, i) {
-    .Call('_beachmat_tatami_row', PACKAGE = 'beachmat', raw_input, i)
-}
-
-tatami_row_sums <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_row_sums', PACKAGE = 'beachmat', raw_input, threads)
-}
-
-tatami_column_sums <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_column_sums', PACKAGE = 'beachmat', raw_input, threads)
+tatami_sums <- function(raw_input, row, threads) {
+    .Call('_beachmat_tatami_sums', PACKAGE = 'beachmat', raw_input, row, threads)
 }
 
 tatami_sums_by_group <- function(raw_input, group, row, threads) {
     .Call('_beachmat_tatami_sums_by_group', PACKAGE = 'beachmat', raw_input, group, row, threads)
 }
 
-tatami_row_medians <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_row_medians', PACKAGE = 'beachmat', raw_input, threads)
+tatami_medians <- function(raw_input, row, threads) {
+    .Call('_beachmat_tatami_medians', PACKAGE = 'beachmat', raw_input, row, threads)
 }
 
-tatami_column_medians <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_column_medians', PACKAGE = 'beachmat', raw_input, threads)
-}
-
-tatami_row_nan_counts <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_row_nan_counts', PACKAGE = 'beachmat', raw_input, threads)
-}
-
-tatami_column_nan_counts <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_column_nan_counts', PACKAGE = 'beachmat', raw_input, threads)
+tatami_nan_counts <- function(raw_input, row, threads) {
+    .Call('_beachmat_tatami_nan_counts', PACKAGE = 'beachmat', raw_input, row, threads)
 }
 
 tatami_realize <- function(raw_input, threads) {

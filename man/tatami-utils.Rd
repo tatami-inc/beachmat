@@ -2,6 +2,12 @@
 % Please edit documentation in R/tatami-utils.R
 \name{tatami-utils}
 \alias{tatami-utils}
+\alias{tatami.row.medians}
+\alias{tatami.column.medians}
+\alias{tatami.row.sums}
+\alias{tatami.column.sums}
+\alias{tatami.row.nan.counts}
+\alias{tatami.column.nan.counts}
 \alias{tatami.bind}
 \alias{tatami.transpose}
 \alias{tatami.subset}
@@ -14,19 +20,15 @@
 \alias{tatami.not}
 \alias{tatami.binary}
 \alias{tatami.dim}
-\alias{tatami.row}
-\alias{tatami.column}
-\alias{tatami.row.sums}
-\alias{tatami.column.sums}
-\alias{tatami.sums.by.group}
-\alias{tatami.row.medians}
-\alias{tatami.column.medians}
-\alias{tatami.row.nan.counts}
-\alias{tatami.column.nan.counts}
+\alias{tatami.get}
 \alias{tatami.is.sparse}
 \alias{tatami.prefer.rows}
 \alias{tatami.realize}
 \alias{tatami.multiply}
+\alias{tatami.sums}
+\alias{tatami.sums.by.group}
+\alias{tatami.medians}
+\alias{tatami.nan.counts}
 \title{Tatami utilities}
 \usage{
 tatami.bind(xs, by.row)
@@ -53,23 +55,7 @@ tatami.binary(x, y, op)
 
 tatami.dim(x)
 
-tatami.row(x, i)
-
-tatami.column(x, i)
-
-tatami.row.sums(x, num.threads)
-
-tatami.column.sums(x, num.threads)
-
-tatami.sums.by.group(x, group, row, num.threads)
-
-tatami.row.medians(x, num.threads)
-
-tatami.column.medians(x, num.threads)
-
-tatami.row.nan.counts(x, num.threads)
-
-tatami.column.nan.counts(x, num.threads)
+tatami.get(x, i, row)
 
 tatami.is.sparse(x)
 
@@ -78,6 +64,14 @@ tatami.prefer.rows(x)
 tatami.realize(x, num.threads)
 
 tatami.multiply(x, val, right, num.threads)
+
+tatami.sums(x, row, num.threads)
+
+tatami.sums.by.group(x, group, row, num.threads)
+
+tatami.medians(x, row, num.threads)
+
+tatami.nan.counts(x, row, num.threads)
 }
 \arguments{
 \item{xs}{A list of pointers produced by \code{\link{initializeCpp}}.
@@ -133,12 +127,20 @@ For \code{tatami.multiply}, a logical scalar indicating that \code{val} is on th
 \item{y}{A pointer produced by \code{\link{initializeCpp}},
 referencing a matrix of the same dimensions as \code{x}.}
 
-\item{i}{Integer scalar containing the 1-based index of the row (for \code{tatami.row}) or column (for \code{tatami.column}) of interest.}
+\item{i}{Integer scalar containing the 1-based index of the row (for \code{row=TRUE}) or column (otherwise) of interest. 
+This should be in \code{[1, D]} where \code{D} is the total number of rows or columns, respectively, in \code{x}.}
+
+\item{row}{For \code{tatami.get}, a boolean indicating whether to extract the \code{i}-th row.
+If \code{FALSE}, the \code{i}-th column is extracted instead.
+
+For \code{tatami.sums}, \code{tatami.sums.by.group}, \code{tatami.medians}, etc., a boolean indicating whether to compute row-wise statistics.
+If \code{FALSE}, column-wise statistics are computed instead.}
 
 \item{num.threads}{Integer scalar specifying the number of threads to use.}
 
-\item{row}{Boolean indicating whether to compute row-wise statistics.
-If \code{FALSE}, column-wise statistics are computed instead.}
+\item{group}{Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
+containing the group assignment for each column and row, respectively.
+Assignments should lie in \code{[1, N]} where \code{N} is the total number of groups.}
 }
 \value{
 For \code{tatami.dim}, an integer vector containing the dimensions of the matrix.
@@ -147,9 +149,14 @@ For \code{tatami.is.sparse}, a logical scalar indicating whether the matrix is s
 
 For \code{tatami.prefer.rows}, a logical scalar indicating whether the matrix prefers iteration by row.
 
-For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
+For \code{tatami.get}, a numeric vector containing the contents of row or column \code{i}, respectively.
 
-For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+For \code{tatami.realize}, a numeric matrix or dgCMatrix with the matrix contents.
+The exact class depends on whether \code{x} refers to a sparse matrix. 
+
+For \code{tatami.multiply}, a numeric matrix containing the matrix product of \code{x} and \code{other}.
+
+For \code{tatami.sums}, a numeric vector containing the row or column sums, respectively.
 
 For \code{tatami.sums.by.group}, a numeric matrix is returned.
 \itemize{
@@ -159,14 +166,9 @@ Each column corresponds to a group and contains the row sums across all columns 
 Each row corresponds to a group and contains the column sums across all columns of \code{x} assigned to that group.
 }
 
-For \code{tatami.row.medians} or \code{tatami.column.medians}, a numeric vector containing the row or column medians, respectively.
+For \code{tatami.medians}, a numeric vector containing the row or column medians, respectively.
 
-For \code{tatami.row.nan.counts} or \code{tatami.column.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
-
-For \code{tatami.realize}, a numeric matrix or dgCMatrix with the matrix contents.
-The exact class depends on whether \code{x} refers to a sparse matrix. 
-
-For \code{tatami.multiply}, a numeric matrix containing the matrix product of \code{x} and \code{other}.
+For \code{tatami.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
 
 For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 }
@@ -178,10 +180,13 @@ Some of these are used internally by \code{initializeCpp} methods operating on \
 x <- Matrix::rsparsematrix(1000, 100, 0.1)
 ptr <- initializeCpp(x)
 tatami.dim(ptr)
-tatami.row(ptr, 1)
+tatami.get(ptr, 1, row=TRUE)
 
 rounded <- tatami.round(ptr)
-tatami.row(rounded, 1)
+tatami.get(rounded, 1, row=TRUE)
+
+tatami.sums(ptr, row=FALSE, num.threads=2)
+tatami.medians(ptr, row=FALSE, num.threads=2)
 
 }
 \author{

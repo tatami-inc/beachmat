@@ -42,7 +42,10 @@
 #' a logical scalar indicating that \code{val} is on the right-hand side of the operation.
 #'
 #' For \code{tatami.multiply}, a logical scalar indicating that \code{val} is on the right-hand side of the multiplication.
-#' @param row Boolean indicating whether to compute row-wise statistics.
+#' @param row For \code{tatami.get}, a boolean indicating whether to extract the \code{i}-th row.
+#' If \code{FALSE}, the \code{i}-th column is extracted instead.
+#'
+#' For \code{tatami.sums}, \code{tatami.sums.by.group}, \code{tatami.medians}, etc., a boolean indicating whether to compute row-wise statistics.
 #' If \code{FALSE}, column-wise statistics are computed instead.
 #' @param group Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
 #' containing the group assignment for each column and row, respectively.
@@ -52,7 +55,8 @@
 #' @param y A pointer produced by \code{\link{initializeCpp}},
 #' referencing a matrix of the same dimensions as \code{x}.
 #' @param base Numeric scalar specifying the base of the log-transformation.
-#' @param i Integer scalar containing the 1-based index of the row (for \code{tatami.row}) or column (for \code{tatami.column}) of interest. 
+#' @param i Integer scalar containing the 1-based index of the row (for \code{row=TRUE}) or column (otherwise) of interest. 
+#' This should be in \code{[1, D]} where \code{D} is the total number of rows or columns, respectively, in \code{x}.
 #' @param num.threads Integer scalar specifying the number of threads to use.
 #'
 #' @return 
@@ -62,9 +66,14 @@
 #'
 #' For \code{tatami.prefer.rows}, a logical scalar indicating whether the matrix prefers iteration by row.
 #'
-#' For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
+#' For \code{tatami.get}, a numeric vector containing the contents of row or column \code{i}, respectively.
 #'
-#' For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+#' For \code{tatami.realize}, a numeric matrix or dgCMatrix with the matrix contents.
+#' The exact class depends on whether \code{x} refers to a sparse matrix. 
+#' 
+#' For \code{tatami.multiply}, a numeric matrix containing the matrix product of \code{x} and \code{other}.
+#'
+#' For \code{tatami.sums}, a numeric vector containing the row or column sums, respectively.
 #'
 #' For \code{tatami.sums.by.group}, a numeric matrix is returned.
 #' \itemize{
@@ -74,26 +83,32 @@
 #' Each row corresponds to a group and contains the column sums across all columns of \code{x} assigned to that group.
 #' }
 #'
-#' For \code{tatami.row.medians} or \code{tatami.column.medians}, a numeric vector containing the row or column medians, respectively.
+#' For \code{tatami.medians}, a numeric vector containing the row or column medians, respectively.
 #'
-#' For \code{tatami.row.nan.counts} or \code{tatami.column.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
-#'
-#' For \code{tatami.realize}, a numeric matrix or dgCMatrix with the matrix contents.
-#' The exact class depends on whether \code{x} refers to a sparse matrix. 
-#' 
-#' For \code{tatami.multiply}, a numeric matrix containing the matrix product of \code{x} and \code{other}.
+#' For \code{tatami.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
 #' 
 #' For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
+#'
+#' @aliases
+#' tatami.row.medians
+#' tatami.column.medians
+#' tatami.row.sums
+#' tatami.column.sums
+#' tatami.row.nan.counts
+#' tatami.column.nan.counts
 #'
 #' @author Aaron Lun
 #' @examples
 #' x <- Matrix::rsparsematrix(1000, 100, 0.1)
 #' ptr <- initializeCpp(x)
 #' tatami.dim(ptr)
-#' tatami.row(ptr, 1)
+#' tatami.get(ptr, 1, row=TRUE)
 #'
 #' rounded <- tatami.round(ptr)
-#' tatami.row(rounded, 1)
+#' tatami.get(rounded, 1, row=TRUE)
+#'
+#' tatami.sums(ptr, row=FALSE, num.threads=2)
+#' tatami.medians(ptr, row=FALSE, num.threads=2)
 #'
 #' @name tatami-utils
 NULL
@@ -184,56 +199,8 @@ tatami.dim <- function(x) {
 
 #' @export
 #' @rdname tatami-utils
-tatami.row <- function(x, i) {
-    tatami_row(x, i)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.column <- function(x, i) {
-    tatami_column(x, i)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.row.sums <- function(x, num.threads) {
-    tatami_row_sums(x, num.threads)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.column.sums <- function(x, num.threads) {
-    tatami_column_sums(x, num.threads)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.sums.by.group <- function(x, group, row, num.threads) {
-    tatami_sums_by_group(x, group, row, num.threads) 
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.row.medians <- function(x, num.threads) {
-    tatami_row_medians(x, num.threads)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.column.medians <- function(x, num.threads) {
-    tatami_column_medians(x, num.threads)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.row.nan.counts <- function(x, num.threads) {
-    tatami_row_nan_counts(x, num.threads)
-}
-
-#' @export
-#' @rdname tatami-utils
-tatami.column.nan.counts <- function(x, num.threads) {
-    tatami_column_nan_counts(x, num.threads)
+tatami.get <- function(x, i, row) {
+    tatami_get(x, i, row)
 }
 
 #' @export
@@ -259,13 +226,79 @@ tatami.realize <- function(x, num.threads) {
 tatami.multiply <- function(x, val, right, num.threads) {
     if (is.atomic(val)) {
         if (is.null(dim(val))) {
-            tatami_multiply_vector(x, val, right=right, num_threads=num.threads)
+            tatami_multiply_vector(x, val, right=right, threads=num.threads)
         } else if (!right) {
-            t(tatami_multiply_columns(x, t(val), right=right, num_threads=num.threads))
+            t(tatami_multiply_columns(x, t(val), right=right, threads=num.threads))
         } else {
-            tatami_multiply_columns(x, val, right=right, num_threads=num.threads)
+            tatami_multiply_columns(x, val, right=right, threads=num.threads)
         }
     } else {
-        tatami_multiply_matrix(x, val, right=right, num_threads=num.threads)
+        tatami_multiply_matrix(x, val, right=right, threads=num.threads)
     }
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.sums <- function(x, row, num.threads) {
+    tatami_sums(x, row, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.sums.by.group <- function(x, group, row, num.threads) {
+    tatami_sums_by_group(x, group, row, num.threads) 
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.medians <- function(x, row, num.threads) {
+    tatami_medians(x, row, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.nan.counts <- function(x, row, num.threads) {
+    tatami_nan_counts(x, row, num.threads)
+}
+
+##### For compatibility only. #######
+
+#' @export
+tatami.row <- function(x, i) {
+    tatami.get(x, i, row=TRUE)
+}
+
+#' @export
+tatami.column <- function(x, i) {
+    tatami.get(x, i, row=FALSE)
+}
+
+#' @export
+tatami.row.sums <- function(x, num.threads) {
+    tatami.sums(x, row=TRUE, num.threads=num.threads)
+}
+
+#' @export
+tatami.column.sums <- function(x, num.threads) {
+    tatami.sums(x, row=FALSE, num.threads=num.threads)
+}
+
+#' @export
+tatami.row.medians <- function(x, num.threads) {
+    tatami.medians(x, row=TRUE, num.threads=num.threads)
+}
+
+#' @export
+tatami.column.medians <- function(x, num.threads) {
+    tatami.medians(x, row=FALSE, num.threads=num.threads)
+}
+
+#' @export
+tatami.row.nan.counts <- function(x, num.threads) {
+    tatami.nan.counts(x, row=TRUE, num.threads=num.threads)
+}
+
+#' @export
+tatami.column.nan.counts <- function(x, num.threads) {
+    tatami.nan.counts(x, row=FALSE, num.threads=num.threads)
 }

@@ -29,63 +29,39 @@ Rcpp::LogicalVector tatami_prefer_rows(SEXP raw_input) {
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_column(SEXP raw_input, int i) {
+Rcpp::NumericVector tatami_get(SEXP raw_input, int i, bool row) {
     Rtatami::BoundNumericPointer input(raw_input);
-    const auto& shared = input->ptr;
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
 
-    if (i < 1 || i > shared->ncol()) {
-        throw std::runtime_error("column'i' is out of range");
+    const auto limit = (row ? NR : NC);
+    if (i < 1 || i > limit) {
+        throw std::runtime_error("'i' is out of range");
     }
-    auto wrk = shared->dense_column();
 
-    Rcpp::NumericVector output(shared->nrow());
+    auto wrk = tatami::new_extractor<false, false>(*(input->ptr), row, false);
+    Rcpp::NumericVector output(row ? NC : NR);
     auto optr = static_cast<double*>(output.begin());
-    auto ptr = wrk->fetch(i-1, optr);
+    auto ptr = wrk->fetch(i - 1, optr);
     tatami::copy_n(ptr, output.size(), optr);
     return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_row(SEXP raw_input, int i) {
-    Rtatami::BoundNumericPointer input(raw_input);
-    const auto& shared = input->ptr;
-
-    if (i < 1 || i > shared->nrow()) {
-        throw std::runtime_error("row 'i' is out of range");
+Rcpp::NumericVector tatami_sums(SEXP raw_input, bool row, int threads) {
+    tatami_stats::sums::Options opt;
+    opt.num_threads = threads;
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
     }
-    auto wrk = shared->dense_row();
 
-    Rcpp::NumericVector output(shared->ncol());
-    auto optr = static_cast<double*>(output.begin());
-    auto ptr = wrk->fetch(i-1, optr);
-    tatami::copy_n(ptr, output.size(), optr);
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    Rcpp::NumericVector output(row ? NR : NC);
+    tatami_stats::sums::apply(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
     return output;
-}
-
-//[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_row_sums(SEXP raw_input, int threads) {
-    if (threads < 1) {
-        throw std::runtime_error("'threads' should be a positive integer");
-    }
-
-    Rtatami::BoundNumericPointer input(raw_input);
-    tatami_stats::sums::Options opt;
-    opt.num_threads = threads;
-    auto rs = tatami_stats::sums::by_row(input->ptr.get(), opt);
-    return Rcpp::NumericVector(rs.begin(), rs.end());
-}
-
-//[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads) {
-    if (threads < 1) {
-        throw std::runtime_error("'threads' should be a positive integer");
-    }
-
-    Rtatami::BoundNumericPointer input(raw_input);
-    tatami_stats::sums::Options opt;
-    opt.num_threads = threads;
-    auto rs = tatami_stats::sums::by_column(input->ptr.get(), opt);
-    return Rcpp::NumericVector(rs.begin(), rs.end());
 }
 
 //[[Rcpp::export(rng=false)]]
@@ -108,82 +84,59 @@ Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector gro
         --x;
     }
     const auto total_groups = tatami_stats::total_groups(group_m1.data(), group_m1.size());
+
+    const auto expected = (row ? NC : NR);
+    if (!sanisizer::is_equal(expected, group_m1.size())) {
+        throw std::runtime_error("'group' should have length equal to the appropriate dimension extent");
+    }
+
+    const auto stride = (row ? NR : NC);
+    Rcpp::NumericMatrix output(stride, total_groups);
     auto ptrs = sanisizer::create<std::vector<double*> >(total_groups);
+    for (auto i = static_cast<decltype(total_groups)>(0); i < total_groups; ++i) {
+        ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, stride);
+    }
+    tatami_stats::grouped_sums::apply(row, *(input->ptr), group_m1.data(), total_groups, ptrs.data(), opt);
 
     if (row) {
-        if (!sanisizer::is_equal(NC, group_m1.size())) {
-            throw std::runtime_error("'group' should have length equal to the number of columns");
-        }
-        Rcpp::NumericMatrix output(NR, total_groups);
-        for (auto i = static_cast<decltype(total_groups)>(0); i < total_groups; ++i) {
-            ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, NR);
-        }
-        tatami_stats::grouped_sums::apply(true, *(input->ptr), group_m1.data(), total_groups, ptrs.data(), opt);
         return output;
-
     } else {
-        if (!sanisizer::is_equal(NR, group_m1.size())) {
-            throw std::runtime_error("'group' should have length equal to the number of rows");
-        }
-        Rcpp::NumericMatrix output(NC, total_groups);
-        for (auto i = static_cast<decltype(total_groups)>(0); i < total_groups; ++i) {
-            ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, NC);
-        }
-        tatami_stats::grouped_sums::apply(false, *(input->ptr), group_m1.data(), total_groups, ptrs.data(), opt);
         return Rcpp::transpose(output);
     }
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_row_medians(SEXP raw_input, int threads) {
-    if (threads < 1) {
-        throw std::runtime_error("'threads' should be a positive integer");
-    }
-
-    Rtatami::BoundNumericPointer input(raw_input);
+Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads) {
     tatami_stats::medians::Options opt;
     opt.num_threads = threads;
-    auto rm = tatami_stats::medians::by_row(input->ptr.get(), opt);
-    return Rcpp::NumericVector(rm.begin(), rm.end());
-}
-
-//[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_column_medians(SEXP raw_input, int threads) {
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
     }
 
     Rtatami::BoundNumericPointer input(raw_input);
-    tatami_stats::medians::Options opt;
-    opt.num_threads = threads;
-    auto cm = tatami_stats::medians::by_column(input->ptr.get(), opt);
-    return Rcpp::NumericVector(cm.begin(), cm.end());
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    Rcpp::NumericVector output(row ? NR : NC);
+    tatami_stats::medians::apply(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_row_nan_counts(SEXP raw_input, int threads) {
-    if (threads < 1) {
-        throw std::runtime_error("'threads' should be a positive integer");
-    }
-
-    Rtatami::BoundNumericPointer input(raw_input);
+Rcpp::NumericVector tatami_nan_counts(SEXP raw_input, bool row, int threads) {
     tatami_stats::counts::nan::Options opt;
     opt.num_threads = threads;
-    auto rs = tatami_stats::counts::nan::by_row(input->ptr.get(), opt);
-    return Rcpp::NumericVector(rs.begin(), rs.end());
-}
-
-//[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_column_nan_counts(SEXP raw_input, int threads) {
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
     }
 
     Rtatami::BoundNumericPointer input(raw_input);
-    tatami_stats::counts::nan::Options opt;
-    opt.num_threads = threads;
-    auto rs = tatami_stats::counts::nan::by_column(input->ptr.get(), opt);
-    return Rcpp::NumericVector(rs.begin(), rs.end());
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    Rcpp::NumericVector output(row ? NR : NC);
+    tatami_stats::counts::nan::apply(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]

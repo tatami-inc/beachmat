@@ -279,47 +279,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_column
-Rcpp::NumericVector tatami_column(SEXP raw_input, int i);
-RcppExport SEXP _beachmat_tatami_column(SEXP raw_inputSEXP, SEXP iSEXP) {
+// tatami_get
+Rcpp::NumericVector tatami_get(SEXP raw_input, int i, bool row);
+RcppExport SEXP _beachmat_tatami_get(SEXP raw_inputSEXP, SEXP iSEXP, SEXP rowSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
     Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_column(raw_input, i));
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_get(raw_input, i, row));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_row
-Rcpp::NumericVector tatami_row(SEXP raw_input, int i);
-RcppExport SEXP _beachmat_tatami_row(SEXP raw_inputSEXP, SEXP iSEXP) {
+// tatami_sums
+Rcpp::NumericVector tatami_sums(SEXP raw_input, bool row, int threads);
+RcppExport SEXP _beachmat_tatami_sums(SEXP raw_inputSEXP, SEXP rowSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_row(raw_input, i));
-    return rcpp_result_gen;
-END_RCPP
-}
-// tatami_row_sums
-Rcpp::NumericVector tatami_row_sums(SEXP raw_input, int threads);
-RcppExport SEXP _beachmat_tatami_row_sums(SEXP raw_inputSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_row_sums(raw_input, threads));
-    return rcpp_result_gen;
-END_RCPP
-}
-// tatami_column_sums
-Rcpp::NumericVector tatami_column_sums(SEXP raw_input, int threads);
-RcppExport SEXP _beachmat_tatami_column_sums(SEXP raw_inputSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_column_sums(raw_input, threads));
+    rcpp_result_gen = Rcpp::wrap(tatami_sums(raw_input, row, threads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -336,47 +316,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_row_medians
-Rcpp::NumericVector tatami_row_medians(SEXP raw_input, int threads);
-RcppExport SEXP _beachmat_tatami_row_medians(SEXP raw_inputSEXP, SEXP threadsSEXP) {
+// tatami_medians
+Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads);
+RcppExport SEXP _beachmat_tatami_medians(SEXP raw_inputSEXP, SEXP rowSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_row_medians(raw_input, threads));
+    rcpp_result_gen = Rcpp::wrap(tatami_medians(raw_input, row, threads));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_column_medians
-Rcpp::NumericVector tatami_column_medians(SEXP raw_input, int threads);
-RcppExport SEXP _beachmat_tatami_column_medians(SEXP raw_inputSEXP, SEXP threadsSEXP) {
+// tatami_nan_counts
+Rcpp::NumericVector tatami_nan_counts(SEXP raw_input, bool row, int threads);
+RcppExport SEXP _beachmat_tatami_nan_counts(SEXP raw_inputSEXP, SEXP rowSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_column_medians(raw_input, threads));
-    return rcpp_result_gen;
-END_RCPP
-}
-// tatami_row_nan_counts
-Rcpp::NumericVector tatami_row_nan_counts(SEXP raw_input, int threads);
-RcppExport SEXP _beachmat_tatami_row_nan_counts(SEXP raw_inputSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_row_nan_counts(raw_input, threads));
-    return rcpp_result_gen;
-END_RCPP
-}
-// tatami_column_nan_counts
-Rcpp::NumericVector tatami_column_nan_counts(SEXP raw_input, int threads);
-RcppExport SEXP _beachmat_tatami_column_nan_counts(SEXP raw_inputSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_column_nan_counts(raw_input, threads));
+    rcpp_result_gen = Rcpp::wrap(tatami_nan_counts(raw_input, row, threads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -465,15 +425,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
     {"_beachmat_tatami_is_sparse", (DL_FUNC) &_beachmat_tatami_is_sparse, 1},
     {"_beachmat_tatami_prefer_rows", (DL_FUNC) &_beachmat_tatami_prefer_rows, 1},
-    {"_beachmat_tatami_column", (DL_FUNC) &_beachmat_tatami_column, 2},
-    {"_beachmat_tatami_row", (DL_FUNC) &_beachmat_tatami_row, 2},
-    {"_beachmat_tatami_row_sums", (DL_FUNC) &_beachmat_tatami_row_sums, 2},
-    {"_beachmat_tatami_column_sums", (DL_FUNC) &_beachmat_tatami_column_sums, 2},
+    {"_beachmat_tatami_get", (DL_FUNC) &_beachmat_tatami_get, 3},
+    {"_beachmat_tatami_sums", (DL_FUNC) &_beachmat_tatami_sums, 3},
     {"_beachmat_tatami_sums_by_group", (DL_FUNC) &_beachmat_tatami_sums_by_group, 4},
-    {"_beachmat_tatami_row_medians", (DL_FUNC) &_beachmat_tatami_row_medians, 2},
-    {"_beachmat_tatami_column_medians", (DL_FUNC) &_beachmat_tatami_column_medians, 2},
-    {"_beachmat_tatami_row_nan_counts", (DL_FUNC) &_beachmat_tatami_row_nan_counts, 2},
-    {"_beachmat_tatami_column_nan_counts", (DL_FUNC) &_beachmat_tatami_column_nan_counts, 2},
+    {"_beachmat_tatami_medians", (DL_FUNC) &_beachmat_tatami_medians, 3},
+    {"_beachmat_tatami_nan_counts", (DL_FUNC) &_beachmat_tatami_nan_counts, 3},
     {"_beachmat_tatami_realize", (DL_FUNC) &_beachmat_tatami_realize, 2},
     {"_beachmat_tatami_multiply_vector", (DL_FUNC) &_beachmat_tatami_multiply_vector, 4},
     {"_beachmat_tatami_multiply_columns", (DL_FUNC) &_beachmat_tatami_multiply_columns, 4},
