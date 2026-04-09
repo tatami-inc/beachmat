@@ -18,6 +18,7 @@
 \alias{tatami.column}
 \alias{tatami.row.sums}
 \alias{tatami.column.sums}
+\alias{tatami.sums.by.group}
 \alias{tatami.row.medians}
 \alias{tatami.column.medians}
 \alias{tatami.row.nan.counts}
@@ -59,6 +60,8 @@ tatami.column(x, i)
 tatami.row.sums(x, num.threads)
 
 tatami.column.sums(x, num.threads)
+
+tatami.sums.by.group(x, group, row, num.threads)
 
 tatami.row.medians(x, num.threads)
 
@@ -133,6 +136,9 @@ referencing a matrix of the same dimensions as \code{x}.}
 \item{i}{Integer scalar containing the 1-based index of the row (for \code{tatami.row}) or column (for \code{tatami.column}) of interest.}
 
 \item{num.threads}{Integer scalar specifying the number of threads to use.}
+
+\item{row}{Boolean indicating whether to compute row-wise statistics.
+If \code{FALSE}, column-wise statistics are computed instead.}
 }
 \value{
 For \code{tatami.dim}, an integer vector containing the dimensions of the matrix.
@@ -144,6 +150,14 @@ For \code{tatami.prefer.rows}, a logical scalar indicating whether the matrix pr
 For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
 
 For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+
+For \code{tatami.sums.by.group}, a numeric matrix is returned.
+\itemize{
+\item If \code{row=TRUE}, its number of rows is equal to that of \code{x} and its number of columns is equal to the number of groups.
+Each column corresponds to a group and contains the row sums across all columns of \code{x} assigned to that group.
+\item If \code{row=FALSE}, its number of columns is equal to that of \code{x} and its number of rows is equal to the number of groups.
+Each row corresponds to a group and contains the column sums across all columns of \code{x} assigned to that group.
+}
 
 For \code{tatami.row.medians} or \code{tatami.column.medians}, a numeric vector containing the row or column medians, respectively.
 

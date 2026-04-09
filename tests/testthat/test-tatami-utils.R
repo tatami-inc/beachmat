@@ -35,6 +35,28 @@ test_that("basic methods work as expected", {
     expect_equal(tatami.realize(dptr1, 1), y1)
 })
 
+test_that("dimwise sum by groups work as expected", {
+    mat <- matrix(runif(1000), 25, 40)
+    ptr <- initializeCpp(mat)
+
+    cgroup <- sample(1:5, ncol(mat), replace=TRUE)
+    rgroup <- sample(1:4, nrow(mat), replace=TRUE)
+
+    rref <- matrix(0, nrow(mat), max(cgroup))
+    for (i in 1:5) {
+        rref[,i] <- rowSums(mat[, cgroup == i, drop=FALSE])
+    }
+    expect_equal(tatami.sums.by.group(ptr, cgroup, row=TRUE, num.threads=1), rref)
+    expect_equal(tatami.sums.by.group(ptr, cgroup, row=TRUE, num.threads=2), rref)
+
+    cref <- matrix(0, max(rgroup), ncol(mat))
+    for (i in 1:4) {
+        cref[i,] <- colSums(mat[rgroup == i,, drop=FALSE])
+    }
+    expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=1), cref)
+    expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=2), cref)
+})
+
 test_that("dimwise medians work as expected with a more interesting dense matrix", {
     mat <- matrix(runif(1000), 25, 40)
     ptr <- initializeCpp(mat)

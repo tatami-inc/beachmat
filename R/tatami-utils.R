@@ -42,6 +42,11 @@
 #' a logical scalar indicating that \code{val} is on the right-hand side of the operation.
 #'
 #' For \code{tatami.multiply}, a logical scalar indicating that \code{val} is on the right-hand side of the multiplication.
+#' @param row Boolean indicating whether to compute row-wise statistics.
+#' If \code{FALSE}, column-wise statistics are computed instead.
+#' @param group Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
+#' containing the group assignment for each column and row, respectively.
+#' Assignments should lie in \code{[1, N]} where \code{N} is the total number of groups.
 #' @param subset Integer vector containing the subset of interest.
 #' These should be 1-based row or column indices depending on \code{by.row}.
 #' @param y A pointer produced by \code{\link{initializeCpp}},
@@ -60,6 +65,14 @@
 #' For \code{tatami.row} or \code{tatami.column}, a numeric vector containing the contents of row or column \code{i}, respectively.
 #'
 #' For \code{tatami.row.sums} or \code{tatami.column.sums}, a numeric vector containing the row or column sums, respectively.
+#'
+#' For \code{tatami.sums.by.group}, a numeric matrix is returned.
+#' \itemize{
+#' \item If \code{row=TRUE}, its number of rows is equal to that of \code{x} and its number of columns is equal to the number of groups.
+#' Each column corresponds to a group and contains the row sums across all columns of \code{x} assigned to that group.
+#' \item If \code{row=FALSE}, its number of columns is equal to that of \code{x} and its number of rows is equal to the number of groups.
+#' Each row corresponds to a group and contains the column sums across all columns of \code{x} assigned to that group.
+#' }
 #'
 #' For \code{tatami.row.medians} or \code{tatami.column.medians}, a numeric vector containing the row or column medians, respectively.
 #'
@@ -191,6 +204,12 @@ tatami.row.sums <- function(x, num.threads) {
 #' @rdname tatami-utils
 tatami.column.sums <- function(x, num.threads) {
     tatami_column_sums(x, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.sums.by.group <- function(x, group, row, num.threads) {
+    tatami_sums_by_group(x, group, row, num.threads) 
 }
 
 #' @export
