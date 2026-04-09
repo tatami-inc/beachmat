@@ -6,7 +6,12 @@
 \item Added the \code{.unknown.action=} option to \code{initializeCpp()},
 to determine whether to print a message, warning or error when using the unknown matrix fallback.
 
-\item Added \code{tatami.row.medians()} and \code{tatami.column.medians()} to compute the row- and column-wise medians.
+\item Consolidated row/column variants of various utilities into a single function,
+i.e., \code{tatami.sums()} for row/column sums, \code{tatami.nan.counts()} for NaN counts.
+
+\item Added \code{tatami.medians()} to compute the row- and column-wise medians.
+
+\item Added \code{tatami.sums.by.group()} to compute the row- and column-wise sums for groups of columns/rows, respectively.
 }}
 
 \section{Version 2.26.0}{\itemize{
