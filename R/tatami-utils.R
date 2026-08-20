@@ -49,7 +49,8 @@
 #' If \code{FALSE}, column-wise statistics are computed instead.
 #' @param group Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
 #' containing the group assignment for each column and row, respectively.
-#' Assignments should lie in \code{[1, N]} where \code{N} is the total number of groups.
+#' Assignments should lie in \code{[1, num.groups]}. 
+#' @param num.groups Integer specifying the total number of unique groups in \code{group}.
 #' @param subset Integer vector containing the subset of interest.
 #' These should be 1-based row or column indices depending on \code{by.row}.
 #' @param y A pointer produced by \code{\link{initializeCpp}},
@@ -89,6 +90,9 @@
 #' 
 #' For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 #'
+#' @details
+#' \code{tatami.multiply} may not correctly propagate non-finite values when one of the matrices is sparse.
+#' 
 #' @aliases
 #' tatami.row.medians
 #' tatami.column.medians
@@ -245,8 +249,11 @@ tatami.sums <- function(x, row, num.threads) {
 
 #' @export
 #' @rdname tatami-utils
-tatami.sums.by.group <- function(x, group, row, num.threads) {
-    tatami_sums_by_group(x, group, row, num.threads) 
+tatami.sums.by.group <- function(x, group, num.groups, row, num.threads) {
+    if (missing(num.groups)) { # For back-compatibility only.
+        num.groups <- max(group)
+    }
+    tatami_sums_by_group(x, group, num.groups, row, num.threads) 
 }
 
 #' @export

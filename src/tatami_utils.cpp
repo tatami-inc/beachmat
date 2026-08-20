@@ -49,7 +49,7 @@ Rcpp::NumericVector tatami_get(SEXP raw_input, int i, bool row) {
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_sums(SEXP raw_input, bool row, int threads) {
-    tatami_stats::sums::Options opt;
+    tatami_stats::SumOptions opt;
     opt.num_threads = threads;
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
@@ -60,13 +60,13 @@ Rcpp::NumericVector tatami_sums(SEXP raw_input, bool row, int threads) {
     const auto NC = input->ptr->ncol();
 
     Rcpp::NumericVector output(row ? NR : NC);
-    tatami_stats::sums::apply(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
+    tatami_stats::sum(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
     return output;
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector group, bool row, int threads) {
-    tatami_stats::grouped_sums::Options opt;
+Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
+    tatami_stats::GroupSumOptions opt;
     opt.num_threads = threads;
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
@@ -83,7 +83,6 @@ Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector gro
         }
         --x;
     }
-    const auto total_groups = tatami_stats::total_groups(group_m1.data(), group_m1.size());
 
     const auto expected = (row ? NC : NR);
     if (!sanisizer::is_equal(expected, group_m1.size())) {
@@ -91,12 +90,12 @@ Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector gro
     }
 
     const auto stride = (row ? NR : NC);
-    Rcpp::NumericMatrix output(stride, total_groups);
-    auto ptrs = sanisizer::create<std::vector<double*> >(total_groups);
-    for (auto i = static_cast<decltype(total_groups)>(0); i < total_groups; ++i) {
+    Rcpp::NumericMatrix output(stride, num_groups);
+    auto ptrs = sanisizer::create<std::vector<double*> >(num_groups);
+    for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
         ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, stride);
     }
-    tatami_stats::grouped_sums::apply(row, *(input->ptr), group_m1.data(), total_groups, ptrs.data(), opt);
+    tatami_stats::group_sum(row, *(input->ptr), group_m1.data(), num_groups, ptrs, opt);
 
     if (row) {
         return output;
@@ -107,7 +106,7 @@ Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector gro
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads) {
-    tatami_stats::medians::Options opt;
+    tatami_stats::MedianOptions opt;
     opt.num_threads = threads;
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
@@ -118,13 +117,13 @@ Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads) {
     const auto NC = input->ptr->ncol();
 
     Rcpp::NumericVector output(row ? NR : NC);
-    tatami_stats::medians::apply(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
+    tatami_stats::median(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
     return output;
 }
 
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_nan_counts(SEXP raw_input, bool row, int threads) {
-    tatami_stats::counts::nan::Options opt;
+    tatami_stats::CountOptions opt;
     opt.num_threads = threads;
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
@@ -135,7 +134,13 @@ Rcpp::NumericVector tatami_nan_counts(SEXP raw_input, bool row, int threads) {
     const auto NC = input->ptr->ncol();
 
     Rcpp::NumericVector output(row ? NR : NC);
-    tatami_stats::counts::nan::apply(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
+    tatami_stats::count(
+        row,
+        *(input->ptr),
+        static_cast<double*>(output.begin()),
+        [](const double val) -> bool { return std::isnan(val); },
+        opt
+    );
     return output;
 }
 
@@ -188,25 +193,26 @@ Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector o
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
     }
+    tatami_mult::MultiplyWithSingleVectorOptions opt;
+    tatami_mult::set_num_threads(opt, threads); 
 
     Rtatami::BoundNumericPointer input(raw_input);
     const auto& shared = input->ptr;
 
-    tatami_mult::Options opt;
-    opt.num_threads = threads; 
     if (right) {
         if (!sanisizer::is_equal(other.size(), shared->ncol())) {
             throw std::runtime_error("length of vector does not match the number of columns of 'x'");
         }
         Rcpp::NumericVector output(shared->nrow());
-        tatami_mult::multiply(*shared, static_cast<const double*>(other.begin()), static_cast<double*>(output.begin()), opt);
+        tatami_mult::multiply_with_single_vector(*shared, static_cast<const double*>(other.begin()), static_cast<double*>(output.begin()), opt);
         return output;
+
     } else {
         if (!sanisizer::is_equal(other.size(), shared->nrow())) {
             throw std::runtime_error("length of vector does not match the number of rows of 'x'");
         }
         Rcpp::NumericVector output(shared->ncol());
-        tatami_mult::multiply(static_cast<const double*>(other.begin()), *shared, static_cast<double*>(output.begin()), opt);
+        tatami_mult::multiply_with_single_vector(static_cast<const double*>(other.begin()), *shared, static_cast<double*>(output.begin()), opt);
         return output;
     }
 }
@@ -218,59 +224,55 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
     }
 
     Rtatami::BoundNumericPointer input(raw_input);
-    const auto& shared = input->ptr;
-
-    tatami_mult::Options opt;
-    opt.num_threads = threads; 
-
-    if (right) {
-        auto common_dim = other.rows();
-        if (!sanisizer::is_equal(common_dim, shared->ncol())) {
-            throw std::runtime_error("rows of 'vals' does not match the number of columns of 'x'");
+    std::shared_ptr<tatami::NumericMatrix> alt;
+    const auto& mat = [&]() -> const tatami::NumericMatrix& {
+        if (right) {
+            return *(input->ptr);
+        } else {
+            alt.reset(new tatami::DelayedTranspose<double, int>(input->ptr));
+            return *alt;
         }
+    }();
 
-        auto num_other = other.cols();
-        auto out_nrow = shared->nrow();
-        sanisizer::product<std::size_t>(out_nrow, num_other); // check outside the loop so that we can do unsafe products inside the loop.
-        Rcpp::NumericMatrix output(sanisizer::cast<decltype(num_other)>(out_nrow), num_other);
+    auto common_dim = other.rows();
+    if (!sanisizer::is_equal(common_dim, mat.ncol())) {
+        throw std::runtime_error("rows of 'vals' does not match the number of columns of 'x'");
+    }
 
-        auto other_ptrs = sanisizer::create<std::vector<const double*> >(num_other);
-        auto out_ptrs = sanisizer::create<std::vector<double*> >(num_other);
-        double* outptr = output.begin();
-        const double* otherptr = other.begin();
-        for (decltype(num_other) o = 0; o < num_other; ++o) {
-            out_ptrs[o] = outptr + sanisizer::product_unsafe<std::size_t>(o, out_nrow);
-            other_ptrs[o] = otherptr + sanisizer::product_unsafe<std::size_t>(o, common_dim);
+    auto num_other = other.cols();
+    auto out_nrow = mat.nrow();
+    sanisizer::product<std::size_t>(out_nrow, num_other); // check outside the loop so that we can do unsafe products inside the loop.
+    Rcpp::NumericMatrix output(sanisizer::cast<decltype(num_other)>(out_nrow), num_other);
+
+    const auto rptr = static_cast<const double*>(other.begin());
+    auto fetch_other_col = [&](std::size_t rcol) -> const double* { return rptr + sanisizer::product_unsafe<std::size_t>(rcol, common_dim); };
+    const auto optr = static_cast<double*>(output.begin()); 
+
+    const bool is_sparse = mat.is_sparse(); 
+    if (mat.prefer_rows()) {
+        if (is_sparse){
+            tatami_mult::MultiplySparseRowWithDenseColumnMatrixToColumnOutputOptions opt;
+            opt.num_threads = threads;
+            tatami_mult::multiply_sparse_row_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+        } else {
+            tatami_mult::MultiplyDenseRowWithDenseColumnMatrixToColumnOutputOptions opt;
+            opt.num_threads = threads;
+            tatami_mult::multiply_dense_row_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
         }
-
-        tatami_mult::multiply(*shared, other_ptrs, out_ptrs, opt);
-        return output;
 
     } else {
-        // In this case, we assume that 'other' is in its transposed form so that we get
-        // column-major access to what was previously the rows in the original matrix.
-        auto common_dim = other.rows();
-        if (!sanisizer::is_equal(common_dim, shared->nrow())) {
-            throw std::runtime_error("columns of 'vals' does not match the number of rows of 'x'");
+        if (is_sparse){
+            tatami_mult::MultiplySparseColumnWithDenseColumnMatrixToColumnOutputOptions opt;
+            opt.num_threads = threads;
+            tatami_mult::multiply_sparse_column_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+        } else {
+            tatami_mult::MultiplyDenseColumnWithDenseColumnMatrixToColumnOutputOptions opt;
+            opt.num_threads = threads;
+            tatami_mult::multiply_dense_column_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
         }
+    }
 
-        auto num_other = other.cols();
-        auto out_nrow = shared->ncol();
-        sanisizer::product<std::size_t>(out_nrow, num_other); // check outside the loop so that we can do unsafe products inside the loop.
-        Rcpp::NumericMatrix output(sanisizer::cast<decltype(num_other)>(out_nrow), num_other); // also transposed, so that we can write conveniently to a column-major format.
-
-        auto other_ptrs = sanisizer::create<std::vector<const double*> >(num_other);
-        auto out_ptrs = sanisizer::create<std::vector<double*> >(num_other);
-        double* outptr = output.begin();
-        const double* otherptr = other.begin();
-        for (decltype(num_other) o = 0; o < num_other; ++o) {
-            out_ptrs[o] = outptr + sanisizer::product_unsafe<std::size_t>(o, out_nrow);
-            other_ptrs[o] = otherptr + sanisizer::product_unsafe<std::size_t>(o, common_dim);
-        }
-
-        tatami_mult::multiply(other_ptrs, *shared, out_ptrs, opt);
-        return output;
-    } 
+    return output;
 }
 
 //[[Rcpp::export(rng=false)]]
@@ -278,21 +280,19 @@ Rcpp::NumericVector tatami_multiply_matrix(SEXP raw_input, SEXP more_input, bool
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
     }
+    tatami_mult::MultiplyWithMatrixOptions opt;
+    tatami_mult::set_num_threads(opt, threads); 
 
     Rtatami::BoundNumericPointer input(raw_input);
     Rtatami::BoundNumericPointer input2(more_input);
-
-    const auto& shared = (right ? input->ptr : input2->ptr);
-    const auto& shared2 = (right ? input2->ptr : input->ptr);
-
-    if (shared->ncol() != shared2->nrow()) {
+    const auto& mat = (right ? input->ptr : input2->ptr);
+    const auto& mat2 = (right ? input2->ptr : input->ptr);
+    if (mat->ncol() != mat2->nrow()) {
         throw std::runtime_error("inconsistent common dimensions for matrix multiplication");
     }
 
-    tatami_mult::Options opt;
-    opt.num_threads = threads; 
-    Rcpp::NumericMatrix output(shared->nrow(), shared2->ncol());
-    tatami_mult::multiply(*shared, *shared2, static_cast<double*>(output.begin()), opt);
+    Rcpp::NumericMatrix output(mat->nrow(), mat2->ncol());
+    tatami_mult::multiply_with_matrix(*mat, *mat2, static_cast<double*>(output.begin()), false, opt);
 
     return output;
 }

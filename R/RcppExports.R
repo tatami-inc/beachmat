@@ -101,8 +101,8 @@ tatami_sums <- function(raw_input, row, threads) {
     .Call('_beachmat_tatami_sums', PACKAGE = 'beachmat', raw_input, row, threads)
 }
 
-tatami_sums_by_group <- function(raw_input, group, row, threads) {
-    .Call('_beachmat_tatami_sums_by_group', PACKAGE = 'beachmat', raw_input, group, row, threads)
+tatami_sums_by_group <- function(raw_input, group, num_groups, row, threads) {
+    .Call('_beachmat_tatami_sums_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
 }
 
 tatami_medians <- function(raw_input, row, threads) {

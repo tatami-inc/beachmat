@@ -67,7 +67,7 @@ tatami.multiply(x, val, right, num.threads)
 
 tatami.sums(x, row, num.threads)
 
-tatami.sums.by.group(x, group, row, num.threads)
+tatami.sums.by.group(x, group, num.groups, row, num.threads)
 
 tatami.medians(x, row, num.threads)
 
@@ -140,7 +140,9 @@ If \code{FALSE}, column-wise statistics are computed instead.}
 
 \item{group}{Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
 containing the group assignment for each column and row, respectively.
-Assignments should lie in \code{[1, N]} where \code{N} is the total number of groups.}
+Assignments should lie in \code{[1, num.groups]}.}
+
+\item{num.groups}{Integer specifying the total number of unique groups in \code{group}.}
 }
 \value{
 For \code{tatami.dim}, an integer vector containing the dimensions of the matrix.
@@ -175,6 +177,9 @@ For all other functions, a new pointer to a matrix with the requested operations
 \description{
 Utility functions that directly operate on the pointers produced by \code{\link{initializeCpp}}.
 Some of these are used internally by \code{initializeCpp} methods operating on \pkg{DelayedArray} classes.
+}
+\details{
+\code{tatami.multiply} may not correctly propagate non-finite values when one of the matrices is sparse.
 }
 \examples{
 x <- Matrix::rsparsematrix(1000, 100, 0.1)

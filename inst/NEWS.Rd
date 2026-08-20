@@ -2,6 +2,13 @@
 \title{beachmat News}
 \encoding{UTF-8}
 
+\section{Version 2.30.0}{\itemize{
+\item Added a \code{num.groups=} argument to \code{tatami.sums.by.group()}, so that we don't have to guess the number of groups.
+
+\item Improved efficiency of \code{tatami.multiply()} with new C++ algorithms.
+This comes at the cost of not correctly handling non-finite values in multiplications involving sparse matrices.
+}}
+
 \section{Version 2.28.0}{\itemize{
 \item Added the \code{.unknown.action=} option to \code{initializeCpp()},
 to determine whether to print a message, warning or error when using the unknown matrix fallback.

@@ -39,21 +39,26 @@ test_that("dimwise sum by groups work as expected", {
     mat <- matrix(runif(1000), 25, 40)
     ptr <- initializeCpp(mat)
 
-    cgroup <- sample(1:5, ncol(mat), replace=TRUE)
-    rgroup <- sample(1:4, nrow(mat), replace=TRUE)
+    cnum <- 5
+    cgroup <- sample(1:cnum, ncol(mat), replace=TRUE)
+    rnum <- 4
+    rgroup <- sample(1:rnum, nrow(mat), replace=TRUE)
 
     rref <- matrix(0, nrow(mat), max(cgroup))
     for (i in 1:5) {
         rref[,i] <- rowSums(mat[, cgroup == i, drop=FALSE])
     }
-    expect_equal(tatami.sums.by.group(ptr, cgroup, row=TRUE, num.threads=1), rref)
-    expect_equal(tatami.sums.by.group(ptr, cgroup, row=TRUE, num.threads=2), rref)
+    expect_equal(tatami.sums.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=1), rref)
+    expect_equal(tatami.sums.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=2), rref)
 
     cref <- matrix(0, max(rgroup), ncol(mat))
     for (i in 1:4) {
         cref[i,] <- colSums(mat[rgroup == i,, drop=FALSE])
     }
-    expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=1), cref)
+    expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=1), cref)
+    expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=2), cref)
+
+    # Check for back-compatibility.
     expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=2), cref)
 })
 
@@ -227,11 +232,17 @@ test_that("matrix multiplication works as expected", {
 
     mat <- matrix(runif(ncol(x1) * 3), ncol = 3)
     expect_equal(tatami.multiply(ptr1, mat, right=TRUE, num.threads=1), as.matrix(x1 %*% mat))
+
+    dptr1 <- initializeCpp(as.matrix(x1))
+    expect_equal(tatami.multiply(dptr1, mat, right=TRUE, num.threads=1), as.matrix(x1 %*% mat))
+
     ptr2 <- initializeCpp(mat)
     expect_equal(tatami.multiply(ptr1, ptr2, right=TRUE, num.threads=1), as.matrix(x1 %*% mat))
 
     mat <- matrix(runif(nrow(x1) * 3), nrow = 3)
     expect_equal(tatami.multiply(ptr1, mat, right=FALSE, num.threads=1), as.matrix(mat %*% x1))
+    expect_equal(tatami.multiply(dptr1, mat, right=FALSE, num.threads=1), as.matrix(mat %*% x1))
+
     ptr2 <- initializeCpp(mat)
     expect_equal(tatami.multiply(ptr1, ptr2, right=FALSE, num.threads=1), as.matrix(mat %*% x1))
 })
