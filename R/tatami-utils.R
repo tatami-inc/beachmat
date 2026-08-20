@@ -93,13 +93,12 @@
 #' @details
 #' \code{tatami.multiply} may not correctly propagate non-finite values when one of the matrices is sparse.
 #' 
-#' @aliases
-#' tatami.row.medians
-#' tatami.column.medians
-#' tatami.row.sums
-#' tatami.column.sums
-#' tatami.row.nan.counts
-#' tatami.column.nan.counts
+#' @aliases tatami.row.medians
+#' @aliases tatami.column.medians
+#' @aliases tatami.row.sums
+#' @aliases tatami.column.sums
+#' @aliases tatami.row.nan.counts
+#' @aliases tatami.column.nan.counts
 #'
 #' @author Aaron Lun
 #' @examples

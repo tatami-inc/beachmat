@@ -49,32 +49,40 @@ importClassesFrom(Matrix,dgCMatrix)
 importClassesFrom(Matrix,lgCMatrix)
 importClassesFrom(Matrix,sparseMatrix)
 importClassesFrom(SparseArray,SVT_SparseMatrix)
-importFrom(BiocGenerics,dims)
-importFrom(BiocGenerics,path)
-importFrom(DelayedArray,DelayedArray)
-importFrom(DelayedArray,DummyArrayGrid)
-importFrom(DelayedArray,blockApply)
-importFrom(DelayedArray,colAutoGrid)
-importFrom(DelayedArray,contentIsPristine)
-importFrom(DelayedArray,currentBlockId)
-importFrom(DelayedArray,currentViewport)
-importFrom(DelayedArray,effectiveGrid)
-importFrom(DelayedArray,getAutoBPPARAM)
-importFrom(DelayedArray,getAutoBlockLength)
-importFrom(DelayedArray,isPristine)
-importFrom(DelayedArray,is_sparse)
-importFrom(DelayedArray,makeNindexFromArrayViewport)
-importFrom(DelayedArray,netSubsetAndAperm)
-importFrom(DelayedArray,nseed)
-importFrom(DelayedArray,rowAutoGrid)
-importFrom(DelayedArray,seed)
-importFrom(DelayedArray,seedApply)
-importFrom(DelayedArray,set_grid_context)
-importFrom(DelayedArray,type)
+importFrom(BiocGenerics,
+  dims,
+  path
+)
+importFrom(DelayedArray,
+  DelayedArray,
+  DummyArrayGrid,
+  blockApply,
+  colAutoGrid,
+  contentIsPristine,
+  currentBlockId,
+  currentViewport,
+  effectiveGrid,
+  getAutoBPPARAM,
+  getAutoBlockLength,
+  isPristine,
+  is_sparse,
+  makeNindexFromArrayViewport,
+  netSubsetAndAperm,
+  nseed,
+  rowAutoGrid,
+  seed,
+  seedApply,
+  set_grid_context,
+  type
+)
 importFrom(Matrix,t)
 importFrom(Rcpp,sourceCpp)
-importFrom(SparseArray,nzvals)
-importFrom(SparseArray,nzwhich)
-importFrom(methods,is)
-importFrom(methods,new)
+importFrom(SparseArray,
+  nzvals,
+  nzwhich
+)
+importFrom(methods,
+  is,
+  new
+)
 useDynLib(beachmat)

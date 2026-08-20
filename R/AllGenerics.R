@@ -32,26 +32,25 @@
 #' stuff
 #' 
 #' @export
-#' @aliases
-#' initializeCpp
-#' initializeCpp,ANY-method
-#' initializeCpp,matrix-method
-#' initializeCpp,externalptr-method
-#' initializeCpp,dgeMatrix-method
-#' initializeCpp,lgeMatrix-method
-#' initializeCpp,dgCMatrix-method
-#' initializeCpp,dgRMatrix-method
-#' initializeCpp,lgCMatrix-method
-#' initializeCpp,lgRMatrix-method
-#' initializeCpp,ConstantArraySeed-method
-#' initializeCpp,SVT_SparseMatrix-method
-#' initializeCpp,DelayedMatrix-method
-#' initializeCpp,DelayedAbind-method
-#' initializeCpp,DelayedAperm-method
-#' initializeCpp,DelayedSubset-method
-#' initializeCpp,DelayedSetDimnames-method
-#' initializeCpp,DelayedUnaryIsoOpWithArgs-method
-#' initializeCpp,DelayedUnaryIsoOpStack-method
-#' initializeCpp,DelayedNaryIsoOp-method
+#' @aliases initializeCpp
+#' @aliases initializeCpp,ANY-method
+#' @aliases initializeCpp,matrix-method
+#' @aliases initializeCpp,externalptr-method
+#' @aliases initializeCpp,dgeMatrix-method
+#' @aliases initializeCpp,lgeMatrix-method
+#' @aliases initializeCpp,dgCMatrix-method
+#' @aliases initializeCpp,dgRMatrix-method
+#' @aliases initializeCpp,lgCMatrix-method
+#' @aliases initializeCpp,lgRMatrix-method
+#' @aliases initializeCpp,ConstantArraySeed-method
+#' @aliases initializeCpp,SVT_SparseMatrix-method
+#' @aliases initializeCpp,DelayedMatrix-method
+#' @aliases initializeCpp,DelayedAbind-method
+#' @aliases initializeCpp,DelayedAperm-method
+#' @aliases initializeCpp,DelayedSubset-method
+#' @aliases initializeCpp,DelayedSetDimnames-method
+#' @aliases initializeCpp,DelayedUnaryIsoOpWithArgs-method
+#' @aliases initializeCpp,DelayedUnaryIsoOpStack-method
+#' @aliases initializeCpp,DelayedNaryIsoOp-method
 #' @import methods
 setGeneric("initializeCpp", function(x, ...) standardGeneric("initializeCpp"))
