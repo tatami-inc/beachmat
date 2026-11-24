@@ -110,9 +110,6 @@ test_that("dimwise sum by groups work as expected", {
     }
     expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=1), cref)
     expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=2), cref)
-
-    # Check for back-compatibility.
-    expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=2), cref)
 })
 
 test_that("dimwise variance by groups work as expected", {

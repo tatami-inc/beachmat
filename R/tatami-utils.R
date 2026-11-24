@@ -296,9 +296,6 @@ tatami.ranges <- function(x, row, num.threads) {
 #' @export
 #' @rdname tatami-utils
 tatami.sums.by.group <- function(x, group, num.groups, row, num.threads) {
-    if (missing(num.groups)) { # For back-compatibility only.
-        num.groups <- max(group)
-    }
     tatami_sums_by_group(x, group, num.groups, row, num.threads) 
 }
 
