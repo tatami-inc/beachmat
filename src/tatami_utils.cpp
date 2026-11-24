@@ -1,7 +1,9 @@
 #include "Rtatami.h"
 #include "Rcpp.h"
+
 #include "tatami_stats/tatami_stats.hpp"
 #include "tatami_mult/tatami_mult.hpp"
+#include "sanisizer/sanisizer.hpp"
 
 #include <vector>
 #include <cstddef>
@@ -39,10 +41,11 @@ Rcpp::NumericVector tatami_get(SEXP raw_input, int i, bool row) {
         throw std::runtime_error("'i' is out of range");
     }
 
-    auto wrk = tatami::new_extractor<false, false>(*(input->ptr), row, false);
-    Rcpp::NumericVector output(row ? NC : NR);
+    auto output = sanisizer::create<Rcpp::NumericVector>(row ? NC : NR);
     auto optr = static_cast<double*>(output.begin());
-    auto ptr = wrk->fetch(i - 1, optr);
+
+    auto wrk = tatami::consecutive_extractor<false>(*(input->ptr), row, i - 1, 1);
+    auto ptr = wrk->fetch(optr);
     tatami::copy_n(ptr, output.size(), optr);
     return output;
 }
@@ -59,7 +62,7 @@ Rcpp::NumericVector tatami_sums(SEXP raw_input, bool row, int threads) {
     const auto NR = input->ptr->nrow();
     const auto NC = input->ptr->ncol();
 
-    Rcpp::NumericVector output(row ? NR : NC);
+    auto output = sanisizer::create<Rcpp::NumericVector>(row ? NR : NC);
     tatami_stats::sum(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
     return output;
 }
@@ -76,8 +79,9 @@ Rcpp::List tatami_variances(SEXP raw_input, bool row, int threads) {
     const auto NR = input->ptr->nrow();
     const auto NC = input->ptr->ncol();
 
-    Rcpp::NumericVector output_means(row ? NR : NC);
-    Rcpp::NumericVector output_variances(row ? NR : NC);
+    const auto outlen = (row ? NR : NC);
+    auto output_means = sanisizer::create<Rcpp::NumericVector>(row ? NR : NC);
+    auto output_variances = sanisizer::create<Rcpp::NumericVector>(row ? NR : NC);
 
     tatami_stats::VarianceBuffers<double> buffers;
     buffers.mean = output_means.begin();
@@ -102,7 +106,7 @@ Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads) {
     const auto NR = input->ptr->nrow();
     const auto NC = input->ptr->ncol();
 
-    Rcpp::NumericVector output(row ? NR : NC);
+    auto output = sanisizer::create<Rcpp::NumericVector>(row ? NR : NC);
     tatami_stats::median(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
     return output;
 }
@@ -119,9 +123,9 @@ Rcpp::List tatami_ranges(SEXP raw_input, bool row, int threads) {
     const auto NR = input->ptr->nrow();
     const auto NC = input->ptr->ncol();
 
-    const auto expected = row ? NR : NC;
-    Rcpp::NumericVector minout(expected);
-    Rcpp::NumericVector maxout(expected);
+    const auto expected = (row ? NR : NC);
+    auto minout = sanisizer::create<Rcpp::NumericVector>(expected);
+    auto maxout = sanisizer::create<Rcpp::NumericVector>(expected);
 
     tatami_stats::RangeBuffers<double> buf;
     buf.minimum = minout.begin();
@@ -146,7 +150,7 @@ Rcpp::NumericVector tatami_nan_counts(SEXP raw_input, bool row, int threads) {
     const auto NR = input->ptr->nrow();
     const auto NC = input->ptr->ncol();
 
-    Rcpp::NumericVector output(row ? NR : NC);
+    auto output = sanisizer::create<Rcpp::NumericVector>(row ? NR : NC);
     tatami_stats::count(
         row,
         *(input->ptr),
@@ -170,6 +174,17 @@ static std::vector<int> extract_groups(const Rcpp::IntegerVector& group, int num
     return group_m1;
 }
 
+template<typename Input_>
+using I = std::remove_cv_t<std::remove_reference_t<Input_> >;
+
+template<typename Row_, typename Column_>
+Rcpp::NumericMatrix create_output_matrix(Row_ nrow, Column_ ncol) {
+    return Rcpp::NumericMatrix(
+        I<decltype(std::declval<Rcpp::NumericMatrix>().rows())>(nrow),
+        I<decltype(std::declval<Rcpp::NumericMatrix>().cols())>(ncol)
+    );
+}
+
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
     tatami_stats::GroupSumOptions opt;
@@ -189,9 +204,10 @@ Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector gro
     }
 
     const auto stride = (row ? NR : NC);
-    Rcpp::NumericMatrix output(stride, num_groups);
+    auto output = create_output_matrix(stride, num_groups);
     auto ptrs = sanisizer::create<std::vector<double*> >(num_groups);
-    for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
+    sanisizer::product<std::size_t>(stride, num_groups); // check that product below is safe.
+    for (I<decltype(num_groups)> i = 0; i < num_groups; ++i) {
         ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, stride);
     }
 
@@ -223,7 +239,8 @@ Rcpp::List tatami_variances_by_group(SEXP raw_input, Rcpp::IntegerVector group, 
     }
 
     const auto stride = (row ? NR : NC);
-    Rcpp::NumericMatrix moutput(stride, num_groups), voutput(stride, num_groups);
+    auto moutput = create_output_matrix(stride, num_groups);
+    auto voutput = create_output_matrix(stride, num_groups);
     tatami_stats::GroupVarianceBuffers<double> buf;
     buf.mean.reserve(num_groups);
     buf.variance.reserve(num_groups);
@@ -268,7 +285,7 @@ Rcpp::NumericVector tatami_medians_by_group(SEXP raw_input, Rcpp::IntegerVector 
     }
 
     const auto stride = (row ? NR : NC);
-    Rcpp::NumericMatrix output(stride, num_groups);
+    auto output = create_output_matrix(stride, num_groups);
     auto ptrs = sanisizer::create<std::vector<double*> >(num_groups);
     sanisizer::product<std::size_t>(stride, num_groups); // check that product inside the loop is safe.
     for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
@@ -298,17 +315,17 @@ SEXP tatami_realize(SEXP raw_input, int threads) {
         const auto& store_v = frag.value;
         const auto& store_i = frag.index;
 
-        auto primary = shared->ncol();
-        Rcpp::IntegerVector output_p(sanisizer::sum<decltype(std::declval<Rcpp::IntegerVector>().size())>(primary, 1));
-        for (decltype(primary) p = 0; p < primary; ++p) {
+        const auto primary = shared->ncol();
+        Rcpp::IntegerVector output_p(sanisizer::sum<I<decltype(std::declval<Rcpp::IntegerVector>().size())> >(primary, 1));
+        for (I<decltype(primary)> p = 0; p < primary; ++p) {
             output_p[p + 1] = output_p[p] + store_v[p].size();
         }
 
-        auto last_p = output_p[primary];
+        const auto last_p = output_p[primary];
         auto output_v = sanisizer::create<Rcpp::NumericVector>(last_p);
         auto output_i = sanisizer::create<Rcpp::IntegerVector>(last_p);
-        decltype(last_p) offset = 0;
-        for (decltype(primary) p = 0; p < primary; ++p) {
+        I<decltype(last_p)> offset = 0;
+        for (I<decltype(primary)> p = 0; p < primary; ++p) {
             std::copy(store_v[p].begin(), store_v[p].end(), output_v.begin() + offset);
             std::copy(store_i[p].begin(), store_i[p].end(), output_i.begin() + offset);
             offset += store_v[p].size();
@@ -343,7 +360,7 @@ Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector o
         if (!sanisizer::is_equal(other.size(), shared->ncol())) {
             throw std::runtime_error("length of vector does not match the number of columns of 'x'");
         }
-        Rcpp::NumericVector output(shared->nrow());
+        auto output = sanisizer::create<Rcpp::NumericVector>(shared->nrow());
         tatami_mult::multiply_with_single_vector(*shared, static_cast<const double*>(other.begin()), static_cast<double*>(output.begin()), opt);
         return output;
 
@@ -351,7 +368,7 @@ Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector o
         if (!sanisizer::is_equal(other.size(), shared->nrow())) {
             throw std::runtime_error("length of vector does not match the number of rows of 'x'");
         }
-        Rcpp::NumericVector output(shared->ncol());
+        auto output = sanisizer::create<Rcpp::NumericVector>(shared->ncol());
         tatami_mult::multiply_with_single_vector(static_cast<const double*>(other.begin()), *shared, static_cast<double*>(output.begin()), opt);
         return output;
     }
@@ -374,12 +391,14 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
         }
 
         const auto out_nrow = mat.nrow();
-        Rcpp::NumericMatrix output(out_nrow, num_other);
+        auto output = create_output_matrix(out_nrow, num_other);
         const auto optr = static_cast<double*>(output.begin()); 
 
         const auto rptr = static_cast<const double*>(other.begin());
         sanisizer::product<std::size_t>(num_other, common_dim); // check outside the functor so that we can do unsafe products inside the functor.
-        auto fetch_other_col = [&](std::size_t rcol) -> const double* { return rptr + sanisizer::product_unsafe<std::size_t>(rcol, common_dim); };
+        auto fetch_other_col = [&](std::size_t rcol) -> const double* {
+            return rptr + sanisizer::product_unsafe<std::size_t>(rcol, common_dim);
+        };
 
         const bool is_sparse = mat.is_sparse(); 
         if (mat.prefer_rows()) {
@@ -419,12 +438,14 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
 
         // We'll treat the output as row-major in our (conceptually) everything-is-transposed state.
         const auto out_nrow = alt.nrow();
-        Rcpp::NumericMatrix output(num_other, out_nrow);
+        auto output = create_output_matrix(num_other, out_nrow);
         const auto optr = static_cast<double*>(output.begin()); 
 
         const auto rptr = static_cast<const double*>(other.begin());
         sanisizer::product<std::size_t>(num_other, common_dim); // check outside the functor so that we can do unsafe products inside the functor.
-        auto fetch_other_row = [&](std::size_t rrow) -> const double* { return rptr + sanisizer::product_unsafe<std::size_t>(rrow, num_other); };
+        auto fetch_other_row = [&](std::size_t rrow) -> const double* {
+            return rptr + sanisizer::product_unsafe<std::size_t>(rrow, num_other);
+        };
 
         const bool is_sparse = alt.is_sparse(); 
         if (alt.prefer_rows()) {
