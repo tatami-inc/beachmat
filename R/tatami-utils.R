@@ -77,7 +77,14 @@
 #' For \code{tatami.sums}, a numeric vector containing the row or column sums depending on \code{row=}.
 #'
 #' For \code{tatami.variances}, a list containing the numeric vectors \code{mean} and \code{variance}.
-#' These containing the row/column means and variances, respectively, depending on \code{row=}.
+#' These contain the row/column means and variances, respectively, depending on \code{row=}.
+#'
+#' For \code{tatami.medians}, a numeric vector containing the row or column medians, respectively.
+#'
+#' For \code{tatami.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
+#' 
+#' For \code{tatami.ranges}, a list containing the numeric vectors \code{minimum} and \code{maximum}.
+#' These contain the row/column minima and maxima, respectively, depending on \code{row=}.
 #'
 #' For \code{tatami.sums.by.group}, a numeric matrix is returned.
 #' \itemize{
@@ -87,10 +94,23 @@
 #' Each row corresponds to a group and contains the column sums across all columns of \code{x} assigned to that group.
 #' }
 #'
-#' For \code{tatami.medians}, a numeric vector containing the row or column medians, respectively.
+#' For \code{tatami.variances.by.group}, a named list is returned containing the numeric matrices \code{mean} and \code{variance}.
+#' These matrices contain the per-group mean and variance:
+#' \itemize{
+#' \item If \code{row=TRUE}, the number of rows in each matrix is equal to that of \code{x} and the number of columns is equal to the number of groups.
+#' Each column corresponds to a group and contains the row means/variances across all columns of \code{x} assigned to that group.
+#' \item If \code{row=FALSE}, the number of columns in each matrix is equal to that of \code{x} and the number of rows is equal to the number of groups.
+#' Each row corresponds to a group and contains the column means/variances across all columns of \code{x} assigned to that group.
+#' }
 #'
-#' For \code{tatami.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
-#' 
+#' For \code{tatami.medians.by.group}, a numeric matrix is returned.
+#' \itemize{
+#' \item If \code{row=TRUE}, its number of rows is equal to that of \code{x} and its number of columns is equal to the number of groups.
+#' Each column corresponds to a group and contains the row medians across all columns of \code{x} assigned to that group.
+#' \item If \code{row=FALSE}, its number of columns is equal to that of \code{x} and its number of rows is equal to the number of groups.
+#' Each row corresponds to a group and contains the column medians across all columns of \code{x} assigned to that group.
+#' }
+#'
 #' For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 #'
 #' @details
@@ -257,6 +277,24 @@ tatami.variances <- function(x, row, num.threads) {
 
 #' @export
 #' @rdname tatami-utils
+tatami.medians <- function(x, row, num.threads) {
+    tatami_medians(x, row, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.nan.counts <- function(x, row, num.threads) {
+    tatami_nan_counts(x, row, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
+tatami.ranges <- function(x, row, num.threads) {
+    tatami_ranges(x, row, num.threads)
+}
+
+#' @export
+#' @rdname tatami-utils
 tatami.sums.by.group <- function(x, group, num.groups, row, num.threads) {
     if (missing(num.groups)) { # For back-compatibility only.
         num.groups <- max(group)
@@ -266,14 +304,14 @@ tatami.sums.by.group <- function(x, group, num.groups, row, num.threads) {
 
 #' @export
 #' @rdname tatami-utils
-tatami.medians <- function(x, row, num.threads) {
-    tatami_medians(x, row, num.threads)
+tatami.variances.by.group <- function(x, group, num.groups, row, num.threads) {
+    tatami_variances_by_group(x, group, num.groups, row, num.threads) 
 }
 
 #' @export
 #' @rdname tatami-utils
-tatami.nan.counts <- function(x, row, num.threads) {
-    tatami_nan_counts(x, row, num.threads)
+tatami.medians.by.group <- function(x, group, num.groups, row, num.threads) {
+    tatami_medians_by_group(x, group, num.groups, row, num.threads) 
 }
 
 ##### For compatibility only. #######

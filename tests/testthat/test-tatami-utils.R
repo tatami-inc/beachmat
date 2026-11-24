@@ -35,31 +35,21 @@ test_that("basic methods work as expected", {
     expect_equal(tatami.realize(dptr1, 1), y1)
 })
 
-test_that("dimwise sum by groups work as expected", {
+test_that("dimwise ranges work as expected", {
     mat <- matrix(runif(1000), 25, 40)
     ptr <- initializeCpp(mat)
 
-    cnum <- 5
-    cgroup <- sample(1:cnum, ncol(mat), replace=TRUE)
-    rnum <- 4
-    rgroup <- sample(1:rnum, nrow(mat), replace=TRUE)
+    rmin <- apply(mat, 1, min)
+    rmax <- apply(mat, 1, max)
+    rexpected <- list(minimum = rmin, maximum = rmax)
+    expect_equal(tatami.ranges(ptr, row=TRUE, num.threads=1), rexpected)
+    expect_equal(tatami.ranges(ptr, row=TRUE, num.threads=2), rexpected)
 
-    rref <- matrix(0, nrow(mat), max(cgroup))
-    for (i in 1:5) {
-        rref[,i] <- rowSums(mat[, cgroup == i, drop=FALSE])
-    }
-    expect_equal(tatami.sums.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=1), rref)
-    expect_equal(tatami.sums.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=2), rref)
-
-    cref <- matrix(0, max(rgroup), ncol(mat))
-    for (i in 1:4) {
-        cref[i,] <- colSums(mat[rgroup == i,, drop=FALSE])
-    }
-    expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=1), cref)
-    expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=2), cref)
-
-    # Check for back-compatibility.
-    expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=2), cref)
+    cmin <- apply(mat, 2, min)
+    cmax <- apply(mat, 2, max)
+    cexpected <- list(minimum = cmin, maximum = cmax)
+    expect_equal(tatami.ranges(ptr, row=FALSE, num.threads=1), cexpected)
+    expect_equal(tatami.ranges(ptr, row=FALSE, num.threads=2), cexpected)
 })
 
 test_that("dimwise medians work as expected with a more interesting dense matrix", {
@@ -96,6 +86,87 @@ test_that("dimwise variances work as expected", {
     out <- tatami.variances(dptr, row=FALSE, num.threads=1)
     expect_equal(out$mean, colMeans(mat))
     expect_equal(out$variance, apply(mat, 2, var))
+})
+
+test_that("dimwise sum by groups work as expected", {
+    mat <- matrix(runif(1000), 25, 40)
+    ptr <- initializeCpp(mat)
+
+    cnum <- 5
+    cgroup <- sample(1:cnum, ncol(mat), replace=TRUE)
+    rnum <- 4
+    rgroup <- sample(1:rnum, nrow(mat), replace=TRUE)
+
+    rref <- matrix(0, nrow(mat), cnum)
+    for (i in 1:5) {
+        rref[,i] <- rowSums(mat[, cgroup == i, drop=FALSE])
+    }
+    expect_equal(tatami.sums.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=1), rref)
+    expect_equal(tatami.sums.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=2), rref)
+
+    cref <- matrix(0, rnum, ncol(mat))
+    for (i in 1:4) {
+        cref[i,] <- colSums(mat[rgroup == i,, drop=FALSE])
+    }
+    expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=1), cref)
+    expect_equal(tatami.sums.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=2), cref)
+
+    # Check for back-compatibility.
+    expect_equal(tatami.sums.by.group(ptr, rgroup, row=FALSE, num.threads=2), cref)
+})
+
+test_that("dimwise variance by groups work as expected", {
+    mat <- matrix(runif(1000), 25, 40)
+    ptr <- initializeCpp(mat)
+
+    cnum <- 5
+    cgroup <- sample(cnum, ncol(mat), replace=TRUE)
+    rnum <- 4
+    rgroup <- sample(rnum, nrow(mat), replace=TRUE)
+
+    rmean <- rvar <- matrix(0, nrow(mat), cnum)
+    for (i in 1:5) {
+        submat <- mat[, cgroup == i, drop=FALSE]
+        rmean[,i] <- rowMeans(submat)
+        rvar[,i] <- apply(submat, 1, var)
+    }
+    rexpected <- list(mean = rmean, variance = rvar)
+    expect_equal(tatami.variances.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=1), rexpected)
+    expect_equal(tatami.variances.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=2), rexpected)
+
+    cmean <- cvar <- matrix(0, rnum, ncol(mat))
+    for (i in 1:4) {
+        submat <- mat[rgroup == i,, drop=FALSE]
+        cmean[i,] <- colMeans(submat)
+        cvar[i,] <- apply(submat, 2, var)
+    }
+    cexpected <- list(mean = cmean, variance = cvar)
+    expect_equal(tatami.variances.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=1), cexpected)
+    expect_equal(tatami.variances.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=2), cexpected)
+})
+
+test_that("dimwise median by groups work as expected", {
+    mat <- matrix(runif(1000), 25, 40)
+    ptr <- initializeCpp(mat)
+
+    cnum <- 5
+    cgroup <- sample(1:cnum, ncol(mat), replace=TRUE)
+    rnum <- 4
+    rgroup <- sample(1:rnum, nrow(mat), replace=TRUE)
+
+    rref <- matrix(0, nrow(mat), cnum)
+    for (i in 1:5) {
+        rref[,i] <- apply(mat[, cgroup == i, drop=FALSE], 1, median)
+    }
+    expect_equal(tatami.medians.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=1), rref)
+    expect_equal(tatami.medians.by.group(ptr, cgroup, cnum, row=TRUE, num.threads=2), rref)
+
+    cref <- matrix(0, rnum, ncol(mat))
+    for (i in 1:4) {
+        cref[i,] <- apply(mat[rgroup == i,, drop=FALSE], 2, median)
+    }
+    expect_equal(tatami.medians.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=1), cref)
+    expect_equal(tatami.medians.by.group(ptr, rgroup, rnum, row=FALSE, num.threads=2), cref)
 })
 
 test_that("bind works as expected", {

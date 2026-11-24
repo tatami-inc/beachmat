@@ -29,9 +29,12 @@
 \alias{tatami.multiply}
 \alias{tatami.sums}
 \alias{tatami.variances}
-\alias{tatami.sums.by.group}
 \alias{tatami.medians}
 \alias{tatami.nan.counts}
+\alias{tatami.ranges}
+\alias{tatami.sums.by.group}
+\alias{tatami.variances.by.group}
+\alias{tatami.medians.by.group}
 \title{Tatami utilities}
 \usage{
 tatami.bind(xs, by.row)
@@ -72,11 +75,17 @@ tatami.sums(x, row, num.threads)
 
 tatami.variances(x, row, num.threads)
 
-tatami.sums.by.group(x, group, num.groups, row, num.threads)
-
 tatami.medians(x, row, num.threads)
 
 tatami.nan.counts(x, row, num.threads)
+
+tatami.ranges(x, row, num.threads)
+
+tatami.sums.by.group(x, group, num.groups, row, num.threads)
+
+tatami.variances.by.group(x, group, num.groups, row, num.threads)
+
+tatami.medians.by.group(x, group, num.groups, row, num.threads)
 }
 \arguments{
 \item{xs}{A list of pointers produced by \code{\link{initializeCpp}}.
@@ -166,7 +175,14 @@ For \code{tatami.multiply}, a numeric matrix containing the matrix product of \c
 For \code{tatami.sums}, a numeric vector containing the row or column sums depending on \code{row=}.
 
 For \code{tatami.variances}, a list containing the numeric vectors \code{mean} and \code{variance}.
-These containing the row/column means and variances, respectively, depending on \code{row=}.
+These contain the row/column means and variances, respectively, depending on \code{row=}.
+
+For \code{tatami.medians}, a numeric vector containing the row or column medians, respectively.
+
+For \code{tatami.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
+
+For \code{tatami.ranges}, a list containing the numeric vectors \code{minimum} and \code{maximum}.
+These contain the row/column minima and maxima, respectively, depending on \code{row=}.
 
 For \code{tatami.sums.by.group}, a numeric matrix is returned.
 \itemize{
@@ -176,9 +192,22 @@ Each column corresponds to a group and contains the row sums across all columns 
 Each row corresponds to a group and contains the column sums across all columns of \code{x} assigned to that group.
 }
 
-For \code{tatami.medians}, a numeric vector containing the row or column medians, respectively.
+For \code{tatami.variances.by.group}, a named list is returned containing the numeric matrices \code{mean} and \code{variance}.
+These matrices contain the per-group mean and variance:
+\itemize{
+\item If \code{row=TRUE}, the number of rows in each matrix is equal to that of \code{x} and the number of columns is equal to the number of groups.
+Each column corresponds to a group and contains the row means/variances across all columns of \code{x} assigned to that group.
+\item If \code{row=FALSE}, the number of columns in each matrix is equal to that of \code{x} and the number of rows is equal to the number of groups.
+Each row corresponds to a group and contains the column means/variances across all columns of \code{x} assigned to that group.
+}
 
-For \code{tatami.nan.counts}, a numeric vector containing the number of NaNs in each row or column, respectively.
+For \code{tatami.medians.by.group}, a numeric matrix is returned.
+\itemize{
+\item If \code{row=TRUE}, its number of rows is equal to that of \code{x} and its number of columns is equal to the number of groups.
+Each column corresponds to a group and contains the row medians across all columns of \code{x} assigned to that group.
+\item If \code{row=FALSE}, its number of columns is equal to that of \code{x} and its number of rows is equal to the number of groups.
+Each row corresponds to a group and contains the column medians across all columns of \code{x} assigned to that group.
+}
 
 For all other functions, a new pointer to a matrix with the requested operations applied to \code{x} or \code{xs}.
 }

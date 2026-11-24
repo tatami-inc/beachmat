@@ -91,46 +91,6 @@ Rcpp::List tatami_variances(SEXP raw_input, bool row, int threads) {
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
-    tatami_stats::GroupSumOptions opt;
-    opt.num_threads = threads;
-    if (threads < 1) {
-        throw std::runtime_error("'threads' should be a positive integer");
-    }
-
-    Rtatami::BoundNumericPointer input(raw_input);
-    const auto NR = input->ptr->nrow();
-    const auto NC = input->ptr->ncol();
-
-    std::vector<int> group_m1(group.begin(), group.end());
-    for (auto& x : group_m1) {
-        if (x <= 0) {
-            throw std::runtime_error("'group' should contain positive group identifiers");
-        }
-        --x;
-    }
-
-    const auto expected = (row ? NC : NR);
-    if (!sanisizer::is_equal(expected, group_m1.size())) {
-        throw std::runtime_error("'group' should have length equal to the appropriate dimension extent");
-    }
-
-    const auto stride = (row ? NR : NC);
-    Rcpp::NumericMatrix output(stride, num_groups);
-    auto ptrs = sanisizer::create<std::vector<double*> >(num_groups);
-    for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
-        ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, stride);
-    }
-    tatami_stats::group_sum(row, *(input->ptr), group_m1.data(), num_groups, ptrs, opt);
-
-    if (row) {
-        return output;
-    } else {
-        return Rcpp::transpose(output);
-    }
-}
-
-//[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads) {
     tatami_stats::MedianOptions opt;
     opt.num_threads = threads;
@@ -145,6 +105,33 @@ Rcpp::NumericVector tatami_medians(SEXP raw_input, bool row, int threads) {
     Rcpp::NumericVector output(row ? NR : NC);
     tatami_stats::median(row, *(input->ptr), static_cast<double*>(output.begin()), opt);
     return output;
+}
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::List tatami_ranges(SEXP raw_input, bool row, int threads) {
+    tatami_stats::RangeOptions opt;
+    opt.num_threads = threads;
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    const auto expected = row ? NR : NC;
+    Rcpp::NumericVector minout(expected);
+    Rcpp::NumericVector maxout(expected);
+
+    tatami_stats::RangeBuffers<double> buf;
+    buf.minimum = minout.begin();
+    buf.maximum = maxout.begin();
+
+    tatami_stats::range(row, *(input->ptr), buf, opt);
+    return Rcpp::List::create(
+        Rcpp::Named("minimum") = minout,
+        Rcpp::Named("maximum") = maxout
+    );
 }
 
 //[[Rcpp::export(rng=false)]]
@@ -168,6 +155,133 @@ Rcpp::NumericVector tatami_nan_counts(SEXP raw_input, bool row, int threads) {
         opt
     );
     return output;
+}
+
+static std::vector<int> extract_groups(const Rcpp::IntegerVector& group, int num_groups) {
+    std::vector<int> group_m1(group.begin(), group.end());
+    for (auto& x : group_m1) {
+        if (x <= 0) {
+            throw std::runtime_error("'group' should contain positive group identifiers");
+        } else if (x > num_groups) {
+            throw std::runtime_error("entries of 'group' should be less than 'num.groups'");
+        }
+        --x;
+    }
+    return group_m1;
+}
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
+    tatami_stats::GroupSumOptions opt;
+    opt.num_threads = threads;
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    auto group_m1 = extract_groups(group, num_groups);
+    const auto expected = (row ? NC : NR);
+    if (!sanisizer::is_equal(expected, group_m1.size())) {
+        throw std::runtime_error("'group' should have length equal to the appropriate dimension extent");
+    }
+
+    const auto stride = (row ? NR : NC);
+    Rcpp::NumericMatrix output(stride, num_groups);
+    auto ptrs = sanisizer::create<std::vector<double*> >(num_groups);
+    for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
+        ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, stride);
+    }
+
+    tatami_stats::group_sum(row, *(input->ptr), group_m1.data(), num_groups, ptrs, opt);
+
+    if (row) {
+        return output;
+    } else {
+        return Rcpp::transpose(output);
+    }
+}
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::List tatami_variances_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
+    tatami_stats::GroupVarianceOptions opt;
+    opt.num_threads = threads;
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    auto group_m1 = extract_groups(group, num_groups);
+    const auto expected = (row ? NC : NR);
+    if (!sanisizer::is_equal(expected, group_m1.size())) {
+        throw std::runtime_error("'group' should have length equal to the appropriate dimension extent");
+    }
+
+    const auto stride = (row ? NR : NC);
+    Rcpp::NumericMatrix moutput(stride, num_groups), voutput(stride, num_groups);
+    tatami_stats::GroupVarianceBuffers<double> buf;
+    buf.mean.reserve(num_groups);
+    buf.variance.reserve(num_groups);
+    sanisizer::product<std::size_t>(stride, num_groups); // check that all offset calculations are safe.
+    for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
+        const auto offset = sanisizer::product_unsafe<std::size_t>(i, stride);
+        buf.mean.push_back(moutput.begin() + offset);
+        buf.variance.push_back(voutput.begin() + offset);
+    }
+
+    tatami_stats::group_variance(row, *(input->ptr), group_m1.data(), num_groups, buf, opt);
+
+    if (row) {
+        return Rcpp::List::create(
+            Rcpp::Named("mean") = moutput,
+            Rcpp::Named("variance") = voutput 
+        );
+    } else {
+        return Rcpp::List::create(
+            Rcpp::Named("mean") = Rcpp::transpose(moutput),
+            Rcpp::Named("variance") = Rcpp::transpose(voutput)
+        );
+    }
+}
+
+//[[Rcpp::export(rng=false)]]
+Rcpp::NumericVector tatami_medians_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
+    tatami_stats::GroupMedianOptions opt;
+    opt.num_threads = threads;
+    if (threads < 1) {
+        throw std::runtime_error("'threads' should be a positive integer");
+    }
+
+    Rtatami::BoundNumericPointer input(raw_input);
+    const auto NR = input->ptr->nrow();
+    const auto NC = input->ptr->ncol();
+
+    auto group_m1 = extract_groups(group, num_groups);
+    const auto expected = (row ? NC : NR);
+    if (!sanisizer::is_equal(expected, group_m1.size())) {
+        throw std::runtime_error("'group' should have length equal to the appropriate dimension extent");
+    }
+
+    const auto stride = (row ? NR : NC);
+    Rcpp::NumericMatrix output(stride, num_groups);
+    auto ptrs = sanisizer::create<std::vector<double*> >(num_groups);
+    sanisizer::product<std::size_t>(stride, num_groups); // check that product inside the loop is safe.
+    for (auto i = static_cast<decltype(num_groups)>(0); i < num_groups; ++i) {
+        ptrs[i] = output.begin() + sanisizer::product_unsafe<std::size_t>(i, stride);
+    }
+
+    tatami_stats::group_median(row, *(input->ptr), group_m1.data(), num_groups, ptrs, opt);
+
+    if (row) {
+        return output;
+    } else {
+        return Rcpp::transpose(output);
+    }
 }
 
 //[[Rcpp::export(rng=false)]]

@@ -105,16 +105,28 @@ tatami_variances <- function(raw_input, row, threads) {
     .Call('_beachmat_tatami_variances', PACKAGE = 'beachmat', raw_input, row, threads)
 }
 
-tatami_sums_by_group <- function(raw_input, group, num_groups, row, threads) {
-    .Call('_beachmat_tatami_sums_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
-}
-
 tatami_medians <- function(raw_input, row, threads) {
     .Call('_beachmat_tatami_medians', PACKAGE = 'beachmat', raw_input, row, threads)
 }
 
+tatami_ranges <- function(raw_input, row, threads) {
+    .Call('_beachmat_tatami_ranges', PACKAGE = 'beachmat', raw_input, row, threads)
+}
+
 tatami_nan_counts <- function(raw_input, row, threads) {
     .Call('_beachmat_tatami_nan_counts', PACKAGE = 'beachmat', raw_input, row, threads)
+}
+
+tatami_sums_by_group <- function(raw_input, group, num_groups, row, threads) {
+    .Call('_beachmat_tatami_sums_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
+}
+
+tatami_variances_by_group <- function(raw_input, group, num_groups, row, threads) {
+    .Call('_beachmat_tatami_variances_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
+}
+
+tatami_medians_by_group <- function(raw_input, group, num_groups, row, threads) {
+    .Call('_beachmat_tatami_medians_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
 }
 
 tatami_realize <- function(raw_input, threads) {
@@ -129,8 +141,8 @@ tatami_multiply_columns <- function(raw_input, other, right, threads) {
     .Call('_beachmat_tatami_multiply_columns', PACKAGE = 'beachmat', raw_input, other, right, threads)
 }
 
-tatami_multiply_matrix <- function(raw_input, more_input, right, threads) {
-    .Call('_beachmat_tatami_multiply_matrix', PACKAGE = 'beachmat', raw_input, more_input, right, threads)
+tatami_multiply_matrix <- function(raw_input1, raw_input2, right, threads) {
+    .Call('_beachmat_tatami_multiply_matrix', PACKAGE = 'beachmat', raw_input1, raw_input2, right, threads)
 }
 
 initialize_unknown_matrix <- function(input) {
