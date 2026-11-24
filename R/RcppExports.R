@@ -73,6 +73,10 @@ get_executor <- function() {
     .Call('_beachmat_get_executor', PACKAGE = 'beachmat')
 }
 
+tatami_realize <- function(raw_input, as_svt, threads) {
+    .Call('_beachmat_tatami_realize', PACKAGE = 'beachmat', raw_input, as_svt, threads)
+}
+
 initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na) {
     .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na)
 }
@@ -127,10 +131,6 @@ tatami_variances_by_group <- function(raw_input, group, num_groups, row, threads
 
 tatami_medians_by_group <- function(raw_input, group, num_groups, row, threads) {
     .Call('_beachmat_tatami_medians_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
-}
-
-tatami_realize <- function(raw_input, threads) {
-    .Call('_beachmat_tatami_realize', PACKAGE = 'beachmat', raw_input, threads)
 }
 
 tatami_multiply_vector <- function(raw_input, other, right, threads) {

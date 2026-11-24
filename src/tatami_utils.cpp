@@ -9,6 +9,8 @@
 #include <cstddef>
 #include <stdexcept>
 
+#include "utils.h"
+
 //[[Rcpp::export(rng=false)]]
 Rcpp::IntegerVector tatami_dim(SEXP raw_input) {
     Rtatami::BoundNumericPointer input(raw_input);
@@ -174,17 +176,6 @@ static std::vector<int> extract_groups(const Rcpp::IntegerVector& group, int num
     return group_m1;
 }
 
-template<typename Input_>
-using I = std::remove_cv_t<std::remove_reference_t<Input_> >;
-
-template<typename Row_, typename Column_>
-Rcpp::NumericMatrix create_output_matrix(Row_ nrow, Column_ ncol) {
-    return Rcpp::NumericMatrix(
-        I<decltype(std::declval<Rcpp::NumericMatrix>().rows())>(nrow),
-        I<decltype(std::declval<Rcpp::NumericMatrix>().cols())>(ncol)
-    );
-}
-
 //[[Rcpp::export(rng=false)]]
 Rcpp::NumericVector tatami_sums_by_group(SEXP raw_input, Rcpp::IntegerVector group, int num_groups, bool row, int threads) {
     tatami_stats::GroupSumOptions opt;
@@ -298,50 +289,6 @@ Rcpp::NumericVector tatami_medians_by_group(SEXP raw_input, Rcpp::IntegerVector 
         return output;
     } else {
         return Rcpp::transpose(output);
-    }
-}
-
-//[[Rcpp::export(rng=false)]]
-SEXP tatami_realize(SEXP raw_input, int threads) {
-    if (threads < 1) {
-        throw std::runtime_error("'threads' should be a positive integer");
-    }
-
-    Rtatami::BoundNumericPointer input(raw_input);
-    const auto& shared = input->ptr;
-
-    if (shared->sparse()) {
-        auto frag = tatami::retrieve_fragmented_sparse_contents<double, int>(shared.get(), false, threads);
-        const auto& store_v = frag.value;
-        const auto& store_i = frag.index;
-
-        const auto primary = shared->ncol();
-        Rcpp::IntegerVector output_p(sanisizer::sum<I<decltype(std::declval<Rcpp::IntegerVector>().size())> >(primary, 1));
-        for (I<decltype(primary)> p = 0; p < primary; ++p) {
-            output_p[p + 1] = output_p[p] + store_v[p].size();
-        }
-
-        const auto last_p = output_p[primary];
-        auto output_v = sanisizer::create<Rcpp::NumericVector>(last_p);
-        auto output_i = sanisizer::create<Rcpp::IntegerVector>(last_p);
-        I<decltype(last_p)> offset = 0;
-        for (I<decltype(primary)> p = 0; p < primary; ++p) {
-            std::copy(store_v[p].begin(), store_v[p].end(), output_v.begin() + offset);
-            std::copy(store_i[p].begin(), store_i[p].end(), output_i.begin() + offset);
-            offset += store_v[p].size();
-        }
-
-        Rcpp::S4 output("dgCMatrix");
-        output.slot("x") = output_v;
-        output.slot("i") = output_i;
-        output.slot("p") = output_p;
-        output.slot("Dim") = Rcpp::IntegerVector::create(shared->nrow(), shared->ncol());
-        return output;
-
-    } else {
-        Rcpp::NumericMatrix output(shared->nrow(), shared->ncol());
-        tatami::convert_to_dense(shared.get(), false, static_cast<double*>(output.begin()), threads);
-        return output;
     }
 }
 

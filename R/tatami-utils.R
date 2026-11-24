@@ -50,6 +50,7 @@
 #' @param group Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
 #' containing the group assignment for each column and row, respectively.
 #' Assignments should lie in \code{[1, num.groups]}. 
+#' @param as.svt Boolean indicating whether to return a \link[SparseArray]{SVT_SparseMatrix} if \code{x} contains a sparse matrix.
 #' @param num.groups Integer specifying the total number of unique groups in \code{group}.
 #' @param subset Integer vector containing the subset of interest.
 #' These should be 1-based row or column indices depending on \code{by.row}.
@@ -245,8 +246,8 @@ tatami.prefer.rows <- function(x) {
 
 #' @export
 #' @rdname tatami-utils
-tatami.realize <- function(x, num.threads) {
-    tatami_realize(x, num.threads)
+tatami.realize <- function(x, num.threads, as.svt=FALSE) {
+    tatami_realize(x, as.svt, num.threads)
 }
 
 #' @export

@@ -67,7 +67,7 @@ tatami.is.sparse(x)
 
 tatami.prefer.rows(x)
 
-tatami.realize(x, num.threads)
+tatami.realize(x, num.threads, as.svt = FALSE)
 
 tatami.multiply(x, val, right, num.threads)
 
@@ -151,6 +151,8 @@ For \code{tatami.sums}, \code{tatami.sums.by.group}, \code{tatami.medians}, etc.
 If \code{FALSE}, column-wise statistics are computed instead.}
 
 \item{num.threads}{Integer scalar specifying the number of threads to use.}
+
+\item{as.svt}{Boolean indicating whether to return a \link[SparseArray]{SVT_SparseMatrix} if \code{x} contains a sparse matrix.}
 
 \item{group}{Integer vector of length equal to the number of columns (if \code{row = TRUE}) or rows (otherwise),
 containing the group assignment for each column and row, respectively.

@@ -13,7 +13,6 @@ test_that("basic methods work as expected", {
     expect_equal(tatami.dim(ptr1), dim(x1))
     expect_true(tatami.is.sparse(ptr1))
     expect_false(tatami.prefer.rows(ptr1))
-    expect_equal(tatami.realize(ptr1, 1), x1)
 
     expect_equal(tatami.row(ptr1, 1), x1[1,])
     expect_equal(tatami.row(ptr1, 1000), x1[1000,])
@@ -32,7 +31,6 @@ test_that("basic methods work as expected", {
     dptr1 <- initializeCpp(y1)
     expect_false(tatami.is.sparse(dptr1))
     expect_false(tatami.prefer.rows(dptr1))
-    expect_equal(tatami.realize(dptr1, 1), y1)
 })
 
 test_that("dimwise ranges work as expected", {
