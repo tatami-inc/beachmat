@@ -235,8 +235,6 @@ tatami.multiply <- function(x, val, right, num.threads) {
     if (is.atomic(val)) {
         if (is.null(dim(val))) {
             tatami_multiply_vector(x, val, right=right, threads=num.threads)
-        } else if (!right) {
-            t(tatami_multiply_columns(x, t(val), right=right, threads=num.threads))
         } else {
             tatami_multiply_columns(x, val, right=right, threads=num.threads)
         }

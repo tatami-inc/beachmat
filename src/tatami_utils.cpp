@@ -248,77 +248,116 @@ Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix 
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
     }
-
     Rtatami::BoundNumericPointer input(raw_input);
-    std::shared_ptr<tatami::NumericMatrix> alt;
-    const auto& mat = [&]() -> const tatami::NumericMatrix& {
-        if (right) {
-            return *(input->ptr);
-        } else {
-            alt.reset(new tatami::DelayedTranspose<double, int>(input->ptr));
-            return *alt;
+
+    if (right) {
+        const auto common_dim = other.rows();
+        const auto num_other = other.cols();
+
+        const auto& mat = *(input->ptr);
+        if (!sanisizer::is_equal(common_dim, mat.ncol())) {
+            throw std::runtime_error("number of rows of 'vals' does not match the number of columns of 'x'");
         }
-    }();
 
-    auto common_dim = other.rows();
-    if (!sanisizer::is_equal(common_dim, mat.ncol())) {
-        throw std::runtime_error("rows of 'vals' does not match the number of columns of 'x'");
-    }
+        const auto out_nrow = mat.nrow();
+        Rcpp::NumericMatrix output(out_nrow, num_other);
+        const auto optr = static_cast<double*>(output.begin()); 
 
-    auto num_other = other.cols();
-    auto out_nrow = mat.nrow();
-    sanisizer::product<std::size_t>(out_nrow, num_other); // check outside the loop so that we can do unsafe products inside the loop.
-    Rcpp::NumericMatrix output(sanisizer::cast<decltype(num_other)>(out_nrow), num_other);
+        const auto rptr = static_cast<const double*>(other.begin());
+        sanisizer::product<std::size_t>(num_other, common_dim); // check outside the functor so that we can do unsafe products inside the functor.
+        auto fetch_other_col = [&](std::size_t rcol) -> const double* { return rptr + sanisizer::product_unsafe<std::size_t>(rcol, common_dim); };
 
-    const auto rptr = static_cast<const double*>(other.begin());
-    auto fetch_other_col = [&](std::size_t rcol) -> const double* { return rptr + sanisizer::product_unsafe<std::size_t>(rcol, common_dim); };
-    const auto optr = static_cast<double*>(output.begin()); 
+        const bool is_sparse = mat.is_sparse(); 
+        if (mat.prefer_rows()) {
+            if (is_sparse){
+                tatami_mult::MultiplySparseRowWithDenseColumnMatrixToColumnOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_sparse_row_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+            } else {
+                tatami_mult::MultiplyDenseRowWithDenseColumnMatrixToColumnOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_dense_row_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+            }
 
-    const bool is_sparse = mat.is_sparse(); 
-    if (mat.prefer_rows()) {
-        if (is_sparse){
-            tatami_mult::MultiplySparseRowWithDenseColumnMatrixToColumnOutputOptions opt;
-            opt.num_threads = threads;
-            tatami_mult::multiply_sparse_row_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
         } else {
-            tatami_mult::MultiplyDenseRowWithDenseColumnMatrixToColumnOutputOptions opt;
-            opt.num_threads = threads;
-            tatami_mult::multiply_dense_row_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+            if (is_sparse){
+                tatami_mult::MultiplySparseColumnWithDenseColumnMatrixToColumnOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_sparse_column_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+            } else {
+                tatami_mult::MultiplyDenseColumnWithDenseColumnMatrixToColumnOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_dense_column_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
+            }
         }
+
+        return output;
 
     } else {
-        if (is_sparse){
-            tatami_mult::MultiplySparseColumnWithDenseColumnMatrixToColumnOutputOptions opt;
-            opt.num_threads = threads;
-            tatami_mult::multiply_sparse_column_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
-        } else {
-            tatami_mult::MultiplyDenseColumnWithDenseColumnMatrixToColumnOutputOptions opt;
-            opt.num_threads = threads;
-            tatami_mult::multiply_dense_column_with_dense_column_matrix_to_column_output(mat, num_other, fetch_other_col, optr, opt);
-        }
-    }
+        // Effectively transposing 'other' here so that it can lie on the right as a row-major matrix.
+        const auto common_dim = other.cols();
+        const auto num_other = other.rows();
 
-    return output;
+        tatami::DelayedTranspose<double, int> alt(input->ptr);
+        if (!sanisizer::is_equal(common_dim, alt.ncol())) {
+            throw std::runtime_error("number of columns of 'vals' does not match the number of rows of 'x'");
+        }
+
+        // We'll treat the output as row-major in our (conceptually) everything-is-transposed state.
+        const auto out_nrow = alt.nrow();
+        Rcpp::NumericMatrix output(num_other, out_nrow);
+        const auto optr = static_cast<double*>(output.begin()); 
+
+        const auto rptr = static_cast<const double*>(other.begin());
+        sanisizer::product<std::size_t>(num_other, common_dim); // check outside the functor so that we can do unsafe products inside the functor.
+        auto fetch_other_row = [&](std::size_t rrow) -> const double* { return rptr + sanisizer::product_unsafe<std::size_t>(rrow, num_other); };
+
+        const bool is_sparse = alt.is_sparse(); 
+        if (alt.prefer_rows()) {
+            if (is_sparse){
+                tatami_mult::MultiplySparseRowWithDenseRowMatrixToRowOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_sparse_row_with_dense_row_matrix_to_row_output(alt, num_other, fetch_other_row, optr, opt);
+            } else {
+                tatami_mult::MultiplyDenseRowWithDenseRowMatrixToRowOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_dense_row_with_dense_row_matrix_to_row_output(alt, num_other, fetch_other_row, optr, opt);
+            }
+
+        } else {
+            if (is_sparse){
+                tatami_mult::MultiplySparseColumnWithDenseRowMatrixToRowOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_sparse_column_with_dense_row_matrix_to_row_output(alt, num_other, fetch_other_row, optr, opt);
+            } else {
+                tatami_mult::MultiplyDenseColumnWithDenseRowMatrixToRowOutputOptions opt;
+                opt.num_threads = threads;
+                tatami_mult::multiply_dense_column_with_dense_row_matrix_to_row_output(alt, num_other, fetch_other_row, optr, opt);
+            }
+        }
+
+        return output;
+    }
 }
 
 //[[Rcpp::export(rng=false)]]
-Rcpp::NumericVector tatami_multiply_matrix(SEXP raw_input, SEXP more_input, bool right, int threads) {
+Rcpp::NumericMatrix tatami_multiply_matrix(SEXP raw_input1, SEXP raw_input2, bool right, int threads) {
     if (threads < 1) {
         throw std::runtime_error("'threads' should be a positive integer");
     }
     tatami_mult::MultiplyWithMatrixOptions opt;
     tatami_mult::set_num_threads(opt, threads); 
 
-    Rtatami::BoundNumericPointer input(raw_input);
-    Rtatami::BoundNumericPointer input2(more_input);
-    const auto& mat = (right ? input->ptr : input2->ptr);
-    const auto& mat2 = (right ? input2->ptr : input->ptr);
-    if (mat->ncol() != mat2->nrow()) {
+    Rtatami::BoundNumericPointer input1(raw_input1);
+    Rtatami::BoundNumericPointer input2(raw_input2);
+    const auto& lmat = (right ? input1->ptr : input2->ptr);
+    const auto& rmat = (right ? input2->ptr : input1->ptr);
+    if (lmat->ncol() != rmat->nrow()) {
         throw std::runtime_error("inconsistent common dimensions for matrix multiplication");
     }
 
-    Rcpp::NumericMatrix output(mat->nrow(), mat2->ncol());
-    tatami_mult::multiply_with_matrix(*mat, *mat2, static_cast<double*>(output.begin()), false, opt);
-
+    Rcpp::NumericMatrix output(lmat->nrow(), rmat->ncol());
+    sanisizer::product<std::size_t>(lmat->nrow(), rmat->ncol()); // check that the contents of the array are accessible via a size_t.
+    tatami_mult::multiply_with_matrix(*lmat, *rmat, static_cast<double*>(output.begin()), false, opt);
     return output;
 }
