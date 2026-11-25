@@ -1,0 +1,47 @@
+name: R CMD check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    name: R CMD check
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:devel
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set directories
+        run: |
+          echo "R_PKG_DIR=${R_HOME}/site-library" >> $GITHUB_ENV
+
+      - name: Restore the package directory
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.R_PKG_DIR }}
+          key: check-packages
+
+      - name: Install dependencies
+        shell: Rscript {0}
+        run: |
+          stuff <- read.dcf("DESCRIPTION")
+          stuff <- stuff[,intersect(colnames(stuff), c("Imports", "LinkingTo", "Suggests", "Depends"))]
+          deps <- sub(" .*", "", unlist(strsplit(stuff, ",\\s*"), use.names=FALSE))
+          BiocManager::install(deps)
+
+      - name: Enable forced copy
+        run: |
+          cat src/Makevars | sed "s/\(PKG_CPPFLAGS.*\)/\\1 -DTATAMI_DEBUG_FORCE_COPY/" > tmp
+          mv tmp src/Makevars
+
+      - name: Build the package
+        run: R CMD build .
+
+      - name: Check the package
+        run: |
+          tarball=$(ls *.tar.gz)
+          R CMD check --no-manual $tarball
