@@ -73,10 +73,6 @@ get_executor <- function() {
     .Call('_beachmat_get_executor', PACKAGE = 'beachmat')
 }
 
-tatami_realize <- function(raw_input, as_svt, threads) {
-    .Call('_beachmat_tatami_realize', PACKAGE = 'beachmat', raw_input, as_svt, threads)
-}
-
 initialize_sparse_matrix <- function(raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na) {
     .Call('_beachmat_initialize_sparse_matrix', PACKAGE = 'beachmat', raw_x, raw_i, raw_p, nrow, ncol, byrow, check_na)
 }
@@ -85,20 +81,20 @@ initialize_SVT_SparseMatrix <- function(nr, nc, seed, check_na) {
     .Call('_beachmat_initialize_SVT_SparseMatrix', PACKAGE = 'beachmat', nr, nc, seed, check_na)
 }
 
-tatami_dim <- function(raw_input) {
-    .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', raw_input)
+tatami_multiply_vector <- function(raw_input, other, right, threads) {
+    .Call('_beachmat_tatami_multiply_vector', PACKAGE = 'beachmat', raw_input, other, right, threads)
 }
 
-tatami_is_sparse <- function(raw_input) {
-    .Call('_beachmat_tatami_is_sparse', PACKAGE = 'beachmat', raw_input)
+tatami_multiply_columns <- function(raw_input, other, right, threads) {
+    .Call('_beachmat_tatami_multiply_columns', PACKAGE = 'beachmat', raw_input, other, right, threads)
 }
 
-tatami_prefer_rows <- function(raw_input) {
-    .Call('_beachmat_tatami_prefer_rows', PACKAGE = 'beachmat', raw_input)
+tatami_multiply_matrix <- function(raw_input1, raw_input2, right, threads) {
+    .Call('_beachmat_tatami_multiply_matrix', PACKAGE = 'beachmat', raw_input1, raw_input2, right, threads)
 }
 
-tatami_get <- function(raw_input, i, row) {
-    .Call('_beachmat_tatami_get', PACKAGE = 'beachmat', raw_input, i, row)
+tatami_realize <- function(raw_input, as_svt, threads) {
+    .Call('_beachmat_tatami_realize', PACKAGE = 'beachmat', raw_input, as_svt, threads)
 }
 
 tatami_sums <- function(raw_input, row, threads) {
@@ -133,16 +129,20 @@ tatami_medians_by_group <- function(raw_input, group, num_groups, row, threads) 
     .Call('_beachmat_tatami_medians_by_group', PACKAGE = 'beachmat', raw_input, group, num_groups, row, threads)
 }
 
-tatami_multiply_vector <- function(raw_input, other, right, threads) {
-    .Call('_beachmat_tatami_multiply_vector', PACKAGE = 'beachmat', raw_input, other, right, threads)
+tatami_dim <- function(raw_input) {
+    .Call('_beachmat_tatami_dim', PACKAGE = 'beachmat', raw_input)
 }
 
-tatami_multiply_columns <- function(raw_input, other, right, threads) {
-    .Call('_beachmat_tatami_multiply_columns', PACKAGE = 'beachmat', raw_input, other, right, threads)
+tatami_is_sparse <- function(raw_input) {
+    .Call('_beachmat_tatami_is_sparse', PACKAGE = 'beachmat', raw_input)
 }
 
-tatami_multiply_matrix <- function(raw_input1, raw_input2, right, threads) {
-    .Call('_beachmat_tatami_multiply_matrix', PACKAGE = 'beachmat', raw_input1, raw_input2, right, threads)
+tatami_prefer_rows <- function(raw_input) {
+    .Call('_beachmat_tatami_prefer_rows', PACKAGE = 'beachmat', raw_input)
+}
+
+tatami_get <- function(raw_input, i, row) {
+    .Call('_beachmat_tatami_get', PACKAGE = 'beachmat', raw_input, i, row)
 }
 
 initialize_unknown_matrix <- function(input) {

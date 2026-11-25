@@ -220,18 +220,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_realize
-SEXP tatami_realize(SEXP raw_input, bool as_svt, int threads);
-RcppExport SEXP _beachmat_tatami_realize(SEXP raw_inputSEXP, SEXP as_svtSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< bool >::type as_svt(as_svtSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_realize(raw_input, as_svt, threads));
-    return rcpp_result_gen;
-END_RCPP
-}
 // initialize_sparse_matrix
 SEXP initialize_sparse_matrix(Rcpp::RObject raw_x, Rcpp::RObject raw_i, Rcpp::RObject raw_p, int nrow, int ncol, bool byrow, bool check_na);
 RcppExport SEXP _beachmat_initialize_sparse_matrix(SEXP raw_xSEXP, SEXP raw_iSEXP, SEXP raw_pSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP byrowSEXP, SEXP check_naSEXP) {
@@ -261,45 +249,54 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_dim
-Rcpp::IntegerVector tatami_dim(SEXP raw_input);
-RcppExport SEXP _beachmat_tatami_dim(SEXP raw_inputSEXP) {
+// tatami_multiply_vector
+Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector other, bool right, int threads);
+RcppExport SEXP _beachmat_tatami_multiply_vector(SEXP raw_inputSEXP, SEXP otherSEXP, SEXP rightSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_dim(raw_input));
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type other(otherSEXP);
+    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_multiply_vector(raw_input, other, right, threads));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_is_sparse
-Rcpp::LogicalVector tatami_is_sparse(SEXP raw_input);
-RcppExport SEXP _beachmat_tatami_is_sparse(SEXP raw_inputSEXP) {
+// tatami_multiply_columns
+Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix other, bool right, int threads);
+RcppExport SEXP _beachmat_tatami_multiply_columns(SEXP raw_inputSEXP, SEXP otherSEXP, SEXP rightSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_is_sparse(raw_input));
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type other(otherSEXP);
+    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_multiply_columns(raw_input, other, right, threads));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_prefer_rows
-Rcpp::LogicalVector tatami_prefer_rows(SEXP raw_input);
-RcppExport SEXP _beachmat_tatami_prefer_rows(SEXP raw_inputSEXP) {
+// tatami_multiply_matrix
+Rcpp::NumericMatrix tatami_multiply_matrix(SEXP raw_input1, SEXP raw_input2, bool right, int threads);
+RcppExport SEXP _beachmat_tatami_multiply_matrix(SEXP raw_input1SEXP, SEXP raw_input2SEXP, SEXP rightSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_prefer_rows(raw_input));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input1(raw_input1SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type raw_input2(raw_input2SEXP);
+    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_multiply_matrix(raw_input1, raw_input2, right, threads));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_get
-Rcpp::NumericVector tatami_get(SEXP raw_input, int i, bool row);
-RcppExport SEXP _beachmat_tatami_get(SEXP raw_inputSEXP, SEXP iSEXP, SEXP rowSEXP) {
+// tatami_realize
+SEXP tatami_realize(SEXP raw_input, bool as_svt, int threads);
+RcppExport SEXP _beachmat_tatami_realize(SEXP raw_inputSEXP, SEXP as_svtSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_get(raw_input, i, row));
+    Rcpp::traits::input_parameter< bool >::type as_svt(as_svtSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_realize(raw_input, as_svt, threads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -405,42 +402,45 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_multiply_vector
-Rcpp::NumericVector tatami_multiply_vector(SEXP raw_input, Rcpp::NumericVector other, bool right, int threads);
-RcppExport SEXP _beachmat_tatami_multiply_vector(SEXP raw_inputSEXP, SEXP otherSEXP, SEXP rightSEXP, SEXP threadsSEXP) {
+// tatami_dim
+Rcpp::IntegerVector tatami_dim(SEXP raw_input);
+RcppExport SEXP _beachmat_tatami_dim(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type other(otherSEXP);
-    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_multiply_vector(raw_input, other, right, threads));
+    rcpp_result_gen = Rcpp::wrap(tatami_dim(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_multiply_columns
-Rcpp::NumericVector tatami_multiply_columns(SEXP raw_input, Rcpp::NumericMatrix other, bool right, int threads);
-RcppExport SEXP _beachmat_tatami_multiply_columns(SEXP raw_inputSEXP, SEXP otherSEXP, SEXP rightSEXP, SEXP threadsSEXP) {
+// tatami_is_sparse
+Rcpp::LogicalVector tatami_is_sparse(SEXP raw_input);
+RcppExport SEXP _beachmat_tatami_is_sparse(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type other(otherSEXP);
-    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_multiply_columns(raw_input, other, right, threads));
+    rcpp_result_gen = Rcpp::wrap(tatami_is_sparse(raw_input));
     return rcpp_result_gen;
 END_RCPP
 }
-// tatami_multiply_matrix
-Rcpp::NumericMatrix tatami_multiply_matrix(SEXP raw_input1, SEXP raw_input2, bool right, int threads);
-RcppExport SEXP _beachmat_tatami_multiply_matrix(SEXP raw_input1SEXP, SEXP raw_input2SEXP, SEXP rightSEXP, SEXP threadsSEXP) {
+// tatami_prefer_rows
+Rcpp::LogicalVector tatami_prefer_rows(SEXP raw_input);
+RcppExport SEXP _beachmat_tatami_prefer_rows(SEXP raw_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type raw_input1(raw_input1SEXP);
-    Rcpp::traits::input_parameter< SEXP >::type raw_input2(raw_input2SEXP);
-    Rcpp::traits::input_parameter< bool >::type right(rightSEXP);
-    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tatami_multiply_matrix(raw_input1, raw_input2, right, threads));
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_prefer_rows(raw_input));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tatami_get
+Rcpp::NumericVector tatami_get(SEXP raw_input, int i, bool row);
+RcppExport SEXP _beachmat_tatami_get(SEXP raw_inputSEXP, SEXP iSEXP, SEXP rowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type raw_input(raw_inputSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    Rcpp::traits::input_parameter< bool >::type row(rowSEXP);
+    rcpp_result_gen = Rcpp::wrap(tatami_get(raw_input, i, row));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -474,13 +474,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_fragment_sparse_rows", (DL_FUNC) &_beachmat_fragment_sparse_rows, 3},
     {"_beachmat_sparse_subset_index", (DL_FUNC) &_beachmat_sparse_subset_index, 2},
     {"_beachmat_get_executor", (DL_FUNC) &_beachmat_get_executor, 0},
-    {"_beachmat_tatami_realize", (DL_FUNC) &_beachmat_tatami_realize, 3},
     {"_beachmat_initialize_sparse_matrix", (DL_FUNC) &_beachmat_initialize_sparse_matrix, 7},
     {"_beachmat_initialize_SVT_SparseMatrix", (DL_FUNC) &_beachmat_initialize_SVT_SparseMatrix, 4},
-    {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
-    {"_beachmat_tatami_is_sparse", (DL_FUNC) &_beachmat_tatami_is_sparse, 1},
-    {"_beachmat_tatami_prefer_rows", (DL_FUNC) &_beachmat_tatami_prefer_rows, 1},
-    {"_beachmat_tatami_get", (DL_FUNC) &_beachmat_tatami_get, 3},
+    {"_beachmat_tatami_multiply_vector", (DL_FUNC) &_beachmat_tatami_multiply_vector, 4},
+    {"_beachmat_tatami_multiply_columns", (DL_FUNC) &_beachmat_tatami_multiply_columns, 4},
+    {"_beachmat_tatami_multiply_matrix", (DL_FUNC) &_beachmat_tatami_multiply_matrix, 4},
+    {"_beachmat_tatami_realize", (DL_FUNC) &_beachmat_tatami_realize, 3},
     {"_beachmat_tatami_sums", (DL_FUNC) &_beachmat_tatami_sums, 3},
     {"_beachmat_tatami_variances", (DL_FUNC) &_beachmat_tatami_variances, 3},
     {"_beachmat_tatami_medians", (DL_FUNC) &_beachmat_tatami_medians, 3},
@@ -489,9 +488,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_beachmat_tatami_sums_by_group", (DL_FUNC) &_beachmat_tatami_sums_by_group, 5},
     {"_beachmat_tatami_variances_by_group", (DL_FUNC) &_beachmat_tatami_variances_by_group, 5},
     {"_beachmat_tatami_medians_by_group", (DL_FUNC) &_beachmat_tatami_medians_by_group, 5},
-    {"_beachmat_tatami_multiply_vector", (DL_FUNC) &_beachmat_tatami_multiply_vector, 4},
-    {"_beachmat_tatami_multiply_columns", (DL_FUNC) &_beachmat_tatami_multiply_columns, 4},
-    {"_beachmat_tatami_multiply_matrix", (DL_FUNC) &_beachmat_tatami_multiply_matrix, 4},
+    {"_beachmat_tatami_dim", (DL_FUNC) &_beachmat_tatami_dim, 1},
+    {"_beachmat_tatami_is_sparse", (DL_FUNC) &_beachmat_tatami_is_sparse, 1},
+    {"_beachmat_tatami_prefer_rows", (DL_FUNC) &_beachmat_tatami_prefer_rows, 1},
+    {"_beachmat_tatami_get", (DL_FUNC) &_beachmat_tatami_get, 3},
     {"_beachmat_initialize_unknown_matrix", (DL_FUNC) &_beachmat_initialize_unknown_matrix, 1},
     {NULL, NULL, 0}
 };
